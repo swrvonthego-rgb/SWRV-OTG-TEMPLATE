@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-lion-orange: #FF4D00;
+  --color-lion-black: #000000;
+  --color-lion-dark: #121212;
+  --color-lion-gray: #333333;
+  --color-lion-light: #FFFFFF;
+  --color-lion-subtle: #999999;
+  
+  --font-sans: "Inter", "system-ui", "sans-serif";
+}
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+}
+
+.clip-diagonal {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local media backups (never commit — large originals)
+local-media/
+
+# Large video files — host on Cloudinary instead
+public/media/*
+public/audio/*
+
+# Misc
+SLIDE_REORDER_COMPLETED.md
+
+# Large docs (PDFs — host externally if needed)
+docs/*.pdf
+public/media/1752950982581945_2_kk3jt3.png
+
+public/audio/_bak/
+public/audio/_swap/
+public/audio/test-*.mp3
