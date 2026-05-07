@@ -40,3 +40,10 @@ public/media/1752950982581945_2_kk3jt3.png
 public/audio/_bak/
 public/audio/_swap/
 public/audio/test-*.mp3
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
