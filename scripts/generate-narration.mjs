@@ -1,11 +1,15 @@
 /**
  * SWRV Brand Transmission — Narration Generator
- * Uses ElevenLabs "Daniel" voice: deep British cinematic narrator
+ * Uses voice: Hank (ID 6F5Zhi321D3Oq7v1oNT4) from your 'SWRV OTG SITE' collection
  *
  * Run once:
  *   ELEVENLABS_API_KEY=sk_... node scripts/generate-narration.mjs
  *
  * Outputs 7 MP3 files to: public/audio/narration-0.mp3 … narration-6.mp3
+ *
+ * If the API returns "voice not found", open the voice in the ElevenLabs
+ * dashboard and click "Add to my voices" once — public library voices
+ * sometimes need to be saved to your account before API calls work.
  */
 
 import fs from 'fs';
@@ -21,8 +25,8 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// Brian — Deep, Resonant and Comforting — American (free tier premade)
-const VOICE_ID = 'nPczCjzI2devNBz1zQrb';
+// Hank — your chosen narrator from the 'SWRV OTG SITE' collection
+const VOICE_ID = '6F5Zhi321D3Oq7v1oNT4';
 const MODEL_ID = 'eleven_multilingual_v2';
 
 // Exact narration text matching the scenes in brand-transmission.html
@@ -91,7 +95,7 @@ async function generate(i, text) {
 
 (async () => {
   console.log('\n🎙  SWRV Brand Transmission — Narration Generator');
-  console.log('   Voice: ElevenLabs "Brian" (deep resonant American narrator)');
+  console.log("   Voice: Hank (from your 'SWRV OTG SITE' collection)");
   console.log('   Speed: 0.72 — slow, deliberate, cinematic\n');
 
   fs.mkdirSync(OUT_DIR, { recursive: true });

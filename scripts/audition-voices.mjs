@@ -1,9 +1,18 @@
 import fs from 'fs';
 
-const API  = 'sk_7a18bc9ad62fba27d2e7e7be12869ecabc97e242014d943e';
+// SECURITY: API key now read from env var. Never hardcode.
+// Run with: ELEVENLABS_API_KEY=sk_xxx node scripts/audition-voices.mjs
+const API = process.env.ELEVENLABS_API_KEY;
+if (!API) {
+  console.error('\n❌  Missing ELEVENLABS_API_KEY env var.');
+  console.error('   Run: ELEVENLABS_API_KEY=sk_... node scripts/audition-voices.mjs\n');
+  process.exit(1);
+}
+
 const TEXT = 'Every journey. Has roadblocks. They come for everyone. No matter how prepared. No matter how talented. No matter how driven you are. No exceptions.';
 
 const CANDIDATES = [
+  { id: '6F5Zhi321D3Oq7v1oNT4', name: 'Hank', desc: 'Hank — current default (in SWRV OTG SITE collection)' },
   { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian-deep', desc: 'Brian — max depth + slowed' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam-deep',  desc: 'Adam  — max depth + slowed' },
   { id: 'pqHfZKP75CvOlQylNhV4', name: 'Bill-deep',  desc: 'Bill  — max depth + slowed' },

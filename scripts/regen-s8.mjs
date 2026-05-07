@@ -11,7 +11,7 @@ if (!API_KEY) { console.error('Missing ELEVENLABS_API_KEY'); process.exit(1); }
 const text = 'Swerve On the Go — a full-service branding ecosystem built entirely around you. We want the experience of building with you, the pleasure of serving you, and the joy of swerving in our gifts every step of the way.';
 
 console.log('Regenerating narration-8.mp3 ...');
-const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/nPczCjzI2devNBz1zQrb`, {
+const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/6F5Zhi321D3Oq7v1oNT4`, {
   method: 'POST',
   headers: { 'xi-api-key': API_KEY, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
   body: JSON.stringify({

@@ -1,0 +1,65 @@
+name: Generate Narration MP3s
+
+# ─────────────────────────────────────────────────────────────
+# Calls ElevenLabs (using the ELEVENLABS_API_KEY secret) and
+# regenerates the 7 Brand Transmission narration MP3s with Hank.
+# Commits the generated files back to the repo so production
+# serves them statically.
+#
+# Trigger: manual — go to the Actions tab and click
+#   "Run workflow" on the green button.
+# ─────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why are you regenerating? (optional — appears in commit message)'
+        required: false
+        default: 'Refresh narration audio'
+
+# Allow the workflow to commit MP3s back to the repo
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify secret is configured
+        run: |
+          if [ -z "${{ secrets.ELEVENLABS_API_KEY }}" ]; then
+            echo "❌ ELEVENLABS_API_KEY secret is not set in this repo."
+            echo "   Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          echo "✓ Secret is configured."
+
+      - name: Generate narration MP3s
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: node scripts/generate-narration.mjs
+
+      - name: Show generated files
+        run: ls -la public/audio/
+
+      - name: Commit and push generated audio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/audio/
+          if git diff --staged --quiet; then
+            echo "No changes — MP3s are already up to date."
+          else
+            git commit -m "🎙 Regenerate narration MP3s — ${{ github.event.inputs.reason }}"
+            git push
+            echo "✓ Pushed updated narration MP3s to main."
+          fi

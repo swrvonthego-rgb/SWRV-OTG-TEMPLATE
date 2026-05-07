@@ -28,7 +28,6 @@ local-media/
 
 # Large video files — host on Cloudinary instead
 public/media/*
-public/audio/*
 
 # Misc
 SLIDE_REORDER_COMPLETED.md
@@ -37,6 +36,7 @@ SLIDE_REORDER_COMPLETED.md
 docs/*.pdf
 public/media/1752950982581945_2_kk3jt3.png
 
+# Audio scratch files — but DO commit production narration MP3s so they deploy
 public/audio/_bak/
 public/audio/_swap/
 public/audio/test-*.mp3
@@ -45,5 +45,7 @@ public/audio/test-*.mp3
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# Environment files (secrets) — never commit
 .env*
 !.env.example
