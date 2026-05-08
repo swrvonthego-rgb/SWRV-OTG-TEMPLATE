@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Resolve API key from secret
+      - name: Resolve API key
         id: key
         env:
           K1: ${{ secrets.ELEVENLABS_API_KEY }}
@@ -40,7 +40,7 @@ jobs:
           echo "::error::No ElevenLabs API key secret found."
           exit 1
 
-      - name: Generate narration MP3s (capturing all output)
+      - name: Generate narration MP3s
         env:
           ELEVENLABS_API_KEY: ${{ steps.key.outputs.key }}
         run: |
@@ -48,17 +48,16 @@ jobs:
           node scripts/generate-narration.mjs 2>&1 | tee /tmp/script.log
           STATUS=${PIPESTATUS[0]}
           set -e
-          echo ""
-          echo "── SCRIPT EXIT STATUS: $STATUS ──"
           if [ $STATUS -ne 0 ]; then
             echo ""
-            echo "::group::Last 40 lines of script output (errors below)"
-            tail -40 /tmp/script.log
-            echo "::endgroup::"
-            # Surface the most relevant error lines as annotations
-            grep -iE "error|fail|invalid|unauthor|not found|quota|rate" /tmp/script.log | tail -10 | while IFS= read -r line; do
+            echo "──────────────────────────────────────────────"
+            echo "Surfacing all script output as annotations:"
+            echo "──────────────────────────────────────────────"
+            # Dump every line of script output as an error annotation
+            while IFS= read -r line; do
+              [ -z "$line" ] && continue
               echo "::error::$line"
-            done
+            done < /tmp/script.log
             exit $STATUS
           fi
 
