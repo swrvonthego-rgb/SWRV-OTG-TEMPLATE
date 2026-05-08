@@ -1,0 +1,723 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;.zion-page 1&family=DM+Sans:wght@300;400;500&display=swap');
+@import "tailwindcss";
+
+@theme{
+  --color-gold: #C8A84B;
+  --color-gold-light: #E8C96A;
+  --color-deep: #0A0804;
+  --color-warm-dark: #110E07;
+  --color-mid: #1C1810;
+  --color-text: #EDE8DC;
+  --color-muted: #8A8070;
+  --color-accent: #D4572A;
+}
+
+.zion-page *, .zion-page *::before, .zion-page *::after{ box-sizing: border-box; margin: 0; padding: 0; }
+
+.zion-page{ scroll-behavior: smooth; }
+
+.zion-page{
+  background: var(--color-deep);
+  color: var(--color-text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN OVERLAY ── */
+.zion-page::before{
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.35;
+}
+
+/* ── NAV ── */
+.zion-page nav{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1.25rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(10,8,4,0.95) 0%, transparent 100%);
+}
+
+.zion-page .nav-logo{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.15em;
+  color: var(--color-gold);
+  text-decoration: none;
+}
+
+.zion-page .nav-links{
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  align-items: center;
+}
+
+.zion-page .nav-links a{
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+
+.zion-page .nav-links a:hover{ color: var(--color-gold); }
+
+.zion-page .nav-back{
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  text-decoration: none;
+  border: 1px solid rgba(212,87,42,0.4);
+  padding: 0.4rem 0.9rem;
+  transition: all 0.3s;
+}
+.zion-page .nav-back:hover{
+  color: #fff;
+  border-color: var(--color-accent);
+  background: rgba(212,87,42,0.15);
+}
+
+/* ── HERO ── */
+.zion-page .hero{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 2.5rem 6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.zion-page .hero-bg{
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 70% 40%, rgba(200,168,75,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 20% 70%, rgba(212,87,42,0.06) 0%, transparent 50%),
+    linear-gradient(160deg, #0A0804 0%, #161008 50%, #0A0804 100%);
+}
+
+.zion-page .hero-lines{
+  position: absolute;
+  top: 0; right: 0;
+  width: 50%;
+  height: 100%;
+  opacity: 0.04;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-gold) 0px,
+    var(--color-gold) 1px,
+    transparent 1px,
+    transparent 60px
+  );
+}
+
+.zion-page .hero-eyebrow{
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 1rem;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards;
+}
+
+.zion-page .hero-name{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4.5rem, 12vw, 11rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  opacity: 0;
+  animation: fadeUp 0.9s 0.4s forwards;
+}
+
+.zion-page .hero-name span{
+  color: var(--color-gold);
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+}
+
+.zion-page .hero-sub{
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: clamp(1rem, 2.5vw, 1.6rem);
+  color: var(--color-muted);
+  margin-top: 1rem;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.6s forwards;
+}
+
+.zion-page .hero-slogan{
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0;
+  animation: fadeUp 0.9s 0.8s forwards;
+}
+
+.zion-page .hero-cta{
+  margin-top: 2.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.9s 1s forwards;
+}
+
+.zion-page .btn{
+  display: inline-block;
+  padding: 0.85rem 2rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  transition: all 0.3s;
+  cursor: pointer;
+  border: none;
+}
+
+.zion-page .btn-primary{
+  background: var(--color-gold);
+  color: var(--color-deep);
+}
+
+.zion-page .btn-primary:hover{
+  background: var(--color-gold-light);
+  transform: translateY(-2px);
+}
+
+.zion-page .btn-outline{
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid rgba(200,168,75,0.4);
+}
+
+.zion-page .btn-outline:hover{
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  transform: translateY(-2px);
+}
+
+.zion-page .hero-scroll{
+  position: absolute;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: fadeIn 1s 1.5s forwards;
+}
+
+.zion-page .hero-scroll span{
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  color: var(--color-muted);
+}
+
+.zion-page .scroll-line{
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  animation: scrollPulse 2s infinite;
+}
+
+/* ── SECTION BASE ── */
+.zion-page section{ padding: 6rem 2.5rem; }
+
+.zion-page .section-label{
+  font-size: 0.68rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 1rem;
+}
+
+.zion-page .section-title{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  margin-bottom: 1.5rem;
+}
+
+.zion-page .section-body{
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(237,232,220,0.75);
+  max-width: 65ch;
+}
+
+/* ── ABOUT ── */
+.zion-page .about{
+  background: var(--color-warm-dark);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+.zion-page .about-stats{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.zion-page .stat-box{
+  background: var(--color-mid);
+  padding: 2rem 1.5rem;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.zion-page .stat-box:hover{ border-color: var(--color-gold); }
+
+.zion-page .stat-number{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  color: var(--color-gold);
+  line-height: 1;
+}
+
+.zion-page .stat-label{
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-top: 0.4rem;
+}
+
+.zion-page .philosophy-strip{
+  background: var(--color-gold);
+  padding: 1.5rem 2.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.zion-page .philosophy-text{
+  display: inline-block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.15em;
+  color: var(--color-deep);
+  animation: marquee 20s linear infinite;
+}
+
+/* ── SERVICES ── */
+.zion-page .services{ background: var(--color-deep); }
+
+.zion-page .services-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2px;
+  margin-top: 3rem;
+}
+
+.zion-page .service-card{
+  background: var(--color-mid);
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.zion-page .service-card::before{
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 0;
+  background: var(--color-gold);
+  transition: height 0.4s;
+}
+
+.zion-page .service-card:hover::before{ height: 100%; }
+.zion-page .service-card:hover{ transform: translateY(-4px); }
+
+.zion-page .service-icon{
+  font-size: 2rem;
+  margin-bottom: 1.2rem;
+}
+
+.zion-page .service-name{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+
+.zion-page .service-desc{
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--color-muted);
+}
+
+/* ── BOOKS ── */
+.zion-page .books{ background: var(--color-warm-dark); }
+
+.zion-page .books-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.zion-page .book-card{
+  background: var(--color-mid);
+  padding: 3rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(200,168,75,0.1);
+  transition: border-color 0.3s, transform 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.zion-page .book-card:hover{
+  border-color: rgba(200,168,75,0.4);
+  transform: translateY(-4px);
+}
+
+.zion-page .book-number{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 6rem;
+  color: rgba(200,168,75,0.07);
+  position: absolute;
+  top: -1rem;
+  right: 1rem;
+  line-height: 1;
+}
+
+.zion-page .book-tag{
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 1rem;
+}
+
+.zion-page .book-title{
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-style: italic;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--color-gold-light);
+}
+
+.zion-page .book-desc{
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--color-muted);
+  margin-bottom: 2rem;
+}
+
+/* ── BOOKING ── */
+.zion-page .booking{ background: var(--color-deep); }
+
+.zion-page .booking-inner{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+
+.zion-page .booking-form{
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.zion-page .form-row{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.zion-page .form-group{
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.zion-page .form-group label{
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.zion-page .form-group input, .zion-page .form-group select, .zion-page .form-group textarea{
+  background: var(--color-mid);
+  border: 1px solid rgba(200,168,75,0.15);
+  color: var(--color-text);
+  padding: 0.85rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.3s;
+  -webkit-appearance: none;
+}
+
+.zion-page .form-group input:focus, .zion-page .form-group select:focus, .zion-page .form-group textarea:focus{
+  border-color: var(--color-gold);
+}
+
+.zion-page .form-group select option{ background: var(--color-mid); }
+.zion-page .form-group textarea{ resize: vertical; min-height: 120px; }
+
+.zion-page .booking-note{
+  font-size: 0.8rem;
+  line-height: 1.8;
+  color: var(--color-muted);
+  margin-top: 2rem;
+}
+
+.zion-page .booking-note strong{ color: var(--color-gold); }
+
+/* ── FOOTER ── */
+.zion-page footer{
+  background: var(--color-warm-dark);
+  padding: 3rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(200,168,75,0.1);
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.zion-page .footer-brand{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 0.1em;
+  color: var(--color-gold);
+}
+
+.zion-page .footer-brand small{
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-top: -0.25rem;
+}
+
+.zion-page .footer-links{
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+}
+
+.zion-page .footer-links a{
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  transition: color 0.3s;
+}
+
+.zion-page .footer-links a:hover{ color: var(--color-gold); }
+
+.zion-page .footer-copy{
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  letter-spacing: 0.05em;
+}
+
+/* ── SWRV OTG LINK BAR ── */
+.zion-page .ecosystem-bar{
+  background: var(--color-mid);
+  border-top: 1px solid rgba(200,168,75,0.15);
+  padding: 1.2rem 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.zion-page .ecosystem-bar span{
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.zion-page .ecosystem-bar a{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  color: var(--color-gold);
+  text-decoration: none;
+  border: 1px solid rgba(200,168,75,0.35);
+  padding: 0.5rem 1.4rem;
+  transition: all 0.3s;
+}
+.zion-page .ecosystem-bar a:hover{
+  background: rgba(200,168,75,0.1);
+  border-color: var(--color-gold);
+}
+
+/* ── TOAST ── */
+.zion-page .toast{
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--color-gold);
+  color: var(--color-deep);
+  padding: 1rem 2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  z-index: 9999;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.zion-page .toast.show{ transform: translateX(-50%) translateY(0); }
+
+/* ── MOBILE MENU ── */
+.zion-page .mobile-menu-btn{
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+}
+.zion-page .mobile-menu-btn span{
+  width: 100%;
+  height: 2px;
+  background: var(--color-gold);
+  transition: all 0.3s ease;
+}
+.zion-page .mobile-menu-btn.active span:nth-child(1){
+  transform: translateY(9px) rotate(45deg);
+}
+.zion-page .mobile-menu-btn.active span:nth-child(2){
+  opacity: 0;
+}
+.zion-page .mobile-menu-btn.active span:nth-child(3){
+  transform: translateY(-9px) rotate(-45deg);
+}
+
+.zion-page .mobile-nav{
+  position: fixed;
+  inset: 0;
+  background: rgba(10,8,4,0.98);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s ease;
+}
+.zion-page .mobile-nav.active{
+  opacity: 1;
+  pointer-events: all;
+}
+.zion-page .mobile-nav a{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  color: var(--color-text);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  transition: color 0.3s;
+}
+.zion-page .mobile-nav a:hover{
+  color: var(--color-gold);
+}
+
+/* ── SCROLL REVEAL ── */
+.zion-page .reveal{
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.zion-page .reveal.active{
+  opacity: 1;
+  transform: translateY(0);
+}
+.zion-page .reveal-delay-1{ transition-delay: 0.1s; }
+.zion-page .reveal-delay-2{ transition-delay: 0.2s; }
+.zion-page .reveal-delay-3{ transition-delay: 0.3s; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.4; }
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  .zion-page nav{ padding: 1rem 1.25rem; }
+  .zion-page .nav-links{ display: none; }
+  .zion-page .mobile-menu-btn{ display: flex; }
+  .zion-page .hero{ padding: 0 1.25rem 4rem; }
+  .zion-page section{ padding: 4rem 1.25rem; }
+  .zion-page .about{ grid-template-columns: 1fr; gap: 3rem; }
+  .zion-page .books-grid{ grid-template-columns: 1fr; }
+  .zion-page .booking-inner{ grid-template-columns: 1fr; gap: 2.5rem; }
+  .zion-page .form-row{ grid-template-columns: 1fr; }
+  .zion-page footer{ flex-direction: column; align-items: flex-start; }
+  .zion-page #music .section-body + div{ grid-template-columns: 1fr !important; }
+  .zion-page #podcast > div{ grid-template-columns: 1fr !important; }
+  .zion-page .ecosystem-bar{ flex-direction: column; text-align: center; }
+}
+
+/* ════════════════════════════════════════════════════════
+   OVERLAY MODE — Zion is loaded as a full-screen overlay
+   inside the host SWRV OTG site.
+═══════════════════════════════════════════════════════ */
+.zion-page{
+  position:fixed;
+  inset:0;
+  z-index:9998;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  background:var(--color-bg, #0a0a0a);
+}

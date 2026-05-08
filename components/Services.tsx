@@ -12,7 +12,7 @@ const IconMap: Record<string, React.ReactNode> = {
   "Music": <Music size={40} strokeWidth={1.5} />
 };
 
-export const Services: React.FC<{ onOpenRoadmap?: () => void }> = ({ onOpenRoadmap }) => {
+export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () => void }> = ({ onOpenRoadmap, onOpenZion }) => {
   return (
     <>
     <section id="ecosystem" className="py-24 bg-white">
@@ -59,7 +59,11 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void }> = ({ onOpenRoadm
             </div>
             {/* Right: Helmet Image */}
             <div className="md:col-span-2 flex flex-col items-center">
-              <a href="https://swrvbirdsong.netlify.app/" target="_blank" rel="noopener noreferrer" className="block group">
+              <button
+                type="button"
+                onClick={() => onOpenZion?.()}
+                className="block group bg-transparent border-0 p-0 cursor-pointer w-full"
+              >
                 <img
                   src="https://res.cloudinary.com/dastq6bk5/image/upload/v1775906943/1752950982581945_2_kk3jt3_ui7upw.png"
                   alt="Meet the leader of the revolution"
@@ -69,7 +73,7 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void }> = ({ onOpenRoadm
                 <p className="text-center mt-3 text-sm font-bold tracking-[0.18em] uppercase text-lion-orange">
                   Meet the leader of the revolution →
                 </p>
-              </a>
+              </button>
             </div>
           </div>
         </div>
