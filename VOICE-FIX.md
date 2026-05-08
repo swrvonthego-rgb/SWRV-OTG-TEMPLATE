@@ -108,7 +108,7 @@ Total cost: ~1,800 characters from your monthly quota. ElevenLabs free tier is 1
 
 ```bash
 git add public/audio/
-git commit -m "Generate Hank-voice narration MP3s for brand transmission"
+git commit -m "Generate Brian-voice narration MP3s for brand transmission"
 git push
 ```
 
@@ -126,15 +126,15 @@ You don't need to touch these, but for reference — your `generate-narration.mj
 
 | Setting | Value | Why |
 |---------|-------|-----|
-| Voice | **Hank** (`6F5Zhi321D3Oq7v1oNT4`) | Deep cinematic trailer voice, saved in your *SWRV OTG SITE* collection |
+| Voice | **Brian** (`6F5Zhi321D3Oq7v1oNT4`) | Deep cinematic trailer voice, saved in your *SWRV OTG SITE* collection |
 | Model | `eleven_multilingual_v2` | Higher quality than v1 |
 | Speed | `0.72` | Slow, deliberate, weighted pacing |
 | Stability | `0.22` | Low = expressive, dramatic — not robotic |
-| Similarity boost | `0.92` | Stays true to Hank's natural deep timbre |
+| Similarity boost | `0.92` | Stays true to Brian's natural deep timbre |
 | Style | `0.60` | Maximum cinematic gravitas |
 | Speaker boost | `true` | Punchier, more present |
 
-Hank is already saved in your **SWRV OTG SITE** ElevenLabs collection, so your API key can call him directly — no extra dashboard step needed.
+Brian is already saved in your **SWRV OTG SITE** ElevenLabs collection, so your API key can call him directly — no extra dashboard step needed.
 
 ---
 
@@ -162,4 +162,4 @@ Run it: `ELEVENLABS_API_KEY=sk_xxx node scripts/audition-voices.mjs`. Listen to 
 2. `cp .env.example .env`, then paste new key into `.env`
 3. `node --env-file=.env scripts/generate-narration.mjs`
 4. `git add public/audio/ && git commit && git push`
-5. Done. Hank's voice plays on every device.
+5. Done. Brian's voice plays on every device.

@@ -12,7 +12,7 @@ if (!API) {
 const TEXT = 'Every journey. Has roadblocks. They come for everyone. No matter how prepared. No matter how talented. No matter how driven you are. No exceptions.';
 
 const CANDIDATES = [
-  { id: '6F5Zhi321D3Oq7v1oNT4', name: 'Hank', desc: 'Hank — current default (in SWRV OTG SITE collection)' },
+  { id: '6F5Zhi321D3Oq7v1oNT4', name: 'Hank', desc: 'Hank — paid voice, requires ElevenLabs Starter plan' },
   { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian-deep', desc: 'Brian — max depth + slowed' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam-deep',  desc: 'Adam  — max depth + slowed' },
   { id: 'pqHfZKP75CvOlQylNhV4', name: 'Bill-deep',  desc: 'Bill  — max depth + slowed' },

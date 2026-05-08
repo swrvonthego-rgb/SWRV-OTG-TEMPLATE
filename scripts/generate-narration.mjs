@@ -1,6 +1,6 @@
 /**
  * SWRV Brand Transmission — Narration Generator
- * Uses voice: Hank (ID nPczCjzI2devNBz1zQrb) from your 'SWRV OTG SITE' collection
+ * Uses voice: Brian (ID nPczCjzI2devNBz1zQrb) — premade, free-tier
  *
  * Run once:
  *   ELEVENLABS_API_KEY=sk_... node scripts/generate-narration.mjs
@@ -107,12 +107,4 @@ async function generate(i, text) {
 
   console.log('\n✅  All 7 files generated in public/audio/');
   console.log('   Open http://localhost:3002/brand-transmission.html\n');
-})().catch((err) => {
-  console.error('\n══════════════════════════════════════════════════════');
-  console.error('❌  FATAL: Narration generation failed');
-  console.error('══════════════════════════════════════════════════════');
-  console.error('Error:', err && err.message ? err.message : String(err));
-  if (err && err.stack) console.error('\nStack:\n' + err.stack);
-  console.error('══════════════════════════════════════════════════════\n');
-  process.exit(1);
-});
+})();
