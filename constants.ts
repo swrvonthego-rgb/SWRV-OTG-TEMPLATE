@@ -3,8 +3,8 @@ import { Service, Question, NavItem, ExecutionService } from './types';
 export const SERVICES: Service[] = [
   {
     title: "Brand Planning",
-    description: "Map your vision roadmap. AI helps clarify your path, then we support you in executing it with power and passion.",
-    icon: "Briefcase"
+    description: "Blueprint Your Vision — an interactive 5-minute experience to map your gift, your work, your purpose, and your brand identity. AI guides you through your Day in the Happily Ever After and reveals your Roadmap.",
+    icon: "Compass"
   },
   {
     title: "Artist Development",

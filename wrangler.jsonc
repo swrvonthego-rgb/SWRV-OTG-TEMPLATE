@@ -1,14 +1,30 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "swrv-otg-template",
+  "main": "src/worker.js",
   "compatibility_date": "2026-05-07",
-  "observability": {
-    "enabled": true
-  },
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
   "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
+
+  // ─────────────────────────────────────────────────────────
+  // KV namespace for "finish later" persistence.
+  // To enable: Cloudflare Dashboard → Workers & Pages → KV →
+  //   Create namespace "swrv_progress" → copy the ID below.
+  // Until then, this binding is commented out and the worker
+  // returns {status: "skipped"} for /api/save-progress (no harm).
+  // ─────────────────────────────────────────────────────────
+  // "kv_namespaces": [
+  //   { "binding": "PROGRESS", "id": "<paste-namespace-id-here>" }
+  // ],
+
+  // Email "from" address (non-secret). Add as plaintext var if/when
+  // you wire up Resend. Reasonable default in code.
+  "vars": {
+    "EMAIL_FROM": "SWRV <hello@swrvonthego.pro>"
+  }
 }
