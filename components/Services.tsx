@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Database, Globe, FileText, CheckCircle, ArrowRight, Mic, BookOpen, Shield, Star, Briefcase, Music } from 'lucide-react';
+import React from 'react';
+import { Database, Globe, FileText, CheckCircle, ArrowRight, Mic, BookOpen, Shield, Star, Briefcase, Music, Compass, Sparkles } from 'lucide-react';
 import { SERVICES } from '../constants';
-import { VisionRoadmapBuilder } from './VisionRoadmapBuilder';
 
 const IconMap: Record<string, React.ReactNode> = {
   "Database": <Mic size={40} strokeWidth={1.5} />,
@@ -9,12 +8,11 @@ const IconMap: Record<string, React.ReactNode> = {
   "FileText": <BookOpen size={40} strokeWidth={1.5} />,
   "CheckCircle": <Shield size={40} strokeWidth={1.5} />,
   "Briefcase": <Briefcase size={40} strokeWidth={1.5} />,
+  "Compass": <Compass size={40} strokeWidth={1.5} />,
   "Music": <Music size={40} strokeWidth={1.5} />
 };
 
-export const Services: React.FC = () => {
-  const [isVisionRoadmapOpen, setIsVisionRoadmapOpen] = useState(false);
-
+export const Services: React.FC<{ onOpenRoadmap?: () => void }> = ({ onOpenRoadmap }) => {
   return (
     <>
     <section id="ecosystem" className="py-24 bg-white">
@@ -75,10 +73,66 @@ export const Services: React.FC = () => {
             </div>
           </div>
         </div>
-        {/* Services Grid */}
+        {/* ──────────────────────────────────────────────────────────
+            FEATURED EXPERIENCE — Blueprint Your Vision (The Roadmap)
+            This is the interactive Roadmap module, surfaced as the
+            tentpole of the Services section. Clicks launch the
+            full-screen Roadmap experience.
+            ────────────────────────────────────────────────────────── */}
+        <button
+          type="button"
+          onClick={() => onOpenRoadmap?.()}
+          className="group relative block w-full text-left mb-12 rounded-2xl overflow-hidden border-2 border-lion-orange/30 hover:border-lion-orange transition-all duration-500 bg-gradient-to-br from-[#0a0805] via-[#1a0f08] to-[#0a0805] hover:shadow-[0_20px_80px_-20px_rgba(196,146,58,0.5)]"
+        >
+          {/* Subtle grain texture overlay */}
+          <div
+            className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")",
+            }}
+          />
+          {/* Warm radial glow on hover */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 50%, rgba(196,146,58,0.15), transparent 60%)' }} />
+
+          <div className="relative z-10 grid md:grid-cols-5 gap-8 p-8 md:p-12 items-center">
+            {/* Left: copy */}
+            <div className="md:col-span-3">
+              <div className="flex items-center gap-3 mb-5">
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-lion-orange/10 border border-lion-orange/40 rounded-sm">
+                  <Sparkles size={12} className="text-lion-orange" />
+                  <span className="text-lion-orange text-[10px] font-bold tracking-[0.25em] uppercase">Live · Interactive Experience</span>
+                </span>
+                <span className="text-white/40 text-[10px] tracking-[0.2em] uppercase">≈ 5 min</span>
+              </div>
+              <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-3" style={{ fontFamily: 'Playfair Display, Inter, serif' }}>
+                Blueprint <em className="text-lion-orange not-italic" style={{ fontStyle: 'italic' }}>Your Vision.</em>
+              </h3>
+              <p className="text-white/60 text-base md:text-lg leading-relaxed mb-7 max-w-xl" style={{ fontFamily: 'Cormorant Garamond, Inter, serif' }}>
+                A guided experience to map your gift, your work, your purpose, and your brand identity. AI walks you through your Day in the Happily Ever After — and reveals your Roadmap.
+              </p>
+              <span className="inline-flex items-center gap-3 text-lion-orange font-bold text-sm tracking-[0.18em] uppercase border-b border-lion-orange/40 pb-1 group-hover:border-lion-orange group-hover:gap-5 transition-all duration-300">
+                Launch The Roadmap <ArrowRight size={16} />
+              </span>
+            </div>
+
+            {/* Right: compass icon orb */}
+            <div className="md:col-span-2 flex items-center justify-center">
+              <div className="relative w-40 h-40 md:w-52 md:h-52">
+                <div className="absolute inset-0 rounded-full border border-lion-orange/30 animate-pulse" style={{ animationDuration: '3s' }} />
+                <div className="absolute inset-3 rounded-full border border-lion-orange/20 animate-pulse" style={{ animationDuration: '3s', animationDelay: '0.5s' }} />
+                <div className="absolute inset-6 rounded-full border border-lion-orange/15 animate-pulse" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+                <div className="absolute inset-0 flex items-center justify-center text-lion-orange group-hover:rotate-180 transition-transform duration-1000 ease-out">
+                  <Compass size={64} strokeWidth={1.25} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </button>
+
+        {/* Services Grid — everything except Brand Planning (featured above) */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {SERVICES.map((service, idx) => {
-            const isBrandPlanning = service.title === "Brand Planning";
+          {SERVICES.filter(s => s.title !== "Brand Planning").map((service, idx) => {
             const isArtistDev = service.title === "Artist Development";
             const isBYOB = service.title === "BYOB Training";
             const isAuthorship = service.title === "Authorship";
@@ -87,19 +141,18 @@ export const Services: React.FC = () => {
             const href = isBYOB ? "https://trainbyob.me" : isAuthorship ? "https://swrvbirdsong.netlify.app/#books" : isPodcast ? "https://swrvbirdsong.netlify.app/#podcast" : `#${service.title.toLowerCase().replace(/\s+/g, '-')}`;
             return (
               <div
-                key={idx} 
-                className={`relative border-b border-gray-200 pb-8 transition-colors duration-300 block ${isBrandPlanning || isArtistDev ? 'cursor-not-allowed select-none' : 'group cursor-pointer hover:border-lion-orange'}`}
-                onClick={() => !isBrandPlanning && !isArtistDev && isBrandPlanning && setIsVisionRoadmapOpen(true)}
+                key={idx}
+                className={`relative border-b border-gray-200 pb-8 transition-colors duration-300 block ${isArtistDev ? 'cursor-not-allowed select-none' : 'group cursor-pointer hover:border-lion-orange'}`}
               >
-                {(isBrandPlanning || isArtistDev) && (
+                {isArtistDev && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                     <div className="rotate-[-20deg] border-4 border-lion-orange/70 px-5 py-2 opacity-80">
                       <span className="text-lion-orange text-sm font-black tracking-[0.3em] uppercase">Coming Soon</span>
                     </div>
                   </div>
                 )}
-                {!isBrandPlanning && !isArtistDev ? (
-                  <a 
+                {!isArtistDev ? (
+                  <a
                     href={href}
                     target={isExternal ? "_blank" : "_self"}
                     rel={isExternal ? "noopener noreferrer" : ""}
@@ -143,10 +196,6 @@ export const Services: React.FC = () => {
       </div>
     </section>
 
-    <VisionRoadmapBuilder
-      isOpen={isVisionRoadmapOpen}
-      onClose={() => setIsVisionRoadmapOpen(false)}
-    />
     </>
   );
 };

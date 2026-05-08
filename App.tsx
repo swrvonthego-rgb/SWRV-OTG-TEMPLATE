@@ -5,15 +5,25 @@ import { Hero } from './components/Hero';
 import { Services } from './components/Services';
 import { Stats } from './components/Stats';
 import { Footer } from './components/Footer';
-import { VisionRoadmapBuilder } from './components/VisionRoadmapBuilder';
 import { Play, X } from 'lucide-react';
 import { BrandTransmission } from './components/BrandTransmission';
 import { WebPackages } from './components/WebPackages';
 import { AboutSWRV } from './components/AboutSWRV';
 import { ContactSchedule } from './components/ContactSchedule';
 
+// ── NEW: Unified Roadmap experience module ──────────────────
+// Replaces the old VisionRoadmapBuilder modal. This is the
+// merged version of:
+//   - The standalone Vercel Roadmap (the visual + UX gold)
+//   - VisionRoadmapBuilder.tsx (the integration pattern)
+//   - The Workbook content (planned for Layer 2)
+//
+// Lives in /modules/roadmap/ and is fully config-driven so the
+// same module can be dropped into any client ecosystem.
+import { Roadmap } from './modules/roadmap/Roadmap';
+
 const App: React.FC = () => {
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
 
@@ -53,25 +63,26 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-white font-sans text-lion-black">
       <Header />
-      
+
       <main>
         <SecondaryIntro skipIntro={skipIntro} />
-        <Hero 
-          onOpenConsultation={() => setIsWizardOpen(true)} 
+        <Hero
+          onOpenConsultation={() => setIsRoadmapOpen(true)}
         />
         <BrandTransmission />
         <AboutSWRV />
-        <Services />
+        <Services onOpenRoadmap={() => setIsRoadmapOpen(true)} />
         <WebPackages />
         <Stats />
         <ContactSchedule />
       </main>
 
       <Footer />
-      
-      <VisionRoadmapBuilder 
-        isOpen={isWizardOpen} 
-        onClose={() => setIsWizardOpen(false)} 
+
+      {/* The Roadmap — full-screen takeover overlay */}
+      <Roadmap
+        isOpen={isRoadmapOpen}
+        onClose={() => setIsRoadmapOpen(false)}
       />
     </div>
   );
