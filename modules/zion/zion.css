@@ -1,16 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;.zion-page 1&family=DM+Sans:wght@300;400;500&display=swap');
-@import "tailwindcss";
+/* ════════════════════════════════════════════════════════
+   ZION SWRV BIRDSONG — artist page (overlay mode)
+   Scoped under .zion-page so it never leaks to host site.
+═══════════════════════════════════════════════════════ */
 
-@theme{
-  --color-gold: #C8A84B;
+/* Theme variables (from original @theme block) */
+.zion-page {
+--color-gold: #C8A84B;
   --color-gold-light: #E8C96A;
   --color-deep: #0A0804;
   --color-warm-dark: #110E07;
   --color-mid: #1C1810;
   --color-text: #EDE8DC;
   --color-muted: #8A8070;
-  --color-accent: #D4572A;
+  --color-accent: #D4572A;}
+
+/* Overlay positioning so Zion takes over the screen on top of OTG */
+.zion-page {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--color-deep);
 }
+
+
+
 
 .zion-page *, .zion-page *::before, .zion-page *::after{ box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -707,17 +722,4 @@
   .zion-page #music .section-body + div{ grid-template-columns: 1fr !important; }
   .zion-page #podcast > div{ grid-template-columns: 1fr !important; }
   .zion-page .ecosystem-bar{ flex-direction: column; text-align: center; }
-}
-
-/* ════════════════════════════════════════════════════════
-   OVERLAY MODE — Zion is loaded as a full-screen overlay
-   inside the host SWRV OTG site.
-═══════════════════════════════════════════════════════ */
-.zion-page{
-  position:fixed;
-  inset:0;
-  z-index:9998;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  background:var(--color-bg, #0a0a0a);
 }

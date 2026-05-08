@@ -816,6 +816,10 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           <button type="button" className="btn-primary" onClick={goToEmail}>
             {config.copy.introCta}
           </button>
+
+          <p className="intro-vibe-hint">
+            <span aria-hidden="true">⤴︎</span>  Tap the speaker to pick your music · Tap the palette to choose your world
+          </p>
         </div>
       </section>
 
