@@ -22,9 +22,11 @@ import { ContactSchedule } from './components/ContactSchedule';
 // Lives in /modules/roadmap/ and is fully config-driven so the
 // same module can be dropped into any client ecosystem.
 import { Roadmap } from './modules/roadmap/Roadmap';
+import { Zion } from './modules/zion/Zion';
 
 const App: React.FC = () => {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
+  const [isZionOpen, setIsZionOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
 
@@ -72,7 +74,7 @@ const App: React.FC = () => {
         />
         <BrandTransmission />
         <AboutSWRV />
-        <Services onOpenRoadmap={() => setIsRoadmapOpen(true)} />
+        <Services onOpenRoadmap={() => setIsRoadmapOpen(true)} onOpenZion={() => setIsZionOpen(true)} />
         <WebPackages />
         <Stats />
         <ShopSWERVE />
@@ -85,6 +87,12 @@ const App: React.FC = () => {
       <Roadmap
         isOpen={isRoadmapOpen}
         onClose={() => setIsRoadmapOpen(false)}
+      />
+
+      {/* Zion SWRV Birdsong — artist page overlay */}
+      <Zion
+        isOpen={isZionOpen}
+        onClose={() => setIsZionOpen(false)}
       />
     </div>
   );
