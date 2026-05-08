@@ -4,6 +4,7 @@ import { SecondaryIntro } from './components/SecondaryIntro';
 import { Hero } from './components/Hero';
 import { Services } from './components/Services';
 import { Stats } from './components/Stats';
+import { ShopSWERVE } from './components/ShopSWERVE';
 import { Footer } from './components/Footer';
 import { Play, X } from 'lucide-react';
 import { BrandTransmission } from './components/BrandTransmission';
@@ -74,6 +75,7 @@ const App: React.FC = () => {
         <Services onOpenRoadmap={() => setIsRoadmapOpen(true)} />
         <WebPackages />
         <Stats />
+        <ShopSWERVE />
         <ContactSchedule />
       </main>
 
