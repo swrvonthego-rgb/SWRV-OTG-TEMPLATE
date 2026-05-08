@@ -1,8 +1,5 @@
 name: Generate Narration MP3s
 
-# Calls ElevenLabs (using the ELEVENLABS_API_KEY secret) and regenerates
-# the 7 Brand Transmission narration MP3s with Hank.
-
 on:
   workflow_dispatch:
     inputs:
@@ -19,13 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # Try several common secret-name variants. Whichever is set wins.
-      - name: Resolve API key from secret (any of several names)
+      - name: Resolve API key from secret
         id: key
         env:
           K1: ${{ secrets.ELEVENLABS_API_KEY }}
@@ -33,60 +28,50 @@ jobs:
           K3: ${{ secrets.ELEVENLABS_KEY }}
           K4: ${{ secrets.ELEVENLABS }}
         run: |
-          KEY=""
-          NAME=""
           for v in K1 K2 K3 K4; do
             VAL="${!v}"
             if [ -n "$VAL" ]; then
-              KEY="$VAL"
-              case $v in
-                K1) NAME="ELEVENLABS_API_KEY" ;;
-                K2) NAME="ELEVEN_LABS_API_KEY" ;;
-                K3) NAME="ELEVENLABS_KEY" ;;
-                K4) NAME="ELEVENLABS" ;;
-              esac
-              break
+              echo "::add-mask::$VAL"
+              echo "key=$VAL" >> "$GITHUB_OUTPUT"
+              echo "✓ Found secret (length: ${#VAL}, prefix: ${VAL:0:4}…)"
+              exit 0
             fi
           done
-          if [ -z "$KEY" ]; then
-            echo "::error::No ElevenLabs API key secret found. Looked for: ELEVENLABS_API_KEY, ELEVEN_LABS_API_KEY, ELEVENLABS_KEY, ELEVENLABS."
-            echo "::error::Add one in: Settings → Secrets and variables → Actions → New repository secret"
-            exit 1
-          fi
-          echo "✓ Found secret named: $NAME (length: ${#KEY})"
-          # Pass the key forward via masked output
-          echo "::add-mask::$KEY"
-          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+          echo "::error::No ElevenLabs API key secret found."
+          exit 1
 
-      - name: Generate narration MP3s
+      - name: Generate narration MP3s (capturing all output)
         env:
           ELEVENLABS_API_KEY: ${{ steps.key.outputs.key }}
         run: |
           set +e
-          node scripts/generate-narration.mjs 2>&1
-          STATUS=$?
+          node scripts/generate-narration.mjs 2>&1 | tee /tmp/script.log
+          STATUS=${PIPESTATUS[0]}
           set -e
+          echo ""
+          echo "── SCRIPT EXIT STATUS: $STATUS ──"
           if [ $STATUS -ne 0 ]; then
             echo ""
-            echo "::error::Narration generator exited with status $STATUS."
-            echo "::error::Common causes:"
-            echo "::error::  1. Voice ID 6F5Zhi321D3Oq7v1oNT4 (Hank) not saved to your ElevenLabs account."
-            echo "::error::     → Open the voice in your ElevenLabs library and click 'Add to my voices'."
-            echo "::error::  2. API key revoked or invalid."
-            echo "::error::  3. Free-tier quota exceeded (10,000 chars/month)."
+            echo "::group::Last 40 lines of script output (errors below)"
+            tail -40 /tmp/script.log
+            echo "::endgroup::"
+            # Surface the most relevant error lines as annotations
+            grep -iE "error|fail|invalid|unauthor|not found|quota|rate" /tmp/script.log | tail -10 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
             exit $STATUS
           fi
 
       - name: Show generated files
         run: ls -la public/audio/
 
-      - name: Commit and push generated audio
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/audio/
           if git diff --staged --quiet; then
-            echo "No changes — MP3s already up to date."
+            echo "No changes."
           else
             git commit -m "🎙 Regenerate narration MP3s — ${{ github.event.inputs.reason }}"
             git push
