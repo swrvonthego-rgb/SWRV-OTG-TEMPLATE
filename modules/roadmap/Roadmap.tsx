@@ -202,6 +202,19 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
   }, [theme, activeThemeMeta, firstGestureDone, musicMuted]);
 
+  // ── Mic ↔ Music conflict: pause music while mic is recording ──
+  // Speech recognition gets confused by music coming through speakers.
+  // We pause the audio when mic starts, resume when mic stops.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !activeThemeMeta.audio) return;
+    if (mic.isListening) {
+      audio.pause();
+    } else if (firstGestureDone && !musicMuted) {
+      audio.play().catch(() => { /* autoplay blocked */ });
+    }
+  }, [mic.isListening, activeThemeMeta.audio, firstGestureDone, musicMuted]);
+
   // ── Click outside skin panel to close it ─────────────────
   useEffect(() => {
     if (!skinPanelOpen) return;
