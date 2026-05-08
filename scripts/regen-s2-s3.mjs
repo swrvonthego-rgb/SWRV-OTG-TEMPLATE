@@ -23,7 +23,7 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const VOICE_ID = '6F5Zhi321D3Oq7v1oNT4'; // Hank — Zion's chosen narrator (saved in 'SWRV OTG SITE' collection)
+const VOICE_ID = 'nPczCjzI2devNBz1zQrb'; // Hank — Zion's chosen narrator (saved in 'SWRV OTG SITE' collection)
 const MODEL_ID = 'eleven_multilingual_v2';
 
 const TARGETS = [

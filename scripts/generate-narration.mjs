@@ -1,6 +1,6 @@
 /**
  * SWRV Brand Transmission — Narration Generator
- * Uses voice: Hank (ID 6F5Zhi321D3Oq7v1oNT4) from your 'SWRV OTG SITE' collection
+ * Uses voice: Hank (ID nPczCjzI2devNBz1zQrb) from your 'SWRV OTG SITE' collection
  *
  * Run once:
  *   ELEVENLABS_API_KEY=sk_... node scripts/generate-narration.mjs
@@ -25,8 +25,8 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// Hank — your chosen narrator from the 'SWRV OTG SITE' collection
-const VOICE_ID = '6F5Zhi321D3Oq7v1oNT4';
+// Brian — deep, resonant American narrator (premade, free-tier)
+const VOICE_ID = 'nPczCjzI2devNBz1zQrb';
 const MODEL_ID = 'eleven_multilingual_v2';
 
 // Exact narration text matching the scenes in brand-transmission.html
@@ -95,7 +95,7 @@ async function generate(i, text) {
 
 (async () => {
   console.log('\n🎙  SWRV Brand Transmission — Narration Generator');
-  console.log("   Voice: Hank (from your 'SWRV OTG SITE' collection)");
+  console.log("   Voice: Brian (premade, deep cinematic American narrator)");
   console.log('   Speed: 0.72 — slow, deliberate, cinematic\n');
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
