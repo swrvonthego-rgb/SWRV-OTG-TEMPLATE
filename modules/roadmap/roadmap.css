@@ -736,3 +736,89 @@
 @media print{
   .roadmap-experience .rm-close{display:none!important;}
 }
+
+/* ════════════════════════════════════════════════════════
+   MUSIC PANEL — track picker + loop + play/pause
+═══════════════════════════════════════════════════════ */
+.roadmap-experience .music-panel{position:fixed;top:70px;right:74px;z-index:499;
+  background:var(--bg-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border-strong);border-radius:14px;padding:14px;width:230px;
+  opacity:0;pointer-events:none;transform:translateY(-8px) scale(.96);
+  transition:opacity .25s,transform .25s;
+  box-shadow:0 18px 60px rgba(0,0,0,0.5);}
+.roadmap-experience .music-panel.open{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}
+.roadmap-experience .music-panel-title{font-family:var(--font-body);font-size:9px;
+  letter-spacing:.18em;color:var(--ink-mute);text-transform:uppercase;
+  margin-bottom:10px;padding:0 4px;}
+.roadmap-experience .music-current{font-family:var(--font-italic);font-style:italic;
+  font-size:14px;color:var(--accent-2);padding:8px 10px;margin-bottom:8px;
+  border:1px solid var(--accent-mid);border-radius:8px;background:var(--accent-soft);}
+.roadmap-experience .music-tracks{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.roadmap-experience .music-track{display:flex;flex-direction:column;padding:8px 10px;
+  border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .2s;}
+.roadmap-experience .music-track:hover{background:var(--accent-soft);}
+.roadmap-experience .music-track.active{background:var(--accent-soft);border-color:var(--accent-mid);}
+.roadmap-experience .music-track-name{font-family:var(--font-body);font-size:12px;
+  font-weight:600;color:var(--ink-bright);}
+.roadmap-experience .music-track-vibe{font-family:var(--font-body);font-size:10px;
+  color:var(--ink-mute);margin-top:2px;}
+.roadmap-experience .music-controls{display:flex;justify-content:center;gap:8px;
+  margin-bottom:10px;padding-top:8px;border-top:1px solid var(--border);}
+.roadmap-experience .music-ctrl-btn{width:34px;height:34px;border-radius:50%;
+  background:transparent;border:1px solid var(--border-strong);color:var(--ink-base);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all .2s;font-family:var(--font-body);}
+.roadmap-experience .music-ctrl-btn:hover{border-color:var(--accent-1);color:var(--accent-1);}
+.roadmap-experience .music-ctrl-btn.primary{width:42px;height:42px;
+  background:var(--accent-1);color:var(--bg-deep);border-color:var(--accent-1);
+  font-size:13px;}
+.roadmap-experience .music-ctrl-btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2);}
+.roadmap-experience .music-loop{display:flex;align-items:center;gap:8px;padding:6px 4px;
+  font-family:var(--font-body);font-size:11px;color:var(--ink-base);cursor:pointer;
+  user-select:none;}
+.roadmap-experience .music-loop input{accent-color:var(--accent-1);width:14px;height:14px;}
+
+/* ════════════════════════════════════════════════════════
+   DURATION SCREEN — 5 / 10 / no limit
+═══════════════════════════════════════════════════════ */
+.roadmap-experience #screen-duration{align-items:center;justify-content:center;
+  background:var(--bg-mid);background-image:var(--sig-bg-pattern);}
+.roadmap-experience .duration-box{max-width:560px;margin:0 auto;padding:60px 28px;text-align:center;}
+.roadmap-experience .duration-options{display:flex;gap:16px;flex-wrap:wrap;
+  justify-content:center;margin-top:32px;}
+.roadmap-experience .duration-btn{flex:1 1 140px;min-width:140px;max-width:170px;
+  background:var(--bg-soft);border:1px solid var(--border-strong);border-radius:8px;
+  padding:24px 12px;cursor:pointer;transition:all .25s;color:var(--ink-base);
+  display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--font-body);}
+.roadmap-experience .duration-btn:hover{border-color:var(--accent-1);
+  background:var(--accent-soft);transform:translateY(-2px);
+  box-shadow:0 12px 40px var(--accent-soft);}
+.roadmap-experience .duration-num{font-family:var(--font-display);font-size:46px;
+  font-weight:600;color:var(--accent-2);line-height:1;}
+.roadmap-experience .duration-unit{font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-base);}
+.roadmap-experience .duration-vibe{font-family:var(--font-italic);font-style:italic;
+  font-size:13px;color:var(--ink-mute);margin-top:4px;}
+
+/* ════════════════════════════════════════════════════════
+   VISION TIMER
+═══════════════════════════════════════════════════════ */
+.roadmap-experience .vision-timer{font-family:var(--font-body);font-size:13px;
+  font-weight:600;letter-spacing:.04em;color:var(--accent-2);
+  background:var(--accent-soft);padding:5px 11px;border-radius:14px;
+  border:1px solid var(--accent-mid);}
+.roadmap-experience .vision-timer.urgent{color:#ff6b6b;border-color:#ff6b6b;
+  background:rgba(255,107,107,.08);animation:pulseUrgent 1s infinite;}
+@keyframes pulseUrgent{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+/* ════════════════════════════════════════════════════════
+   MOBILE ADJUSTMENTS for new components
+═══════════════════════════════════════════════════════ */
+@media(max-width:600px){
+  .roadmap-experience .music-panel{right:10px;top:64px;width:calc(100vw - 84px);max-width:240px;}
+  .roadmap-experience .duration-options{flex-direction:column;align-items:center;}
+  .roadmap-experience .duration-btn{width:100%;max-width:240px;}
+}
+@media print{
+  .roadmap-experience .music-panel,.roadmap-experience #screen-duration{display:none!important;}
+}

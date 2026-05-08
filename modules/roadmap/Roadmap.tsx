@@ -24,10 +24,11 @@ export interface RoadmapProps {
 
 const PROGRESS_PCT: Record<ScreenId, number> = {
   intro: 0,
-  disclaimer: 20,
-  vision: 40,
-  email: 55,
-  processing: 70,
+  email: 14,
+  disclaimer: 28,
+  duration: 42,
+  vision: 56,
+  processing: 78,
   results: 100,
 };
 
@@ -118,14 +119,38 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [musicMuted, setMusicMuted] = useState<boolean>(() => ls.get('roadmap-music-muted') === '1');
   const [firstGestureDone, setFirstGestureDone] = useState(false);
   const [nowPlaying, setNowPlaying] = useState<string | null>(null);
+  // Music player panel — replaces the simple mute-toggle on the speaker icon
+  const [musicPanelOpen, setMusicPanelOpen] = useState(false);
+  const [manualTrackId, setManualTrackId] = useState<Theme | null>(() => {
+    const stored = ls.get('roadmap-manual-track');
+    return stored && VALID_THEMES.includes(stored as Theme) ? (stored as Theme) : null;
+  });
+  const [loop, setLoop] = useState<boolean>(() => ls.get('roadmap-music-loop') !== '0');
   const audioRef = useRef<HTMLAudioElement>(null);
   const nowPlayingTimerRef = useRef<number | null>(null);
+
+  // ── Vision session timer (5 min / 10 min / no limit) ─────
+  const [sessionDuration, setSessionDuration] = useState<5 | 10 | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null); // seconds
+
+  // ── Session persistence (finish-later) ───────────────────
+  // Each session gets a stable ID so progress can be saved/restored.
+  // Stored in localStorage; if KV binding is configured on the worker,
+  // /api/save-progress and /api/load-progress also persist server-side.
+  const sessionIdRef = useRef<string>('');
+  if (!sessionIdRef.current) {
+    const existing = ls.get('roadmap-session-id');
+    sessionIdRef.current = existing || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    if (!existing) ls.set('roadmap-session-id', sessionIdRef.current);
+  }
 
   // ── Refs ─────────────────────────────────────────────────
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const skinPanelRef = useRef<HTMLDivElement>(null);
   const skinToggleRef = useRef<HTMLButtonElement>(null);
+  const musicPanelRef = useRef<HTMLDivElement>(null);
+  const musicToggleRef = useRef<HTMLButtonElement>(null);
 
   // ── Speech recognition ───────────────────────────────────
   const handleTranscript = useCallback((appendFinal: string, interim: string) => {
@@ -151,10 +176,19 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const litPills = useMemo(() => detectLitPills(effectiveVision), [effectiveVision]);
   const words = useMemo(() => wordCount(effectiveVision), [effectiveVision]);
 
-  // ── Active theme metadata ────────────────────────────────
+  // ── Active track metadata (manual override > theme default) ────
   const activeThemeMeta = useMemo(
     () => config.themes.find((t) => t.id === theme) ?? config.themes[0],
     [config.themes, theme],
+  );
+  const effectiveTrack = useMemo(() => {
+    const trackThemeId = manualTrackId ?? theme;
+    return config.themes.find((t) => t.id === trackThemeId)?.audio ?? null;
+  }, [config.themes, manualTrackId, theme]);
+  // List of tracks that have audio (for the music panel)
+  const tracksWithAudio = useMemo(
+    () => config.themes.filter((t) => t.audio !== null),
+    [config.themes],
   );
 
   // ── Progress bar ─────────────────────────────────────────
@@ -174,14 +208,13 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  // ── Persist theme + apply audio track on theme change ───
+  // ── Persist theme + apply audio track on change ────────
   useEffect(() => {
     ls.set('roadmap-skin', theme);
     const audio = audioRef.current;
     if (!audio) return;
 
-    const trackConfig = activeThemeMeta.audio;
-    if (!trackConfig) {
+    if (!effectiveTrack) {
       audio.pause();
       audio.removeAttribute('src');
       audio.load();
@@ -190,43 +223,50 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
 
     // Swap source if different
-    if (audio.src !== trackConfig.url) {
-      audio.src = trackConfig.url;
+    if (audio.src !== effectiveTrack.url) {
+      audio.src = effectiveTrack.url;
       audio.volume = 0.45;
     }
 
     if (firstGestureDone && !musicMuted) {
       audio.play()
-        .then(() => announceTrack(trackConfig.name))
+        .then(() => announceTrack(effectiveTrack.name))
         .catch(() => { /* autoplay blocked — wait for next gesture */ });
     }
-  }, [theme, activeThemeMeta, firstGestureDone, musicMuted]);
+  }, [theme, effectiveTrack, firstGestureDone, musicMuted]);
+
+  // Persist loop & manual track choices
+  useEffect(() => { ls.set('roadmap-music-loop', loop ? '1' : '0'); }, [loop]);
+  useEffect(() => {
+    if (manualTrackId) ls.set('roadmap-manual-track', manualTrackId);
+  }, [manualTrackId]);
 
   // ── Mic ↔ Music conflict: pause music while mic is recording ──
-  // Speech recognition gets confused by music coming through speakers.
-  // We pause the audio when mic starts, resume when mic stops.
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !activeThemeMeta.audio) return;
+    if (!audio || !effectiveTrack) return;
     if (mic.isListening) {
       audio.pause();
     } else if (firstGestureDone && !musicMuted) {
       audio.play().catch(() => { /* autoplay blocked */ });
     }
-  }, [mic.isListening, activeThemeMeta.audio, firstGestureDone, musicMuted]);
+  }, [mic.isListening, effectiveTrack, firstGestureDone, musicMuted]);
 
-  // ── Click outside skin panel to close it ─────────────────
+  // ── Click outside skin/music panels to close them ────────
   useEffect(() => {
-    if (!skinPanelOpen) return;
+    if (!skinPanelOpen && !musicPanelOpen) return;
     const onDocClick = (e: MouseEvent) => {
       const t = e.target as Node;
       if (skinPanelRef.current?.contains(t)) return;
       if (skinToggleRef.current?.contains(t)) return;
+      if (musicPanelRef.current?.contains(t)) return;
+      if (musicToggleRef.current?.contains(t)) return;
       setSkinPanelOpen(false);
+      setMusicPanelOpen(false);
     };
     document.addEventListener('mousedown', onDocClick);
     return () => document.removeEventListener('mousedown', onDocClick);
-  }, [skinPanelOpen]);
+  }, [skinPanelOpen, musicPanelOpen]);
 
   // ── Toast helper ─────────────────────────────────────────
   const showToast = useCallback((msg: string) => {
@@ -244,16 +284,46 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
   }, []);
 
-  // ── Music toggle ─────────────────────────────────────────
-  const toggleMusic = useCallback(() => {
-    const audio = audioRef.current;
-    if (!activeThemeMeta.audio) {
-      showToast('No music for this skin yet — try a different world.');
+  // ── Music controls (panel) ───────────────────────────────
+  const playTrack = useCallback((trackThemeId: Theme) => {
+    setManualTrackId(trackThemeId);
+    setMusicMuted(false);
+    setFirstGestureDone(true);
+    ls.set('roadmap-music-muted', '0');
+  }, []);
+
+  const skipNext = useCallback(() => {
+    if (tracksWithAudio.length === 0) return;
+    const currentId = manualTrackId ?? theme;
+    const currentIdx = tracksWithAudio.findIndex((t) => t.id === currentId);
+    const nextIdx = (currentIdx + 1) % tracksWithAudio.length;
+    playTrack(tracksWithAudio[nextIdx].id);
+  }, [tracksWithAudio, manualTrackId, theme, playTrack]);
+
+  const skipPrev = useCallback(() => {
+    if (tracksWithAudio.length === 0) return;
+    const currentId = manualTrackId ?? theme;
+    const currentIdx = tracksWithAudio.findIndex((t) => t.id === currentId);
+    const prevIdx = (currentIdx - 1 + tracksWithAudio.length) % tracksWithAudio.length;
+    playTrack(tracksWithAudio[prevIdx].id);
+  }, [tracksWithAudio, manualTrackId, theme, playTrack]);
+
+  // Toggle music: clicking speaker icon now opens the panel.
+  // The panel itself has a play/pause button.
+  const toggleMusicPanel = useCallback(() => {
+    setMusicPanelOpen((o) => !o);
+    setSkinPanelOpen(false);
+  }, []);
+
+  const toggleMusicMute = useCallback(() => {
+    if (!effectiveTrack) {
+      showToast('No track for this skin yet — pick a different world or track.');
       return;
     }
     const next = !musicMuted;
     setMusicMuted(next);
     ls.set('roadmap-music-muted', next ? '1' : '0');
+    const audio = audioRef.current;
     if (!audio) return;
     if (next) {
       audio.pause();
@@ -261,24 +331,23 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     } else {
       setFirstGestureDone(true);
       audio.play()
-        .then(() => announceTrack(activeThemeMeta.audio!.name))
+        .then(() => announceTrack(effectiveTrack.name))
         .catch(() => { /* blocked */ });
     }
-  }, [activeThemeMeta, musicMuted, showToast, announceTrack]);
+  }, [effectiveTrack, musicMuted, showToast, announceTrack]);
 
   // ── First gesture (start music if not muted) ─────────────
   const startMusicOnFirstGesture = useCallback(() => {
     if (firstGestureDone || musicMuted) return;
     setFirstGestureDone(true);
     const audio = audioRef.current;
-    const cfg = activeThemeMeta.audio;
-    if (!audio || !cfg) return;
-    if (audio.src !== cfg.url) audio.src = cfg.url;
+    if (!audio || !effectiveTrack) return;
+    if (audio.src !== effectiveTrack.url) audio.src = effectiveTrack.url;
     audio.volume = 0.45;
     audio.play()
-      .then(() => announceTrack(cfg.name))
+      .then(() => announceTrack(effectiveTrack.name))
       .catch(() => { /* blocked */ });
-  }, [firstGestureDone, musicMuted, activeThemeMeta, announceTrack]);
+  }, [firstGestureDone, musicMuted, effectiveTrack, announceTrack]);
 
   // ── Navigation ───────────────────────────────────────────
   const goTo = useCallback((id: ScreenId) => {
@@ -304,7 +373,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     goTo('intro');
   }, [goTo, mic]);
 
-  const goToDisclaimer = useCallback(() => {
+  const goToEmail = useCallback(() => {
     if (!userName.trim()) {
       setNameError(true);
       window.setTimeout(() => setNameError(false), 2000);
@@ -312,8 +381,30 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       return;
     }
     startMusicOnFirstGesture();
-    goTo('disclaimer');
+    goTo('email');
   }, [userName, goTo, startMusicOnFirstGesture]);
+
+  // After email: go to disclaimer (skip allowed too)
+  const goToDisclaimerFromEmail = useCallback(
+    (skipEmail = false) => {
+      if (skipEmail) setUserEmail('');
+      goTo('disclaimer');
+    },
+    [goTo],
+  );
+
+  // After disclaimer: pick session duration
+  const selectDuration = useCallback(
+    (mins: 5 | 10 | null) => {
+      setSessionDuration(mins);
+      setTimeRemaining(mins === null ? null : mins * 60);
+      goTo('vision');
+    },
+    [goTo],
+  );
+
+  // Forward-ref so submitVision (defined first) can call proceedToProcess (defined later)
+  const proceedToProcessRef = useRef<(skipEmail: boolean) => void>(() => {});
 
   const submitVision = useCallback(() => {
     mic.stop();
@@ -323,8 +414,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       showToast('Paint the full picture — morning, work, evening, night.');
       return;
     }
-    goTo('email');
-  }, [words, mic, showToast, goTo]);
+    proceedToProcessRef.current(false);
+  }, [words, mic, showToast]);
 
   // ── API call ─────────────────────────────────────────────
   const callApi = useCallback(
@@ -407,7 +498,79 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     [config.copy.processingSteps.length, callApi, vision, goTo],
   );
 
-  // ── Save as text file ────────────────────────────────────
+  // Keep the ref pointing at the latest version
+  useEffect(() => { proceedToProcessRef.current = proceedToProcess; }, [proceedToProcess]);
+
+  // ── Vision timer countdown ───────────────────────────────
+  // Only ticks when the vision screen is active and a duration was set.
+  useEffect(() => {
+    if (screen !== 'vision' || timeRemaining === null) return;
+    if (timeRemaining <= 0) {
+      // Auto-submit if user has typed at least 30 words; otherwise gently nudge.
+      if (words >= 30) {
+        proceedToProcessRef.current(false);
+      } else {
+        showToast("Time's up — paint a fuller picture and we'll wrap when you're ready.");
+        setTimeRemaining(60); // give them another minute
+      }
+      return;
+    }
+    const t = window.setTimeout(() => setTimeRemaining((r) => (r === null ? null : r - 1)), 1000);
+    return () => window.clearTimeout(t);
+  }, [screen, timeRemaining, words, showToast]);
+
+  // ── Persistence: save progress to localStorage on each major step ──
+  // (If KV is configured on the worker, /api/save-progress will also persist
+  //  server-side via a fire-and-forget background save.)
+  useEffect(() => {
+    if (screen === 'intro') return;
+    const snapshot = {
+      sessionId: sessionIdRef.current,
+      screen,
+      userName,
+      userEmail,
+      vision,
+      sessionDuration,
+      result,
+      ts: Date.now(),
+    };
+    try {
+      localStorage.setItem('roadmap-progress', JSON.stringify(snapshot));
+    } catch { /* full or disabled */ }
+    // Best-effort server-side save (silent fail if endpoint not configured)
+    if (userEmail) {
+      fetch('/api/save-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(snapshot),
+      }).catch(() => { /* server-side persistence optional */ });
+    }
+  }, [screen, userName, userEmail, vision, sessionDuration, result]);
+
+  // ── Send results email after AI generation completes ─────
+  // Fire-and-forget. If RESEND_API_KEY isn't set on the worker, the worker
+  // returns a 200 with status=skipped and we just don't notify the user.
+  useEffect(() => {
+    if (!result || !userEmail) return;
+    fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: userEmail,
+        userName,
+        sessionId: sessionIdRef.current,
+        result,
+        brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.status === 'sent') {
+          showToast(`Roadmap also sent to ${userEmail} ✓`);
+        }
+      })
+      .catch(() => { /* silent — already showing on screen */ });
+  }, [result, userEmail, userName, config, showToast]);
   const handleSave = useCallback(() => {
     if (!result) return;
     const date = new Date().toLocaleDateString('en-US', {
@@ -482,13 +645,19 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  const hasMusic = !!activeThemeMeta.audio;
+  const hasMusic = !!effectiveTrack;
   const musicBtnClass = [
     'music-toggle',
     !hasMusic ? 'no-track' : '',
     musicMuted || !hasMusic ? 'muted' : '',
     hasMusic && !musicMuted && firstGestureDone ? 'playing' : '',
   ].filter(Boolean).join(' ');
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div
@@ -500,8 +669,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     >
       <div id="progress-bar" style={{ width: `${progress}%` }} />
 
-      {/* Background music — single audio element, source swapped per theme */}
-      <audio ref={audioRef} loop preload="none" crossOrigin="anonymous" />
+      {/* Background music — single audio element, source swapped per track */}
+      <audio ref={audioRef} loop={loop} preload="none" crossOrigin="anonymous" />
 
       {/* Now-playing pill (top center) */}
       <div id="now-playing" className={nowPlaying ? 'show' : ''}>
@@ -521,17 +690,55 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         </svg>
       </button>
 
-      {/* Music toggle (top-right area) */}
+      {/* Music toggle — clicking opens the music panel (track picker + loop + play/pause) */}
       <button
+        ref={musicToggleRef}
         type="button"
         className={musicBtnClass}
-        onClick={toggleMusic}
-        aria-label="Toggle music"
-        title={!hasMusic ? 'No music for this skin yet' : musicMuted ? 'Music off — tap to play' : 'Music on — tap to mute'}
+        onClick={toggleMusicPanel}
+        aria-label="Open music player"
+        title={!hasMusic ? 'No track for this skin yet' : musicMuted ? 'Music off — open player' : 'Music player'}
       >
         <svg className="icon-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
         <svg className="icon-off" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>
       </button>
+
+      {/* Music player panel */}
+      <div ref={musicPanelRef} className={`music-panel ${musicPanelOpen ? 'open' : ''}`}>
+        <div className="music-panel-title">Music</div>
+        <div className="music-current">
+          {effectiveTrack ? `♪  ${effectiveTrack.name}` : 'No track for this skin'}
+        </div>
+        {tracksWithAudio.length > 0 && (
+          <div className="music-tracks">
+            {tracksWithAudio.map((t) => {
+              const currentId = manualTrackId ?? theme;
+              const isActive = currentId === t.id;
+              return (
+                <div
+                  key={t.id}
+                  className={`music-track ${isActive ? 'active' : ''}`}
+                  onClick={() => playTrack(t.id)}
+                >
+                  <span className="music-track-name">{t.name}</span>
+                  <span className="music-track-vibe">{t.audio?.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div className="music-controls">
+          <button type="button" className="music-ctrl-btn" onClick={skipPrev} aria-label="Previous track" title="Previous">‹‹</button>
+          <button type="button" className="music-ctrl-btn primary" onClick={toggleMusicMute} aria-label={musicMuted ? 'Play' : 'Pause'}>
+            {musicMuted ? '▶' : '❚❚'}
+          </button>
+          <button type="button" className="music-ctrl-btn" onClick={skipNext} aria-label="Next track" title="Next">››</button>
+        </div>
+        <label className="music-loop">
+          <input type="checkbox" checked={loop} onChange={(e) => setLoop(e.target.checked)} />
+          <span>Loop current track</span>
+        </label>
+      </div>
 
       {/* Skin / theme switcher */}
       <button
@@ -602,11 +809,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
               spellCheck={false}
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') goToDisclaimer(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') goToEmail(); }}
             />
           </div>
 
-          <button type="button" className="btn-primary" onClick={goToDisclaimer}>
+          <button type="button" className="btn-primary" onClick={goToEmail}>
             {config.copy.introCta}
           </button>
         </div>
@@ -632,7 +839,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
             <button type="button" className="btn-ghost" onClick={() => goTo('intro')}>
               {config.copy.disclaimerBack}
             </button>
-            <button type="button" className="btn-primary" onClick={() => goTo('vision')}>
+            <button type="button" className="btn-primary" onClick={() => goTo('duration')}>
               {config.copy.disclaimerNext}
             </button>
           </div>
@@ -643,6 +850,14 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       <section id="screen-vision" className={`screen ${screen === 'vision' ? 'active' : ''}`}>
         <nav className="vision-nav">
           <span className="logo-mark" style={{ margin: 0 }}>The Roadmap</span>
+          {timeRemaining !== null && (
+            <span
+              className={`vision-timer ${timeRemaining <= 60 ? 'urgent' : ''}`}
+              aria-label={`Time remaining: ${formatTime(timeRemaining)}`}
+            >
+              ⏱ {formatTime(timeRemaining)}
+            </span>
+          )}
           <span className="step-label">Your Vision</span>
         </nav>
         <div className="vision-main">
@@ -730,9 +945,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
             <span />
           </div>
           <h2 className="email-title">
-            {config.copy.emailTitle.line1}<br />{config.copy.emailTitle.line2}
+            Where should we send<br />your Roadmap?
           </h2>
-          <p className="email-sub">{config.copy.emailSub}</p>
+          <p className="email-sub">
+            We'll save your progress and email it to you — including a link to pick up where you left off and choose your next step.
+          </p>
           <div className="email-fields">
             <input
               className="text-input"
@@ -742,20 +959,52 @@ export const Roadmap: React.FC<RoadmapProps> = ({
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               style={{ maxWidth: '100%', textAlign: 'left', padding: '14px 18px', fontSize: 16 }}
-              onKeyDown={(e) => { if (e.key === 'Enter') proceedToProcess(false); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') goToDisclaimerFromEmail(false); }}
             />
           </div>
           <button
             type="button"
             className="btn-primary"
-            onClick={() => proceedToProcess(false)}
+            onClick={() => goToDisclaimerFromEmail(false)}
             style={{ width: '100%', maxWidth: 360 }}
           >
-            {config.copy.emailCta}
+            Continue
           </button>
-          <button type="button" className="skip-link" onClick={() => proceedToProcess(true)}>
-            {config.copy.emailSkip}
+          <button type="button" className="skip-link" onClick={() => goToDisclaimerFromEmail(true)}>
+            Skip — I don't want my Roadmap emailed
           </button>
+        </div>
+      </section>
+
+      {/* ════════ SCREEN 3.5 — DURATION (5 / 10 / no limit) ════════ */}
+      <section id="screen-duration" className={`screen ${screen === 'duration' ? 'active' : ''}`}>
+        <div className="duration-box">
+          <div className="disc-ornament" style={{ marginBottom: 28 }}>
+            <span />
+            <svg viewBox="0 0 24 24"><path d="M11 17a1 1 0 0 0 2 0v-6a1 1 0 0 0-2 0v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z" /></svg>
+            <span />
+          </div>
+          <h2 className="email-title">How much time<br />do you want?</h2>
+          <p className="email-sub">
+            Take your time. There's no race. Pick a window or take as long as you need.
+          </p>
+          <div className="duration-options">
+            <button type="button" className="duration-btn" onClick={() => selectDuration(5)}>
+              <span className="duration-num">5</span>
+              <span className="duration-unit">minutes</span>
+              <span className="duration-vibe">quick & focused</span>
+            </button>
+            <button type="button" className="duration-btn" onClick={() => selectDuration(10)}>
+              <span className="duration-num">10</span>
+              <span className="duration-unit">minutes</span>
+              <span className="duration-vibe">deeper picture</span>
+            </button>
+            <button type="button" className="duration-btn" onClick={() => selectDuration(null)}>
+              <span className="duration-num">∞</span>
+              <span className="duration-unit">no limit</span>
+              <span className="duration-vibe">paint freely</span>
+            </button>
+          </div>
         </div>
       </section>
 

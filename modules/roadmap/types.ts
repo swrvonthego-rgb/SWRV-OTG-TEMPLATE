@@ -24,9 +24,10 @@ export interface RoadmapResult {
 
 export type ScreenId =
   | 'intro'
-  | 'disclaimer'
-  | 'vision'
   | 'email'
+  | 'disclaimer'
+  | 'duration'
+  | 'vision'
   | 'processing'
   | 'results';
 
