@@ -14,6 +14,7 @@
 export const BYOB_CONFIG = {
   // ── EXTERNAL LINKS ──────────────────────────────────────
   externalSiteUrl: 'https://trainbyob.me',
+  goldenLogoUrl: 'https://res.cloudinary.com/dzqxce5hv/image/upload/v1777141186/BYOB_GOLDEN_LOGO_rlznqa.png',
   bookingUrl: 'https://trainbyob.me/#pricing',
   joinUrl: 'https://trainbyob.me/join',
   virtualPortalUrl: 'https://trainbyob.me/virtual-portal',

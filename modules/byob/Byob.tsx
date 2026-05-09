@@ -49,6 +49,13 @@ export function Byob({ isOpen, onClose }: ByobProps) {
         ← SWRV OTG
       </button>
 
+      {/* BYOB Golden Logo — top-right corner */}
+      <img
+        src={B.goldenLogoUrl}
+        alt="BYOB"
+        className="byob-logo-corner"
+      />
+
       {/* HERO */}
       <section className="byob-hero">
         <video
