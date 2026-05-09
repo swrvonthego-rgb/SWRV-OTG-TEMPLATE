@@ -399,3 +399,90 @@ export const CONTACT = {
     { id: 'other', label: 'Something Else' },
   ],
 } as const;
+
+
+// ── HERO CAROUSEL ──────────────────────────────────────────
+// The two scrolling columns of cards in the Hero. Each card has an
+// image OR video, a title, and an optional subtitle (small label).
+// Add/remove cards freely — the component scales.
+export interface HeroCard {
+  image?: string;
+  video?: string;
+  title: string;
+  subtitle?: string;
+}
+export const HERO_CAROUSEL: {
+  backgroundVideo: string;
+  title: { line1: string; line2: string };
+  taglineHeading: string;
+  taglineAccent: string;
+  taglineBody: string;
+  column1: HeroCard[];
+  column2: HeroCard[];
+} = {
+  backgroundVideo:
+    'https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_24fps.mp4',
+  title: { line1: 'SWRV', line2: 'HEADQUARTERS.' },
+  taglineHeading: 'Swrv On Roadblocks.',
+  taglineAccent: 'Let Love GPS.',
+  taglineBody:
+    'The central hub for artist development, physical training, authorship, and wisdom. Welcome to the ecosystem.',
+  column1: [
+    { image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop', title: 'FIGHTING ARTS', subtitle: 'MARTIAL ARTS' },
+    { image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop', title: 'CULINARY ARTS', subtitle: '' },
+    { image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop', title: 'REALTORS', subtitle: 'INTERIOR DESIGN' },
+    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950508/cld-sample_p72mk2.jpg', title: 'PET LOVERS', subtitle: 'COMMUNITY' },
+    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/shoe_e9qvna.jpg', title: 'TRAVELERS', subtitle: 'EXPLORATION' },
+    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/man-portrait_xykmg4.jpg', title: 'FASHION DESIGNERS', subtitle: 'STYLE' },
+  ],
+  column2: [
+    { image: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop', title: 'MUSICAL ARTISTS', subtitle: 'PRODUCTION' },
+    { image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop', title: 'FAN ENGAGEMENT', subtitle: 'COMMUNITY' },
+    { image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop', title: 'GRAPHIC DESIGNERS', subtitle: 'CREATIVE' },
+    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/w_800,h_800,c_fill,q_auto/1752950982581945_2_kk3jt3_ui7upw.png', title: 'CONTENT CREATORS', subtitle: 'DIGITAL MEDIA' },
+    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/woman-on-a-football-field_agfcng.jpg', title: 'SUPER-DOPE PEOPLE', subtitle: 'LIFESTYLE' },
+  ],
+};
+
+// ── INTRO VIDEOS ───────────────────────────────────────────
+export const INTRO_VIDEOS = {
+  // Full-screen takeover that plays before the page is interactive
+  primary:
+    'https://res.cloudinary.com/dastq6bk5/video/upload/v1775906948/SWRV_WEB_4k_gifq4n_u5zwta.mp4',
+  // Secondary intro that plays after the primary shrinks
+  secondary:
+    'https://res.cloudinary.com/dastq6bk5/video/upload/v1775906956/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov',
+} as const;
+
+// ── SCHEDULING (Calendar / Contact form) ───────────────────
+export const SCHEDULING: {
+  contactEmail: string;
+  availableDays: number[];
+  timeSlots: string[];
+  topics: string[];
+} = {
+  contactEmail: 'swrvonthego@gmail.com',
+  // Days you're available (0=Sun, 1=Mon, ... 6=Sat). Default Mon–Sat.
+  availableDays: [1, 2, 3, 4, 5, 6],
+  timeSlots: [
+    '9:00 AM', '10:00 AM', '11:00 AM',
+    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
+  ],
+  topics: [
+    'Website Package Inquiry',
+    'Monthly Care Plan',
+    'Brand Video / Commercial',
+    'Photography / Videography',
+    'Music / Jingle Production',
+    'Full Brand Strategy',
+    'Something Else',
+  ],
+};
+
+// ── WEB PACKAGE NOTES (universal disclaimers shown under tiers) ──
+export const WEB_PACKAGE_NOTES = [
+  'Domain & hosting not included — we walk you through setup (~$15/yr domain, ~$10–20/mo hosting)',
+  'You own your site 100% after delivery — no lock-in, no hidden fees',
+  '50% deposit required to begin · 50% due on final delivery',
+  'You provide: photos, logo, and key copy (we can help shape it) — or ask about copy writing as an add-on',
+] as const;

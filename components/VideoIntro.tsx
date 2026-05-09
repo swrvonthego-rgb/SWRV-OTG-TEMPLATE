@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { INTRO_VIDEOS } from '../site.config';
 
 export const VideoIntro: React.FC = () => {
   const [phase, setPhase] = useState<'fullscreen' | 'transitioning' | 'inline'>('fullscreen');
@@ -78,7 +79,7 @@ export const VideoIntro: React.FC = () => {
         className="relative w-full max-w-[480px] aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black/50 my-8"
       >
         <video
-          src="https://res.cloudinary.com/dastq6bk5/video/upload/v1775906948/SWRV_WEB_4k_gifq4n_u5zwta.mp4"
+          src={INTRO_VIDEOS.primary}
           autoPlay
           muted
           loop

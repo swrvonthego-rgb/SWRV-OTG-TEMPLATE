@@ -1,26 +1,12 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Mail, MessageSquare, Phone, CheckCircle, ChevronLeft, ChevronRight, Send } from 'lucide-react';
+import { SCHEDULING } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isBefore, startOfToday, getDay, eachDayOfInterval } from 'date-fns';
 
-const TIME_SLOTS = [
-  '9:00 AM', '10:00 AM', '11:00 AM',
-  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-];
-
-// Days you're available (0=Sun,1=Mon,...6=Sat) — Mon–Sat
-const AVAILABLE_DAYS = [1, 2, 3, 4, 5, 6];
-
-const TOPICS = [
-  'Website Package Inquiry',
-  'Monthly Care Plan',
-  'Brand Video / Commercial',
-  'Photography / Videography',
-  'Music / Jingle Production',
-  'Full Brand Strategy',
-  'Something Else',
-];
-
-const CONTACT_EMAIL = 'swrvonthego@gmail.com';
+const TIME_SLOTS = SCHEDULING.timeSlots;
+const AVAILABLE_DAYS = SCHEDULING.availableDays;
+const TOPICS = SCHEDULING.topics;
+const CONTACT_EMAIL = SCHEDULING.contactEmail;
 
 export const ContactSchedule: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());

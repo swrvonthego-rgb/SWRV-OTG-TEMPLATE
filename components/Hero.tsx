@@ -1,74 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { VideoIntro } from './VideoIntro';
+import { HERO_CAROUSEL } from '../site.config';
 
-interface HeroCardData {
-  image?: string;
-  video?: string;
-  title: string;
-  subtitle: string;
-}
-
-// Data for the moving columns
-const column1Cards: HeroCardData[] = [
-  { 
-    image: "https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop", 
-    title: "FIGHTING ARTS", 
-    subtitle: "MARTIAL ARTS" 
-  },
-  { 
-    image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop", 
-    title: "CULINARY ARTS", 
-    subtitle: "" 
-  },
-  { 
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop", 
-    title: "REALTORS", 
-    subtitle: "INTERIOR DESIGN" 
-  },
-  { 
-    image: "https://res.cloudinary.com/dastq6bk5/image/upload/v1776950508/cld-sample_p72mk2.jpg", 
-    title: "PET LOVERS", 
-    subtitle: "COMMUNITY" 
-  },
-  { 
-    image: "https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/shoe_e9qvna.jpg", 
-    title: "TRAVELERS", 
-    subtitle: "EXPLORATION" 
-  },
-  { 
-    image: "https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/man-portrait_xykmg4.jpg", 
-    title: "FASHION DESIGNERS", 
-    subtitle: "STYLE" 
-  }
-];
-
-const column2Cards: HeroCardData[] = [
-  { 
-    image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop", 
-    title: "MUSICAL ARTISTS", 
-    subtitle: "PRODUCTION" 
-  },
-  { 
-    image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop", 
-    title: "FAN ENGAGEMENT", 
-    subtitle: "COMMUNITY" 
-  },
-  { 
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop", 
-    title: "GRAPHIC DESIGNERS", 
-    subtitle: "CREATIVE" 
-  },
-  { 
-    image: "https://res.cloudinary.com/dastq6bk5/image/upload/w_800,h_800,c_fill,q_auto/1752950982581945_2_kk3jt3_ui7upw.png", 
-    title: "CONTENT CREATORS", 
-    subtitle: "DIGITAL MEDIA" 
-  },
-  { 
-    image: "https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/woman-on-a-football-field_agfcng.jpg", 
-    title: "SUPER-DOPE PEOPLE", 
-    subtitle: "LIFESTYLE" 
-  },
-];
+type HeroCardData = (typeof HERO_CAROUSEL.column1)[number];
+const column1Cards: readonly HeroCardData[] = HERO_CAROUSEL.column1;
+const column2Cards: readonly HeroCardData[] = HERO_CAROUSEL.column2;
 
 const HeroCard: React.FC<{ image?: string; video?: string; title: string; subtitle?: string; className?: string }> = ({ image, video, title, subtitle, className }) => (
   <div className={`relative group overflow-hidden rounded-lg w-full flex-shrink-0 border border-white/10 backdrop-blur-md bg-white/5 shadow-2xl ${className}`}>
@@ -103,7 +39,7 @@ export const Hero: React.FC<{ onOpenConsultation: () => void }> = ({ onOpenConsu
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <video 
-          src="https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_24fps.mp4"
+          src={HERO_CAROUSEL.backgroundVideo}
           autoPlay 
           muted 
           loop 
@@ -126,8 +62,8 @@ export const Hero: React.FC<{ onOpenConsultation: () => void }> = ({ onOpenConsu
            
           <div className="relative">
             <h1 className="font-extrabold leading-none tracking-tighter drop-shadow-2xl">
-              <span className="block text-lion-orange" style={{fontSize:'clamp(5rem,16vw,11rem)',lineHeight:1}}>SWRV</span>
-              <span className="block text-white text-4xl md:text-5xl lg:text-6xl mt-2">HEADQUARTERS.</span>
+              <span className="block text-lion-orange" style={{fontSize:'clamp(5rem,16vw,11rem)',lineHeight:1}}>{HERO_CAROUSEL.title.line1}</span>
+              <span className="block text-white text-4xl md:text-5xl lg:text-6xl mt-2">{HERO_CAROUSEL.title.line2}</span>
             </h1>
             
             <div className="mt-6 flex items-center gap-4 animate-in fade-in slide-in-from-left-8 duration-1000 delay-300 fill-mode-both">
@@ -143,11 +79,11 @@ export const Hero: React.FC<{ onOpenConsultation: () => void }> = ({ onOpenConsu
           
           <div className="flex flex-col gap-6 pl-6 border-l-[6px] border-lion-orange rounded-sm max-w-xl backdrop-blur-md bg-black/60 p-6 border-r border-t border-b border-r-white/5 border-t-white/5 border-b-white/5 shadow-2xl">
              <h2 className="text-3xl md:text-4xl font-bold text-white tracking-wide leading-tight">
-              Swrv On Roadblocks. <br/>
-              <span className="text-lion-orange drop-shadow-[0_0_25px_rgba(255,77,0,0.6)]">Let Love GPS.</span>
+              {HERO_CAROUSEL.taglineHeading} <br/>
+              <span className="text-lion-orange drop-shadow-[0_0_25px_rgba(255,77,0,0.6)]">{HERO_CAROUSEL.taglineAccent}</span>
             </h2>
              <p className="text-gray-300 font-light text-lg leading-relaxed">
-              The central hub for artist development, physical training, authorship, and wisdom. Welcome to the ecosystem.
+              {HERO_CAROUSEL.taglineBody}
             </p>
           </div>
           

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { WEB_PACKAGE_NOTES, BRAND } from '../site.config';
 import { Check, Plus, ArrowRight, Star, Zap, Globe, Rocket } from 'lucide-react';
 
 const tiers = [
@@ -96,19 +97,14 @@ const tiers = [
   },
 ];
 
-const universalNotes = [
-  'Domain & hosting not included — we walk you through setup (~$15/yr domain, ~$10–20/mo hosting)',
-  'You own your site 100% after delivery — no lock-in, no hidden fees',
-  '50% deposit required to begin · 50% due on final delivery',
-  'You provide: photos, logo, and key copy (we can help shape it) — or ask about copy writing as an add-on',
-];
+const universalNotes = WEB_PACKAGE_NOTES;
 
 export const WebPackages: React.FC = () => {
   const [hoveredTier, setHoveredTier] = useState<string | null>(null);
 
   const handleCTA = (tierId: string) => {
     const subject = encodeURIComponent(`Web Package Inquiry — ${tiers.find(t => t.id === tierId)?.name}`);
-    const body = encodeURIComponent(`Hi Zion,\n\nI'm interested in the ${tiers.find(t => t.id === tierId)?.name} web package ($${tiers.find(t => t.id === tierId)?.price}).\n\nAbout my project:\n\n`);
+    const body = encodeURIComponent(`Hi ${BRAND.founderName.split(' ')[0]},\n\nI'm interested in the ${tiers.find(t => t.id === tierId)?.name} web package ($${tiers.find(t => t.id === tierId)?.price}).\n\nAbout my project:\n\n`);
     window.location.href = `mailto:swrvonthego@gmail.com?subject=${subject}&body=${body}`;
   };
 

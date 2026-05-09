@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { INTRO_VIDEOS } from '../site.config';
 import { Volume2, VolumeX, Maximize, Minimize, RotateCcw, X } from 'lucide-react';
 
 export const SecondaryIntro: React.FC<{ skipIntro?: boolean }> = ({ skipIntro = false }) => {
@@ -127,7 +128,7 @@ export const SecondaryIntro: React.FC<{ skipIntro?: boolean }> = ({ skipIntro = 
     <div ref={containerRef} className={wrapperClasses} style={{ overflowAnchor: 'none' }}>
       <video
         ref={videoRef}
-        src="https://res.cloudinary.com/dastq6bk5/video/upload/v1775906956/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov"
+        src={INTRO_VIDEOS.secondary}
         playsInline
         onEnded={handleEnded}
         onTimeUpdate={handleTimeUpdate}
