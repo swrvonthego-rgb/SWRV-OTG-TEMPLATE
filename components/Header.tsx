@@ -4,7 +4,8 @@ import { BRAND, HEADER } from '../site.config';
 import { MEDIA } from '../media.config';
 import { Button } from './Button';
 
-export const Header: React.FC = () => {
+interface HeaderProps { onOpenByob?: () => void; }
+export const Header: React.FC<HeaderProps> = ({ onOpenByob }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -58,17 +59,32 @@ export const Header: React.FC = () => {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-8">
-            {HEADER.navItems.map((item) => (
-              <a 
-                key={item.label} 
-                href={item.href}
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noopener noreferrer' : undefined}
-                className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide"
-              >
-                {item.label}
-              </a>
-            ))}
+            {HEADER.navItems.map((item) => {
+              // BYOB TRAINING is intercepted to open the in-site overlay
+              if (item.label === 'BYOB TRAINING' && onOpenByob) {
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={onOpenByob}
+                    className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans"
+                  >
+                    {item.label}
+                  </button>
+                );
+              }
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide"
+                >
+                  {item.label}
+                </a>
+              );
+            })}
              <a href="#" className="text-[13px] font-bold text-lion-orange hover:text-white transition-colors tracking-wide">
                 {HEADER.bookNowLabel}
             </a>
@@ -92,18 +108,32 @@ export const Header: React.FC = () => {
           {/* Mobile Menu Overlay */}
           {mobileMenuOpen && (
             <div className="absolute top-0 left-0 w-full h-screen bg-black flex flex-col items-center justify-center gap-8 lg:hidden z-40">
-              {HEADER.navItems.map((item) => (
-                <a 
-                  key={item.label} 
-                  href={item.href}
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
-                  className="text-xl font-bold text-white hover:text-lion-orange"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </a>
-              ))}
+              {HEADER.navItems.map((item) => {
+                if (item.label === 'BYOB TRAINING' && onOpenByob) {
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => { setMobileMenuOpen(false); onOpenByob(); }}
+                      className="text-xl font-bold text-white hover:text-lion-orange bg-transparent border-0 cursor-pointer p-0 font-sans"
+                    >
+                      {item.label}
+                    </button>
+                  );
+                }
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    className="text-xl font-bold text-white hover:text-lion-orange"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
               <Button variant="primary" size="lg">{HEADER.getInTouchLabel}</Button>
             </div>
           )}

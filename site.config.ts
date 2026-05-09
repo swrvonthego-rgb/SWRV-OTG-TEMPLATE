@@ -620,7 +620,7 @@ export const HEADER = {
   // Main navigation items
   navItems: [
     { label: 'THE ECOSYSTEM', href: '#ecosystem', external: false },
-    { label: 'BYOB TRAINING', href: 'https://trainbyob.me', external: true },
+    { label: 'BYOB TRAINING', href: '#byob', external: false },  // opens in-site BYOB overlay
     { label: 'ABOUT SWRV', href: '#about-swrv', external: false },
     { label: 'ZION SWRV BIRDSONG', href: '#meet-zion', external: false },
   ],

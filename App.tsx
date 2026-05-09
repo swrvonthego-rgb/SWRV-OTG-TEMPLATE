@@ -23,10 +23,12 @@ import { ContactSchedule } from './components/ContactSchedule';
 // same module can be dropped into any client ecosystem.
 import { Roadmap } from './modules/roadmap/Roadmap';
 import { Zion } from './modules/zion/Zion';
+import { Byob } from './modules/byob/Byob';
 
 const App: React.FC = () => {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [isZionOpen, setIsZionOpen] = useState(false);
+  const [isByobOpen, setIsByobOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
 
@@ -65,7 +67,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-lion-black">
-      <Header />
+      <Header onOpenByob={() => setIsByobOpen(true)} />
 
       <main>
         <SecondaryIntro skipIntro={skipIntro} />
@@ -93,6 +95,12 @@ const App: React.FC = () => {
       <Zion
         isOpen={isZionOpen}
         onClose={() => setIsZionOpen(false)}
+      />
+
+      {/* BYOB Training — overlay */}
+      <Byob
+        isOpen={isByobOpen}
+        onClose={() => setIsByobOpen(false)}
       />
     </div>
   );
