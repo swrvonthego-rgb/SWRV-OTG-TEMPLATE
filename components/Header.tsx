@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
+import { BRAND } from '../site.config';
+import { MEDIA } from '../media.config';
 import { Button } from './Button';
 
 export const Header: React.FC = () => {
@@ -38,8 +40,8 @@ export const Header: React.FC = () => {
           {/* Logo */}
           <a href="#swrv-ecosystem" className="flex items-center z-50 cursor-pointer hover:opacity-80 transition-opacity">
             <img 
-              src="https://res.cloudinary.com/dzqxce5hv/image/upload/v1772222265/Swerve_Badge_eow6m0.png" 
-              alt="Swrv On The Go Logo" 
+              src={MEDIA.brand.logo} 
+              alt={`${BRAND.name} Logo`} 
               className="h-10 md:h-12 w-auto object-contain"
               referrerPolicy="no-referrer"
             />

@@ -1,4 +1,5 @@
 import './zion.css';
+import { ZION_CONFIG as Z } from './config';
 import React, { useState, useEffect, useRef } from 'react';
 
 interface ZionProps { isOpen: boolean; onClose: () => void; }
@@ -84,6 +85,21 @@ export function Zion({ isOpen, onClose }: ZionProps) {
   if (!isOpen) return null;
   return (
     <div className="zion-page" role="dialog" aria-modal="true">
+      {/* Fixed-position close button (X) — like Roadmap */}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close artist page"
+        style={{
+          position:'fixed', top:'18px', right:'18px', zIndex:9999,
+          width:'44px', height:'44px', borderRadius:'50%',
+          background:'rgba(10,8,4,0.85)', border:'1.5px solid var(--color-gold)',
+          color:'var(--color-gold)', display:'flex', alignItems:'center',
+          justifyContent:'center', cursor:'pointer', backdropFilter:'blur(8px)',
+          fontSize:'22px', fontFamily:'sans-serif', lineHeight:1,
+          boxShadow:'0 4px 24px rgba(0,0,0,0.4)',
+        }}
+      >×</button>
       <>
       {/* NAV */}
       <nav>
@@ -95,7 +111,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           <li><a href="#books">Books</a></li>
           <li><a href="#podcast">Podcast</a></li>
           <li><a href="#booking">Book Me</a></li>
-          <li><button onClick={onClose} className="nav-back" style={{background:"none",border:"none",cursor:"pointer",font:"inherit",color:"inherit",padding:0}}>← SWRV OTG</button></li>
+          <li><button onClick={onClose} className="nav-back" style={{background:"none",border:"none",cursor:"pointer",font:"inherit",color:"inherit",padding:0}}>{Z.identity.backLabel}</button></li>
         </ul>
         <button 
           className={`mobile-menu-btn ${isMenuOpen ? 'active' : ''}`} 
@@ -116,7 +132,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
         <a href="#books" onClick={closeMenu}>Books</a>
         <a href="#podcast" onClick={closeMenu}>Podcast</a>
         <a href="#booking" onClick={closeMenu}>Book Me</a>
-        <button onClick={() => { closeMenu(); onClose(); }} style={{background:"none",border:"none",cursor:"pointer",fontSize:"1.5rem",color:"var(--color-accent)",marginTop:"2rem"}}>← SWRV OTG</button>
+        <button onClick={() => { closeMenu(); onClose(); }} style={{background:"none",border:"none",cursor:"pointer",fontSize:"1.5rem",color:"var(--color-accent)",marginTop:"2rem"}}>{Z.identity.backLabel}</button>
       </div>
 
       {/* HERO */}
@@ -127,8 +143,8 @@ export function Zion({ isOpen, onClose }: ZionProps) {
         {/* Hero portrait */}
         <div style={{ position: 'absolute', right: 0, top: 0, width: '48%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
           <img 
-            src="https://res.cloudinary.com/dlxkwdyk7/image/upload/v1775854242/IMG_0394_ltsii7_e8t7lp.jpg"
-            alt="Zion SWRV Birdsong"
+            src={Z.hero.portraitUrl}
+            alt={`${Z.identity.firstName} ${Z.identity.lastName}`}
             style={{ 
               width: '100%', 
               height: '120%', 
@@ -145,13 +161,13 @@ export function Zion({ isOpen, onClose }: ZionProps) {
         </div>
 
         <div style={{ position: 'relative', zIndex: 2 }}>
-          <p className="hero-eyebrow">Singer · Songwriter · Producer · Author · Performer</p>
-          <h1 className="hero-name">Zion <span>"SWRV"</span><br/>Birdsong</h1>
+          <p className="hero-eyebrow">{Z.identity.roles}</p>
+          <h1 className="hero-name">{Z.identity.firstName} <span>{Z.identity.middle}</span><br/>{Z.identity.lastName}</h1>
           <p className="hero-sub"><span style={{ color: 'var(--color-gold)' }}>S</span>erving <span style={{ color: 'var(--color-gold)' }}>W</span>ith <span style={{ color: 'var(--color-gold)' }}>R</span>ighteous <span style={{ color: 'var(--color-gold)' }}>V</span>ision</p>
-          <p className="hero-slogan">Swerve on your roadblocks &nbsp;·&nbsp; Let love GPS</p>
+          <p className="hero-slogan">{Z.identity.slogan}</p>
           <div className="hero-cta">
-            <a href="#booking" className="btn btn-primary">Book a Performance</a>
-            <a href="#books" className="btn btn-outline">Get the Books</a>
+            <a href={Z.hero.primaryCta.href} className="btn btn-primary">{Z.hero.primaryCta.label}</a>
+            <a href={Z.hero.secondaryCta.href} className="btn btn-outline">{Z.hero.secondaryCta.label}</a>
           </div>
         </div>
         <div className="hero-scroll">

@@ -1,77 +1,129 @@
 import React from 'react';
-import { Facebook, Twitter, Linkedin, Youtube, Instagram } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, Youtube, Instagram, Music } from 'lucide-react';
+import { BRAND, FOOTER, SOCIAL } from '../site.config';
+import { MEDIA } from '../media.config';
+
+// Maps social platform keys to their lucide icons + URLs
+const SOCIAL_ICONS: { key: keyof typeof SOCIAL; Icon: React.FC<{ className?: string }> }[] = [
+  { key: 'instagram', Icon: Instagram },
+  { key: 'youtube', Icon: Youtube },
+  { key: 'facebook', Icon: Facebook },
+  { key: 'twitter', Icon: Twitter },
+  { key: 'linkedin', Icon: Linkedin },
+  { key: 'tiktok', Icon: Music },
+];
 
 export const Footer: React.FC = () => {
+  // Render only social platforms that have a non-empty URL
+  const activeSocials = SOCIAL_ICONS.filter(({ key }) => SOCIAL[key]);
+
   return (
     <footer className="bg-[#121212] text-white pt-24 pb-12 border-t border-gray-800">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
-          
+          {/* Brand block */}
           <div className="col-span-2 lg:col-span-2 pr-8">
-            <img 
-              src="https://res.cloudinary.com/dzqxce5hv/image/upload/v1772222265/Swerve_Badge_eow6m0.png" 
-              alt="Swrv On The Go Logo" 
+            <img
+              src={MEDIA.brand.logo}
+              alt={`${BRAND.name} Logo`}
               className="h-16 w-auto object-contain mb-6"
               referrerPolicy="no-referrer"
             />
             <div className="mb-6">
               <p className="text-gray-300 tracking-[0.2em] uppercase text-[10px] md:text-xs font-bold">
-                <span className="text-lion-orange text-sm">S</span>erving{' '}
-                <span className="text-lion-orange text-sm">W</span>ith{' '}
-                <span className="text-lion-orange text-sm">R</span>ighteous{' '}
-                <span className="text-lion-orange text-sm">V</span>ision
+                {BRAND.fullAcronym.split(' ').map((word, i, arr) => (
+                  <React.Fragment key={i}>
+                    <span className="text-lion-orange text-sm">{word[0]}</span>
+                    {word.slice(1).toLowerCase()}
+                    {i < arr.length - 1 && ' '}
+                  </React.Fragment>
+                ))}
               </p>
             </div>
             <p className="text-gray-400 mb-8 max-w-md leading-relaxed text-sm">
-              Zion SWRV Birdsong Headquarters. The central hub for artist development, physical training, authorship, and wisdom. Let Love GPS.
+              {BRAND.description} {BRAND.tagline}.
             </p>
-            <div className="flex gap-6 items-center">
-              <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Follow Zion:</span>
-              <Instagram className="w-5 h-5 text-gray-500 hover:text-lion-orange cursor-pointer transition-colors" />
-              <Youtube className="w-5 h-5 text-gray-500 hover:text-lion-orange cursor-pointer transition-colors" />
-              <Linkedin className="w-5 h-5 text-gray-500 hover:text-lion-orange cursor-pointer transition-colors" />
-            </div>
+            {activeSocials.length > 0 && (
+              <div className="flex gap-6 items-center">
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+                  Follow:
+                </span>
+                {activeSocials.map(({ key, Icon }) => (
+                  <a
+                    key={key}
+                    href={SOCIAL[key]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={key}
+                    className="text-gray-500 hover:text-lion-orange transition-colors"
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Ecosystem links */}
           <div>
-            <h5 className="font-bold mb-6 text-white uppercase text-sm tracking-wider">The Ecosystem</h5>
+            <h5 className="font-bold mb-6 text-white uppercase text-sm tracking-wider">
+              The Ecosystem
+            </h5>
             <ul className="space-y-4 text-gray-500 text-sm font-medium">
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Artist Development</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Brand Planning & LLCs</li>
-              <li><a href="https://trainbyob.me" target="_blank" rel="noopener noreferrer" className="hover:text-lion-orange transition-colors">BYOB Training</a></li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">SWRV In Your Gift (Book)</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">The RoadMap (Book)</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">SWRV Talk Podcast</li>
+              {FOOTER.ecosystemLinks.map((label) => (
+                <li
+                  key={label}
+                  className="hover:text-lion-orange cursor-pointer transition-colors"
+                >
+                  {label}
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Resource links */}
           <div>
-            <h5 className="font-bold mb-6 text-white uppercase text-sm tracking-wider">Content Pillars</h5>
+            <h5 className="font-bold mb-6 text-white uppercase text-sm tracking-wider">
+              Resources
+            </h5>
             <ul className="space-y-4 text-gray-500 text-sm font-medium">
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Training (BYOB)</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Wisdom & Motivation</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Artist Development</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Behind The Scenes</li>
+              {FOOTER.resourceLinks.map((label) => (
+                <li
+                  key={label}
+                  className="hover:text-lion-orange cursor-pointer transition-colors"
+                >
+                  {label}
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
-            <h5 className="font-bold mb-6 text-white uppercase text-sm tracking-wider">Connect</h5>
-            <ul className="space-y-4 text-gray-500 text-sm font-medium">
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">About Zion</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Contact</li>
-              <li className="hover:text-lion-orange cursor-pointer transition-colors">Book a Consultation</li>
-            </ul>
+            <h5 className="font-bold mb-6 text-white uppercase text-sm tracking-wider">
+              Contact
+            </h5>
+            <a
+              href={`mailto:${BRAND.contactEmail}`}
+              className="block text-gray-500 hover:text-lion-orange text-sm font-medium transition-colors mb-3"
+            >
+              {BRAND.contactEmail}
+            </a>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 font-medium">
-          <div className="flex gap-8 mb-4 md:mb-0">
-            <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
-            <span className="hover:text-white cursor-pointer transition-colors">Terms of Use</span>
-          </div>
-          <div>
-            &copy; {new Date().getFullYear()} SWRV On The Go LLC. All Rights Reserved.
+        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+          <p>{FOOTER.copyright}</p>
+          <div className="flex gap-6 mt-4 md:mt-0">
+            {FOOTER.legalLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="hover:text-lion-orange transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
       </div>

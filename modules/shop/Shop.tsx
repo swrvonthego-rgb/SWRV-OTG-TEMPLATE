@@ -1,33 +1,13 @@
 import React from 'react';
 import { ShoppingBag, ArrowUpRight, Sparkles } from 'lucide-react';
+import { SHOP_CONFIG } from './config';
 
-const STORE_URL = 'https://swerve.launchcart.store/shop';
+// ════════════════════════════════════════════════════════════
+// Shop Module — generic component, all content driven from config.ts
+// ════════════════════════════════════════════════════════════
 
-// Featured product categories. These are visual placeholders that drive traffic
-// to the actual Launchcart store where items + checkout live. To highlight
-// specific items here later, replace with real Printful product images + names.
-const FEATURED = [
-  {
-    label: 'Cropped Hoodies',
-    tagline: 'wear the wisdom',
-    accent: 'from-orange-500/15 via-orange-500/5 to-transparent',
-    image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299527/womens-cropped-hoodie-black-front-69fdcb05dc414_lqi1p7.png',
-  },
-  {
-    label: 'Sports Jerseys',
-    tagline: 'everyday revolution',
-    accent: 'from-amber-500/15 via-amber-500/5 to-transparent',
-    image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299621/all-over-print-recycled-unisex-sports-jersey-white-front-69fdcb512b252_mxop04.png',
-  },
-  {
-    label: 'Dad Hats',
-    tagline: 'small flexes',
-    accent: 'from-yellow-500/15 via-yellow-500/5 to-transparent',
-    image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299694/classic-dad-hat-black-front-69fdcbb11318f_rlpg8c.png',
-  },
-];
-
-export const ShopSWERVE: React.FC = () => {
+export const Shop: React.FC = () => {
+  const cfg = SHOP_CONFIG;
   return (
     <section
       id="shop"
@@ -47,32 +27,37 @@ export const ShopSWERVE: React.FC = () => {
             Shop · Live Now
           </div>
           <h2 className="text-5xl md:text-7xl font-bold mb-4 leading-tight">
-            SWERVE <span className="text-lion-orange italic">Get In Gear</span>
+            {cfg.storeNamePrefix}{' '}
+            <span className="text-lion-orange italic">{cfg.storeNameAccent}</span>
           </h2>
           <p className="text-xl md:text-2xl text-white/70 italic font-light">
-            Keep it rolling.
+            {cfg.tagline}
           </p>
           <p className="text-base text-white/50 mt-4 max-w-xl mx-auto">
-            Hoodies, tees, and the gear that goes with the message. Every piece is a small ride forward.
+            {cfg.description}
           </p>
         </div>
 
         {/* Featured tiles */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto mb-12">
-          {FEATURED.map((item) => (
+          {cfg.featured.map((item) => (
             <a
               key={item.label}
-              href={STORE_URL}
+              href={cfg.storeUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="group relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent hover:border-lion-orange/50 transition-all duration-300"
             >
-              {/* Color wash */}
               <div className={`absolute inset-0 bg-gradient-to-br ${item.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-
-              {/* Content */}
               <div className="relative h-full flex flex-col justify-between p-7">
-                <div className="flex-1 flex items-center justify-center -mt-2"><img src={item.image} alt={item.label} className="max-h-44 w-auto object-contain drop-shadow-2xl" loading="lazy" /></div>
+                <div className="flex-1 flex items-center justify-center -mt-2">
+                  <img
+                    src={item.image}
+                    alt={item.label}
+                    className="max-h-44 w-auto object-contain drop-shadow-2xl"
+                    loading="lazy"
+                  />
+                </div>
                 <div>
                   <div className="text-xs tracking-[0.25em] uppercase text-white/50 mb-2">
                     {item.tagline}
@@ -93,17 +78,17 @@ export const ShopSWERVE: React.FC = () => {
         {/* Main CTA */}
         <div className="text-center">
           <a
-            href={STORE_URL}
+            href={cfg.storeUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-8 py-4 bg-lion-orange hover:bg-lion-orange/90 text-lion-dark font-bold text-base tracking-wider uppercase rounded-full transition-all duration-300 hover:shadow-[0_0_40px_rgba(255,140,40,0.4)] hover:scale-105"
           >
             <ShoppingBag size={20} />
-            Browse the Whole Store
+            {cfg.ctaPrimary}
             <ArrowUpRight size={18} />
           </a>
           <p className="text-xs text-white/40 mt-4 tracking-wider">
-            Shipped via Printful · Worldwide delivery
+            {cfg.fulfillmentNote}
           </p>
         </div>
       </div>

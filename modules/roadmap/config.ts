@@ -10,6 +10,8 @@
  *   3. Done.
  */
 
+import { SERVICES, BRAND } from '../../site.config';
+
 export interface RoadmapService {
   name: string;
   price: string;
@@ -86,29 +88,24 @@ export interface RoadmapConfig {
 // SWRV ON THE GO — DEFAULT CONFIG
 // ══════════════════════════════════════════════════════════
 
-const SWRV_SERVICES: RoadmapService[] = [
-  { name: 'Logo & Brand Identity Design', price: '$350' },
-  { name: 'Vision Statement + Mission Statement Writing', price: '$150' },
-  { name: 'Custom Brand Color Palette & Style Guide', price: '$200' },
-  { name: 'Jingle / Brand Audio Creation', price: '$500' },
-  { name: 'Photography Package (Brand/Lifestyle)', price: '$600' },
-  { name: 'Promo Video / Music Video Production', price: '$1,200' },
-  { name: 'Website Design & Development', price: '$1,800' },
-  { name: 'Voiceover Recording & Production', price: '$300' },
-  { name: 'On-Site Filmography & Videography', price: '$900' },
-  { name: 'Book Formatting & Layout', price: '$400' },
-  { name: 'Audiobook Production', price: '$650' },
-  { name: 'Vocal Training (Birdsong Method – 4-session)', price: '$280' },
-  { name: 'Recording Booth Training (Artist Package)', price: '$350' },
-  { name: 'Content Strategy & Social Media Kit', price: '$250' },
-];
+// SWRV_SERVICES is derived from the master SERVICES catalog in site.config.ts.
+// To edit: open site.config.ts and modify the SERVICES array. The Roadmap
+// will reflect changes automatically. The exclude list below filters out
+// the ones that don't fit the Roadmap's "post-vision recommended services" framing.
+const ROADMAP_SERVICE_EXCLUDE = new Set<string>([
+  'brand-planning',     // self-reference (the Roadmap IS this service)
+  'consulting-call',    // standalone CTA, not roadmap-recommendable
+]);
+const SWRV_SERVICES: RoadmapService[] = SERVICES
+  .filter((svc) => !ROADMAP_SERVICE_EXCLUDE.has(svc.id))
+  .map((svc) => ({ name: svc.name, price: svc.price, category: svc.category }));
 
 export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
-  brandName: 'SWRV OTG',
-  brandUrl: 'swrvonthego.pro',
+  brandName: BRAND.name,
+  brandUrl: BRAND.url.replace('https://', ''),
   founderName: 'Swerve',
   founderTitle: 'Robert Birdsong',
-  ctaUrl: 'https://swrvonthego.pro',
+  ctaUrl: BRAND.ctaUrl,
 
   copy: {
     introLogo: 'SWRV OTG · The Roadmap Experience',

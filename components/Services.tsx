@@ -1,6 +1,7 @@
 import React from 'react';
 import { Database, Globe, FileText, CheckCircle, ArrowRight, Mic, BookOpen, Shield, Star, Briefcase, Music, Compass, Sparkles } from 'lucide-react';
 import { SERVICES } from '../constants';
+import { MEDIA } from '../media.config';
 
 const IconMap: Record<string, React.ReactNode> = {
   "Database": <Mic size={40} strokeWidth={1.5} />,
@@ -65,7 +66,7 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
                 className="block group bg-transparent border-0 p-0 cursor-pointer w-full"
               >
                 <img
-                  src="https://res.cloudinary.com/dastq6bk5/image/upload/v1775906943/1752950982581945_2_kk3jt3_ui7upw.png"
+                  src={MEDIA.services.leaderTile}
                   alt="Meet the leader of the revolution"
                   style={{ width: '100%', maxWidth: 380, display: 'block', border: '2.5px solid #D4572A', boxShadow: '0 16px 48px 0 rgba(10,8,4,0.16)', borderRadius: '18px' }}
                   className="transition-transform duration-300 group-hover:scale-105 mx-auto"
