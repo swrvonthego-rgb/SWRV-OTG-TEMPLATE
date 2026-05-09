@@ -1,101 +1,20 @@
 import React, { useState } from 'react';
-import { WEB_PACKAGE_NOTES, BRAND } from '../site.config';
+import { WEB_PACKAGE_NOTES, WEB_PACKAGE_TIERS, BRAND } from '../site.config';
+import type { WebPackageTier } from '../site.config';
 import { Check, Plus, ArrowRight, Star, Zap, Globe, Rocket } from 'lucide-react';
 
-const tiers = [
-  {
-    id: 'presence',
-    name: 'THE PRESENCE',
-    price: 250,
-    icon: <Globe size={28} strokeWidth={1.5} />,
-    tagline: 'Show up. Stand out. Get seen.',
-    badge: null,
-    bestFor: 'Artists, LLC holders, coaches, and creatives who need a clean, professional page for funding apps, investor decks, portfolio showcases, or proving you exist online.',
-    deliveryDays: '48-hour turnaround',
-    revisions: '1 round',
-    includes: [
-      'Custom single-page responsive website (desktop + mobile)',
-      'Bio / About section',
-      'Photo gallery — up to 8 images (you provide)',
-      'All social media profile links',
-      'Contact form (email-linked, no spam)',
-      'SEO setup: page title, meta description, Open Graph tags',
-      'Google Analytics installation',
-      'Your logo & brand colors applied',
-    ],
-    addOns: null,
-    note: 'You provide: photos, logo, and a short bio. We handle the rest.',
-    color: 'border-white/10',
-    accentColor: 'text-white',
-    badgeBg: '',
-    cta: 'Get The Presence',
-  },
-  {
-    id: 'platform',
-    name: 'THE PLATFORM',
-    price: 500,
-    icon: <Zap size={28} strokeWidth={1.5} />,
-    tagline: 'Sell. Book. Tell your story.',
-    badge: 'MOST POPULAR',
-    bestFor: 'Creators, coaches, service providers, and small businesses ready to take payments, book clients, and make a cinematic first impression.',
-    deliveryDays: '1-week turnaround',
-    revisions: '2 rounds',
-    includes: [
-      'Everything in The Presence',
-      'Payment integration (Stripe, PayPal, or Square — up to 3 products/services)',
-      'Booking / inquiry form with service category selection',
-      'Email list capture (newsletter sign-up integration)',
-      'Testimonials & social proof section',
-      '60–90 second custom brand intro video — includes:',
-      '   · Script writing (your story + what you stand for)',
-      '   · Cinematic voiceover (professional, produced by SWRV)',
-      '   · Original background music',
-      '   · Motion graphics + text animations',
-      'Video embedded and optimized on your page',
-    ],
-    addOns: null,
-    note: 'The brand video alone runs $500–$1,500 on the open market. You get it bundled here.',
-    color: 'border-lion-orange',
-    accentColor: 'text-lion-orange',
-    badgeBg: 'bg-lion-orange',
-    cta: 'Get The Platform',
-  },
-  {
-    id: 'ecosystem',
-    name: 'THE ECOSYSTEM',
-    price: 1000,
-    icon: <Rocket size={28} strokeWidth={1.5} />,
-    tagline: 'Your full world. One destination.',
-    badge: null,
-    bestFor: 'Established brands, movements, ministries, and businesses ready for a complete full-scale web presence built entirely around their vision.',
-    deliveryDays: '2-week turnaround',
-    revisions: '3 rounds',
-    includes: [
-      'Everything in The Platform',
-      '1 main page + up to 5 additional pages',
-      '   (Choose from: About, Services, Shop, Portfolio, Events, Blog, Press Kit, Contact)',
-      'Full site navigation — desktop menu + mobile hamburger',
-      'Full SEO optimization across all pages',
-      'Up to 10 products or services in your shop',
-      'Blog / news page (if selected as one of your 5 pages)',
-      'Social media feed integration',
-      'Brand style guide document (colors, fonts, logo usage rules)',
-      '30 days of post-launch support & minor updates',
-      'Priority response time',
-    ],
-    addOns: [
-      { label: 'Extra pages (beyond 5)', price: '+$75 each' },
-      { label: 'Monthly maintenance & updates', price: '$75/mo' },
-      { label: 'Additional brand video', price: '$150–$300' },
-      { label: 'Done-for-you domain & hosting setup', price: '$50 one-time' },
-    ],
-    note: 'Multi-page sites run $3,000–$15,000+ in the open market. This is intentional.',
-    color: 'border-white/20',
-    accentColor: 'text-white',
-    badgeBg: '',
-    cta: 'Get The Ecosystem',
-  },
-];
+// Map icon names to lucide-react components (config has names; we render icons)
+const ICON_MAP: Record<WebPackageTier['iconName'], React.ReactNode> = {
+  Globe: <Globe size={28} strokeWidth={1.5} />,
+  Zap: <Zap size={28} strokeWidth={1.5} />,
+  Rocket: <Rocket size={28} strokeWidth={1.5} />,
+  Star: <Star size={28} strokeWidth={1.5} />,
+  Compass: <ArrowRight size={28} strokeWidth={1.5} />,
+  Sparkles: <Plus size={28} strokeWidth={1.5} />,
+};
+
+// Tiers come from site.config — augment with their JSX icon
+const tiers = WEB_PACKAGE_TIERS.map(t => ({ ...t, icon: ICON_MAP[t.iconName] }));
 
 const universalNotes = WEB_PACKAGE_NOTES;
 

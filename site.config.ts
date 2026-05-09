@@ -486,3 +486,122 @@ export const WEB_PACKAGE_NOTES = [
   '50% deposit required to begin · 50% due on final delivery',
   'You provide: photos, logo, and key copy (we can help shape it) — or ask about copy writing as an add-on',
 ] as const;
+
+
+// ── WEB PACKAGE TIERS (rich tier data) ──────────────────────
+// The 3-tier comparison shown on the Web Packages section.
+// Icons are referenced by name (component maps name → lucide icon).
+// Available icon names: 'Globe', 'Zap', 'Rocket', 'Star', 'Compass', 'Sparkles'
+export interface WebPackageTier {
+  id: string;
+  name: string;
+  price: number;
+  iconName: 'Globe' | 'Zap' | 'Rocket' | 'Star' | 'Compass' | 'Sparkles';
+  tagline: string;
+  badge: string | null;
+  bestFor: string;
+  deliveryDays: string;
+  revisions: string;
+  includes: string[];
+  addOns: { label: string; price: string }[] | null;
+  note: string;
+  color: string;          // tailwind border class
+  accentColor: string;    // tailwind text class
+  badgeBg: string;        // tailwind bg class
+  cta: string;
+}
+
+export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
+  {
+    id: 'presence',
+    name: 'THE PRESENCE',
+    price: 250,
+    iconName: 'Globe',
+    tagline: 'Show up. Stand out. Get seen.',
+    badge: null,
+    bestFor: 'Artists, LLC holders, coaches, and creatives who need a clean, professional page for funding apps, investor decks, portfolio showcases, or proving you exist online.',
+    deliveryDays: '48-hour turnaround',
+    revisions: '1 round',
+    includes: [
+      'Custom single-page responsive website (desktop + mobile)',
+      'Bio / About section',
+      'Photo gallery — up to 8 images (you provide)',
+      'All social media profile links',
+      'Contact form (email-linked, no spam)',
+      'SEO setup: page title, meta description, Open Graph tags',
+      'Google Analytics installation',
+      'Your logo & brand colors applied',
+    ],
+    addOns: null,
+    note: 'You provide: photos, logo, and a short bio. We handle the rest.',
+    color: 'border-white/10',
+    accentColor: 'text-white',
+    badgeBg: '',
+    cta: 'Get The Presence',
+  },
+  {
+    id: 'platform',
+    name: 'THE PLATFORM',
+    price: 500,
+    iconName: 'Zap',
+    tagline: 'Sell. Book. Tell your story.',
+    badge: 'MOST POPULAR',
+    bestFor: 'Creators, coaches, service providers, and small businesses ready to take payments, book clients, and make a cinematic first impression.',
+    deliveryDays: '1-week turnaround',
+    revisions: '2 rounds',
+    includes: [
+      'Everything in The Presence',
+      'Payment integration (Stripe, PayPal, or Square — up to 3 products/services)',
+      'Booking / inquiry form with service category selection',
+      'Email list capture (newsletter sign-up integration)',
+      'Testimonials & social proof section',
+      '60–90 second custom brand intro video — includes:',
+      '   · Script writing (your story + what you stand for)',
+      '   · Cinematic voiceover (professional, produced by SWRV)',
+      '   · Original background music',
+      '   · Motion graphics + text animations',
+      'Video embedded and optimized on your page',
+    ],
+    addOns: null,
+    note: 'The brand video alone runs $500–$1,500 on the open market. You get it bundled here.',
+    color: 'border-lion-orange',
+    accentColor: 'text-lion-orange',
+    badgeBg: 'bg-lion-orange',
+    cta: 'Get The Platform',
+  },
+  {
+    id: 'ecosystem',
+    name: 'THE ECOSYSTEM',
+    price: 1000,
+    iconName: 'Rocket',
+    tagline: 'Your full world. One destination.',
+    badge: null,
+    bestFor: 'Established brands, movements, ministries, and businesses ready for a complete full-scale web presence built entirely around their vision.',
+    deliveryDays: '2-week turnaround',
+    revisions: '3 rounds',
+    includes: [
+      'Everything in The Platform',
+      '1 main page + up to 5 additional pages',
+      '   (Choose from: About, Services, Shop, Portfolio, Events, Blog, Press Kit, Contact)',
+      'Full site navigation — desktop menu + mobile hamburger',
+      'Full SEO optimization across all pages',
+      'Up to 10 products or services in your shop',
+      'Blog / news page (if selected as one of your 5 pages)',
+      'Social media feed integration',
+      'Brand style guide document (colors, fonts, logo usage rules)',
+      '30 days of post-launch support & minor updates',
+      'Priority response time',
+    ],
+    addOns: [
+      { label: 'Extra pages (beyond 5)', price: '+$75 each' },
+      { label: 'Monthly maintenance & updates', price: '$75/mo' },
+      { label: 'Additional brand video', price: '$150–$300' },
+      { label: 'Done-for-you domain & hosting setup', price: '$50 one-time' },
+    ],
+    note: 'Multi-page sites run $3,000–$15,000+ in the open market. This is intentional.',
+    color: 'border-white/20',
+    accentColor: 'text-white',
+    badgeBg: '',
+    cta: 'Get The Ecosystem',
+  },
+];
