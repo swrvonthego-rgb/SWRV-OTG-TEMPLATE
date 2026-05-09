@@ -1,6 +1,6 @@
 import React from 'react';
 import { Database, Globe, FileText, CheckCircle, ArrowRight, Mic, BookOpen, Shield, Star, Briefcase, Music, Compass, Sparkles } from 'lucide-react';
-import { SERVICES } from '../constants';
+import { SERVICE_CATEGORIES as SERVICES } from '../site.config';
 import { MEDIA } from '../media.config';
 
 const IconMap: Record<string, React.ReactNode> = {

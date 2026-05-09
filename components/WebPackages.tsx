@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { WEB_PACKAGE_NOTES, WEB_PACKAGE_TIERS, BRAND } from '../site.config';
 import type { WebPackageTier } from '../site.config';
-import { Check, Plus, ArrowRight, Star, Zap, Globe, Rocket } from 'lucide-react';
+import { Check, Plus, ArrowRight, Star, Zap, Globe, Rocket, Compass, Sparkles, Briefcase, Heart, Mic, Award, Target, Crown } from 'lucide-react';
 
 // Map icon names to lucide-react components (config has names; we render icons)
 const ICON_MAP: Record<WebPackageTier['iconName'], React.ReactNode> = {
-  Globe: <Globe size={28} strokeWidth={1.5} />,
-  Zap: <Zap size={28} strokeWidth={1.5} />,
-  Rocket: <Rocket size={28} strokeWidth={1.5} />,
-  Star: <Star size={28} strokeWidth={1.5} />,
-  Compass: <ArrowRight size={28} strokeWidth={1.5} />,
-  Sparkles: <Plus size={28} strokeWidth={1.5} />,
+  Globe:    <Globe    size={28} strokeWidth={1.5} />,
+  Zap:      <Zap      size={28} strokeWidth={1.5} />,
+  Rocket:   <Rocket   size={28} strokeWidth={1.5} />,
+  Star:     <Star     size={28} strokeWidth={1.5} />,
+  Compass:  <Compass  size={28} strokeWidth={1.5} />,
+  Sparkles: <Sparkles size={28} strokeWidth={1.5} />,
 };
+// Note: to expand the icon set, add more lucide icons to the import above
+// and to the WebPackageTier['iconName'] union in site.config.ts.
+// Available bonus icons (not yet in the union): Briefcase, Heart, Mic, Award, Target, Crown
 
 // Tiers come from site.config — augment with their JSX icon
 const tiers = WEB_PACKAGE_TIERS.map(t => ({ ...t, icon: ICON_MAP[t.iconName] }));

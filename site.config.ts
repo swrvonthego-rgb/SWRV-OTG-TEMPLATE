@@ -605,3 +605,68 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     cta: 'Get The Ecosystem',
   },
 ];
+
+
+// ── HEADER (top utility bar + main navigation) ──────────────
+// The top utility bar (small links above main nav) and the main
+// nav. Train BYOB stays inlined in the component since it's a
+// permanent fixture pointing to the founder's other site.
+export const HEADER = {
+  // Small links shown in the utility bar (right side, hides on scroll)
+  utilityLinks: [
+    { label: 'Books', href: '#books', external: false },
+    { label: 'Podcast', href: '#podcast', external: false },
+  ],
+  // Main navigation items
+  navItems: [
+    { label: 'THE ECOSYSTEM', href: '#ecosystem', external: false },
+    { label: 'BYOB TRAINING', href: 'https://trainbyob.me', external: true },
+    { label: 'ABOUT SWRV', href: '#about-swrv', external: false },
+    { label: 'ZION SWRV BIRDSONG', href: '#meet-zion', external: false },
+  ],
+  // Inline "Connect" button copy
+  connectLabel: 'Connect',
+  // Right-side primary CTAs
+  bookNowLabel: 'BOOK NOW',
+  getInTouchLabel: 'GET IN TOUCH',
+} as const;
+
+// ── SERVICE CATEGORIES (top-level Services tiles) ───────────
+// These are the BIG category tiles shown in the main Services component.
+// They differ from the priced SERVICES catalog (à la carte items used by
+// the Roadmap recommendations) — these are the high-level "what we do".
+// Icons reference lucide-react component names; the Services component maps
+// the name to the actual icon.
+export interface ServiceCategory {
+  title: string;
+  description: string;
+  icon: 'Compass' | 'Globe' | 'CheckCircle' | 'FileText' | 'Database' | 'Briefcase' | 'Music';
+}
+
+export const SERVICE_CATEGORIES: ServiceCategory[] = [
+  {
+    title: 'Brand Planning',
+    description: 'Blueprint Your Vision — an interactive 5-minute experience to map your gift, your work, your purpose, and your brand identity. AI guides you through your Day in the Happily Ever After and reveals your Roadmap.',
+    icon: 'Compass',
+  },
+  {
+    title: 'Artist Development',
+    description: 'The one-stop shop for your bigger vision. We handle the logistics so you can create the art.',
+    icon: 'Globe',
+  },
+  {
+    title: 'BYOB Training',
+    description: 'Fitness & Self-Defense Coaching. Train your body, protect your peace. Visit trainbyob.me.',
+    icon: 'CheckCircle',
+  },
+  {
+    title: 'Authorship',
+    description: "Books to guide your journey: 'SWRV In Your Gift' and 'The RoadMap (Blueprint Your Vision)'.",
+    icon: 'FileText',
+  },
+  {
+    title: 'SWRV Talk Podcast',
+    description: 'Wisdom, motivation, and behind-the-scenes stories from the journey. Tune in to the conversation.',
+    icon: 'Database',
+  },
+];
