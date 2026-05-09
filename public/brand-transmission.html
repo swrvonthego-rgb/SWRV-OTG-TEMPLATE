@@ -420,12 +420,14 @@ function render(){
 render();
 
 /* ═══════════════════════════════════════
-   SPEECH  —  OPENAI ONYX CINEMATIC NARRATOR
-   Primary:  pre-generated MP3s via OpenAI tts-1-hd "onyx" voice
-             (deep, authoritative, movie-trailer grade)
+   SPEECH  —  ELEVENLABS "BRIAN" CINEMATIC NARRATOR
+   Primary:  pre-generated MP3s at /audio/narration-{0..6}.mp3
+             Voice = ElevenLabs "Brian" — deep, resonant, American
+             trailer-narrator. Speed 0.72, style 0.60, max gravitas.
    Fallback: Web Speech API if MP3s haven't been generated yet
-             Run: OPENAI_API_KEY=sk-... node scripts/generate-narration.mjs
-═══════════════════════════════════════ */
+             To generate the MP3s (one-time, ~30s):
+               ELEVENLABS_API_KEY=sk_... node scripts/generate-narration.mjs
+   ═══════════════════════════════════════ */
 const WBS=[document.getElementById('w1'),document.getElementById('w2'),document.getElementById('w3'),document.getElementById('w4'),document.getElementById('w5')];
 const AL=document.getElementById('audio-label');
 function setWave(on){WBS.forEach(w=>w.classList.toggle('off',!on));AL.textContent=on?'VOICE ACTIVE':'STANDBY';}
@@ -437,59 +439,139 @@ function setWave(on){WBS.forEach(w=>w.classList.toggle('off',!on));AL.textConten
 let epoch=0;
 let activeAudio=null;
 
+// ── MP3 availability cache. We probe /audio/narration-0.mp3 once on
+// load. If it 404s, we know none have been generated yet and fall back
+// to TTS without trying every scene. If it loads, we trust the rest exist.
+// ── Eager preload all MP3s on iframe load. By the time scenes play,
+//    they're cached. No more probe-once-and-stick logic.
+const TOTAL_NARRATION_SCENES = 7;
+const preloadedNarration = new Array(TOTAL_NARRATION_SCENES);
+for (let i = 0; i < TOTAL_NARRATION_SCENES; i++) {
+  try {
+    const a = new Audio(`/audio/narration-${i}.mp3`);
+    a.preload = 'auto';
+    a.load();
+    preloadedNarration[i] = a;
+  } catch (e) {
+    console.warn('[narration] preload failed for scene', i, e);
+  }
+}
+console.log('[narration] preloaded', TOTAL_NARRATION_SCENES, 'MP3s');
+
 function stopSpeak(){
-  epoch++;                                               // invalidate ALL pending callbacks
-  if(activeAudio){ activeAudio.pause(); activeAudio.currentTime=0; activeAudio=null; }
-  if(window.speechSynthesis) speechSynthesis.cancel();  // may trigger onerror('interrupted') — epoch guards against it
+  epoch++;
+  if(activeAudio){
+    try { activeAudio.pause(); activeAudio.currentTime = 0; } catch(_) {}
+    activeAudio = null;
+  }
+  if(window.speechSynthesis) speechSynthesis.cancel();
   setWave(false);
 }
 
-function speak(text,onEnd,sceneIdx){
-  stopSpeak();                   // bumps epoch first
-  const myEpoch=epoch;           // snapshot — callbacks compare against this
+function speak(text, onEnd, sceneIdx){
+  stopSpeak();
+  const myEpoch = epoch;
+  const guardedEnd = () => { if (epoch === myEpoch && onEnd) onEnd(); };
 
-  const guardedEnd=()=>{ if(epoch===myEpoch && onEnd) onEnd(); };
-
-  // ── Primary: pre-generated MP3 ──────────────────────────────────────
-  if(sceneIdx!==undefined){
-    // Cloudinary audio assets are not available for these previews, so use browser speech synthesis instead.
+  if (sceneIdx === undefined) {
     speakFallback(text, guardedEnd, myEpoch);
     return;
   }
 
-  speakFallback(text,guardedEnd,myEpoch);
+  // Each scene independently tries MP3. No sticky failure state.
+  // Use a fresh Audio so we never have stale event listeners — we keep
+  // preloadedNarration around just for the cache, not for playback.
+  const audio = new Audio(`/audio/narration-${sceneIdx}.mp3`);
+  audio.preload = 'auto';
+  activeAudio = audio;
+
+  let settled = false;
+  const fallback = (reason) => {
+    if (settled) return;
+    settled = true;
+    console.warn('[narration] scene ' + sceneIdx + ' fell back to TTS:', reason);
+    if (epoch !== myEpoch) return;
+    if (activeAudio === audio) activeAudio = null;
+    speakFallback(text, guardedEnd, myEpoch);
+  };
+  const success = () => {
+    if (settled) return;
+    settled = true;
+    if (epoch !== myEpoch) return;
+    setWave(true);
+    console.log('[narration] scene ' + sceneIdx + ' playing MP3');
+  };
+
+  // 6s network timeout — if the audio doesn't start within 6s, fall back
+  const timeoutId = setTimeout(() => fallback('timeout (6s no playing event)'), 6000);
+
+  audio.addEventListener('playing', () => { clearTimeout(timeoutId); success(); }, { once: true });
+  audio.addEventListener('ended', () => {
+    clearTimeout(timeoutId);
+    if (epoch !== myEpoch) return;
+    setWave(false);
+    if (activeAudio === audio) activeAudio = null;
+    setTimeout(guardedEnd, 400);
+  }, { once: true });
+  audio.addEventListener('error', (e) => {
+    clearTimeout(timeoutId);
+    const code = e && e.target && e.target.error ? e.target.error.code : 'unknown';
+    fallback('audio error code ' + code);
+  }, { once: true });
+
+  audio.play().catch((err) => {
+    clearTimeout(timeoutId);
+    fallback('play() rejected: ' + (err && err.message ? err.message : 'unknown'));
+  });
 }
 
 // ── Fallback: Web Speech API ─────────────────────────────────────────
 let voices=[];
-const storedVoiceName = typeof localStorage !== 'undefined' ? localStorage.getItem('swrvBrandTransmissionVoice') : null;
-let preferredVoiceName = storedVoiceName || 'Alex';
+const storedVoiceName = typeof localStorage !== 'undefined' ? localStorage.getItem('swrvBrandTransmissionVoice_v3_male') : null;
+let preferredVoiceName = storedVoiceName || null;
 const loadV=()=>{ voices=speechSynthesis.getVoices(); };
 loadV();
 if(speechSynthesis.onvoiceschanged!==undefined) speechSynthesis.onvoiceschanged=loadV;
 
 function pickVoice(){
-  // Lock to stored voice if available, otherwise lock to 'Daniel' or 'Alex'
-  if(preferredVoiceName && preferredVoiceName !== 'Alex'){
+  // Lock to stored voice if available
+  if(preferredVoiceName){
     const v=voices.find(v=>v.name===preferredVoiceName&&v.lang.startsWith('en'));
     if(v) return v;
   }
-  // Try system voices in priority order (most consistent narrator voices)
-  const preferred=['Daniel', 'Alex', 'Fred', 'Google UK English Male', 'Microsoft David'];
+  // Priority order — deepest, most cinematic male narrator voices on each platform.
+  // (Until the ElevenLabs MP3s are generated, this is the best we can do.)
+  const preferred=[
+    // macOS / iOS
+    'Daniel (Enhanced)', 'Daniel', 'Albert', 'Reed', 'Rocko', 'Alex', 'Fred', 'Bruce',
+    // Windows
+    'Microsoft Guy Online (Natural) - English (United States)',
+    'Microsoft Davis Online (Natural) - English (United States)',
+    'Microsoft David Desktop - English (United States)',
+    'Microsoft David',
+    // Chrome / Android
+    'Google UK English Male', 'Google US English',
+  ];
   for(const name of preferred){
-    if(!name) continue;
-    const v=voices.find(v=>v.name.includes(name)&&v.lang.startsWith('en'));
-    if(v){
+    const v=voices.find(v=>v.name===name||v.name.includes(name));
+    if(v && v.lang.startsWith('en')){
       preferredVoiceName = v.name;
-      if(typeof localStorage !== 'undefined') localStorage.setItem('swrvBrandTransmissionVoice', v.name);
+      if(typeof localStorage !== 'undefined') localStorage.setItem('swrvBrandTransmissionVoice_v3_male', v.name);
       return v;
     }
   }
-  // Fallback only if none of the preferred voices are found, then lock it in
+  // Last resort: any English male-sounding voice (heuristic on name)
+  const heuristic = voices.find(v => v.lang.startsWith('en') && /\b(male|man|david|james|tom|john|guy|ryan|brian)\b/i.test(v.name));
+  if (heuristic) {
+    preferredVoiceName = heuristic.name;
+    if(typeof localStorage !== 'undefined') localStorage.setItem('swrvBrandTransmissionVoice_v3_male', heuristic.name);
+    return heuristic;
+  }
+  // Absolute fallback — first English voice
   const fallback = voices.find(v=>v.lang.startsWith('en'))||null;
   if(fallback){
     preferredVoiceName = fallback.name;
-    if(typeof localStorage !== 'undefined') localStorage.setItem('swrvBrandTransmissionVoice', fallback.name);
+    if(typeof localStorage !== 'undefined') localStorage.setItem('swrvBrandTransmissionVoice_v3_male', fallback.name);
   }
   return fallback;
 }
@@ -505,7 +587,10 @@ function speakFallback(text,onEnd,myEpoch){
 
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
-  u.rate=0.72; u.pitch=0.45; u.volume=1;
+  // Pushed deeper: rate slowed, pitch dropped to floor for max gravitas.
+  // Note: this is still browser TTS — true cinematic voice requires the
+  // ElevenLabs MP3s. This makes the fallback as deep as TTS allows.
+  u.rate=0.70; u.pitch=0.35; u.volume=1;
   const v=pickVoice(); if(v) u.voice=v;
 
   // Safety timer: fires if the browser silently drops the speech (common in iframes)
