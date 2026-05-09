@@ -8,22 +8,22 @@ const STORE_URL = 'https://swerve.launchcart.store/shop';
 // specific items here later, replace with real Printful product images + names.
 const FEATURED = [
   {
-    label: 'Hoodies',
+    label: 'Cropped Hoodies',
     tagline: 'wear the wisdom',
-    accent: 'from-orange-500/20 via-orange-500/10 to-transparent',
-    icon: '🦁',
+    accent: 'from-orange-500/15 via-orange-500/5 to-transparent',
+    image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299527/womens-cropped-hoodie-black-front-69fdcb05dc414_lqi1p7.png',
   },
   {
-    label: 'Tees',
+    label: 'Sports Jerseys',
     tagline: 'everyday revolution',
-    accent: 'from-amber-500/20 via-amber-500/10 to-transparent',
-    icon: '✨',
+    accent: 'from-amber-500/15 via-amber-500/5 to-transparent',
+    image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299621/all-over-print-recycled-unisex-sports-jersey-white-front-69fdcb512b252_mxop04.png',
   },
   {
-    label: 'Accessories',
+    label: 'Dad Hats',
     tagline: 'small flexes',
-    accent: 'from-yellow-500/20 via-yellow-500/10 to-transparent',
-    icon: '🧢',
+    accent: 'from-yellow-500/15 via-yellow-500/5 to-transparent',
+    image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299694/classic-dad-hat-black-front-69fdcbb11318f_rlpg8c.png',
   },
 ];
 
@@ -72,7 +72,7 @@ export const ShopSWERVE: React.FC = () => {
 
               {/* Content */}
               <div className="relative h-full flex flex-col justify-between p-7">
-                <div className="text-5xl">{item.icon}</div>
+                <div className="flex-1 flex items-center justify-center -mt-2"><img src={item.image} alt={item.label} className="max-h-44 w-auto object-contain drop-shadow-2xl" loading="lazy" /></div>
                 <div>
                   <div className="text-xs tracking-[0.25em] uppercase text-white/50 mb-2">
                     {item.tagline}
