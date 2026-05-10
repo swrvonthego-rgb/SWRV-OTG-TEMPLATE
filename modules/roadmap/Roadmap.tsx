@@ -783,16 +783,27 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           <p className="intro-sub">{config.copy.introSub}</p>
 
           <div className="video-wrap">
-            <button
-              type="button"
-              className="video-cover"
-              onClick={() => showToast('Video dropping soon — Swerve is recording 🎬')}
-            >
-              <span className="play-ring">
-                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-              </span>
-              <span className="video-label">{config.copy.videoLabel}</span>
-            </button>
+            {config.copy.videoUrl ? (
+              <video
+                className="video-player"
+                src={config.copy.videoUrl}
+                controls
+                playsInline
+                preload="metadata"
+                aria-label={config.copy.videoLabel}
+              />
+            ) : (
+              <button
+                type="button"
+                className="video-cover"
+                onClick={() => showToast('Video dropping soon — Swerve is recording 🎬')}
+              >
+                <span className="play-ring">
+                  <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                </span>
+                <span className="video-label">{config.copy.videoLabel}</span>
+              </button>
+            )}
           </div>
 
           <div className="name-field-wrap">
