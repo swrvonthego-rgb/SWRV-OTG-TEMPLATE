@@ -488,6 +488,10 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             @SWRVBIRDSONG
           </a>
+          <a href="https://www.youtube.com/@swrvbirdsong" target="_blank" rel="noreferrer" style={{ color: 'var(--color-muted)', textDecoration: 'none', fontSize: '0.78rem', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'color 0.3s' }} onMouseOver={(e) => (e.currentTarget.style.color = 'var(--color-gold)')} onMouseOut={(e) => (e.currentTarget.style.color = 'var(--color-muted)')}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a2.997 2.997 0 0 0-2.108-2.12C19.505 3.5 12 3.5 12 3.5s-7.505 0-9.39.566A2.997 2.997 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a2.997 2.997 0 0 0 2.108 2.12C4.495 20.5 12 20.5 12 20.5s7.505 0 9.39-.566a2.997 2.997 0 0 0 2.108-2.12C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.546 15.568V8.432L15.818 12l-6.272 3.568z"/></svg>
+            @SWRVBIRDSONG
+          </a>
         </div>
         <p className="footer-copy">© {new Date().getFullYear()} Zion Birdsong · swrvonthego.com</p>
       </footer>
