@@ -311,6 +311,87 @@ export const SERVICES: Service[] = [
     priceNumeric: 150,
     blurb: '60-minute one-on-one call to map a specific decision or unblock the next move.',
   },
+
+  // ── À LA CARTE (audio + video editing without full production overhead) ──
+  {
+    id: 'audio-edit-alacarte',
+    name: 'Audio Editing — À La Carte',
+    category: 'execution',
+    price: 'From $75/hr',
+    priceNumeric: 75,
+    blurb: 'You bring the raw audio, I clean it up — denoise, mix, master, level. Per-track or hourly.',
+  },
+  {
+    id: 'video-edit-alacarte',
+    name: 'Video Editing — À La Carte',
+    category: 'execution',
+    price: 'From $100/hr',
+    priceNumeric: 100,
+    blurb: 'Reels, shorts, promos, sermon clips — bring the footage, leave with finished cuts. Hourly or per-deliverable.',
+  },
+
+  // ── PODCASTING ──
+  {
+    id: 'podcast-launch',
+    name: 'Podcast Launch Kit',
+    category: 'execution',
+    price: '$650',
+    priceNumeric: 650,
+    blurb: 'Cover art, intro/outro music, hosting setup, RSS distribution, and a 5-episode editing block to get you live on Spotify + Apple Podcasts.',
+  },
+  {
+    id: 'podcast-editing',
+    name: 'Podcast Episode Production',
+    category: 'execution',
+    price: '$95/episode',
+    priceNumeric: 95,
+    blurb: 'Per-episode editing, leveling, intro/outro, show notes, and chapter markers. Bulk discounts available.',
+  },
+
+  // ── PRESENTATIONS ──
+  {
+    id: 'pitch-deck',
+    name: 'Pitch Deck / Investor Slides',
+    category: 'execution',
+    price: '$450',
+    priceNumeric: 450,
+    blurb: 'Brand-aligned investor or grant pitch deck — narrative arc, design, charts, ask slide. Up to 12 slides.',
+  },
+  {
+    id: 'keynote-slides',
+    name: 'Keynote / Speaking Slides',
+    category: 'execution',
+    price: '$300',
+    priceNumeric: 300,
+    blurb: 'Custom slide deck for talks, workshops, or sermons. Visual storytelling that doesn\'t fight your message.',
+  },
+
+  // ── BUSINESS FOUNDATION ──
+  {
+    id: 'bank-setup',
+    name: 'Business Banking Setup',
+    category: 'execution',
+    price: '$150',
+    priceNumeric: 150,
+    blurb: 'After your LLC + EIN are live, I help you open a business bank account, set up payment processing, and connect Stripe/Square so money can move.',
+  },
+  {
+    id: 'llc-bank-bundle',
+    name: 'LLC + Banking + Site Bundle',
+    category: 'execution',
+    price: '$650',
+    priceNumeric: 650,
+    blurb: 'LLC paperwork + EIN + business banking + 3-page launch site. Done in 2 weeks. From idea to legal-and-online.',
+    featured: true,
+  },
+  {
+    id: 'fundraising-site',
+    name: 'Crowdfunding / Fundraising Site',
+    category: 'execution',
+    price: '$400',
+    priceNumeric: 400,
+    blurb: 'Built specifically to raise money — campaign page, donation/payment flow, progress meter, supporter shoutouts. GoFundMe alternative you actually own.',
+  },
 ];
 
 // ── WEB PACKAGES (subset of services, displayed as comparison tiers) ──

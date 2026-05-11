@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { SecondaryIntro } from './components/SecondaryIntro';
 import { Hero } from './components/Hero';
@@ -23,11 +23,20 @@ import { ContactSchedule } from './components/ContactSchedule';
 // same module can be dropped into any client ecosystem.
 import { Roadmap } from './modules/roadmap/Roadmap';
 import { Zion } from './modules/zion/Zion';
+import { ServicesMenu } from './modules/services-menu/ServicesMenu';
 import { Byob } from './modules/byob/Byob';
 
 const App: React.FC = () => {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [isZionOpen, setIsZionOpen] = useState(false);
+  const [isServicesMenuOpen, setIsServicesMenuOpen] = useState(false);
+  // Open services menu if URL is /services (deep linking)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname === '/services') {
+      setIsServicesMenuOpen(true);
+    }
+  }, []);
+
   const [isByobOpen, setIsByobOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
@@ -76,7 +85,7 @@ const App: React.FC = () => {
         />
         <BrandTransmission />
         <AboutSWRV />
-        <Services onOpenRoadmap={() => setIsRoadmapOpen(true)} onOpenZion={() => setIsZionOpen(true)} />
+        <Services onOpenRoadmap={() => setIsRoadmapOpen(true)} onOpenZion={() => setIsZionOpen(true)} onOpenServicesMenu={() => setIsServicesMenuOpen(true)} />
         <WebPackages />
         <Stats />
         <Shop />
@@ -89,6 +98,12 @@ const App: React.FC = () => {
       <Roadmap
         isOpen={isRoadmapOpen}
         onClose={() => setIsRoadmapOpen(false)}
+      />
+
+      {/* Full services menu overlay */}
+      <ServicesMenu
+        isOpen={isServicesMenuOpen}
+        onClose={() => setIsServicesMenuOpen(false)}
       />
 
       {/* Zion SWRV Birdsong — artist page overlay */}

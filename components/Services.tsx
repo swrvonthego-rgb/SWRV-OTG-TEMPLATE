@@ -13,7 +13,7 @@ const IconMap: Record<string, React.ReactNode> = {
   "Music": <Music size={40} strokeWidth={1.5} />
 };
 
-export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () => void }> = ({ onOpenRoadmap, onOpenZion }) => {
+export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () => void; onOpenServicesMenu?: () => void }> = ({ onOpenRoadmap, onOpenZion, onOpenServicesMenu }) => {
   return (
     <>
     <section id="ecosystem" className="py-24 bg-white">
@@ -197,6 +197,21 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
               </div>
             );
           })}
+        </div>
+
+        {/* ── See All Services CTA ─────────────────────────── */}
+        <div className="mt-16 text-center">
+          <button
+            type="button"
+            onClick={() => onOpenServicesMenu?.()}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-black text-white border-2 border-black hover:bg-white hover:text-black transition-all duration-300 font-bold tracking-widest text-sm uppercase rounded-sm"
+          >
+            See Full Service Menu
+            <ArrowRight size={18} />
+          </button>
+          <p className="mt-4 text-xs text-gray-500 tracking-widest uppercase">
+            33+ services · à la carte or bundled · From $75
+          </p>
         </div>
       </div>
     </section>
