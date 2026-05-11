@@ -27,14 +27,28 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           }
         });
       },
-      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+      {
+        // Use the .zion-page overlay as the scroll root, not the document
+        root: document.querySelector('.zion-page'),
+        threshold: 0.15,
+        rootMargin: '0px 0px -50px 0px'
+      }
     );
+
+    // Safety fallback: after 800ms, force-reveal any elements still hidden
+    // (covers case where observer doesn't fire due to layout edge cases)
+    const fallback = setTimeout(() => {
+      revealRefs.current.forEach(el => { if (el) el.classList.add('active'); });
+    }, 800);
 
     revealRefs.current.forEach((el) => {
       if (el) observer.observe(el);
     });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
   }, []);
 
   const addToRefs = (el: HTMLElement | null) => {

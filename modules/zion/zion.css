@@ -674,8 +674,8 @@
 
 /* ── SCROLL REVEAL ── */
 .zion-page .reveal{
-  opacity: 0;
-  transform: translateY(40px);
+  opacity: 0.05;
+  transform: translateY(20px);
   transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .zion-page .reveal.active{
