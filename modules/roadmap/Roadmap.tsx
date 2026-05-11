@@ -241,18 +241,22 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     if (manualTrackId) ls.set('roadmap-manual-track', manualTrackId);
   }, [manualTrackId]);
 
-  // ── Mic + Music: keep music playing during speaking but DUCK volume ──
-  // (user wants to hear the music while sharing their vision — feels dreamier)
+  // ── Mic + Music: music keeps playing during speaking, user controls volume via slider ──
+  // Slider is uncontrolled (no React state) so adjusting volume won't trigger re-renders
+  // that could interrupt the active speech recognition session.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !effectiveTrack) return;
     if (mic.isListening) {
-      audio.volume = 0.15; // duck to 15% so mic still picks up speech clearly
+      // Initial duck when mic starts — user can adjust UP via slider after
+      audio.volume = 0.15;
+      const slider = document.getElementById('vision-volume-slider') as HTMLInputElement | null;
+      if (slider) slider.value = '0.15';
       if (firstGestureDone && !musicMuted) {
         audio.play().catch(() => { /* autoplay blocked */ });
       }
     } else {
-      audio.volume = 0.45; // restore to normal
+      audio.volume = 0.45; // restore to normal listening volume
       if (firstGestureDone && !musicMuted) {
         audio.play().catch(() => { /* autoplay blocked */ });
       }
@@ -456,7 +460,14 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         const raw = (data.content || [])
           .map((b: { text?: string }) => b.text || '')
           .join('');
-        const clean = raw.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+        // Strip markdown fences if present
+        let clean = raw.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
+        // Extract the JSON object even if model added preamble like "Zion, here's your roadmap: {..}"
+        const jsonMatch = clean.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('No JSON object found in response');
+        }
+        clean = jsonMatch[0];
         const parsed: RoadmapResult = JSON.parse(clean);
 
         setActiveStep(-1);
@@ -939,10 +950,40 @@ export const Roadmap: React.FC<RoadmapProps> = ({
               {mic.state === 'blocked' && 'Mic blocked — allow mic in browser settings'}
               {mic.state === 'network-error' && 'Network error — check connection'}
               {mic.state === 'requesting' && 'Asking for mic permission…'}
-              {mic.state === 'listening' && 'Listening — tap to stop'}
+              {mic.state === 'listening' && 'Listening — speak freely'}
               {mic.state === 'idle' && 'Tap to speak'}
             </span>
             {mic.state === 'idle' && <span className="mic-note">Chrome / Edge recommended</span>}
+
+            {/* Live controls during recording — volume slider + finished button */}
+            {mic.isListening && (
+              <div className="vision-live-controls">
+                <div className="vision-volume">
+                  <span className="vision-volume-label">🎵 Music</span>
+                  <input
+                    id="vision-volume-slider"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    defaultValue="0.15"
+                    aria-label="Background music volume"
+                    onInput={(e) => {
+                      const audio = audioRef.current;
+                      if (audio) audio.volume = parseFloat((e.target as HTMLInputElement).value);
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="vision-finished-btn"
+                  onClick={() => mic.stop()}
+                  aria-label="I'm finished speaking"
+                >
+                  ✓ I'm Finished
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="word-counter">{words} word{words !== 1 ? 's' : ''}</div>
