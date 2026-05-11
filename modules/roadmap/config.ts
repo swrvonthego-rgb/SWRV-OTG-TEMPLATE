@@ -220,7 +220,14 @@ HARD RULES — never break these:
 5. Recommended services must be intelligent and specific — no generic picks.
 6. The closing_word should feel like it came from a mentor who just heard them for the first time and truly sees them.
 
-Return ONLY a raw JSON object. No markdown fences, no backticks, no explanation, no preamble:
+CRITICAL OUTPUT FORMAT — failure to comply breaks the user experience:
+- Your ENTIRE response must be a single JSON object. Nothing before it. Nothing after it.
+- DO NOT begin with greetings like "Zion," or "Hi," or "Here is" or "Sure!"
+- DO NOT add explanatory text before or after the JSON.
+- DO NOT use markdown code fences (no \`\`\`json, no \`\`\`).
+- Your first character must be { and your last character must be }.
+
+The JSON schema to return (exactly this shape):
 {"gift":"one sharp sentence naming their core gift","work":"2-3 sentences on what they do that the world pays for","purpose":"1-2 sentences on the deeper WHY behind what they do","vision_summary":"4 vivid present-tense sentences: morning → work → evening → legacy/impact","brand_colors":[{"hex":"#xxxxxx","name":"Color Name","meaning":"what this says about their brand and life"},{"hex":"#xxxxxx","name":"Color Name","meaning":"..."},{"hex":"#xxxxxx","name":"Color Name","meaning":"..."}],"business_name_idea":"A striking brand or business name suggestion","website_blueprint":"3-4 sentences on what their site should look, feel, and function like","recommended_services":[{"name":"exact name from list","why":"one sentence specific to this person's vision","price":"$XXX"}],"closing_word":"2-3 direct, warm, real sentences speaking to them personally. No fluff. No clichés. Speak to what you actually heard."}`,
 };
 
