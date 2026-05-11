@@ -723,3 +723,40 @@
   .zion-page #podcast > div{ grid-template-columns: 1fr !important; }
   .zion-page .ecosystem-bar{ flex-direction: column; text-align: center; }
 }
+
+/* Hero portrait — locked in place during scroll (fixed positioning) */
+.zion-page .zion-hero-portrait-fixed{
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 48%;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+.zion-page .zion-hero-portrait-fixed img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Mobile — narrower fixed image, behind content */
+@media (max-width: 768px){
+  .zion-page .zion-hero-portrait-fixed{
+    width: 100%;
+    opacity: 0.18;
+  }
+}
+
+/* Make sure content layers above the fixed portrait */
+.zion-page section,
+.zion-page nav,
+.zion-page footer,
+.zion-page .ecosystem-bar{
+  position: relative;
+  z-index: 2;
+}
+

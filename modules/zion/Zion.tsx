@@ -6,7 +6,6 @@ interface ZionProps { isOpen: boolean; onClose: () => void; }
 export function Zion({ isOpen, onClose }: ZionProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
-  const [scrollY, setScrollY] = useState(0);
 
   // Form state
   const [firstName, setFirstName] = useState('');
@@ -17,12 +16,6 @@ export function Zion({ isOpen, onClose }: ZionProps) {
 
   // Scroll reveal refs
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -141,18 +134,16 @@ export function Zion({ isOpen, onClose }: ZionProps) {
         <div className="hero-lines"></div>
 
         {/* Hero portrait */}
-        <div style={{ position: 'absolute', right: 0, top: 0, width: '48%', height: '100%', overflow: 'hidden', zIndex: 1 }}>
+        <div className="zion-hero-portrait-fixed">
           <img 
             src={Z.hero.portraitUrl}
             alt={`${Z.identity.firstName} ${Z.identity.lastName}`}
             style={{ 
               width: '100%', 
-              height: '120%', 
+              height: '100%', 
               objectFit: 'cover', 
               objectPosition: 'center top', 
-              filter: 'brightness(0.75) contrast(1.1) saturate(0.9)', 
-              transformOrigin: 'top',
-              transform: `translateY(${scrollY * 0.3}px)`
+              filter: 'brightness(0.75) contrast(1.1) saturate(0.9)'
             }}
             referrerPolicy="no-referrer"
           />
