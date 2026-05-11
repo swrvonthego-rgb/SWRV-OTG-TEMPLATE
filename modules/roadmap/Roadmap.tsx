@@ -241,14 +241,21 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     if (manualTrackId) ls.set('roadmap-manual-track', manualTrackId);
   }, [manualTrackId]);
 
-  // ── Mic ↔ Music conflict: pause music while mic is recording ──
+  // ── Mic + Music: keep music playing during speaking but DUCK volume ──
+  // (user wants to hear the music while sharing their vision — feels dreamier)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !effectiveTrack) return;
     if (mic.isListening) {
-      audio.pause();
-    } else if (firstGestureDone && !musicMuted) {
-      audio.play().catch(() => { /* autoplay blocked */ });
+      audio.volume = 0.15; // duck to 15% so mic still picks up speech clearly
+      if (firstGestureDone && !musicMuted) {
+        audio.play().catch(() => { /* autoplay blocked */ });
+      }
+    } else {
+      audio.volume = 0.45; // restore to normal
+      if (firstGestureDone && !musicMuted) {
+        audio.play().catch(() => { /* autoplay blocked */ });
+      }
     }
   }, [mic.isListening, effectiveTrack, firstGestureDone, musicMuted]);
 
