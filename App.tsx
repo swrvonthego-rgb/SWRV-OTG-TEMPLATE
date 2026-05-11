@@ -98,6 +98,7 @@ const App: React.FC = () => {
       <Roadmap
         isOpen={isRoadmapOpen}
         onClose={() => setIsRoadmapOpen(false)}
+        onOpenServices={() => setIsServicesMenuOpen(true)}
       />
 
       {/* Full services menu overlay */}

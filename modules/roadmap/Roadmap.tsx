@@ -12,6 +12,8 @@ export interface RoadmapProps {
   isOpen: boolean;
   /** Called when the user closes the experience */
   onClose: () => void;
+  /** Called when user clicks "Let's Build This Together" CTA to open services menu */
+  onOpenServices?: () => void;
   /** Per-client configuration. Defaults to SWRV. */
   config?: RoadmapConfig;
   /** API endpoint for the AI. Defaults to /api/roadmap. */
@@ -79,6 +81,7 @@ const ls = {
 export const Roadmap: React.FC<RoadmapProps> = ({
   isOpen,
   onClose,
+  onOpenServices,
   config = SWRV_ROADMAP_CONFIG,
   apiEndpoint = '/api/roadmap',
 }) => {
@@ -1201,9 +1204,19 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 <div className="cta-eyebrow">What's Next</div>
                 <div className="cta-headline">{ctaHeadline}</div>
                 <p className="cta-body">{result.closing_word}</p>
-                <a href={config.ctaUrl} className="btn-cta" target="_blank" rel="noopener noreferrer">
-                  {config.copy.resultsCtaButton}
-                </a>
+                {onOpenServices ? (
+                  <button
+                    type="button"
+                    className="btn-cta"
+                    onClick={onOpenServices}
+                  >
+                    {config.copy.resultsCtaButton}
+                  </button>
+                ) : (
+                  <a href={config.ctaUrl} className="btn-cta" target="_blank" rel="noopener noreferrer">
+                    {config.copy.resultsCtaButton}
+                  </a>
+                )}
                 <button type="button" className="reset-btn" onClick={handleStartOver}>
                   ← Start a New Vision
                 </button>

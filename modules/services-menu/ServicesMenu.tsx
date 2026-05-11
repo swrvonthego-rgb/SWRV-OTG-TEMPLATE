@@ -68,6 +68,40 @@ export function ServicesMenu({ isOpen, onClose }: Props) {
           />
         </header>
 
+        {/* FEATURED BUNDLES & POPULAR COMBOS */}
+        <section className="sm-featured">
+          <div className="sm-featured-header">
+            <span className="sm-featured-emoji">⭐</span>
+            <div>
+              <h2 className="sm-featured-label">POPULAR STARTING POINTS</h2>
+              <p className="sm-featured-tagline">Most of our clients start with one of these combinations — save time & money.</p>
+            </div>
+          </div>
+          <div className="sm-featured-grid">
+            <article className="sm-featured-card">
+              <h3>Brand Launch</h3>
+              <p className="sm-featured-items">Brand Planning + Logo Design + Website (Presence) + Strategy Call</p>
+              <p className="sm-featured-savings">Usually $1,150 → <strong>Bundle Save</strong></p>
+            </article>
+            <article className="sm-featured-card">
+              <h3>Artist Production</h3>
+              <p className="sm-featured-items">Vocal Training + Recording Booth + Music Production (Beat to Master)</p>
+              <p className="sm-featured-savings">Usually $2,630 → <strong>Bundle Save</strong></p>
+            </article>
+            <article className="sm-featured-card">
+              <h3>Video Creator</h3>
+              <p className="sm-featured-items">Promo Video Production + Color Grading + Video Editing</p>
+              <p className="sm-featured-savings">Usually $1,550 → <strong>Bundle Save</strong></p>
+            </article>
+            <article className="sm-featured-card">
+              <h3>Content Creator</h3>
+              <p className="sm-featured-items">Podcast Launch Kit + Reels Production + Social Media Strategy</p>
+              <p className="sm-featured-savings">Usually $1,295 → <strong>Bundle Save</strong></p>
+            </article>
+          </div>
+          <p className="sm-featured-note">💡 All services are fully customizable. <strong>Book a Strategy Call</strong> to create your perfect combo.</p>
+        </section>
+
         {/* CATEGORIES */}
         {(['identity', 'execution', 'experience'] as const).map((cat) => {
           const items = grouped[cat].filter(filterFn);

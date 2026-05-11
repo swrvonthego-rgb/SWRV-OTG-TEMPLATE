@@ -392,7 +392,99 @@ export const SERVICES: Service[] = [
     priceNumeric: 400,
     blurb: 'Built specifically to raise money — campaign page, donation/payment flow, progress meter, supporter shoutouts. GoFundMe alternative you actually own.',
   },
+  // ── NEW: ADVANCED AUDIO & PRODUCTION ──────────────────────────────────
+  {
+    id: 'music-production',
+    name: 'Music Production / Beat Production',
+    category: 'execution',
+    price: '$2,000',
+    priceNumeric: 2000,
+    blurb: 'Full track production from concept to master. Includes beat/instrumental creation, recording, mixing, mastering, and final master file.',
+  },
+  {
+    id: 'mixing-mastering',
+    name: 'Mixing & Mastering',
+    category: 'execution',
+    price: '$400/track',
+    priceNumeric: 400,
+    blurb: 'Professional mixing and mastering for your finished recordings. Brings clarity, depth, and loudness to your audio.',
+  },
+  {
+    id: 'live-recording',
+    name: 'Live Recording Session',
+    category: 'execution',
+    price: '$1,000',
+    priceNumeric: 1000,
+    blurb: 'Capture a live performance, jam session, or rehearsal in high quality. Includes recording, basic editing, and delivery.',
+  },
+  // ── NEW: ADVANCED VIDEO ───────────────────────────────────────────────
+  {
+    id: 'live-streaming',
+    name: 'Live Streaming Setup & Production',
+    category: 'execution',
+    price: '$750',
+    priceNumeric: 750,
+    blurb: 'Full live stream production for YouTube, Instagram, Facebook, or Twitch. Includes setup, technical management, graphics, and engagement.',
+  },
+  {
+    id: 'short-form-content',
+    name: 'Reels / Short-Form Content Production',
+    category: 'execution',
+    price: '$350/batch',
+    priceNumeric: 350,
+    blurb: 'Create a batch of 5-10 short-form videos (TikTok, Instagram Reels, YouTube Shorts) from your existing footage or new shoots.',
+  },
+  {
+    id: 'event-coverage',
+    name: 'Event Coverage / Multi-Cam Shooting',
+    category: 'execution',
+    price: '$1,500',
+    priceNumeric: 1500,
+    blurb: 'Professional multi-camera video coverage for performances, conferences, events, or ceremonies. Includes multiple angles, edited highlights.',
+  },
+  {
+    id: 'color-grading',
+    name: 'Color Grading & Color Correction',
+    category: 'execution',
+    price: '$350',
+    priceNumeric: 350,
+    blurb: 'Professional color treatment for your video footage. Enhances mood, consistency, and visual impact across all scenes.',
+  },
+  {
+    id: 'ai-motion-graphics',
+    name: 'AI Motion Graphics / Animated Text',
+    category: 'execution',
+    price: '$400',
+    priceNumeric: 400,
+    blurb: 'AI-powered animated titles, text sequences, transitions, and lower thirds for your videos. Includes concepts, iterations, and delivery.',
+  },
+  // ── NEW: WEBSITE MAINTENANCE & OPTIMIZATION ──────────────────────────
+  {
+    id: 'website-maintenance',
+    name: 'Website Maintenance (Monthly)',
+    category: 'execution',
+    price: '$150/month',
+    priceNumeric: 150,
+    blurb: 'Ongoing updates, security patches, content refreshes, and performance optimization. Keep your site fast and secure.',
+  },
+  {
+    id: 'domain-email-setup',
+    name: 'Domain & Custom Email Setup',
+    category: 'execution',
+    price: '$200',
+    priceNumeric: 200,
+    blurb: 'Register & configure a custom domain, set up professional email forwarding or full email service (Gmail workspace, etc.), and DNS setup.',
+  },
+  {
+    id: 'seo-setup-audit',
+    name: 'SEO Setup & Audit',
+    category: 'execution',
+    price: '$500',
+    priceNumeric: 500,
+    blurb: 'Comprehensive SEO audit of your site, optimization recommendations, keyword strategy, and implementation of foundational SEO.',
+  },
 ];
+
 
 // ── WEB PACKAGES (subset of services, displayed as comparison tiers) ──
 export const WEB_PACKAGES = {
