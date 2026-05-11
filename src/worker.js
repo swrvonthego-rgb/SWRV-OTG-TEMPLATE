@@ -6,6 +6,7 @@ import { renderRoadmapEmail } from './email-template.js';
 //   POST /api/save-progress   → saves session to KV (if PROGRESS binding exists)
 //   GET  /api/load-progress   → loads session by ?id=… from KV
 //   POST /api/send-email      → sends results email via Resend (if RESEND_API_KEY exists)
+//   POST /api/zion-booking    → emails Zion Birdsong booking inquiry to info@swrvonthego.pro
 //   GET  /r/:id               → resume URL — redirects to / with session ID hash
 //   GET  /api/health          → debug
 //   *                          → static asset fallback
@@ -35,6 +36,7 @@ export default {
     if (url.pathname === '/api/save-progress')  return handleSaveProgress(request, env);
     if (url.pathname === '/api/load-progress')  return handleLoadProgress(request, env);
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
+    if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
 
     if (url.pathname.startsWith('/r/')) {
       const id = url.pathname.slice(3);
@@ -214,3 +216,81 @@ async function handleSendEmail(request, env) {
 
 // EMAIL TEMPLATE moved to ./email-template.js
 // (see that file to customize the email HTML)
+
+// ─────────────────────────────────────────────────────────
+// Zion Birdsong "Let's Create Together" booking inquiry
+// Receives form data and emails info@swrvonthego.pro via Resend
+// ─────────────────────────────────────────────────────────
+async function handleZionBooking(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+  }
+  if (!env.RESEND_API_KEY) {
+    return new Response(JSON.stringify({ error: 'Email service not configured' }), { status: 500, headers: JSON_HEADERS });
+  }
+  try {
+    const { firstName, lastName, email, inquiryType, message } = await request.json();
+    if (!firstName || !email || !message) {
+      return new Response(JSON.stringify({ error: 'firstName, email, message required' }), { status: 400, headers: JSON_HEADERS });
+    }
+
+    const fullName = [firstName, lastName].filter(Boolean).join(' ');
+    const subject = `Zion Booking Inquiry — ${fullName} (${inquiryType || 'General'})`;
+    const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
+    const notifyTo = env.ZION_NOTIFY_EMAIL || env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
+
+    const safe = (x) => String(x ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const html = `
+      <div style="font-family:system-ui,-apple-system,sans-serif;max-width:680px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <div style="border-bottom:2px solid #c8a84b;padding-bottom:16px;margin-bottom:24px;">
+          <h2 style="color:#c8a84b;margin:0;font-size:22px;letter-spacing:0.05em;">🎤 NEW BOOKING INQUIRY</h2>
+          <p style="margin:6px 0 0;font-size:12px;color:#8a8070;">Zion Birdsong · Let's Create Together</p>
+        </div>
+        <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
+          <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Name</div>
+          <div style="flex:1;color:#ede8dc;font-weight:600;">${safe(fullName)}</div>
+        </div>
+        <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
+          <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Email</div>
+          <div style="flex:1;"><a href="mailto:${safe(email)}" style="color:#c8a84b;text-decoration:none;">${safe(email)}</a></div>
+        </div>
+        <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
+          <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Inquiry Type</div>
+          <div style="flex:1;color:#d4572a;font-weight:600;">${safe(inquiryType || 'General')}</div>
+        </div>
+        <div style="margin-top:24px;">
+          <div style="color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Message</div>
+          <div style="background:#110e07;border-left:3px solid #c8a84b;padding:16px;border-radius:4px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${safe(message)}</div>
+        </div>
+        <p style="margin-top:32px;padding-top:16px;border-top:1px solid #1c1810;font-size:11px;color:#8a8070;letter-spacing:0.1em;text-transform:uppercase;text-align:center;">Sent from Zion's page · swrvonthego.pro</p>
+      </div>
+    `;
+
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromAddr,
+        to: [notifyTo],
+        reply_to: email,
+        subject,
+        html,
+      }),
+    });
+
+    if (!r.ok) {
+      const errText = await r.text();
+      console.error('Resend error:', errText);
+      return new Response(JSON.stringify({ error: 'Email send failed' }), { status: 502, headers: JSON_HEADERS });
+    }
+
+    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
+  } catch (err) {
+    console.error('Zion booking error:', err);
+    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
+  }
+}

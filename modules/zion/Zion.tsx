@@ -62,20 +62,30 @@ export function Zion({ isOpen, onClose }: ZionProps) {
     setTimeout(() => setToastMsg(''), 3500);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!firstName || !email || !message) {
       showToast('Please fill in name, email, and message.');
       return;
     }
-
-    const subject = encodeURIComponent('Booking Inquiry — Zion Birdsong');
-    const type = inquiryType || 'General';
-    const body = encodeURIComponent(
-      `Name: ${firstName} ${lastName}\nEmail: ${email}\nType: ${type}\n\n${message}`
-    );
-
-    window.location.href = `mailto:byobtraining@hotmail.com?subject=${subject}&body=${body}`;
-    showToast('Opening your email app now...');
+    showToast('Sending...');
+    try {
+      const res = await fetch('/api/zion-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          inquiryType: inquiryType || 'General',
+          message: message.trim(),
+        }),
+      });
+      if (!res.ok) throw new Error('Server error');
+      showToast('Message sent. Zion will be in touch soon.');
+      setFirstName(''); setLastName(''); setEmail(''); setInquiryType(''); setMessage('');
+    } catch (err) {
+      showToast('Something went wrong. Try again or email info@swrvonthego.pro directly.');
+    }
   };
 
   const closeMenu = () => {
@@ -493,7 +503,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             @SWRVBIRDSONG
           </a>
         </div>
-        <p className="footer-copy">© {new Date().getFullYear()} Zion Birdsong · swrvonthego.com</p>
+        <p className="footer-copy">© {new Date().getFullYear()} Zion Birdsong · swrvonthego.pro</p>
       </footer>
 
       {/* SWRV OTG ECOSYSTEM LINK BAR */}
