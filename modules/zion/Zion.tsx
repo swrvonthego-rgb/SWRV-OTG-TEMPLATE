@@ -313,13 +313,13 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           <div>
             <p className="section-body" style={{ marginBottom: '2rem' }}>The new single "GNC" is out now on all platforms. Stream it, add it to your playlist, and share it with somebody who needs to hear it.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <a href="https://open.spotify.com" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: 'fit-content' }}>
+              <a href="https://open.spotify.com" target="_blank" rel="noreferrer" className="btn btn-outline btn-icon">
                 <span>🎵</span> Listen on Spotify
               </a>
-              <a href="https://music.apple.com" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: 'fit-content' }}>
+              <a href="https://music.apple.com" target="_blank" rel="noreferrer" className="btn btn-outline btn-icon">
                 <span>🎵</span> Listen on Apple Music
               </a>
-              <a href="https://youtube.com" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: 'fit-content' }}>
+              <a href="https://youtube.com" target="_blank" rel="noreferrer" className="btn btn-outline btn-icon">
                 <span>▶️</span> Watch on YouTube
               </a>
             </div>
@@ -360,9 +360,9 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             <h3 className="book-title">SWRV In Your Gift</h3>
             <p className="book-desc">A guide to identifying, owning, and operating in your God-given gift. Written for creators, travelers, and freedom fighters who know they carry something real but haven't fully stepped into it yet.</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: 'auto' }}>
-              <a href="https://swrv.gumroad.com/l/snlfqh" target="_blank" rel="noreferrer" className="btn btn-primary" style={{ fontSize: '0.7rem', padding: '0.65rem 1.2rem' }}>PDF eBook — $9.99</a>
-              <a href="https://swrv.gumroad.com/l/gbxwm" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ fontSize: '0.7rem', padding: '0.65rem 1.2rem' }}>Audiobook — $14.99</a>
-              <a href="https://swrv.gumroad.com/l/xfoyr" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ fontSize: '0.7rem', padding: '0.65rem 1.2rem' }}>Bundle — $19.99</a>
+              <a href="https://swrv.gumroad.com/l/snlfqh" target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">PDF eBook — $9.99</a>
+              <a href="https://swrv.gumroad.com/l/gbxwm" target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">Audiobook — $14.99</a>
+              <a href="https://swrv.gumroad.com/l/xfoyr" target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">Bundle — $19.99</a>
             </div>
           </div>
           <div className="book-card reveal reveal-delay-1" ref={addToRefs}>
@@ -393,9 +393,9 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             <h3 className="book-title">The Road Map</h3>
             <p className="book-desc">Life is a highway and you're going to hit roadblocks. This book is about staying on the move — swerving obstacles, taking the highway of thinking, and letting love be your GPS through it all.</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: 'auto' }}>
-              <a href="https://swrv.gumroad.com/l/gopltf" target="_blank" rel="noreferrer" className="btn btn-primary" style={{ fontSize: '0.7rem', padding: '0.65rem 1.2rem' }}>Workbook — $14.99</a>
-              <a href="https://swrv.gumroad.com/l/sztrkj" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ fontSize: '0.7rem', padding: '0.65rem 1.2rem' }}>Audiobook — $14.99</a>
-              <a href="https://swrv.gumroad.com/l/qegyp" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ fontSize: '0.7rem', padding: '0.65rem 1.2rem' }}>Bundle — $19.99</a>
+              <a href="https://swrv.gumroad.com/l/gopltf" target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">Workbook — $14.99</a>
+              <a href="https://swrv.gumroad.com/l/sztrkj" target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">Audiobook — $14.99</a>
+              <a href="https://swrv.gumroad.com/l/qegyp" target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">Bundle — $19.99</a>
             </div>
           </div>
         </div>
@@ -418,8 +418,8 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             <p className="section-body" style={{ marginBottom: '1.5rem' }}>Wisdom, motivation, and behind-the-scenes stories from the journey. SWRV Talk is where Zion Birdsong speaks from the heart — raw, real, and uncut. Tune in to the conversation.</p>
             <p style={{ fontSize: '0.72rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--color-gold)', marginBottom: '1.25rem' }}>Available On</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <a href="https://podcasters.spotify.com/pod/show/swrv-birdsong" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', width: 'fit-content', fontSize: '0.82rem' }}>🎵 Spotify</a>
-              <a href="https://podcasts.apple.com/us/podcast/swrv-talk/id1510634517" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', width: 'fit-content', fontSize: '0.82rem' }}>🎧 Apple Podcasts</a>
+              <a href="https://podcasters.spotify.com/pod/show/swrv-birdsong" target="_blank" rel="noreferrer" className="btn btn-outline btn-icon btn-sm">🎵 Spotify</a>
+              <a href="https://podcasts.apple.com/us/podcast/swrv-talk/id1510634517" target="_blank" rel="noreferrer" className="btn btn-outline btn-icon btn-sm">🎧 Apple Podcasts</a>
             </div>
           </div>
         </div>
