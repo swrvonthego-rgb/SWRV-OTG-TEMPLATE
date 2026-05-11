@@ -46,6 +46,9 @@ export function useSpeechRecognition({ onTranscript }: UseSpeechRecognitionOpts)
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const stopRequestedRef = useRef(false);
   const isListeningRef = useRef(false);
+  // Sticky 'user wants to be listening' state — stays true between start() and stop()
+  // regardless of mid-session auto-restarts. Use this for UI that should NOT flicker.
+  const [userListening, setUserListening] = useState(false);
   const vizIntervalRef = useRef<number | null>(null);
 
   // Check support on mount
@@ -91,6 +94,7 @@ export function useSpeechRecognition({ onTranscript }: UseSpeechRecognitionOpts)
   const start = useCallback(async () => {
     if (state === 'unsupported') return;
     if (isListeningRef.current) return;
+    setUserListening(true);
 
     setState('requesting');
 
@@ -194,6 +198,7 @@ export function useSpeechRecognition({ onTranscript }: UseSpeechRecognitionOpts)
   }, [onTranscript, startViz, stopViz, state]);
 
   const stop = useCallback(() => {
+    setUserListening(false);
     stopRequestedRef.current = true;
     isListeningRef.current = false;
     if (recognitionRef.current) {
@@ -212,5 +217,5 @@ export function useSpeechRecognition({ onTranscript }: UseSpeechRecognitionOpts)
     else start();
   }, [start, stop]);
 
-  return { state, bars, start, stop, toggle, isListening: state === 'listening' };
+  return { state, bars, start, stop, toggle, isListening: state === 'listening', userListening };
 }

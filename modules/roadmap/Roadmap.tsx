@@ -956,7 +956,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
             {mic.state === 'idle' && <span className="mic-note">Chrome / Edge recommended</span>}
 
             {/* Live controls during recording — volume slider + finished button */}
-            {mic.isListening && (
+            {/* Use mic.userListening (sticky) NOT mic.isListening (flickers during auto-restart) */}
+            {mic.userListening && (
               <div className="vision-live-controls">
                 <div className="vision-volume">
                   <span className="vision-volume-label">🎵 Music</span>
