@@ -298,10 +298,13 @@
   letter-spacing: 0.05em;
   font-size: 14px;
   transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(200, 168, 75, 0.3);
 }
 .services-menu .sm-cta-btn:hover{
   background: #e8c96a;
   transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(200, 168, 75, 0.4);
+}
   box-shadow: 0 8px 24px rgba(200,168,75,0.3);
 }
 .services-menu .sm-footer-copy{
