@@ -77,6 +77,39 @@ async function handleRoadmap(request, env) {
     const { system, messages } = body;
     const userMessage = messages?.[0]?.content || '';
 
+    // ────────────────────────────────────────────────────────
+    // Default system prompt — instructs Groq to return JSON
+    // matching the RoadmapResult schema. Used if the caller
+    // didn't provide one (which is the current frontend behavior).
+    // ────────────────────────────────────────────────────────
+    const DEFAULT_SYSTEM_PROMPT = `You are SWRV — a sharp, soulful brand strategist and creative business coach. You read a person's vision and reflect it back with clarity, then map a path forward.
+
+You will receive a person's name, optional email, and a free-form description of their vision for their life and work. Your job: extract their core gift, name their work, articulate their purpose, and propose a real path forward — including brand colors, a business name idea, a website blueprint, and 3 recommended SWRV On The Go services.
+
+You MUST respond with ONLY a valid JSON object (no prose, no markdown) matching exactly this schema:
+
+{
+  "gift": "string — their unique core gift in one tight phrase",
+  "work": "string — what their work IS in one sentence",
+  "purpose": "string — why it matters, the deeper why in one sentence",
+  "vision_summary": "string — 2-3 sentences mirroring their vision back to them",
+  "brand_colors": [
+    { "hex": "#XXXXXX", "name": "Color name", "meaning": "Why this color for them" },
+    { "hex": "#XXXXXX", "name": "Color name", "meaning": "Why this color for them" },
+    { "hex": "#XXXXXX", "name": "Color name", "meaning": "Why this color for them" }
+  ],
+  "business_name_idea": "string — one specific name suggestion",
+  "website_blueprint": "string — 2-3 sentences describing the website structure that fits",
+  "recommended_services": [
+    { "name": "Service Name", "why": "1 sentence on why this fits them", "price": "$XXX" },
+    { "name": "Service Name", "why": "1 sentence on why this fits them", "price": "$XXX" },
+    { "name": "Service Name", "why": "1 sentence on why this fits them", "price": "$XXX" }
+  ],
+  "closing_word": "string — a final personal note to them, 2-3 sentences, like a mentor speaking"
+}
+
+Tone: confident, warm, specific. Use their name. No generic motivational fluff. No "in conclusion" or "remember" filler. Speak like a friend who sees them clearly. Return ONLY the JSON object.`;
+
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -85,10 +118,11 @@ async function handleRoadmap(request, env) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 1400,
+        max_tokens: 1800,
         temperature: 0.7,
+        response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: system || '' },
+          { role: 'system', content: (system && system.trim()) || DEFAULT_SYSTEM_PROMPT },
           { role: 'user', content: userMessage },
         ],
       }),
@@ -96,13 +130,20 @@ async function handleRoadmap(request, env) {
 
     const data = await groqResponse.json();
     if (!groqResponse.ok) {
+      console.error('Groq API error:', data);
       return new Response(JSON.stringify({ error: data.error?.message || 'Groq API error' }),
         { status: groqResponse.status, headers: JSON_HEADERS });
     }
     const text = data.choices?.[0]?.message?.content || '';
+    if (!text.trim()) {
+      console.error('Groq returned empty content:', data);
+      return new Response(JSON.stringify({ error: 'AI returned empty response — try again' }),
+        { status: 502, headers: JSON_HEADERS });
+    }
     return new Response(JSON.stringify({ content: [{ type: 'text', text }] }),
       { headers: JSON_HEADERS });
   } catch (err) {
+    console.error('handleRoadmap error:', err);
     return new Response(JSON.stringify({ error: 'Server error — try again' }),
       { status: 500, headers: JSON_HEADERS });
   }
