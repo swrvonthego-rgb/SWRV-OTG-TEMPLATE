@@ -264,18 +264,20 @@ export function Zion({ isOpen, onClose }: ZionProps) {
         </div>
       </section>
 
-      {/* PHOTO EDITORIAL */}
-      <div style={{ overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', background: 'var(--color-deep)' }}>
-          <div style={{ position: 'relative', overflow: 'hidden' }} className="group">
+      {/* PHOTO EDITORIAL — left photo only, right side transparent to expose hero portrait behind */}
+      <div style={{ overflow: 'hidden', background: 'transparent' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0', background: 'transparent' }}>
+          <div style={{ position: 'relative', overflow: 'hidden' }} className="editorial-photo">
             <img 
               src="https://res.cloudinary.com/dlxkwdyk7/image/upload/v1775854242/IMG_3064_2_ol70jx_sfkj3v.jpg"
               alt="Zion Birdsong"
-              className="w-full h-[520px] object-cover object-center block transition-transform duration-700 ease-in-out group-hover:scale-105"
               style={{ 
-                filter: 'brightness(0.82) contrast(1.08)', 
-                boxShadow: '0 0 0 12px rgba(10,8,4,0.18) inset, 0 8px 48px 0 rgba(10,8,4,0.32)', 
-                background: 'radial-gradient(ellipse at center,rgba(10,8,4,0.22) 60%,transparent 100%)' 
+                width: '100%',
+                height: '520px',
+                objectFit: 'cover',
+                objectPosition: 'center',
+                display: 'block',
+                filter: 'brightness(0.82) contrast(1.08)'
               }}
               referrerPolicy="no-referrer"
             />
@@ -284,23 +286,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
               <p style={{ fontSize: '0.88rem', lineHeight: 1.5, color: 'rgba(237,232,220,0.7)', fontFamily: "'DM Serif Display', serif", fontStyle: 'italic' }}>On the road. On the stage. In the work.</p>
             </div>
           </div>
-          <div style={{ position: 'relative', overflow: 'hidden' }} className="group">
-            <img 
-              src="https://res.cloudinary.com/dlxkwdyk7/image/upload/v1775854242/IMG_3064_2_ol70jx_sfkj3v.jpg"
-              alt="Zion SWRV Birdsong"
-              className="w-full h-[520px] object-cover object-center block transition-transform duration-700 ease-in-out group-hover:scale-105"
-              style={{ 
-                filter: 'brightness(1) contrast(1.08)', 
-                boxShadow: '0 0 0 12px rgba(10,8,4,0.18) inset, 0 8px 48px 0 rgba(10,8,4,0.32)', 
-                background: 'radial-gradient(ellipse at center,rgba(10,8,4,0.22) 60%,transparent 100%)' 
-              }}
-              referrerPolicy="no-referrer"
-            />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '1.75rem 2rem', background: 'linear-gradient(to top, rgba(10,8,4,0.92) 0%, transparent 100%)' }}>
-              <p style={{ fontSize: '0.63rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--color-gold)', marginBottom: '0.35rem' }}>The Movement</p>
-              <p style={{ fontSize: '0.88rem', lineHeight: 1.5, color: 'rgba(237,232,220,0.7)', fontFamily: "'DM Serif Display', serif", fontStyle: 'italic' }}>Swerve on your roadblocks. Let love GPS.</p>
-            </div>
-          </div>
+          {/* Right column intentionally empty — exposes fixed hero portrait behind */}
         </div>
       </div>
 

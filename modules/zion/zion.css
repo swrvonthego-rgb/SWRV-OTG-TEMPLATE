@@ -674,8 +674,8 @@
 
 /* ── SCROLL REVEAL ── */
 .zion-page .reveal{
-  opacity: 0.05;
-  transform: translateY(20px);
+  opacity: 1;
+  transform: translateY(0);
   transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .zion-page .reveal.active{
@@ -751,12 +751,17 @@
   }
 }
 
-/* Make sure content layers above the fixed portrait */
+/* Content layers above the fixed portrait + has solid bg to cover it */
 .zion-page section,
 .zion-page nav,
 .zion-page footer,
 .zion-page .ecosystem-bar{
   position: relative;
   z-index: 2;
+  background: var(--color-deep);
 }
+/* Hero is special — let the gradient show through (don't override) */
+.zion-page .hero{ background: transparent; }
+/* Editorial photo row is transparent so right side exposes the hero portrait */
+.zion-page .editorial-photo{ position: relative; z-index: 2; }
 
