@@ -709,10 +709,17 @@ document.addEventListener('keydown',e=>{
    START SCREEN
 ═══════════════════════════════════════ */
 const startEl=document.getElementById('start');
-startEl.style.display='none';
-bgOnly=false;
-T0=Date.now();
-playScene(0);
+
+// The click on "INITIATE TRANSMISSION" IS the user gesture that unlocks audio.
+// Do NOT skip this — hiding it immediately breaks audio on iOS/mobile.
+startEl.addEventListener('click', () => {
+  startEl.style.opacity='0';
+  startEl.style.pointerEvents='none';
+  setTimeout(() => { startEl.style.display='none'; }, 800);
+  bgOnly=false;
+  T0=Date.now();
+  playScene(0);
+});
 </script>
 </body>
 </html>
