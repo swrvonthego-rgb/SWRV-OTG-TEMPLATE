@@ -207,7 +207,7 @@ export const ContactSchedule: React.FC = () => {
     const isDirectPay = ['paypal','cashapp','venmo'].includes(payMethod);
     const isCard = payMethod === 'card';
     const isBnplPending = PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.pending;
-    const shopUrl = 'https://swerve.launchcart.store/shop';
+    const shopUrl = 'https://swrv.printful.me/';
 
     return (
       <section id="contact" className="py-24 bg-black text-white">
@@ -263,7 +263,7 @@ export const ContactSchedule: React.FC = () => {
               className="flex items-center justify-between px-5 py-3 transition-all"
               style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804' }}>
               <span className="font-black text-sm tracking-wide">SWERVE Get In Gear →</span>
-              <span className="text-xs font-semibold opacity-70">swerve.launchcart.store</span>
+              <span className="text-xs font-semibold opacity-70">swrv.printful.me</span>
             </a>
           </div>
 

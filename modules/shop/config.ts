@@ -30,7 +30,7 @@ export const SHOP_CONFIG = {
   tagline: 'Keep it rolling.',
   description:
     'Hoodies, tees, and the gear that goes with the message. Every piece is a small ride forward.',
-  storeUrl: 'https://swerve.launchcart.store/shop',
+  storeUrl: 'https://swrv.printful.me/',
   ctaPrimary: 'Browse the Whole Store',
   fulfillmentNote: 'Shipped via Printful · Worldwide delivery',
 
