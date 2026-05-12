@@ -135,7 +135,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       <>
       {/* NAV */}
       <nav>
-        <a href="#" className="nav-logo">SWRV</a>
+        <a href="#hero" className="nav-logo">SWRV</a>
         <ul className="nav-links">
           <li><a href="#about">About</a></li>
           <li><a href="#services">Services</a></li>
