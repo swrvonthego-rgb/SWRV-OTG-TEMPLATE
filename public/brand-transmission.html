@@ -714,14 +714,18 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ═══════════════════════════════════════
-   START — iframe loads only after parent button click (allow="autoplay"
-   on the iframe carries the user activation). Start immediately.
+   START SCREEN — user taps this INSIDE the iframe.
+   That tap is the gesture iOS needs to unlock audio.
 ═══════════════════════════════════════ */
-const startEl=document.getElementById('start');
-startEl.style.display='none';
-bgOnly=false;
-T0=Date.now();
-playScene(0);
+const startEl = document.getElementById('start');
+startEl.addEventListener('click', () => {
+  startEl.style.opacity = '0';
+  startEl.style.pointerEvents = 'none';
+  setTimeout(() => { startEl.style.display = 'none'; }, 700);
+  bgOnly = false;
+  T0 = Date.now();
+  playScene(0);
+}, { once: true });
 </script>
 </body>
 </html>
