@@ -97,6 +97,9 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [interimVision, setInterimVision] = useState('');
   const [shake, setShake] = useState(false);
 
+  // ── Video mute overlay ───────────────────────────────────
+  const [videoMuted, setVideoMuted] = useState(true); // start muted so autoplay works
+
   // ── Toast ────────────────────────────────────────────────
   const [toast, setToast] = useState<string | null>(null);
   const toastTimerRef = useRef<number | null>(null);
@@ -830,16 +833,36 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
           <div className="video-wrap">
             {config.copy.videoUrl ? (
-              <video
-                ref={videoRef}
-                className="video-player"
-                src={config.copy.videoUrl}
-                controls
-                autoPlay
-                playsInline
-                preload="auto"
-                aria-label={config.copy.videoLabel}
-              />
+              <>
+                <video
+                  ref={videoRef}
+                  className="video-player"
+                  src={config.copy.videoUrl}
+                  controls
+                  autoPlay
+                  muted={videoMuted}
+                  playsInline
+                  preload="auto"
+                  aria-label={config.copy.videoLabel}
+                />
+                {videoMuted && (
+                  <button
+                    type="button"
+                    className="video-unmute-btn"
+                    onClick={() => {
+                      if (videoRef.current) {
+                        videoRef.current.muted = false;
+                        videoRef.current.volume = 1;
+                        videoRef.current.play();
+                      }
+                      setVideoMuted(false);
+                    }}
+                  >
+                    <span className="video-unmute-icon">🔊</span>
+                    <span className="video-unmute-label">TAP TO HEAR</span>
+                  </button>
+                )}
+              </>
             ) : (
               <button
                 type="button"

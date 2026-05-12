@@ -352,6 +352,31 @@
 .roadmap-experience .video-player{width:100%;height:100%;display:block;background:#000;
   border:none;outline:none;object-fit:cover;}
 
+.roadmap-experience .video-unmute-btn{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1.5px solid rgba(200,168,75,0.6);
+  border-radius:999px;
+  color:#c8a84b;
+  font-size:13px;font-weight:700;letter-spacing:0.1em;
+  cursor:pointer;
+  transition:all 0.2s;
+  z-index:10;
+  white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,0.5);
+}
+.roadmap-experience .video-unmute-btn:hover{
+  background:rgba(200,168,75,0.2);
+  border-color:#c8a84b;
+  transform:translateX(-50%) scale(1.05);
+}
+.roadmap-experience .video-unmute-icon{font-size:16px;line-height:1;}
+.roadmap-experience .video-unmute-label{text-transform:uppercase;}
+
 .roadmap-experience .name-field-wrap{margin-bottom:24px;}
 .roadmap-experience .field-label{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
   color:var(--ink-base);opacity:.5;margin-bottom:10px;font-family:var(--font-body);}
