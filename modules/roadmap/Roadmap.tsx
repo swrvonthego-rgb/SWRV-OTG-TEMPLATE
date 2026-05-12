@@ -153,6 +153,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const skinPanelRef = useRef<HTMLDivElement>(null);
   const skinToggleRef = useRef<HTMLButtonElement>(null);
   const musicPanelRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const musicToggleRef = useRef<HTMLButtonElement>(null);
 
   // ── Speech recognition ───────────────────────────────────
@@ -540,6 +541,30 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     return () => window.clearTimeout(t);
   }, [screen, timeRemaining, words, showToast]);
 
+  // ── Video autoplay: play intro video as soon as Roadmap opens ──
+  // Pause it when user navigates away from intro screen or closes Roadmap.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isOpen && screen === 'intro') {
+      // Try to play with sound; if blocked, fall back to muted autoplay
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Browser blocked autoplay with sound — try muted as fallback
+          video.muted = true;
+          video.play().catch(() => {
+            // Even muted failed; user will need to press play manually
+          });
+        });
+      }
+    } else {
+      // Pause when leaving intro screen or closing Roadmap
+      video.pause();
+    }
+  }, [isOpen, screen]);
+
   // ── Persistence: save progress to localStorage on each major step ──
   // (If KV is configured on the worker, /api/save-progress will also persist
   //  server-side via a fire-and-forget background save.)
@@ -806,11 +831,13 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           <div className="video-wrap">
             {config.copy.videoUrl ? (
               <video
+                ref={videoRef}
                 className="video-player"
                 src={config.copy.videoUrl}
                 controls
+                autoPlay
                 playsInline
-                preload="metadata"
+                preload="auto"
                 aria-label={config.copy.videoLabel}
               />
             ) : (
