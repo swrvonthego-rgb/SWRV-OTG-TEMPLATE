@@ -20,6 +20,28 @@
 // ════════════════════════════════════════════════════════════
 
 // ── BRAND IDENTITY ─────────────────────────────────────────
+// ── PAYMENT CONFIG ─────────────────────────────────────────────────────
+// Direct payment links — update handles before going live.
+// BNPL merchant portals are for Swerve to apply; API keys go in Cloudflare.
+export const PAYMENT_CONFIG = {
+  // ── DIRECT PAYMENT (live now once handles are set) ──────────────────
+  paypal:  'https://paypal.me/REPLACE_WITH_YOUR_HANDLE',   // e.g. paypal.me/swrvonthego
+  cashapp: 'https://cash.app/$REPLACE_WITH_YOUR_CASHTAG',  // e.g. cash.app/$swrvonthego
+  venmo:   'https://venmo.com/u/REPLACE_WITH_YOUR_HANDLE', // e.g. venmo.com/u/swrvbirdsong
+
+  // ── BNPL MERCHANT SIGNUP PORTALS (for Swerve to apply) ─────────────
+  // Once approved + API keys added to Cloudflare → remove 'pending: true'
+  bnpl: [
+    { id: 'klarna',   name: 'Klarna',   tagline: 'Pay in 4 — no interest',      color: '#FFB800', pending: true, applyUrl: 'https://www.klarna.com/us/business/merchant-sign-up/' },
+    { id: 'afterpay', name: 'Afterpay', tagline: '4 payments — no interest',     color: '#B2FCE4', pending: true, applyUrl: 'https://www.afterpay.com/en-US/business' },
+    { id: 'affirm',   name: 'Affirm',   tagline: '3–36 months — low rates',      color: '#4B22F4', pending: true, applyUrl: 'https://www.affirm.com/business' },
+    { id: 'zip',      name: 'Zip',      tagline: '4 payments — instant approval',color: '#AA8EFF', pending: true, applyUrl: 'https://zip.co/us/merchant-solutions' },
+    { id: 'sezzle',   name: 'Sezzle',   tagline: '4 payments — 0% interest',     color: '#CE3665', pending: true, applyUrl: 'https://sezzle.com/merchant-solutions' },
+    { id: 'paidy',    name: 'PayPal Pay Later', tagline: 'Pay in 4 via PayPal',  color: '#003087', pending: true, applyUrl: 'https://www.paypal.com/us/business/accept-payments/checkout/pay-later' },
+  ],
+} as const;
+
+
 export const BRAND = {
   name: 'SWRV On The Go',
   shortName: 'SWRV',

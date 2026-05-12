@@ -454,8 +454,19 @@ async function handleBooking(request, env) {
     const notifyTo = env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
     const safe = (x) => String(x ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-    const payLabel = payMethod === 'klarna' ? '🟡 Klarna (Buy Now Pay Later)' :
-                     payMethod === 'card'   ? '💳 Credit / Debit Card' : '📋 Invoice / Pay Later';
+    const PAY_LABELS = {
+      klarna:   '🟡 Klarna — Pay in 4 (merchant link to be sent)',
+      afterpay: '🟢 Afterpay — Pay in 4 (merchant link to be sent)',
+      affirm:   '🟣 Affirm — Financing (merchant link to be sent)',
+      zip:      '🟤 Zip — Pay in 4 (merchant link to be sent)',
+      sezzle:   '🔴 Sezzle — Pay in 4 (merchant link to be sent)',
+      paylater: '🔵 PayPal Pay Later — Pay in 4 (merchant link to be sent)',
+      paypal:   '💙 PayPal — Full payment (client redirected)',
+      cashapp:  '💚 Cash App — Full payment (client redirected)',
+      venmo:    '💜 Venmo — Full payment (client redirected)',
+      card:     '💳 Credit / Debit Card (invoice to be sent)',
+    };
+    const payLabel = PAY_LABELS[payMethod] || '📋 Payment to be arranged';
 
     // ── Email to SWRV team ──
     const teamHtml = `

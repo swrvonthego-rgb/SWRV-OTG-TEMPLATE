@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap, Upload, FileText, X as XIcon } from 'lucide-react';
-import { SCHEDULING, SERVICES } from '../site.config';
+import { SCHEDULING, SERVICES, PAYMENT_CONFIG } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
 
 const TIME_SLOTS = SCHEDULING.timeSlots;
@@ -23,7 +23,7 @@ const DELIVERY_DAYS: Record<string, number> = {
 };
 
 type Step = 'service' | 'calendar' | 'details' | 'payment' | 'success';
-type PayMethod = 'klarna' | 'card' | 'later';
+type PayMethod = 'klarna' | 'afterpay' | 'affirm' | 'zip' | 'sezzle' | 'paylater' | 'paypal' | 'cashapp' | 'venmo' | 'card';
 
 
 // ── VISION FILE PARSER ────────────────────────────────────────────────
@@ -180,6 +180,16 @@ export const ContactSchedule: React.FC = () => {
       const data = await res.json();
       if (data.ok) {
         setStep('success');
+        // Open payment link in new tab for direct payment methods
+        const payLinks: Record<string, string> = {
+          paypal:  PAYMENT_CONFIG.paypal.includes('REPLACE') ? '' : PAYMENT_CONFIG.paypal,
+          cashapp: PAYMENT_CONFIG.cashapp.includes('REPLACE') ? '' : PAYMENT_CONFIG.cashapp,
+          venmo:   PAYMENT_CONFIG.venmo.includes('REPLACE') ? '' : PAYMENT_CONFIG.venmo,
+        };
+        const link = payLinks[payMethod];
+        if (link) {
+          setTimeout(() => window.open(link, '_blank', 'noopener'), 800);
+        }
       } else {
         setSubmitError('Something went wrong. Try again or email info@swrvonthego.pro');
       }
@@ -193,6 +203,12 @@ export const ContactSchedule: React.FC = () => {
   const STEP_KEYS: Step[] = ['service', 'calendar', 'details', 'payment', 'success'];
 
   if (step === 'success') {
+    const bnplName = PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.name;
+    const isDirectPay = ['paypal','cashapp','venmo'].includes(payMethod);
+    const isCard = payMethod === 'card';
+    const isBnplPending = PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.pending;
+    const shopUrl = 'https://swerve.launchcart.store/shop';
+
     return (
       <section id="contact" className="py-24 bg-black text-white">
         <div className="max-w-xl mx-auto px-6 text-center">
@@ -200,17 +216,59 @@ export const ContactSchedule: React.FC = () => {
             style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)' }}>
             <CheckCircle size={32} color="#0a0804" />
           </div>
-          <h2 className="text-3xl font-black mb-3">Booking Submitted 🎉</h2>
-          <p className="text-white/60 mb-2">Booking submitted. You'll receive a confirmation email shortly.</p>
-          <p className="text-white/40 text-sm mb-8">SWRV On The Go will confirm your time within 24 hours.</p>
+          <h2 className="text-3xl font-black mb-3">You're Booked 🎉</h2>
+          <p className="text-white/60 mb-2">Confirmation email on the way. SWRV will confirm within 24 hours.</p>
+
+          {/* Payment next step */}
+          {isBnplPending && bnplName && (
+            <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <p className="font-bold text-white mb-1">{bnplName} payment link incoming</p>
+              <p className="text-white/40 text-xs">Check your email — SWRV will send you a secure {bnplName} link. You pay in 4. They pay SWRV in full.</p>
+            </div>
+          )}
+          {isDirectPay && (
+            <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(0,112,186,0.08)', border: '1px solid rgba(0,112,186,0.2)' }}>
+              <p className="font-bold text-white mb-1">Complete your payment</p>
+              <p className="text-white/40 text-xs mb-3">Opening {payMethod === 'paypal' ? 'PayPal' : payMethod === 'cashapp' ? 'Cash App' : 'Venmo'} now. If it didn't open automatically:</p>
+              <a href={payMethod === 'paypal' ? PAYMENT_CONFIG.paypal : payMethod === 'cashapp' ? PAYMENT_CONFIG.cashapp : PAYMENT_CONFIG.venmo}
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold"
+                style={{ background: 'rgba(0,112,186,0.2)', color: '#60a5fa', border: '1px solid rgba(0,112,186,0.3)' }}>
+                Open {payMethod === 'paypal' ? 'PayPal' : payMethod === 'cashapp' ? 'Cash App' : 'Venmo'} →
+              </a>
+            </div>
+          )}
+          {isCard && (
+            <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.15)' }}>
+              <p className="text-white/50 text-xs">SWRV will send an invoice to your email with a secure card payment link.</p>
+            </div>
+          )}
+
+          {/* Delivery date */}
           {selectedService && deliveryDate && (
-            <div className="p-4 rounded-2xl mb-8" style={{ background: 'rgba(200,168,75,0.1)', border: '1px solid rgba(200,168,75,0.2)' }}>
-              <p className="text-sm text-white/50 mb-1">Estimated delivery</p>
+            <div className="p-4 rounded-2xl mb-6" style={{ background: 'rgba(200,168,75,0.08)', border: '1px solid rgba(200,168,75,0.2)' }}>
+              <p className="text-xs text-white/40 mb-1">Estimated delivery</p>
               <p className="text-lg font-bold" style={{ color: '#c8a84b' }}>{format(deliveryDate, 'MMMM d, yyyy')}</p>
             </div>
           )}
+
+          {/* ── SHOP UPSELL ── */}
+          <div className="rounded-2xl overflow-hidden mb-8" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="px-5 pt-4 pb-2">
+              <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(200,168,75,0.6)' }}>WHILE YOU'RE HERE</p>
+              <p className="font-bold text-white text-base mb-1">Visit the SWRV Shop</p>
+              <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Books · Apparel · Gear — built for the revolution.</p>
+            </div>
+            <a href={shopUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-between px-5 py-3 transition-all"
+              style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804' }}>
+              <span className="font-black text-sm tracking-wide">SWERVE Get In Gear →</span>
+              <span className="text-xs font-semibold opacity-70">swerve.launchcart.store</span>
+            </a>
+          </div>
+
           <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); }}
-            className="text-white/40 text-sm underline hover:text-white/70">Book another service</button>
+            className="text-white/30 text-sm underline hover:text-white/60">Book another service</button>
         </div>
       </section>
     );
@@ -532,82 +590,94 @@ export const ContactSchedule: React.FC = () => {
               {deliveryDate && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Delivery by: {format(deliveryDate, 'MMMM d, yyyy')}</p>}
             </div>
 
-            {/* Payment methods */}
-            <p className="text-xs font-bold tracking-[0.2em] uppercase mb-3" style={{ color: 'rgba(255,255,255,0.4)' }}>CHOOSE HOW TO PAY</p>
-            <div className="flex flex-col gap-3 mb-6">
-              {/* Klarna */}
-              <button onClick={() => setPayMethod('klarna')}
-                className="w-full p-4 rounded-2xl text-left transition-all"
-                style={{
-                  background: payMethod === 'klarna' ? 'rgba(255,184,0,0.1)' : 'rgba(255,255,255,0.03)',
-                  border: `1.5px solid ${payMethod === 'klarna' ? 'rgba(255,184,0,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                }}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ background: payMethod === 'klarna' ? '#c8a84b' : 'rgba(255,255,255,0.1)', border: '2px solid', borderColor: payMethod === 'klarna' ? '#c8a84b' : 'rgba(255,255,255,0.2)' }}>
-                      {payMethod === 'klarna' && <div className="w-full h-full rounded-full" style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)' }} />}
+            {/* ── BUY NOW PAY LATER — SWRV gets paid 100% upfront ── */}
+            <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>BUY NOW, PAY LATER</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>SWRV receives full payment immediately. You repay your provider interest-free.</p>
+            <div className="flex flex-col gap-2 mb-5">
+              {PAYMENT_CONFIG.bnpl.map((opt) => {
+                const sel = payMethod === opt.id;
+                return (
+                  <button key={opt.id} onClick={() => setPayMethod(opt.id as any)}
+                    className="w-full p-4 rounded-2xl text-left transition-all"
+                    style={{
+                      background: sel ? `${opt.color}12` : 'rgba(255,255,255,0.02)',
+                      border: `1.5px solid ${sel ? opt.color + '60' : 'rgba(255,255,255,0.07)'}`,
+                      opacity: opt.pending && !sel ? 0.7 : 1,
+                    }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full flex-shrink-0"
+                          style={{ background: sel ? opt.color : 'rgba(255,255,255,0.12)', border: `2px solid ${sel ? opt.color : 'rgba(255,255,255,0.2)'}` }} />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-sm" style={{ color: sel ? opt.color : '#fff' }}>{opt.name}</p>
+                            {opt.pending && (
+                              <span className="text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded"
+                                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>
+                                SETUP REQUIRED
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{opt.tagline}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm font-black" style={{ color: sel ? opt.color : 'rgba(255,255,255,0.3)' }}>
+                        4× ${(selectedService.priceNumeric / 4).toFixed(0)}
+                      </p>
                     </div>
-                    <div>
-                      <p className="font-black text-sm" style={{ color: '#FFB800' }}>Klarna</p>
-                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Buy now, pay later — 4 interest-free payments</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-black text-lg" style={{ color: '#FFB800' }}>4× ${klarnaAmount}</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>We receive full payment</p>
-                  </div>
-                </div>
-                <div className="flex gap-1 mt-2 flex-wrap">
-                  {['Pay in 4', 'No interest', 'Instant approval', 'Preferred'].map(tag => (
-                    <span key={tag} className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'rgba(255,184,0,0.1)', color: 'rgba(255,184,0,0.8)' }}>{tag}</span>
-                  ))}
-                </div>
-              </button>
-
-              {/* Card */}
-              <button onClick={() => setPayMethod('card')}
-                className="w-full p-4 rounded-2xl text-left transition-all"
-                style={{
-                  background: payMethod === 'card' ? 'rgba(200,168,75,0.08)' : 'rgba(255,255,255,0.03)',
-                  border: `1.5px solid ${payMethod === 'card' ? 'rgba(200,168,75,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ background: payMethod === 'card' ? '#c8a84b' : 'rgba(255,255,255,0.1)', border: '2px solid', borderColor: payMethod === 'card' ? '#c8a84b' : 'rgba(255,255,255,0.2)' }} />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <CreditCard size={15} style={{ color: payMethod === 'card' ? '#c8a84b' : 'rgba(255,255,255,0.4)' }} />
-                      <p className="font-bold text-sm text-white">Credit / Debit Card</p>
-                    </div>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Pay in full — Visa, Mastercard, Amex</p>
-                  </div>
-                  <p className="ml-auto font-bold" style={{ color: '#c8a84b' }}>{selectedService.price}</p>
-                </div>
-              </button>
-
-              {/* Invoice */}
-              <button onClick={() => setPayMethod('later')}
-                className="w-full p-4 rounded-2xl text-left transition-all"
-                style={{
-                  background: payMethod === 'later' ? 'rgba(200,168,75,0.06)' : 'rgba(255,255,255,0.03)',
-                  border: `1.5px solid ${payMethod === 'later' ? 'rgba(200,168,75,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ background: payMethod === 'later' ? '#c8a84b' : 'rgba(255,255,255,0.1)', border: '2px solid', borderColor: payMethod === 'later' ? '#c8a84b' : 'rgba(255,255,255,0.2)' }} />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Zap size={15} style={{ color: payMethod === 'later' ? '#c8a84b' : 'rgba(255,255,255,0.4)' }} />
-                      <p className="font-bold text-sm text-white">Invoice / Pay Later</p>
-                    </div>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Discuss payment terms with SWRV directly</p>
-                  </div>
-                </div>
-              </button>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Klarna note */}
-            {payMethod === 'klarna' && (
-              <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.15)', color: 'rgba(255,184,0,0.7)' }}>
-                ✓ Klarna pays SWRV in full immediately. You pay Klarna in 4 interest-free installments of <strong style={{ color: '#FFB800' }}>${klarnaAmount}</strong> every 2 weeks.
+            {/* ── FULL PAYMENT OPTIONS ── */}
+            <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>PAY IN FULL</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>Pay the full amount now via your preferred platform.</p>
+            <div className="flex flex-col gap-2 mb-6">
+              {[
+                { id: 'paypal',  label: 'PayPal',    sub: 'Instant. Buyer protection included.',    color: '#0070BA', icon: '🅿️' },
+                { id: 'cashapp', label: 'Cash App',  sub: 'Simple. Direct. Instant.',               color: '#00D632', icon: '💵' },
+                { id: 'venmo',   label: 'Venmo',     sub: 'Quick and familiar.',                    color: '#3396CD', icon: '💳' },
+                { id: 'card',    label: 'Credit / Debit Card', sub: 'Visa, Mastercard, Amex — all accepted.', color: '#c8a84b', icon: '💳' },
+              ].map(opt => {
+                const sel = payMethod === opt.id;
+                return (
+                  <button key={opt.id} onClick={() => setPayMethod(opt.id as any)}
+                    className="w-full p-3.5 rounded-2xl text-left transition-all"
+                    style={{
+                      background: sel ? `${opt.color}14` : 'rgba(255,255,255,0.02)',
+                      border: `1.5px solid ${sel ? opt.color + '55' : 'rgba(255,255,255,0.07)'}`,
+                    }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full flex-shrink-0"
+                          style={{ background: sel ? opt.color : 'rgba(255,255,255,0.12)', border: `2px solid ${sel ? opt.color : 'rgba(255,255,255,0.2)'}` }} />
+                        <div>
+                          <p className="font-bold text-sm" style={{ color: sel ? opt.color : '#fff' }}>{opt.label}</p>
+                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{opt.sub}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm font-black" style={{ color: sel ? opt.color : 'rgba(255,255,255,0.3)' }}>{selectedService.price}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Context note for selected payment */}
+            {(PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.pending) && (
+              <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
+                You selected {PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.name}. After booking, SWRV will send you a direct payment link. You pay in 4 installments — SWRV receives the full amount upfront.
+              </div>
+            )}
+            {payMethod === 'paypal' && PAYMENT_CONFIG.paypal && !PAYMENT_CONFIG.paypal.includes('REPLACE') && (
+              <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(0,112,186,0.08)', border: '1px solid rgba(0,112,186,0.2)', color: 'rgba(100,180,255,0.8)' }}>
+                After submitting, you will be redirected to complete payment via PayPal.
+              </div>
+            )}
+            {(payMethod === 'cashapp' || payMethod === 'venmo') && (
+              <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
+                After submitting, you will be redirected to complete payment.
               </div>
             )}
 
@@ -620,7 +690,13 @@ export const ContactSchedule: React.FC = () => {
               <button onClick={handleBook} disabled={submitting}
                 className="flex-1 py-3 rounded-full font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100"
                 style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>
-                {submitting ? 'Submitting…' : payMethod === 'klarna' ? `Request Klarna — 4× $${klarnaAmount} →` : payMethod === 'card' ? `Submit Booking — ${selectedService.price} →` : 'Submit Booking →'}
+                {submitting ? 'Submitting…' :
+                 ['klarna','afterpay','affirm','zip','sezzle','paylater'].includes(payMethod)
+                   ? `Book — Pay Later via ${PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.name || payMethod} →`
+                   : payMethod === 'paypal'  ? 'Book + Pay via PayPal →'
+                   : payMethod === 'cashapp' ? 'Book + Pay via Cash App →'
+                   : payMethod === 'venmo'   ? 'Book + Pay via Venmo →'
+                   : `Submit Booking — ${selectedService.price} →`}
               </button>
             </div>
           </div>
