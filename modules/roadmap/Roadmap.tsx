@@ -1235,16 +1235,43 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 </div>
               </div>
               <div className="r-card">
-                <div className="r-label">What It Takes — {config.brandName} Services</div>
-                <div className="services-grid">
-                  {(result.recommended_services || []).map((s, i) => (
-                    <div key={i} className="svc-card">
-                      <div className="svc-name">{s.name}</div>
-                      <div className="svc-why">{s.why}</div>
-                      <div className="svc-price">{s.price}</div>
+                <div className="r-label">Your Roadmap to Reality — {config.brandName} Services</div>
+                <p className="svc-chain-intro">These services are ordered as you would actually use them — each one builds on or enables the next.</p>
+                {/* Group by phase */}
+                {(['Foundation', 'Production', 'Delivery', 'Growth'] as const).map((phase) => {
+                  const phaseServices = (result.recommended_services || [])
+                    .filter(s => (s as any).phase === phase)
+                    .sort((a, b) => ((a as any).order || 0) - ((b as any).order || 0));
+                  if (phaseServices.length === 0) return null;
+                  return (
+                    <div key={phase} className="svc-phase">
+                      <div className="svc-phase-label">{phase}</div>
+                      <div className="services-grid">
+                        {phaseServices.map((s, i) => (
+                          <div key={i} className="svc-card svc-card-chain">
+                            <div className="svc-step">{(s as any).order || (i + 1)}</div>
+                            <div className="svc-name">{s.name}</div>
+                            <div className="svc-why">{s.why}</div>
+                            <div className="svc-price">{s.price}</div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+                {/* Fallback: if no phases returned, show flat list */}
+                {!(result.recommended_services || []).some(s => (s as any).phase) && (
+                  <div className="services-grid">
+                    {(result.recommended_services || []).map((s, i) => (
+                      <div key={i} className="svc-card svc-card-chain">
+                        <div className="svc-step">{i + 1}</div>
+                        <div className="svc-name">{s.name}</div>
+                        <div className="svc-why">{s.why}</div>
+                        <div className="svc-price">{s.price}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="total-row">
                   <span className="total-label">Estimated Investment</span>
                   <span className="total-amount">${total.toLocaleString()}</span>
