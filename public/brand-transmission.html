@@ -447,11 +447,10 @@ function setWave(on){WBS.forEach(w=>w.classList.toggle('off',!on));AL.textConten
 let epoch=0;
 let activeAudio=null;
 
-// ── MP3 availability cache. We probe /audio/narration-0.mp3 once on
-// load. If it 404s, we know none have been generated yet and fall back
-// to TTS without trying every scene. If it loads, we trust the rest exist.
-// ── Eager preload all MP3s on iframe load. By the time scenes play,
-//    they're cached. No more probe-once-and-stick logic.
+// ── Eager preload all MP3s on iframe load (iframe loads on parent button click,
+//    which carries the user activation via allow="autoplay"). Reusing these
+//    elements means we never create a new Audio() mid-session, avoiding the
+//    "activation consumed" problem that mutes slides 2-7.
 const TOTAL_NARRATION_SCENES = 7;
 const preloadedNarration = new Array(TOTAL_NARRATION_SCENES);
 for (let i = 0; i < TOTAL_NARRATION_SCENES; i++) {
@@ -486,12 +485,22 @@ function speak(text, onEnd, sceneIdx){
     return;
   }
 
-  // Each scene independently tries MP3. No sticky failure state.
-  // Use a fresh Audio so we never have stale event listeners — we keep
-  // preloadedNarration around just for the cache, not for playback.
-  const audio = new Audio(`/audio/narration-${sceneIdx}.mp3`);
-  audio.preload = 'auto';
-  activeAudio = audio;
+  // ── Use the PRELOADED audio element (created at iframe load time,
+  //    which carried the parent's user activation via allow="autoplay").
+  //    Never create new Audio() mid-session — that consumes user activation
+  //    and causes slides 2+ to be silently blocked.
+  const audio = preloadedNarration[sceneIdx];
+  if (!audio) {
+    speakFallback(text, guardedEnd, myEpoch);
+    return;
+  }
+
+  // Reset from any previous play
+  try { audio.pause(); audio.currentTime = 0; } catch(_) {}
+  // Remove stale listeners by cloning
+  const freshAudio = audio.cloneNode();
+  preloadedNarration[sceneIdx] = freshAudio;
+  activeAudio = freshAudio;
 
   let settled = false;
   const fallback = (reason) => {
@@ -499,7 +508,7 @@ function speak(text, onEnd, sceneIdx){
     settled = true;
     console.warn('[narration] scene ' + sceneIdx + ' fell back to TTS:', reason);
     if (epoch !== myEpoch) return;
-    if (activeAudio === audio) activeAudio = null;
+    if (activeAudio === freshAudio) activeAudio = null;
     speakFallback(text, guardedEnd, myEpoch);
   };
   const success = () => {
@@ -510,24 +519,23 @@ function speak(text, onEnd, sceneIdx){
     console.log('[narration] scene ' + sceneIdx + ' playing MP3');
   };
 
-  // 6s network timeout — if the audio doesn't start within 6s, fall back
   const timeoutId = setTimeout(() => fallback('timeout (6s no playing event)'), 6000);
 
-  audio.addEventListener('playing', () => { clearTimeout(timeoutId); success(); }, { once: true });
-  audio.addEventListener('ended', () => {
+  freshAudio.addEventListener('playing', () => { clearTimeout(timeoutId); success(); }, { once: true });
+  freshAudio.addEventListener('ended', () => {
     clearTimeout(timeoutId);
     if (epoch !== myEpoch) return;
     setWave(false);
-    if (activeAudio === audio) activeAudio = null;
+    if (activeAudio === freshAudio) activeAudio = null;
     setTimeout(guardedEnd, 400);
   }, { once: true });
-  audio.addEventListener('error', (e) => {
+  freshAudio.addEventListener('error', (e) => {
     clearTimeout(timeoutId);
     const code = e && e.target && e.target.error ? e.target.error.code : 'unknown';
     fallback('audio error code ' + code);
   }, { once: true });
 
-  audio.play().catch((err) => {
+  freshAudio.play().catch((err) => {
     clearTimeout(timeoutId);
     fallback('play() rejected: ' + (err && err.message ? err.message : 'unknown'));
   });
@@ -706,20 +714,14 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ═══════════════════════════════════════
-   START SCREEN
+   START — iframe loads only after parent button click (allow="autoplay"
+   on the iframe carries the user activation). Start immediately.
 ═══════════════════════════════════════ */
 const startEl=document.getElementById('start');
-
-// The click on "INITIATE TRANSMISSION" IS the user gesture that unlocks audio.
-// Do NOT skip this — hiding it immediately breaks audio on iOS/mobile.
-startEl.addEventListener('click', () => {
-  startEl.style.opacity='0';
-  startEl.style.pointerEvents='none';
-  setTimeout(() => { startEl.style.display='none'; }, 800);
-  bgOnly=false;
-  T0=Date.now();
-  playScene(0);
-});
+startEl.style.display='none';
+bgOnly=false;
+T0=Date.now();
+playScene(0);
 </script>
 </body>
 </html>
