@@ -142,7 +142,8 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
             const isAuthorship = service.title === "Authorship";
             const isPodcast = service.title === "SWRV Talk Podcast";
             const isExternal = isBYOB;
-            const href = isBYOB ? "https://trainbyob.me" : `#${service.title.toLowerCase().replace(/\s+/g, '-')}`;
+            const isArtistDev = service.title === "Artist Development";
+            const href = isBYOB ? "https://trainbyob.me" : isArtistDev ? "#contact" : `#${service.title.toLowerCase().replace(/\s+/g, '-')}`;
             const handleZionSection = (section: string) => {
               window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: section }));
               onOpenZion?.();

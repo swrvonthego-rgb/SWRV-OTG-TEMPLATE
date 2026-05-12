@@ -127,7 +127,7 @@ export const ContactSchedule: React.FC = () => {
               <p className="text-lg font-bold" style={{ color: '#c8a84b' }}>{format(deliveryDate, 'MMMM d, yyyy')}</p>
             </div>
           )}
-          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); }}
+          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); }}
             className="text-white/40 text-sm underline hover:text-white/70">Book another service</button>
         </div>
       </section>

@@ -67,6 +67,17 @@ export const LiveChat: React.FC<{ onOpenBooking?: () => void }> = ({ onOpenBooki
       const first = STEPS[0];
       setMessages([{ role: 'bot', text: first.bot, quickReplies: first.quickReplies }]);
     }
+    // Reset to fresh state when panel closes so next open starts clean
+    if (!open) {
+      setTimeout(() => {
+        setMessages([]);
+        setStepIdx(0);
+        setAnswers({});
+        setDone(false);
+        setChatHistory([]);
+        setLoading(false);
+      }, 300); // slight delay so close animation finishes first
+    }
   }, [open]);
 
   // Scroll to bottom
