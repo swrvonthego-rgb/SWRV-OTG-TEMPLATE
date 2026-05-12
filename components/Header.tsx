@@ -9,6 +9,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleZionSection = (section: string) => {
+    window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: section }));
+    onOpenZion?.();
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -23,20 +28,31 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
       <div className={`hidden lg:flex justify-end items-center gap-6 px-8 py-2 bg-black transition-all duration-300 ${scrolled ? 'h-0 overflow-hidden py-0' : 'h-10'}`}>
         {/* Train BYOB stays inlined — founder's separate site, permanent fixture */}
         <a href="https://trainbyob.me" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-gray-300 hover:text-white tracking-wider uppercase">Train BYOB</a>
-        {HEADER.utilityLinks.map((link) => (
-          <a
-            key={link.label}
-            href={link.href}
-            target={link.external ? '_blank' : undefined}
-            rel={link.external ? 'noopener noreferrer' : undefined}
-            className="text-[10px] font-bold text-gray-300 hover:text-white tracking-wider uppercase"
-          >
-            {link.label}
-          </a>
-        ))}
+        {HEADER.utilityLinks.map((link) => {
+          const section = link.label === 'Books' ? 'books' : link.label === 'Podcast' ? 'podcast' : null;
+          if (section) {
+            return (
+              <button key={link.label} type="button"
+                onClick={() => handleZionSection(section)}
+                className="text-[10px] font-bold text-gray-300 hover:text-white tracking-wider uppercase bg-transparent border-0 cursor-pointer p-0 font-sans">
+                {link.label}
+              </button>
+            );
+          }
+          return (
+            <a key={link.label} href={link.href}
+              target={link.external ? '_blank' : undefined}
+              rel={link.external ? 'noopener noreferrer' : undefined}
+              className="text-[10px] font-bold text-gray-300 hover:text-white tracking-wider uppercase">
+              {link.label}
+            </a>
+          );
+        })}
         
         <div className="flex items-center">
-            <button className="flex items-center gap-1 bg-lion-orange text-white px-3 py-1 text-[11px] font-bold rounded-sm hover:bg-[#FF6020] transition-colors">
+            <button
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+              className="flex items-center gap-1 bg-lion-orange text-white px-3 py-1 text-[11px] font-bold rounded-sm hover:bg-[#FF6020] transition-colors">
               <span>{HEADER.connectLabel}</span>
               <ChevronDown size={12} />
             </button>

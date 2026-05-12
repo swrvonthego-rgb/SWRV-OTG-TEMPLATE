@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './roadmap.css';
-import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme } from './config';
+import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme, renderSystemPrompt } from './config';
 import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES } from '../../site.config';
@@ -451,6 +451,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            system: renderSystemPrompt(config),
             messages: [
               {
                 role: 'user',

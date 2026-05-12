@@ -507,7 +507,7 @@ async function handleBooking(request, env) {
     }
 
     // Send to team
-    await fetch('https://api.resend.com/emails', {
+    const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
@@ -515,12 +515,18 @@ async function handleBooking(request, env) {
     });
 
     // Send confirmation to client
-    await fetch('https://api.resend.com/emails', {
+    const r2 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [email],
         subject: `Booking Confirmed: ${serviceName} — SWRV On The Go`, html: clientHtml }),
     });
+
+    if (!r1.ok) {
+      const err = await r1.text();
+      console.error('Resend team email failed:', err);
+      return new Response(JSON.stringify({ error: 'Booking received but email delivery failed. Team has been notified.' }), { status: 502, headers: JSON_HEADERS });
+    }
 
     return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
 
