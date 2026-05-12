@@ -148,11 +148,11 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
 
     processingTitle: 'Reading your vision',
     processingSteps: [
-      'Extracting your core gift',
-      'Identifying your work & purpose',
-      'Decoding your brand identity',
-      'Building your website blueprint',
-      'Matching SWRV OTG services',
+      'Extracting your core gift from your words',
+      'Reverse-engineering how you got here',
+      'Building your full life blueprint',
+      'Mapping your vision to what builds it',
+      'Composing your personalized roadmap',
     ],
 
     resultsHeadline: { plain: 'Your', emphasis: 'Roadmap' },

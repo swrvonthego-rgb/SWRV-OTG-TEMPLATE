@@ -646,16 +646,44 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     lines.push('YOUR GIFT'); lines.push(result.gift); lines.push('');
     lines.push('YOUR WORK'); lines.push(result.work); lines.push('');
     lines.push('YOUR PURPOSE'); lines.push(result.purpose); lines.push('');
+    lines.push('');
+    if (result.evidence) {
+      lines.push('HOW WE GOT HERE — THE EVIDENCE');
+      lines.push(result.evidence);
+      lines.push('');
+    }
     lines.push('YOUR HAPPILY EVER AFTER — MAPPED'); lines.push(result.vision_summary); lines.push('');
+    if (result.blueprint) {
+      lines.push('THE BLUEPRINT — WHAT THIS LIFE REQUIRES');
+      if (result.blueprint.reverse_engineering) { lines.push('  HOW YOU GOT HERE'); lines.push('  ' + result.blueprint.reverse_engineering); lines.push(''); }
+      if (result.blueprint.mindset)             { lines.push('  MINDSET');           lines.push('  ' + result.blueprint.mindset); lines.push(''); }
+      if (result.blueprint.discipline)          { lines.push('  DAILY DISCIPLINE');  lines.push('  ' + result.blueprint.discipline); lines.push(''); }
+      if (result.blueprint.diet)                { lines.push('  DIET & NUTRITION');  lines.push('  ' + result.blueprint.diet); lines.push(''); }
+      if (result.blueprint.fitness)             { lines.push('  FITNESS');           lines.push('  ' + result.blueprint.fitness); lines.push(''); }
+      if (result.blueprint.community)           { lines.push('  YOUR CIRCLE');       lines.push('  ' + result.blueprint.community); lines.push(''); }
+      if (result.blueprint.work_ethic)          { lines.push('  WORK ETHIC');        lines.push('  ' + result.blueprint.work_ethic); lines.push(''); }
+    }
     lines.push('YOUR BRAND IDENTITY'); lines.push(result.business_name_idea); lines.push(result.website_blueprint); lines.push('');
     lines.push('BRAND COLORS');
     (result.brand_colors || []).forEach((c) => {
       lines.push(`  ${c.name} (${c.hex}) — ${c.meaning}`);
     });
     lines.push('');
-    lines.push('RECOMMENDED SERVICES');
+    if ((result.vision_services_map || []).length > 0) {
+      lines.push('YOUR VISION — WHAT IT COSTS TO BUILD');
+      result.vision_services_map.forEach((item) => {
+        lines.push(`  ${item.vision_element}`);
+        if (item.quote) lines.push(`  "${item.quote}"`);
+        (item.services || []).forEach((svc) => {
+          lines.push(`    → ${svc.name} — ${svc.price}`);
+          if (svc.connection) lines.push(`      ${svc.connection}`);
+        });
+        lines.push('');
+      });
+    }
+    lines.push('RECOMMENDED SERVICES — ORDERED BY PHASE');
     (result.recommended_services || []).forEach((s) => {
-      lines.push(`  ${s.name} — ${s.price}`);
+      lines.push(`  [${(s as any).phase || ''}] ${s.name} — ${s.price}`);
       lines.push(`    ${s.why}`);
     });
     lines.push('');

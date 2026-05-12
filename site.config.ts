@@ -62,9 +62,9 @@ export const BRAND_TOKENS = {
 // Only ones with non-empty URLs render in Footer / Zion / Hero.
 export const SOCIAL = {
   instagram: 'https://instagram.com/zionswrvbirdsong',
-  youtube: '',
+  youtube: 'https://youtube.com/@swrvbirdsong',
   facebook: '',
-  twitter: '',
+  twitter: 'https://twitter.com/swrvbirdsong',
   linkedin: '',
   tiktok: '',
   spotify: '',

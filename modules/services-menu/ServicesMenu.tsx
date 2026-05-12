@@ -243,7 +243,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
               <p className="sm-featured-savings">Usually $1,295 → <strong>Bundle Save</strong></p>
             </article>
           </div>
-          <p className="sm-featured-note">💡 All services are fully customizable. Book a Strategy Call to create your combo.</p>
+          <p className="sm-featured-note">💡 All services are fully customizable. Payment plans available via Klarna — pay as little as 25% upfront. Book a Strategy Call to build your combo.</p>
         </section>
 
         {/* SUB-CATEGORIES */}
@@ -276,6 +276,17 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             </section>
           );
         })}
+
+        {/* EMPTY STATE — shown when search returns nothing */}
+        {q && !SUB_CATEGORIES.some(sub =>
+          sub.serviceIds.map(id => SERVICE_MAP[id]).filter(Boolean).filter(filterFn).length > 0
+        ) && (
+          <div className="sm-empty-state">
+            <p className="sm-empty-icon">🔍</p>
+            <p className="sm-empty-title">No services found for "{q}"</p>
+            <p className="sm-empty-sub">Try a different keyword, or <button type="button" className="sm-empty-clear" onClick={() => setSearchQuery('')}>clear search</button> to see all services.</p>
+          </div>
+        )}
 
         {/* CTA FOOTER */}
         <footer className="sm-footer">

@@ -33,8 +33,8 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
                 The SWRV Ecosystem
               </h2>
               <div className="inline-flex items-center gap-3 mb-6">
-                <span className="px-3 py-1 bg-lion-orange/10 border border-lion-orange/30 text-lion-orange text-xs font-bold tracking-[0.2em] uppercase rounded-sm">Coming Soon</span>
-                <span className="text-gray-400 text-xs tracking-wide">Full ecosystem launching soon</span>
+                <span className="px-3 py-1 bg-lion-orange/10 border border-lion-orange/30 text-lion-orange text-xs font-bold tracking-[0.2em] uppercase rounded-full">Live Now</span>
+                <span className="text-gray-400 text-xs tracking-wide">Explore the full SWRV ecosystem</span>
               </div>
               <p className="text-gray-600 max-w-xl text-lg leading-relaxed mb-8">
                 <span className="font-bold text-black">You are the brand.</span> Build something people can be a part of. Explore our central hub for artist development, physical training partnership, vocal mastery, authorship, and wisdom. Whether you're an independent creator or part of a label, everything here is designed to empower you to own your lane and build your legacy.

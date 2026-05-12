@@ -78,7 +78,7 @@ export const ContactSchedule: React.FC = () => {
           <h2 className="text-4xl font-black uppercase mb-4">Request Sent.</h2>
           <p className="text-white/60 leading-relaxed mb-8">
             Your email app should have opened with everything pre-filled. Hit send if you haven't yet — 
-            Zion will confirm your time within 24 hours.
+            SWRV On The Go will confirm your time within 24 hours.
           </p>
           <button
             onClick={() => { setStep('calendar'); setSelectedDate(null); setSelectedTime(''); setName(''); setEmail(''); setPhone(''); setTopic(''); setMessage(''); setAgreeToContact(false); }}
@@ -306,7 +306,7 @@ export const ContactSchedule: React.FC = () => {
                 />
                 <span className="text-white/45 text-xs leading-relaxed">
                   I agree to be contacted by SWRV On The Go at the email and/or phone I provided. 
-                  I understand this is not a final booking — Zion will confirm the time within 24 hours. 
+                  I understand this is not a final booking — SWRV On The Go will confirm the time within 24 hours. 
                   No spam. Ever.
                 </span>
               </label>
