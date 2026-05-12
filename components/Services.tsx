@@ -138,7 +138,7 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
         {/* Services Grid — everything except Brand Planning (featured above) */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {SERVICES.filter(s => s.title !== "Brand Planning").map((service, idx) => {
-            const isArtistDev = service.title === "Artist Development";
+            const isArtistDev = false; // Artist Development now available
             const isBYOB = service.title === "BYOB Training";
             const isAuthorship = service.title === "Authorship";
             const isPodcast = service.title === "SWRV Talk Podcast";

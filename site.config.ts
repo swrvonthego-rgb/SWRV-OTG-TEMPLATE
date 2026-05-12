@@ -608,7 +608,7 @@ export const SCHEDULING: {
   timeSlots: string[];
   topics: string[];
 } = {
-  contactEmail: 'swrvonthego@gmail.com',
+  contactEmail: 'hello@swrvonthego.pro',
   // Days you're available (0=Sun, 1=Mon, ... 6=Sat). Default Mon–Sat.
   availableDays: [1, 2, 3, 4, 5, 6],
   timeSlots: [

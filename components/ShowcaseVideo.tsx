@@ -36,7 +36,7 @@ export const ShowcaseVideo: React.FC = () => {
             setIsMuted(true);
             if (videoRef.current) {
               videoRef.current.muted = true;
-              videoRef.current.play().catch(e => console.log(e));
+              videoRef.current.play().catch(() => {});
             }
           });
         }

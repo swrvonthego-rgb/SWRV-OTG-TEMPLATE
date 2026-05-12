@@ -3,6 +3,10 @@ import './roadmap.css';
 import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme } from './config';
 import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
+import { SERVICES } from '../../site.config';
+
+// Lookup priceNumeric by service name for accurate total (handles $125/hr, Custom Quote, etc.)
+const SERVICE_PRICE_MAP = new Map(SERVICES.map(s => [s.name, s.priceNumeric]));
 
 // ════════════════════════════════════════════════════════════
 // PROPS
@@ -626,7 +630,10 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       year: 'numeric', month: 'long', day: 'numeric',
     });
     const total = (result.recommended_services || []).reduce((sum, s) => {
-      const n = parseInt((s.price || '').replace(/\D/g, ''));
+      // Use catalog priceNumeric first (handles $125/hr, Custom Quote, $300/batch)
+      const catalogPrice = SERVICE_PRICE_MAP.get(s.name);
+      if (catalogPrice !== undefined) return sum + catalogPrice;
+      const n = parseInt((s.price || '').replace(/[^0-9]/g, ''));
       return sum + (isNaN(n) ? 0 : n);
     }, 0);
 
@@ -679,7 +686,10 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   // ── Computed for results screen ──────────────────────────
   const total = result
     ? (result.recommended_services || []).reduce((sum, s) => {
-        const n = parseInt((s.price || '').replace(/\D/g, ''));
+        // Use catalog priceNumeric first (handles $125/hr, Custom Quote, variable rates)
+        const catalogPrice = SERVICE_PRICE_MAP.get(s.name);
+        if (catalogPrice !== undefined) return sum + catalogPrice;
+        const n = parseInt((s.price || '').replace(/[^0-9]/g, ''));
         return sum + (isNaN(n) ? 0 : n);
       }, 0)
     : 0;

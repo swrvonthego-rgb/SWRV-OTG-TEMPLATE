@@ -129,7 +129,7 @@ export const ContactSchedule: React.FC = () => {
               </a>
 
               <a
-                href="sms:+1XXXXXXXXXX"
+                href={`mailto:${CONTACT_EMAIL}`}
                 className="flex items-center gap-4 p-5 border border-white/10 hover:border-lion-orange/50 bg-white/[0.02] hover:bg-white/[0.04] transition-all group"
               >
                 <div className="w-12 h-12 rounded-sm bg-lion-orange/10 border border-lion-orange/20 flex items-center justify-center group-hover:bg-lion-orange/20 transition-colors">
@@ -234,7 +234,7 @@ export const ContactSchedule: React.FC = () => {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="First & Last Name"
-                  className="w-full bg-white/[0.04] border border-white/10 text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange transition-colors"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange focus:ring-2 focus:ring-lion-orange/20 transition-all"
                 />
               </div>
 
@@ -246,7 +246,7 @@ export const ContactSchedule: React.FC = () => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full bg-white/[0.04] border border-white/10 text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange transition-colors"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange focus:ring-2 focus:ring-lion-orange/20 transition-all"
                 />
               </div>
 
@@ -257,7 +257,7 @@ export const ContactSchedule: React.FC = () => {
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="(555) 000-0000"
-                  className="w-full bg-white/[0.04] border border-white/10 text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange transition-colors"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange focus:ring-2 focus:ring-lion-orange/20 transition-all"
                 />
               </div>
 
@@ -281,7 +281,7 @@ export const ContactSchedule: React.FC = () => {
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   placeholder="A quick overview of your vision, project, or what you're trying to accomplish..."
-                  className="w-full bg-white/[0.04] border border-white/10 text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange transition-colors resize-none"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl text-white placeholder-white/25 px-4 py-3 text-sm focus:outline-none focus:border-lion-orange focus:ring-2 focus:ring-lion-orange/20 transition-all resize-none"
                 />
               </div>
 
