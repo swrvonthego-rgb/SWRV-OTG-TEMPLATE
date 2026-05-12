@@ -214,7 +214,7 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
             <ArrowRight size={18} />
           </button>
           <p className="mt-4 text-xs text-gray-500 tracking-widest uppercase">
-            33+ services · à la carte or bundled · From $75
+            40+ services · à la carte or bundled · From $30/mo
           </p>
         </div>
       </div>

@@ -33,7 +33,7 @@ const STEPS = [
 // Service category → relevant service IDs
 const CATEGORY_SERVICES: Record<string, string[]> = {
   '🎵 Music / Audio':   ['music-production', 'mixing', 'mastering', 'live-recording', 'jingle', 'audio-edit-alacarte'],
-  '🎬 Music Video':     ['music-video', 'video-promo', 'on-site-video', 'color-grading', 'ai-motion-30'],
+  '🎬 Music Video':     ['music-video', 'video-promo', 'on-site-video', 'short-form-content', 'ai-motion-30'],
   '✨ Brand Identity':  ['brand-planning', 'logo-design', 'photography', 'content-system'],
   '🌐 Website':         ['website-presence', 'website-platform', 'website-ecosystem', 'enterprise-ecosystem'],
   '🎙️ Podcast':         ['podcast-launch', 'podcast-editing', 'voiceover'],

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap } from 'lucide-react';
 import { SCHEDULING, SERVICES } from '../site.config';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
 
 const TIME_SLOTS = SCHEDULING.timeSlots;
 const AVAILABLE_DAYS = SCHEDULING.availableDays;
