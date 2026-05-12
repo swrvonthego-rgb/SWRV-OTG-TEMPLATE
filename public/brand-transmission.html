@@ -445,25 +445,14 @@ function setWave(on){WBS.forEach(w=>w.classList.toggle('off',!on));AL.textConten
 // longer matches — prevents stale Web Speech / MP3 callbacks from firing
 // after a scene change, which was causing double-advances and audio glitches.
 let epoch=0;
-let activeAudio=null;
+let activeAudio = null;
 
-// ── Eager preload all MP3s on iframe load (iframe loads on parent button click,
-//    which carries the user activation via allow="autoplay"). Reusing these
-//    elements means we never create a new Audio() mid-session, avoiding the
-//    "activation consumed" problem that mutes slides 2-7.
+// ── ONE shared Audio element for all narration scenes.
+// Created during the INITIATE TRANSMISSION click (user gesture),
+// so iOS keeps it unlocked for the entire session.
+// We just swap .src each scene — same element, always unlocked.
+let sharedNarration = null;
 const TOTAL_NARRATION_SCENES = 7;
-const preloadedNarration = new Array(TOTAL_NARRATION_SCENES);
-for (let i = 0; i < TOTAL_NARRATION_SCENES; i++) {
-  try {
-    const a = new Audio(`/audio/narration-${i}.mp3`);
-    a.preload = 'auto';
-    a.load();
-    preloadedNarration[i] = a;
-  } catch (e) {
-    console.warn('[narration] preload failed for scene', i, e);
-  }
-}
-console.log('[narration] preloaded', TOTAL_NARRATION_SCENES, 'MP3s');
 
 function stopSpeak(){
   epoch++;
@@ -480,26 +469,17 @@ function speak(text, onEnd, sceneIdx){
   const myEpoch = epoch;
   const guardedEnd = () => { if (epoch === myEpoch && onEnd) onEnd(); };
 
-  if (sceneIdx === undefined) {
+  if (sceneIdx === undefined || !sharedNarration) {
     speakFallback(text, guardedEnd, myEpoch);
     return;
   }
 
-  // ── Use the PRELOADED audio element DIRECTLY (no cloning).
-  //    cloneNode() creates a fresh Audio element that isn't unlocked on iOS,
-  //    causing slides 2-7 to be silently blocked. The preloaded elements
-  //    were unlocked en-masse during the INITIATE TRANSMISSION click via
-  //    play→pause priming, so they can all play now.
-  //    Direct property assignment (onplaying/onended/onerror) overwrites
-  //    previous listeners — no manual cleanup needed.
-  const audio = preloadedNarration[sceneIdx];
-  if (!audio) {
-    speakFallback(text, guardedEnd, myEpoch);
-    return;
-  }
-
-  // Reset from any previous play
-  try { audio.pause(); audio.currentTime = 0; } catch(_) {}
+  // Swap src to this scene's MP3, reset, play.
+  // Same element = iOS unlock state is retained from initial gesture.
+  const audio = sharedNarration;
+  audio.src = `/audio/narration-${sceneIdx}.mp3`;
+  audio.currentTime = 0;
+  audio.volume = 1;
   activeAudio = audio;
 
   let settled = false;
@@ -519,21 +499,20 @@ function speak(text, onEnd, sceneIdx){
     console.log('[narration] scene ' + sceneIdx + ' playing MP3');
   };
 
-  const timeoutId = setTimeout(() => fallback('timeout (6s no playing event)'), 6000);
+  const timeoutId = setTimeout(() => fallback('timeout (6s)'), 6000);
 
-  // Direct property assignment (overwrites previous listeners — no cleanup needed)
+  // Direct property assignment overwrites previous handlers — no cleanup needed
   audio.onplaying = () => { clearTimeout(timeoutId); success(); };
-  audio.onended = () => {
+  audio.onended  = () => {
     clearTimeout(timeoutId);
     if (epoch !== myEpoch) return;
     setWave(false);
     if (activeAudio === audio) activeAudio = null;
     setTimeout(guardedEnd, 400);
   };
-  audio.onerror = (e) => {
+  audio.onerror  = () => {
     clearTimeout(timeoutId);
-    const code = e && e.target && e.target.error ? e.target.error.code : 'unknown';
-    fallback('audio error code ' + code);
+    fallback('audio error');
   };
 
   audio.play().catch((err) => {
@@ -715,29 +694,15 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ═══════════════════════════════════════
-   START SCREEN — user taps this INSIDE the iframe.
-   That tap is the gesture iOS needs to unlock audio.
+   START SCREEN
 ═══════════════════════════════════════ */
 const startEl = document.getElementById('start');
 startEl.addEventListener('click', () => {
-  // ── CRITICAL iOS UNLOCK ────────────────────────────────────
-  // iOS only allows .play() on Audio elements that were "touched"
-  // during a user gesture. Touch ALL 7 narration elements right now,
-  // synchronously, during this exact click. Play→pause each so they're
-  // unlocked but silent. Later .play() calls (slides 2-7) will work.
-  preloadedNarration.forEach((a) => {
-    if (!a) return;
-    try {
-      const p = a.play();
-      if (p && typeof p.then === 'function') {
-        p.then(() => { a.pause(); a.currentTime = 0; })
-         .catch(() => {});
-      } else {
-        a.pause();
-        a.currentTime = 0;
-      }
-    } catch (_) {}
-  });
+  // Create the ONE shared narration Audio element during this user gesture.
+  // iOS locks audio to the gesture that first called .play() on an element.
+  // By creating + keeping the SAME element, it stays unlocked all session.
+  // No mass-unlock, no simultaneous audio, no race conditions.
+  sharedNarration = new Audio();
 
   startEl.style.opacity = '0';
   startEl.style.pointerEvents = 'none';
