@@ -45,6 +45,7 @@ export const ContactSchedule: React.FC = () => {
       const topic = (e as CustomEvent<string>).detail;
       const found = SERVICES.find(s => s.name.toLowerCase().includes('strategy') || s.name.toLowerCase().includes('consult'));
       if (found) setSelectedService(found);
+      setServiceSearch('');
       setStep('service');
     };
     window.addEventListener('swrv:preset-topic', handler);
@@ -105,9 +106,6 @@ export const ContactSchedule: React.FC = () => {
     }
   };
 
-  const STEP_LABELS: Record<Step, string> = {
-    service: '1. Service', calendar: '2. Date', details: '3. Details', payment: '4. Payment', success: '✓'
-  };
   const STEP_KEYS: Step[] = ['service', 'calendar', 'details', 'payment', 'success'];
 
   if (step === 'success') {
@@ -119,7 +117,7 @@ export const ContactSchedule: React.FC = () => {
             <CheckCircle size={32} color="#0a0804" />
           </div>
           <h2 className="text-3xl font-black mb-3">Booking Submitted 🎉</h2>
-          <p className="text-white/60 mb-2">Your email app should be open — send it and you're set.</p>
+          <p className="text-white/60 mb-2">Booking submitted. You'll receive a confirmation email shortly.</p>
           <p className="text-white/40 text-sm mb-8">SWRV On The Go will confirm your time within 24 hours.</p>
           {selectedService && deliveryDate && (
             <div className="p-4 rounded-2xl mb-8" style={{ background: 'rgba(200,168,75,0.1)', border: '1px solid rgba(200,168,75,0.2)' }}>
@@ -441,12 +439,12 @@ export const ContactSchedule: React.FC = () => {
               </div>
             )}
 
+            {submitError && (
+              <p className="text-red-400 text-xs text-center mb-2 w-full">{submitError}</p>
+            )}
             <div className="flex gap-3">
               <button onClick={() => setStep('details')} className="flex-1 py-3 rounded-full font-bold text-sm"
                 style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>← Back</button>
-              {submitError && (
-                <p className="text-red-400 text-xs text-center mb-2">{submitError}</p>
-              )}
               <button onClick={handleBook} disabled={submitting}
                 className="flex-1 py-3 rounded-full font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100"
                 style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>

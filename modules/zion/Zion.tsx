@@ -13,6 +13,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
   const [email, setEmail] = useState('');
   const [inquiryType, setInquiryType] = useState('');
   const [message, setMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   // Scroll reveal refs
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
@@ -83,6 +84,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       return;
     }
     showToast('Sending...');
+    setIsSending(true);
     try {
       const res = await fetch('/api/zion-booking', {
         method: 'POST',
@@ -96,9 +98,11 @@ export function Zion({ isOpen, onClose }: ZionProps) {
         }),
       });
       if (!res.ok) throw new Error('Server error');
+      setIsSending(false);
       showToast('Message sent. Zion will be in touch soon.');
       setFirstName(''); setLastName(''); setEmail(''); setInquiryType(''); setMessage('');
     } catch (err) {
+      setIsSending(false);
       showToast('Something went wrong. Try again or email info@swrvonthego.pro directly.');
     }
   };
@@ -485,7 +489,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
                 <label>Tell Me About It</label>
                 <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="What are you looking for? Dates, venue, vision — share what you've got."></textarea>
               </div>
-              <button className="btn btn-primary" onClick={handleSubmit} style={{ alignSelf: 'flex-start' }}>Send It →</button>
+              <button className="btn btn-primary" onClick={handleSubmit} disabled={isSending} style={{ alignSelf: 'flex-start', opacity: isSending ? 0.6 : 1, cursor: isSending ? 'not-allowed' : 'pointer' }}>{isSending ? 'Sending…' : 'Send It →'}</button>
             </div>
           </div>
         </div>
