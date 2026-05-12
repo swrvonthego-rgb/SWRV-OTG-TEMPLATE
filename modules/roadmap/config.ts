@@ -113,7 +113,7 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
     introTitle: { line1: 'Your Vision.', emphasis: 'Your Vehicle.', line3: 'Your Roadmap.' },
     introSub: "Before you build a brand, a business, a plan —\nyou have to know where you're actually going.",
     videoLabel: 'A word from Swerve',
-    videoUrl: 'https://res.cloudinary.com/ddzyvfolr/video/upload/v1778446897/copy_D33819D8-D7CB-4826-A72B-0DE7EBD711EA_zpbtda.mp4',
+    videoUrl: 'https://res.cloudinary.com/ddzyvfolr/video/upload/v1778549172/vcompress_1_j33pa2.mp4',
     nameFieldLabel: "What's your first name?",
     namePlaceholder: 'Your name',
     introCta: "I'm Ready",
