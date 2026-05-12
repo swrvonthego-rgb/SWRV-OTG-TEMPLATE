@@ -4,8 +4,8 @@ import { BRAND, HEADER } from '../site.config';
 import { MEDIA } from '../media.config';
 import { Button } from './Button';
 
-interface HeaderProps { onOpenByob?: () => void; }
-export const Header: React.FC<HeaderProps> = ({ onOpenByob }) => {
+interface HeaderProps { onOpenByob?: () => void; onOpenZion?: () => void; }
+export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -60,41 +60,43 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob }) => {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-8">
             {HEADER.navItems.map((item) => {
-              // BYOB TRAINING is intercepted to open the in-site overlay
               if (item.label === 'BYOB TRAINING' && onOpenByob) {
                 return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={onOpenByob}
-                    className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans"
-                  >
+                  <button key={item.label} type="button" onClick={onOpenByob}
+                    className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans">
+                    {item.label}
+                  </button>
+                );
+              }
+              if (item.label === 'ZION SWRV BIRDSONG' && onOpenZion) {
+                return (
+                  <button key={item.label} type="button" onClick={onOpenZion}
+                    className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans">
                     {item.label}
                   </button>
                 );
               }
               return (
-                <a
-                  key={item.label}
-                  href={item.href}
+                <a key={item.label} href={item.href}
                   target={item.external ? '_blank' : undefined}
                   rel={item.external ? 'noopener noreferrer' : undefined}
-                  className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide"
-                >
+                  className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide">
                   {item.label}
                 </a>
               );
             })}
-             <a href="#" className="text-[13px] font-bold text-lion-orange hover:text-white transition-colors tracking-wide">
-                {HEADER.bookNowLabel}
+            <a href="#contact"
+              className="text-[13px] font-bold text-lion-orange hover:text-white transition-colors tracking-wide">
+              {HEADER.bookNowLabel}
             </a>
           </nav>
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
-             <Button variant="primary" size="sm" className="!rounded-sm !text-[12px] !px-6 !py-2.5">
-               {HEADER.getInTouchLabel}
-             </Button>
+            <Button variant="primary" size="sm"
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
+              {HEADER.getInTouchLabel}
+            </Button>
           </div>
 
           {/* Mobile Toggle */}
@@ -111,30 +113,41 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob }) => {
               {HEADER.navItems.map((item) => {
                 if (item.label === 'BYOB TRAINING' && onOpenByob) {
                   return (
-                    <button
-                      key={item.label}
-                      type="button"
+                    <button key={item.label} type="button"
                       onClick={() => { setMobileMenuOpen(false); onOpenByob(); }}
-                      className="text-xl font-bold text-white hover:text-lion-orange bg-transparent border-0 cursor-pointer p-0 font-sans"
-                    >
+                      className="text-xl font-bold text-white hover:text-lion-orange bg-transparent border-0 cursor-pointer p-0 font-sans">
+                      {item.label}
+                    </button>
+                  );
+                }
+                if (item.label === 'ZION SWRV BIRDSONG' && onOpenZion) {
+                  return (
+                    <button key={item.label} type="button"
+                      onClick={() => { setMobileMenuOpen(false); onOpenZion(); }}
+                      className="text-xl font-bold text-white hover:text-lion-orange bg-transparent border-0 cursor-pointer p-0 font-sans">
                       {item.label}
                     </button>
                   );
                 }
                 return (
-                  <a
-                    key={item.label}
-                    href={item.href}
+                  <a key={item.label} href={item.href}
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
                     className="text-xl font-bold text-white hover:text-lion-orange"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                    onClick={() => setMobileMenuOpen(false)}>
                     {item.label}
                   </a>
                 );
               })}
-              <Button variant="primary" size="lg">{HEADER.getInTouchLabel}</Button>
+              <a href="#contact"
+                className="text-xl font-bold text-lion-orange hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}>
+                {HEADER.bookNowLabel}
+              </a>
+              <Button variant="primary" size="lg"
+                onClick={() => { setMobileMenuOpen(false); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>
+                {HEADER.getInTouchLabel}
+              </Button>
             </div>
           )}
         </div>

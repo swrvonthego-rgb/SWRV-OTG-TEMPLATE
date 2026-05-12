@@ -507,10 +507,10 @@ export const WEB_PACKAGES = {
     },
   ],
   addons: [
-    { label: 'Extra pages (beyond 5)', price: '+$75 each' },
-    { label: 'Monthly maintenance & updates', price: '$75/mo' },
-    { label: 'Additional brand video', price: '$150–$300' },
-    { label: 'Done-for-you domain & hosting setup', price: '$50 one-time' },
+    { label: 'Extra pages (beyond 5)', price: '+$100 each' },
+    { label: 'Monthly management (full service)', price: '$125/mo' },
+    { label: 'Additional promo video', price: '$1,250' },
+    { label: '3-6 month SEO audit', price: 'Included' },
   ],
 } as const;
 
@@ -740,10 +740,10 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
       'Priority response time',
     ],
     addOns: [
-      { label: 'Extra pages (beyond 5)', price: '+$75 each' },
-      { label: 'Monthly maintenance & updates', price: '$75/mo' },
+      { label: 'Extra pages (beyond 5)', price: '+$100 each' },
+      { label: 'Monthly management (full service)', price: '$125/mo' },
       { label: 'Additional brand video', price: '$150–$300' },
-      { label: 'Done-for-you domain & hosting setup', price: '$50 one-time' },
+      { label: '3-6 month SEO audit', price: 'Included' },
     ],
     note: 'Multi-page sites run $3,000–$15,000+ in the open market. This is intentional.',
     color: 'border-white/20',

@@ -76,7 +76,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-lion-black">
-      <Header onOpenByob={() => setIsByobOpen(true)} />
+      <Header onOpenByob={() => setIsByobOpen(true)} onOpenZion={() => setIsZionOpen(true)} />
 
       <main>
         <SecondaryIntro skipIntro={skipIntro} />
