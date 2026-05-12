@@ -142,8 +142,12 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
             const isBYOB = service.title === "BYOB Training";
             const isAuthorship = service.title === "Authorship";
             const isPodcast = service.title === "SWRV Talk Podcast";
-            const isExternal = isBYOB || isAuthorship || isPodcast;
-            const href = isBYOB ? "https://trainbyob.me" : isAuthorship ? "https://swrvbirdsong.netlify.app/#books" : isPodcast ? "https://swrvbirdsong.netlify.app/#podcast" : `#${service.title.toLowerCase().replace(/\s+/g, '-')}`;
+            const isExternal = isBYOB;
+            const href = isBYOB ? "https://trainbyob.me" : `#${service.title.toLowerCase().replace(/\s+/g, '-')}`;
+            const handleZionSection = (section: string) => {
+              window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: section }));
+              onOpenZion?.();
+            };
             return (
               <div
                 key={idx}
@@ -157,6 +161,27 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
                   </div>
                 )}
                 {!isArtistDev ? (
+                  isAuthorship || isPodcast ? (
+                    <button
+                      type="button"
+                      className="block text-left w-full"
+                      onClick={() => handleZionSection(isAuthorship ? 'books' : 'podcast')}
+                    >
+                      <div className="text-gray-400 mb-8 group-hover:text-lion-orange transition-colors duration-300">
+                        {IconMap[service.icon]}
+                      </div>
+                      <h3 className="text-xl font-bold text-black mb-1 group-hover:text-lion-orange transition-colors">
+                        {service.title}
+                      </h3>
+                      <div className="mb-4" />
+                      <p className="text-gray-600 mb-8 leading-relaxed text-sm">
+                        {service.description}
+                      </p>
+                      <div className="flex items-center text-lion-orange font-bold text-sm tracking-wide opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                        {isAuthorship ? "VIEW BOOKS" : "LISTEN TO THE PODCAST"} <ArrowRight size={16} className="ml-2" />
+                      </div>
+                    </button>
+                  ) : (
                   <a
                     href={href}
                     target={isExternal ? "_blank" : "_self"}
@@ -177,9 +202,10 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
                       {service.description}
                     </p>
                     <div className="flex items-center text-lion-orange font-bold text-sm tracking-wide opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-                      {isBYOB ? "VISIT TRAINBYOB.ME" : isAuthorship ? "VIEW BOOKS" : isPodcast ? "LISTEN TO THE PODCAST" : "EXPLORE BRANCH"} <ArrowRight size={16} className="ml-2" />
+                      {isBYOB ? "VISIT TRAINBYOB.ME" : "EXPLORE BRANCH"} <ArrowRight size={16} className="ml-2" />
                     </div>
                   </a>
+                  )
                 ) : (
                   <div className="block pointer-events-none opacity-50">
                     <div className="text-gray-400 mb-8">

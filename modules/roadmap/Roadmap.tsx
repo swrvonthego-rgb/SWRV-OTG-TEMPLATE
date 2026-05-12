@@ -1258,7 +1258,12 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                   <button
                     type="button"
                     className="btn-cta"
-                    onClick={onOpenServices}
+                    onClick={() => {
+                      // Broadcast recommended services so ServicesMenu highlights them
+                      const names = (result.recommended_services || []).map(s => s.name);
+                      window.dispatchEvent(new CustomEvent('swrv:roadmap-recommendations', { detail: names }));
+                      onOpenServices();
+                    }}
                   >
                     {config.copy.resultsCtaButton}
                   </button>

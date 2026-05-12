@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './services-menu.css';
 import { SERVICES } from '../../site.config';
 
@@ -58,12 +58,13 @@ const SUB_CATEGORIES: SubCategory[] = [
   {
     id: 'web-digital',
     label: 'Web & Digital',
-    tagline: 'Websites that work — built, launched, maintained.',
+    tagline: 'Vision-first. Custom-built. Yours alone.',
     emoji: '🌐',
     serviceIds: [
       'website-presence',
       'website-platform',
       'website-ecosystem',
+      'enterprise-ecosystem',
       'website-management',
       'website-maintenance',
       'fundraising-site',
@@ -113,6 +114,18 @@ SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 
 export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [roadmapRecs, setRoadmapRecs] = useState<string[]>([]);
+
+  // Listen for Roadmap recommendations broadcast
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const names = (e as CustomEvent<string[]>).detail;
+      if (Array.isArray(names) && names.length) setRoadmapRecs(names);
+    };
+    window.addEventListener('swrv:roadmap-recommendations', handler);
+    return () => window.removeEventListener('swrv:roadmap-recommendations', handler);
+  }, []);
+
   if (!isOpen) return null;
 
   const q = searchQuery.toLowerCase().trim();
@@ -147,6 +160,40 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           />
           <p className="sm-hero-caption">LEADER OF THE REVOLUTION</p>
         </div>
+
+        {/* ROADMAP RECOMMENDATIONS — shown only when coming from Roadmap CTA */}
+        {roadmapRecs.length > 0 && (
+          <section className="sm-recs">
+            <div className="sm-recs-header">
+              <span className="sm-recs-emoji">🗺️</span>
+              <div>
+                <h2 className="sm-recs-label">YOUR ROADMAP RECOMMENDS</h2>
+                <p className="sm-recs-sub">Based on your vision — these services align with where you're going.</p>
+              </div>
+            </div>
+            <div className="sm-grid">
+              {roadmapRecs.map((name) => {
+                const svc = SERVICES.find(s => s.name === name);
+                if (!svc) return null;
+                return (
+                  <article key={svc.id} className="sm-card sm-card-featured sm-card-rec">
+                    <span className="sm-badge">✦ Your Roadmap</span>
+                    <h3 className="sm-card-name">{svc.name}</h3>
+                    <p className="sm-card-price">{svc.price}</p>
+                    <p className="sm-card-blurb">{svc.blurb}</p>
+                  </article>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="sm-recs-clear"
+              onClick={() => setRoadmapRecs([])}
+            >
+              See all services ↓
+            </button>
+          </section>
+        )}
 
         {/* HEADER */}
         <header className="sm-header">

@@ -17,6 +17,21 @@ export function Zion({ isOpen, onClose }: ZionProps) {
   // Scroll reveal refs
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
 
+  // Listen for section navigation events (e.g. from Services page podcast/books cards)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const section = (e as CustomEvent<string>).detail;
+      if (!section) return;
+      // Small delay to let the overlay finish opening
+      setTimeout(() => {
+        const el = document.querySelector(`.zion-page #${section}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    };
+    window.addEventListener('swrv:zion-section', handler);
+    return () => window.removeEventListener('swrv:zion-section', handler);
+  }, []);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -214,7 +229,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           <div style={{ position: 'relative', marginBottom: '2px' }}>
             <img 
               src="https://res.cloudinary.com/dlxkwdyk7/image/upload/v1775854242/8A350C02-C84D-41B2-8893-80A79AF3883D_kwild2_flwsqm.png" 
-              alt="Zion Birdsong" 
+              alt="Zion SWRV Birdsong" 
               style={{ width: '100%', display: 'block', filter: 'brightness(0.9) contrast(1.05)' }} 
               referrerPolicy="no-referrer"
             />
@@ -280,7 +295,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           <div style={{ position: 'relative', overflow: 'hidden' }} className="editorial-photo">
             <img 
               src="https://res.cloudinary.com/dlxkwdyk7/image/upload/v1775854242/IMG_3064_2_ol70jx_sfkj3v.jpg"
-              alt="Zion Birdsong"
+              alt="Zion SWRV Birdsong"
               style={{ 
                 width: '100%',
                 height: '520px',
@@ -330,7 +345,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       {/* BOOKS */}
       <section className="books" id="books">
         <p className="section-label reveal" ref={addToRefs}>The Word</p>
-        <h2 className="section-title reveal" ref={addToRefs}>Books by Zion Birdsong</h2>
+        <h2 className="section-title reveal" ref={addToRefs}>Books by Zion SWRV Birdsong</h2>
         <div className="books-grid">
           <div className="book-card reveal" ref={addToRefs}>
             <div className="book-number">01</div>
@@ -415,7 +430,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             />
           </div>
           <div>
-            <p className="section-body" style={{ marginBottom: '1.5rem' }}>Wisdom, motivation, and behind-the-scenes stories from the journey. SWRV Talk is where Zion Birdsong speaks from the heart — raw, real, and uncut. Tune in to the conversation.</p>
+            <p className="section-body" style={{ marginBottom: '1.5rem' }}>Wisdom, motivation, and behind-the-scenes stories from the journey. SWRV Talk is where Zion SWRV Birdsong speaks from the heart — raw, real, and uncut. Tune in to the conversation.</p>
             <p style={{ fontSize: '0.72rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--color-gold)', marginBottom: '1.25rem' }}>Available On</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
               <a href="https://podcasters.spotify.com/pod/show/swrv-birdsong" target="_blank" rel="noreferrer" className="btn btn-outline btn-icon btn-sm">🎵 Spotify</a>
@@ -479,7 +494,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       {/* FOOTER */}
       <footer>
         <div className="footer-brand">
-          Zion Birdsong
+          Zion SWRV Birdsong
           <small>SWRV — Serving With Righteous Vision</small>
         </div>
         <ul className="footer-links">
@@ -503,7 +518,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             @SWRVBIRDSONG
           </a>
         </div>
-        <p className="footer-copy">© {new Date().getFullYear()} Zion Birdsong · swrvonthego.pro</p>
+        <p className="footer-copy">© {new Date().getFullYear()} Zion SWRV Birdsong · swrvonthego.pro</p>
       </footer>
 
       {/* SWRV OTG ECOSYSTEM LINK BAR */}

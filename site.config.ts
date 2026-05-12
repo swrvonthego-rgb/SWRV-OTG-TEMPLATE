@@ -196,7 +196,16 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$1,000',
     priceNumeric: 1000,
-    blurb: 'Full modular site — multiple sections, integrated services, AI experiences, e-commerce, and content systems. Domain + email included. SEO audit at 3-6 months included. Live in 21 days.',
+    blurb: 'A multifaceted digital home for solopreneurs who operate as a whole company. Custom-built — you won\'t find this anywhere else because we designed this concept. Vision-first: we get what\'s in your head out and into a digital space you can grow into over time. Your Roadmap drives every design decision. Includes domain, email, SEO audit at 3-6 months. Live in 21 days.',
+  },
+  {
+    id: 'enterprise-ecosystem',
+    name: 'Enterprise Ecosystem',
+    category: 'execution',
+    price: 'Custom Quote',
+    priceNumeric: 10000,
+    blurb: 'For those building something the size of Apple, Microsoft, or a full digital record label — with multiple divisions, offices, and operations under one digital roof. Multi-brand architecture, team portals, artist rosters, revenue streams, and expansive infrastructure. Vision-first, built to scale. Custom-quoted based on scope.',
+    featured: true,
   },
   {
     id: 'website-maintenance',
@@ -784,7 +793,7 @@ export interface ServiceCategory {
 export const SERVICE_CATEGORIES: ServiceCategory[] = [
   {
     title: 'Brand Planning',
-    description: 'Blueprint Your Vision — an interactive 5-minute experience to map your gift, your work, your purpose, and your brand identity. AI guides you through your Day in the Happily Ever After and reveals your Roadmap.',
+    description: 'Blueprint Your Vision — an interactive AI-powered experience that maps your gift, your work, your purpose, and your brand identity. Your Roadmap drives every service recommendation.',
     icon: 'Compass',
   },
   {
