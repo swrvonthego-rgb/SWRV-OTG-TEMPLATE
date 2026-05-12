@@ -1201,22 +1201,65 @@ export const Roadmap: React.FC<RoadmapProps> = ({
             </div>
 
             <div className="results-content">
+
+              {/* ── GIFT / WORK / PURPOSE ── */}
               <div className="r-card">
                 <div className="r-label">Your Gift</div>
                 <div className="r-title">{result.gift}</div>
               </div>
-              <div className="r-card">
-                <div className="r-label">Your Work</div>
-                <div className="r-body">{result.work}</div>
+              <div className="r-card r-card-pair">
+                <div className="r-half">
+                  <div className="r-label">Your Work</div>
+                  <div className="r-body">{result.work}</div>
+                </div>
+                <div className="r-half">
+                  <div className="r-label">Your Purpose</div>
+                  <div className="r-body">{result.purpose}</div>
+                </div>
               </div>
-              <div className="r-card">
-                <div className="r-label">Your Purpose</div>
-                <div className="r-body">{result.purpose}</div>
-              </div>
-              <div className="r-card">
+
+              {/* ── EVIDENCE — How we got here ── */}
+              {result.evidence && (
+                <div className="r-card r-card-evidence">
+                  <div className="r-label">
+                    <span className="r-label-dot" style={{ background: '#64c8ff' }} />
+                    How We Got Here — Not Fortune-Telling, Just Facts
+                  </div>
+                  <div className="r-body evidence-body">{result.evidence}</div>
+                </div>
+              )}
+
+              {/* ── VISION SUMMARY ── */}
+              <div className="r-card r-card-vision">
                 <div className="r-label">Your Happily Ever After — Mapped</div>
-                <div className="r-body">{result.vision_summary}</div>
+                <div className="r-body vision-body">{result.vision_summary}</div>
               </div>
+
+              {/* ── BLUEPRINT — Deep life analysis ── */}
+              {result.blueprint && (
+                <div className="r-card">
+                  <div className="r-label">The Blueprint — What This Life Actually Requires</div>
+                  <p className="blueprint-intro">Based on what you described, here is the full picture of what sustains this vision.</p>
+                  <div className="blueprint-grid">
+                    {[
+                      { key: 'reverse_engineering', label: '🔍 How You Got Here', value: result.blueprint.reverse_engineering },
+                      { key: 'mindset',             label: '🧠 Mindset',          value: result.blueprint.mindset },
+                      { key: 'discipline',          label: '⚡ Daily Discipline',  value: result.blueprint.discipline },
+                      { key: 'diet',                label: '🥗 Diet & Nutrition',  value: result.blueprint.diet },
+                      { key: 'fitness',             label: '💪 Fitness',           value: result.blueprint.fitness },
+                      { key: 'community',           label: '🤝 Your Circle',       value: result.blueprint.community },
+                      { key: 'work_ethic',          label: '🎯 Work Ethic',        value: result.blueprint.work_ethic },
+                    ].filter(b => b.value).map((b) => (
+                      <div key={b.key} className="blueprint-item">
+                        <div className="blueprint-label">{b.label}</div>
+                        <div className="blueprint-body">{b.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── BRAND IDENTITY ── */}
               <div className="r-card">
                 <div className="r-label">Your Brand Identity</div>
                 <div className="r-title">{result.business_name_idea}</div>
@@ -1244,10 +1287,39 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                   ))}
                 </div>
               </div>
+
+              {/* ── VISION → SERVICES MAP ── */}
+              {(result.vision_services_map || []).length > 0 && (
+                <div className="r-card">
+                  <div className="r-label">Your Vision — What It Costs to Build</div>
+                  <p className="vsmap-intro">Everything you described has a price. Here's exactly what builds each part of your vision — so you know why every dollar is there.</p>
+                  <div className="vsmap">
+                    {(result.vision_services_map || []).map((item, i) => (
+                      <div key={i} className="vsmap-row">
+                        <div className="vsmap-left">
+                          <div className="vsmap-element">{item.vision_element}</div>
+                          {item.quote && <div className="vsmap-quote">"{item.quote}"</div>}
+                        </div>
+                        <div className="vsmap-arrow">→</div>
+                        <div className="vsmap-right">
+                          {(item.services || []).map((svc, j) => (
+                            <div key={j} className="vsmap-svc">
+                              <span className="vsmap-svc-name">{svc.name}</span>
+                              <span className="vsmap-svc-price">{svc.price}</span>
+                              {svc.connection && <span className="vsmap-svc-why">{svc.connection}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── SERVICE CHAIN ── */}
               <div className="r-card">
-                <div className="r-label">Your Roadmap to Reality — {config.brandName} Services</div>
-                <p className="svc-chain-intro">These services are ordered as you would actually use them — each one builds on or enables the next.</p>
-                {/* Group by phase */}
+                <div className="r-label">Your Full Roadmap to Reality — {config.brandName} Services</div>
+                <p className="svc-chain-intro">Ordered as you would actually use them — each one builds on or enables the next.</p>
                 {(['Foundation', 'Production', 'Delivery', 'Growth'] as const).map((phase) => {
                   const phaseServices = (result.recommended_services || [])
                     .filter(s => (s as any).phase === phase)
@@ -1269,7 +1341,6 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                     </div>
                   );
                 })}
-                {/* Fallback: if no phases returned, show flat list */}
                 {!(result.recommended_services || []).some(s => (s as any).phase) && (
                   <div className="services-grid">
                     {(result.recommended_services || []).map((s, i) => (
@@ -1287,6 +1358,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                   <span className="total-amount">${total.toLocaleString()}</span>
                 </div>
               </div>
+
+              {/* ── CTA ── */}
               <div className="cta-block">
                 <div className="cta-eyebrow">What's Next</div>
                 <div className="cta-headline">{ctaHeadline}</div>

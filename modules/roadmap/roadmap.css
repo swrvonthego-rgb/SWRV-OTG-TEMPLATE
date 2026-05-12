@@ -628,11 +628,53 @@
 .roadmap-experience .color-dot{width:12px;height:12px;border-radius:50%;
   border:1px solid var(--border-strong);flex-shrink:0;margin-top:5px;}
 
+/* ── CARD VARIANTS ──────────────────────────────────────────────────── */
+.roadmap-experience .r-card-pair{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.roadmap-experience .r-half{}
+.roadmap-experience .r-card-evidence{border-color:rgba(100,200,255,0.25);background:linear-gradient(135deg,rgba(100,200,255,0.06) 0%,rgba(100,200,255,0.02) 100%);}
+.roadmap-experience .r-card-vision{border-color:rgba(var(--accent-rgb,200,168,75),0.3);}
+.roadmap-experience .r-label-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle;}
+.roadmap-experience .evidence-body{font-size:15px;line-height:1.8;color:var(--ink-mid);font-style:italic;}
+.roadmap-experience .vision-body{font-size:16px;line-height:1.85;color:var(--ink-bright);}
+
+/* ── BLUEPRINT ──────────────────────────────────────────────────────── */
+.roadmap-experience .blueprint-intro{font-size:13px;color:var(--ink-mid);margin-bottom:20px;font-style:italic;}
+.roadmap-experience .blueprint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.roadmap-experience .blueprint-item{padding:18px 20px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,0.02);transition:border-color 0.25s;}
+.roadmap-experience .blueprint-item:hover{border-color:var(--accent-mid);}
+.roadmap-experience .blueprint-label{font-size:12px;font-weight:700;letter-spacing:0.08em;color:var(--accent-1);margin-bottom:10px;text-transform:uppercase;}
+.roadmap-experience .blueprint-body{font-size:14px;line-height:1.7;color:var(--ink-mid);}
+
+/* ── VISION → SERVICES MAP ──────────────────────────────────────────── */
+.roadmap-experience .vsmap-intro{font-size:13px;color:var(--ink-mid);font-style:italic;margin-bottom:24px;line-height:1.6;}
+.roadmap-experience .vsmap{display:flex;flex-direction:column;gap:24px;}
+.roadmap-experience .vsmap-row{display:grid;grid-template-columns:1fr 28px 1fr;gap:0;align-items:start;padding-bottom:24px;border-bottom:1px solid var(--border);}
+.roadmap-experience .vsmap-row:last-child{border-bottom:none;padding-bottom:0;}
+.roadmap-experience .vsmap-left{padding:16px 20px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;}
+.roadmap-experience .vsmap-element{font-size:15px;font-weight:600;color:var(--ink-bright);line-height:1.4;margin-bottom:8px;}
+.roadmap-experience .vsmap-quote{font-size:13px;font-style:italic;color:var(--accent-1);opacity:0.85;line-height:1.5;}
+.roadmap-experience .vsmap-quote::before{content:'"';}
+.roadmap-experience .vsmap-arrow{display:flex;align-items:center;justify-content:center;color:var(--accent-mid);font-size:18px;padding-top:20px;opacity:0.7;}
+.roadmap-experience .vsmap-right{display:flex;flex-direction:column;gap:10px;}
+.roadmap-experience .vsmap-svc{padding:12px 16px;background:rgba(200,168,75,0.06);border:1px solid rgba(200,168,75,0.2);border-radius:10px;}
+.roadmap-experience .vsmap-svc-name{display:block;font-size:14px;font-weight:600;color:var(--ink-bright);margin-bottom:2px;}
+.roadmap-experience .vsmap-svc-price{display:inline-block;font-size:13px;font-weight:700;color:var(--accent-1);margin-bottom:4px;}
+.roadmap-experience .vsmap-svc-why{display:block;font-size:12px;color:var(--ink-mid);line-height:1.5;margin-top:4px;font-style:italic;}
+
 .roadmap-experience .svc-chain-intro{font-size:13px;color:var(--ink-mid);font-style:italic;margin-bottom:20px;line-height:1.5;}
 .roadmap-experience .svc-phase{margin-bottom:24px;}
 .roadmap-experience .svc-phase-label{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent-1);opacity:0.7;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .roadmap-experience .svc-card-chain{position:relative;padding-left:52px;}
 .roadmap-experience .svc-step{position:absolute;left:16px;top:18px;width:22px;height:22px;border-radius:50%;background:var(--accent-1);color:var(--bg-deep);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0.85;}
+
+/* Mobile */
+@media(max-width:640px){
+  .roadmap-experience .r-card-pair{grid-template-columns:1fr;}
+  .roadmap-experience .vsmap-row{grid-template-columns:1fr;gap:8px;}
+  .roadmap-experience .vsmap-arrow{display:none;}
+  .roadmap-experience .blueprint-grid{grid-template-columns:1fr;}
+}
+
 .roadmap-experience .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
   gap:14px;margin-top:8px;}
 .roadmap-experience .svc-card{padding:18px 20px;border:1px solid var(--border);
