@@ -27,7 +27,7 @@ export const WebPackages: React.FC = () => {
   const handleCTA = (tierId: string) => {
     const subject = encodeURIComponent(`Web Package Inquiry — ${tiers.find(t => t.id === tierId)?.name}`);
     const body = encodeURIComponent(`Hi ${BRAND.founderName.split(' ')[0]},\n\nI'm interested in the ${tiers.find(t => t.id === tierId)?.name} web package ($${tiers.find(t => t.id === tierId)?.price}).\n\nAbout my project:\n\n`);
-    window.location.href = `mailto:swrvonthego@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:info@swrvonthego.pro?subject=${subject}&body=${body}`;
   };
 
   return (

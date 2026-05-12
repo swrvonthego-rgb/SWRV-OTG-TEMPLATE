@@ -29,8 +29,8 @@ export const BRAND = {
     'Zion SWRV Birdsong Headquarters. The central hub for artist development, physical training, authorship, and wisdom.',
   url: 'https://swrvonthego.pro',
   founderName: 'Zion SWRV Birdsong',
-  contactEmail: 'hello@swrvonthego.pro',
-  bookingEmail: 'hello@swrvonthego.pro',
+  contactEmail: 'info@swrvonthego.pro',
+  bookingEmail: 'info@swrvonthego.pro',
   logoUrl:
     'https://res.cloudinary.com/dzqxce5hv/image/upload/v1772222265/Swerve_Badge_eow6m0.png',
   // Used in the Roadmap experience CTA + email tier-selection link
@@ -608,7 +608,7 @@ export const SCHEDULING: {
   timeSlots: string[];
   topics: string[];
 } = {
-  contactEmail: 'hello@swrvonthego.pro',
+  contactEmail: 'info@swrvonthego.pro',
   // Days you're available (0=Sun, 1=Mon, ... 6=Sat). Default Mon–Sat.
   availableDays: [1, 2, 3, 4, 5, 6],
   timeSlots: [

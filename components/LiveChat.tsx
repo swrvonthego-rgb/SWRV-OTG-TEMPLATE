@@ -51,6 +51,8 @@ export const LiveChat: React.FC<{ onOpenBooking?: () => void }> = ({ onOpenBooki
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [unread, setUnread] = useState(false);
+  // Full conversation history for back-and-forth chat
+  const [chatHistory, setChatHistory] = useState<{role:'user'|'assistant'; content:string}[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Show unread indicator after 8s if user hasn't opened
@@ -98,10 +100,45 @@ export const LiveChat: React.FC<{ onOpenBooking?: () => void }> = ({ onOpenBooki
     }
   };
 
-  const handleSend = () => {
-    if (!input.trim() || loading) return;
-    handleReply(input.trim());
+  const handleSend = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
     setInput('');
+
+    // If still in intake flow, use structured reply handler
+    if (!done && stepIdx < STEPS.length) {
+      handleReply(text);
+      return;
+    }
+
+    // Free-text back-and-forth chat — full conversation history
+    addUser(text);
+    setLoading(true);
+    const newHistory: {role:'user'|'assistant'; content:string}[] = [
+      ...chatHistory,
+      { role: 'user', content: text },
+    ];
+    setChatHistory(newHistory);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newHistory }),
+      });
+      const data = await res.json();
+      const reply = data.reply || "Let me connect you with Swerve at info@swrvonthego.pro";
+      setLoading(false);
+      addBot(reply, undefined,
+        reply.toLowerCase().includes('book') || reply.toLowerCase().includes('session')
+          ? { label: 'Book a Session →', action: 'book' }
+          : undefined
+      );
+      setChatHistory([...newHistory, { role: 'assistant', content: reply }]);
+    } catch {
+      setLoading(false);
+      addBot("Having trouble connecting. Email info@swrvonthego.pro and we'll get back to you.");
+    }
   };
 
   const generateRec = async (a: Record<string, string>) => {
@@ -131,17 +168,15 @@ Write a 2-3 paragraph response that:
 Be conversational. No bullet points. No fluff. Speak like someone who's actually been in the room.`;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      // Route through /api/chat worker endpoint (uses Groq, keeps API key server-side)
+      const chatMessages = [{ role: 'user', content: prompt }];
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 400,
-          messages: [{ role: 'user', content: prompt }],
-        }),
+        body: JSON.stringify({ messages: chatMessages }),
       });
       const data = await res.json();
-      const text = data.content?.[0]?.text || "Let me connect you with Swerve directly to get you exactly what you need.";
+      const text = data.reply || "Let me connect you with Swerve directly to get you exactly what you need.";
       setLoading(false);
       setDone(true);
       setTimeout(() => {

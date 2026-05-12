@@ -124,7 +124,7 @@ export const ZION_CONFIG = {
     title: "Let's make something together.",
     blurb:
       'Performances, sessions, speaking engagements, mentorship — fill out the form below and let me know what you have in mind.',
-    submitTo: 'hello@swrvonthego.pro',
+    submitTo: 'info@swrvonthego.pro',
     inquiryTypes: [
       'Live Performance',
       'Vocal Coaching',

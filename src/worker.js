@@ -6,7 +6,7 @@ import { renderRoadmapEmail } from './email-template.js';
 //   POST /api/save-progress   → saves session to KV (if PROGRESS binding exists)
 //   GET  /api/load-progress   → loads session by ?id=… from KV
 //   POST /api/send-email      → sends results email via Resend (if RESEND_API_KEY exists)
-//   POST /api/zion-booking    → emails Zion Birdsong booking inquiry to info@swrvonthego.pro
+//   POST /api/zion-booking    → emails booking inquiry to info@swrvonthego.pro
 //   GET  /r/:id               → resume URL — redirects to / with session ID hash
 //   GET  /api/health          → debug
 //   *                          → static asset fallback
@@ -33,6 +33,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/roadmap')        return handleRoadmap(request, env);
+    if (url.pathname === '/api/chat')           return handleChat(request, env);
     if (url.pathname === '/api/save-progress')  return handleSaveProgress(request, env);
     if (url.pathname === '/api/load-progress')  return handleLoadProgress(request, env);
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
@@ -333,5 +334,121 @@ async function handleZionBooking(request, env) {
   } catch (err) {
     console.error('Zion booking error:', err);
     return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// LIVE CHAT — Back-and-forth AI customer service
+// Uses Groq (same key as Roadmap). Full conversation history
+// passed on every request so the AI maintains context.
+// ─────────────────────────────────────────────────────────
+const CHAT_SYSTEM_PROMPT = `You are a customer service rep for SWRV On The Go (swrvonthego.pro) — a full-service creative agency founded by Swerve (Robert Birdsong), 25+ years in the music business. You are warm, direct, and knowledgeable. You speak like someone who has actually been in the room — not a chatbot, not a salesperson.
+
+Your job: Help potential clients understand which SWRV services are right for them, answer questions about pricing and process, and guide them toward booking.
+
+SWRV ON THE GO — FULL SERVICE LIST WITH PRICES:
+Brand Planning — $250 (includes vision+mission+color palette, AI-powered Roadmap session)
+Logo & Brand Identity Design — $250 (2 revision rounds, custom — not templated)
+Photography Package — $800 (half-day shoot, editing, color grading included)
+Content Strategy & Social Media Kit — $500 (calendar, brand voice, templates)
+Website — The Presence — $250 (3-page site, 7 days, SEO audit at 3-6 months)
+Website — The Platform — $500 (5-page, booking, 14 days)
+Website — The Ecosystem — $1,000 (full modular, 21 days)
+Enterprise Ecosystem — Custom Quote (Apple/Microsoft scale, multi-brand, digital record label)
+Website Management — $125/month (full-service, proactive)
+Website Maintenance — $30/month (security, links, content updates)
+Crowdfunding/Fundraising Site — $1,000
+Full Song Production — $3,000 (beat, recording, vocal coaching, mixing, mastering — 5 days)
+Mixing — $500 (broadcast-ready)
+Mastering — $500 (streaming/broadcast standards)
+Jingle / Brand Audio — $250
+Voiceover Recording — $125/hr
+Audiobook Production — $125/hr
+Live Recording Session — $125/hr
+Audio Editing — $125/hr (scrubbing, noise cancellation, compression, 25yr expertise)
+Podcast Launch Kit — $250 + $125/hr
+Podcast Episode Production — $125/hr
+Music Video (2:30-4 min) — $5,000 (unlimited effects, 5 days post, industry standard $7k-$15k)
+Promo Video (under 1 min) — $1,250 (1-day turnaround)
+On-Site Filmography & Event Coverage — $500/hr
+Live Streaming Setup & Production — $312/hr (multi-platform, chat monitoring)
+Reels / Short-Form Content — $300/batch (5-10 videos)
+AI Motion Graphics 30s — $600 | 60s — $800 | Up to 2min — $1,200
+Video Editing — $250/hr
+Pitch Deck + Business Plan — $250
+Keynote / Speaking Slides — $250
+Book Formatting + Marketing Launch — $750
+LLC Formation + Business Banking — $250 (all-inclusive)
+Vocal Training (Birdsong Method) — $700 (4-session package)
+Recording Booth Training — $875
+Artist Development — From $1,000
+Strategy Call — $375 (60-min one-on-one)
+
+PAYMENT: Klarna available on all services (buy now, pay later — 4 interest-free payments, SWRV receives full amount upfront).
+
+RULES:
+- Be specific — use exact service names and prices when relevant
+- Ask probing questions to understand what they're building
+- Recommend the full chain (e.g. if they want a music video, they need a song first → Full Song $3k → Mixing $500 → Mastering $500 → Music Video $5k)
+- Keep responses concise — 2-4 sentences max per reply unless they ask for detail
+- If they want to book, tell them to tap "Book a Session →" or scroll to the booking form
+- Never make up services or prices
+- Never promise delivery dates you don't know`;
+
+async function handleChat(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: JSON_HEADERS });
+  }
+  if (!env.GROQ_API_KEY) {
+    return new Response(JSON.stringify({
+      reply: "Hey! I'm temporarily offline but you can reach Swerve directly at info@swrvonthego.pro — usually responds within a few hours."
+    }), { headers: JSON_HEADERS });
+  }
+
+  try {
+    const body = await request.json();
+    // `messages` is the full conversation history: [{role:'user'|'assistant', content:'...'}]
+    const messages = Array.isArray(body.messages) ? body.messages : [];
+
+    if (messages.length === 0) {
+      return new Response(JSON.stringify({ error: 'No messages provided' }), { status: 400, headers: JSON_HEADERS });
+    }
+
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 300,
+        temperature: 0.7,
+        messages: [
+          { role: 'system', content: CHAT_SYSTEM_PROMPT },
+          ...messages,
+        ],
+      }),
+    });
+
+    if (!groqResponse.ok) {
+      const errText = await groqResponse.text();
+      console.error('Groq chat error:', errText);
+      return new Response(JSON.stringify({
+        reply: "I'm having trouble connecting right now. Email info@swrvonthego.pro and we'll get back to you shortly."
+      }), { headers: JSON_HEADERS });
+    }
+
+    const data = await groqResponse.json();
+    const reply = data.choices?.[0]?.message?.content || "Let me connect you with Swerve directly — email info@swrvonthego.pro.";
+
+    return new Response(JSON.stringify({ reply }), { headers: JSON_HEADERS });
+
+  } catch (err) {
+    console.error('Chat error:', err);
+    return new Response(JSON.stringify({
+      reply: "Something went off on my end. Email info@swrvonthego.pro and we'll sort you out."
+    }), { status: 500, headers: JSON_HEADERS });
   }
 }
