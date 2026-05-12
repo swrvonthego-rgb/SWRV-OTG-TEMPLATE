@@ -19,6 +19,8 @@ export interface ShopProduct {
   accent: string;
   /** Product image URL — full Cloudinary or other CDN URL */
   image: string;
+  /** If true, image sits on a white background tile (funky pop-out) */
+  bgWhite?: boolean;
 }
 
 export const SHOP_CONFIG = {
@@ -39,9 +41,10 @@ export const SHOP_CONFIG = {
       accent: 'from-orange-500/15 via-orange-500/5 to-transparent',
       image:
         'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299527/womens-cropped-hoodie-black-front-69fdcb05dc414_lqi1p7.png',
+      bgWhite: true,
     },
     {
-      label: 'Sports Jerseys',
+      label: 'Performance Tees',
       tagline: 'everyday revolution',
       accent: 'from-amber-500/15 via-amber-500/5 to-transparent',
       image:

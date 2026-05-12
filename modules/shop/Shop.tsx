@@ -51,12 +51,23 @@ export const Shop: React.FC = () => {
               <div className={`absolute inset-0 bg-gradient-to-br ${item.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
               <div className="relative h-full flex flex-col justify-between p-7">
                 <div className="flex-1 flex items-center justify-center -mt-2">
-                  <img
-                    src={item.image}
-                    alt={item.label}
-                    className="max-h-44 w-auto object-contain drop-shadow-2xl"
-                    loading="lazy"
-                  />
+                  {item.bgWhite ? (
+                    <div className="relative w-full max-w-[200px] aspect-square rounded-2xl bg-white shadow-2xl flex items-center justify-center overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.label}
+                        className="max-h-full w-auto object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  ) : (
+                    <img
+                      src={item.image}
+                      alt={item.label}
+                      className="max-h-44 w-auto object-contain drop-shadow-2xl"
+                      loading="lazy"
+                    />
+                  )}
                 </div>
                 <div>
                   <div className="text-xs tracking-[0.25em] uppercase text-white/50 mb-2">
