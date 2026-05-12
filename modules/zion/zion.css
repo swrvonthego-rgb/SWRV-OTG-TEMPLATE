@@ -59,7 +59,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(to bottom, rgba(10,8,4,0.95) 0%, transparent 100%);
+  background: rgba(10, 8, 4, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(200, 168, 75, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 .zion-page .nav-logo{
@@ -80,7 +84,7 @@
 .zion-page .nav-links a{
   color: var(--color-muted);
   text-decoration: none;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   transition: color 0.3s;
@@ -89,7 +93,7 @@
 .zion-page .nav-links a:hover{ color: var(--color-gold); }
 
 .zion-page .nav-back{
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--color-accent);
@@ -140,7 +144,7 @@
 }
 
 .zion-page .hero-eyebrow{
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--color-gold);
@@ -177,7 +181,7 @@
 
 .zion-page .hero-slogan{
   margin-top: 2rem;
-  font-size: 0.8rem;
+  font-size: 1rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-accent);
@@ -196,38 +200,51 @@
 
 .zion-page .btn{
   display: inline-block;
-  padding: 0.85rem 2rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
+  padding: 1rem 2.25rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
   font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  transition: all 0.3s;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   border: none;
+  border-radius: 999px;
 }
 
 .zion-page .btn-primary{
-  background: var(--color-gold);
+  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
   color: var(--color-deep);
+  box-shadow: 0 8px 24px rgba(200, 168, 75, 0.35),
+              0 2px 6px rgba(200, 168, 75, 0.2),
+              inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
 .zion-page .btn-primary:hover{
-  background: var(--color-gold-light);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--color-gold-light), #f0d275);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(200, 168, 75, 0.5),
+              0 4px 12px rgba(200, 168, 75, 0.3);
 }
 
+.zion-page .btn-primary:active{ transform: translateY(0); }
+
 .zion-page .btn-outline{
-  background: transparent;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--color-text);
-  border: 1px solid rgba(200,168,75,0.4);
+  border: 1.5px solid rgba(200, 168, 75, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .zion-page .btn-outline:hover{
   border-color: var(--color-gold);
   color: var(--color-gold);
-  transform: translateY(-2px);
+  background: rgba(200, 168, 75, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(200, 168, 75, 0.15);
 }
 
 .zion-page .hero-scroll{
@@ -243,7 +260,7 @@
 }
 
 .zion-page .hero-scroll span{
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   writing-mode: vertical-rl;
@@ -261,7 +278,7 @@
 .zion-page section{ padding: 6rem 2.5rem; }
 
 .zion-page .section-label{
-  font-size: 0.68rem;
+  font-size: 0.9rem;
   letter-spacing: 0.35em;
   text-transform: uppercase;
   color: var(--color-gold);
@@ -277,7 +294,7 @@
 }
 
 .zion-page .section-body{
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1.8;
   color: rgba(237,232,220,0.75);
   max-width: 65ch;
@@ -301,11 +318,18 @@
 .zion-page .stat-box{
   background: var(--color-mid);
   padding: 2rem 1.5rem;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.3s;
+  border-radius: 16px;
+  border: 1px solid rgba(200, 168, 75, 0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2),
+              inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.zion-page .stat-box:hover{ border-color: var(--color-gold); }
+.zion-page .stat-box:hover{
+  border-color: rgba(200, 168, 75, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 4px 12px rgba(200,168,75,0.08);
+}
 
 .zion-page .stat-number{
   font-family: 'Bebas Neue', sans-serif;
@@ -315,7 +339,7 @@
 }
 
 .zion-page .stat-label{
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-muted);
@@ -353,21 +377,19 @@
   padding: 2.5rem 2rem;
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s;
+  border-radius: 20px;
+  border: 1px solid rgba(200, 168, 75, 0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25),
+              inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.zion-page .service-card::before{
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 3px;
-  height: 0;
-  background: var(--color-gold);
-  transition: height 0.4s;
+.zion-page .service-card:hover{
+  transform: translateY(-6px);
+  border-color: rgba(200, 168, 75, 0.3);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.4),
+              0 4px 12px rgba(200,168,75,0.08);
 }
-
-.zion-page .service-card:hover::before{ height: 100%; }
-.zion-page .service-card:hover{ transform: translateY(-4px); }
 
 .zion-page .service-icon{
   font-size: 2rem;
@@ -382,7 +404,7 @@
 }
 
 .zion-page .service-desc{
-  font-size: 0.88rem;
+  font-size: 1rem;
   line-height: 1.7;
   color: var(--color-muted);
 }
@@ -402,16 +424,21 @@
   padding: 3rem 2.5rem;
   position: relative;
   overflow: hidden;
+  border-radius: 20px;
   border: 1px solid rgba(200,168,75,0.1);
-  transition: border-color 0.3s, transform 0.3s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25),
+              inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .zion-page .book-card:hover{
-  border-color: rgba(200,168,75,0.4);
-  transform: translateY(-4px);
+  border-color: rgba(200,168,75,0.45);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.4),
+              0 4px 12px rgba(200,168,75,0.1);
 }
 
 .zion-page .book-number{
@@ -425,7 +452,7 @@
 }
 
 .zion-page .book-tag{
-  font-size: 0.65rem;
+  font-size: 0.85rem;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--color-accent);
@@ -442,7 +469,7 @@
 }
 
 .zion-page .book-desc{
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1.8;
   color: var(--color-muted);
   margin-bottom: 2rem;
@@ -478,7 +505,7 @@
 }
 
 .zion-page .form-group label{
-  font-size: 0.68rem;
+  font-size: 0.9rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--color-muted);
@@ -486,25 +513,28 @@
 
 .zion-page .form-group input, .zion-page .form-group select, .zion-page .form-group textarea{
   background: var(--color-mid);
-  border: 1px solid rgba(200,168,75,0.15);
+  border: 1.5px solid rgba(200,168,75,0.15);
   color: var(--color-text);
-  padding: 0.85rem 1rem;
+  padding: 1rem 1.25rem;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.9rem;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.3s;
+  transition: all 0.25s;
   -webkit-appearance: none;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .zion-page .form-group input:focus, .zion-page .form-group select:focus, .zion-page .form-group textarea:focus{
   border-color: var(--color-gold);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 0 4px rgba(200,168,75,0.1);
 }
 
 .zion-page .form-group select option{ background: var(--color-mid); }
 .zion-page .form-group textarea{ resize: vertical; min-height: 120px; }
 
 .zion-page .booking-note{
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   line-height: 1.8;
   color: var(--color-muted);
   margin-top: 2rem;
@@ -534,7 +564,7 @@
 .zion-page .footer-brand small{
   display: block;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.85rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-muted);
@@ -550,7 +580,7 @@
 .zion-page .footer-links a{
   color: var(--color-muted);
   text-decoration: none;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   letter-spacing: 0.08em;
   transition: color 0.3s;
 }
@@ -558,7 +588,7 @@
 .zion-page .footer-links a:hover{ color: var(--color-gold); }
 
 .zion-page .footer-copy{
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   color: var(--color-muted);
   letter-spacing: 0.05em;
 }
