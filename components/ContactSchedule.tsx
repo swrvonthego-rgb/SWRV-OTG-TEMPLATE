@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Mail, MessageSquare, Phone, CheckCircle, ChevronLeft, ChevronRight, Send } from 'lucide-react';
 import { SCHEDULING } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isBefore, startOfToday, getDay, eachDayOfInterval } from 'date-fns';
@@ -20,6 +20,18 @@ export const ContactSchedule: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [message, setMessage] = useState('');
   const [agreeToContact, setAgreeToContact] = useState(false);
+
+  // Listen for preset-topic events (fired when user clicks "Book Strategy Call" from ServicesMenu)
+  useEffect(() => {
+    const handlePresetTopic = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setTopic(customEvent.detail);
+      }
+    };
+    window.addEventListener('swrv:preset-topic', handlePresetTopic);
+    return () => window.removeEventListener('swrv:preset-topic', handlePresetTopic);
+  }, []);
 
   const today = startOfToday();
 

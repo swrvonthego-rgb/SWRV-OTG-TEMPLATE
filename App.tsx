@@ -108,6 +108,16 @@ const App: React.FC = () => {
       <ServicesMenu
         isOpen={isServicesMenuOpen}
         onClose={() => setIsServicesMenuOpen(false)}
+        onBookStrategyCall={() => {
+          setIsServicesMenuOpen(false);
+          // Dispatch event so ContactSchedule pre-selects Strategy Call
+          window.dispatchEvent(new CustomEvent('swrv:preset-topic', { detail: 'Strategy Call' }));
+          // Smooth scroll to contact section after overlay closes
+          setTimeout(() => {
+            const el = document.getElementById('contact');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }}
       />
 
       {/* Zion SWRV Birdsong — artist page overlay */}
