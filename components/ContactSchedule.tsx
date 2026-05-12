@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap } from 'lucide-react';
+import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap, Upload, FileText, X as XIcon } from 'lucide-react';
 import { SCHEDULING, SERVICES } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
 
@@ -25,6 +25,59 @@ const DELIVERY_DAYS: Record<string, number> = {
 type Step = 'service' | 'calendar' | 'details' | 'payment' | 'success';
 type PayMethod = 'klarna' | 'card' | 'later';
 
+
+// ── VISION FILE PARSER ────────────────────────────────────────────────
+interface ParsedVision {
+  roadmapName: string;
+  gift: string;
+  vision: string;
+  services: string;
+  total: string;
+  rawContent: string;
+}
+
+function parseRoadmapFile(text: string): ParsedVision | null {
+  const lines = text.split('\n').map(l => l.trim());
+  const nameLine = lines[0] || '';
+  const nameMatch = nameLine.match(/THE ROADMAP — (.+)/);
+  const roadmapName = nameMatch ? nameMatch[1].trim() : '';
+
+  const HEADERS = [
+    'YOUR GIFT','YOUR WORK','YOUR PURPOSE',
+    'HOW WE GOT HERE — THE EVIDENCE',
+    'YOUR HAPPILY EVER AFTER — MAPPED',
+    'THE BLUEPRINT — WHAT THIS LIFE REQUIRES',
+    'YOUR BRAND IDENTITY','YOUR VISION — WHAT IT COSTS TO BUILD',
+    'RECOMMENDED SERVICES — ORDERED BY PHASE',
+    'A WORD FOR YOU',
+  ];
+
+  const sections: Record<string, string[]> = {};
+  let cur = '';
+  for (const line of lines) {
+    if (HEADERS.includes(line)) { cur = line; sections[cur] = sections[cur] || []; }
+    else if (cur && line && !line.startsWith('─')) sections[cur].push(line);
+  }
+
+  const get = (key: string) => (sections[key] || []).join(' ').trim();
+  const gift    = get('YOUR GIFT');
+  const vision  = get('YOUR HAPPILY EVER AFTER — MAPPED');
+  const total   = lines.find(l => l.startsWith('TOTAL ESTIMATED INVESTMENT:'))?.replace('TOTAL ESTIMATED INVESTMENT:', '').trim() || '';
+  const svcs    = (sections['RECOMMENDED SERVICES — ORDERED BY PHASE'] || []).filter(l => l.startsWith('[')).join('\n');
+
+  if (!gift && !vision) return null;
+
+  const rawContent = [
+    roadmapName ? `VISION OWNER: ${roadmapName}` : '',
+    gift   ? `GIFT: ${gift}` : '',
+    vision ? `VISION SUMMARY: ${vision}` : '',
+    svcs   ? `RECOMMENDED SERVICES:\n${svcs}` : '',
+    total  ? `TOTAL: ${total}` : '',
+  ].filter(Boolean).join('\n\n');
+
+  return { roadmapName, gift, vision, services: svcs, total, rawContent };
+}
+
 export const ContactSchedule: React.FC = () => {
   const [step, setStep] = useState<Step>('service');
   const [selectedService, setSelectedService] = useState<typeof SERVICES[0] | null>(null);
@@ -39,6 +92,9 @@ export const ContactSchedule: React.FC = () => {
   const [submitError, setSubmitError] = useState('');
   const [payMethod, setPayMethod] = useState<PayMethod>('klarna');
   const [serviceSearch, setServiceSearch] = useState('');
+  const [parsedVision, setParsedVision] = useState<ParsedVision | null>(null);
+  const [uploadError, setUploadError] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -74,6 +130,34 @@ export const ContactSchedule: React.FC = () => {
     identity: filteredServices.filter(s => s.category === 'identity'),
     execution: filteredServices.filter(s => s.category === 'execution'),
     experience: filteredServices.filter(s => s.category === 'experience'),
+  };
+
+  const handleVisionUpload = (file: File) => {
+    setUploadError('');
+    if (!file.name.endsWith('.txt')) {
+      setUploadError('Please upload a .txt file — the one you downloaded from your Roadmap.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const parsed = parseRoadmapFile(text);
+      if (!parsed) {
+        setUploadError('Could not read this file. Make sure it is your downloaded Roadmap.');
+        return;
+      }
+      setParsedVision(parsed);
+      setMessage(parsed.rawContent);
+      // Auto-fill name if empty
+      if (!name && parsed.roadmapName) setName(parsed.roadmapName);
+    };
+    reader.readAsText(file);
+  };
+
+  const clearVision = () => {
+    setParsedVision(null);
+    setMessage('');
+    setUploadError('');
   };
 
   const handleBook = async () => {
@@ -125,7 +209,7 @@ export const ContactSchedule: React.FC = () => {
               <p className="text-lg font-bold" style={{ color: '#c8a84b' }}>{format(deliveryDate, 'MMMM d, yyyy')}</p>
             </div>
           )}
-          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); }}
+          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); }}
             className="text-white/40 text-sm underline hover:text-white/70">Book another service</button>
         </div>
       </section>
@@ -313,7 +397,80 @@ export const ContactSchedule: React.FC = () => {
 
         {/* ── STEP 3: DETAILS ── */}
         {step === 'details' && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
+
+            {/* ── VISION UPLOAD ── */}
+            {!parsedVision ? (
+              <div>
+                <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1.5" style={{ color: 'rgba(200,168,75,0.6)' }}>
+                  HAVE YOUR ROADMAP?
+                </p>
+                <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  Upload your downloaded Roadmap and your vision auto-populates below. We see exactly what you're building — no guessing, no back-and-forth.
+                </p>
+                <label
+                  onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={e => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f) handleVisionUpload(f); }}
+                  className="flex flex-col items-center justify-center gap-2 py-6 rounded-2xl cursor-pointer transition-all"
+                  style={{
+                    border: `1.5px dashed ${isDragging ? 'rgba(200,168,75,0.7)' : 'rgba(255,255,255,0.12)'}`,
+                    background: isDragging ? 'rgba(200,168,75,0.06)' : 'rgba(255,255,255,0.02)',
+                  }}>
+                  <Upload size={20} style={{ color: isDragging ? '#c8a84b' : 'rgba(255,255,255,0.25)' }} />
+                  <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    Drop your Roadmap here, or <span style={{ color: '#c8a84b' }}>browse</span>
+                  </p>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>.txt file only</p>
+                  <input type="file" accept=".txt" className="sr-only"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleVisionUpload(f); e.target.value = ''; }} />
+                </label>
+                {uploadError && (
+                  <p className="text-xs mt-2" style={{ color: '#f87171' }}>{uploadError}</p>
+                )}
+                <p className="text-xs mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                  No Roadmap yet? Skip this — just fill in your details below.
+                </p>
+              </div>
+            ) : (
+              /* ── VISION LOADED CARD ── */
+              <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(200,168,75,0.3)', background: 'rgba(200,168,75,0.05)' }}>
+                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(200,168,75,0.15)' }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)' }}>
+                      <CheckCircle size={12} color="#0a0804" />
+                    </div>
+                    <span className="text-xs font-bold tracking-[0.15em] uppercase" style={{ color: '#c8a84b' }}>Vision Loaded</span>
+                    {parsedVision.roadmapName && (
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>— {parsedVision.roadmapName}</span>
+                    )}
+                  </div>
+                  <button type="button" onClick={clearVision} className="p-1 rounded-full hover:bg-white/10 transition-colors">
+                    <XIcon size={14} style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  </button>
+                </div>
+                {parsedVision.gift && (
+                  <div className="px-4 pt-3 pb-2">
+                    <p className="text-xs font-bold uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(200,168,75,0.5)' }}>Your Gift</p>
+                    <p className="text-sm font-semibold leading-snug" style={{ color: '#ede8dc' }}>{parsedVision.gift}</p>
+                  </div>
+                )}
+                {parsedVision.vision && (
+                  <div className="px-4 pb-3 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-[0.15em] mb-1" style={{ color: 'rgba(200,168,75,0.5)' }}>Your Vision</p>
+                    <p className="text-xs leading-relaxed line-clamp-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{parsedVision.vision}</p>
+                  </div>
+                )}
+                {parsedVision.total && (
+                  <div className="px-4 pb-3 flex items-center gap-2">
+                    <FileText size={12} style={{ color: 'rgba(200,168,75,0.5)' }} />
+                    <span className="text-xs" style={{ color: 'rgba(200,168,75,0.6)' }}>Roadmap total: {parsedVision.total}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── FIELDS ── */}
             {[
               { label: 'Full Name *', val: name, set: setName, type: 'text', ph: 'Your name' },
               { label: 'Email Address *', val: email, set: setEmail, type: 'email', ph: 'your@email.com' },
@@ -326,14 +483,29 @@ export const ContactSchedule: React.FC = () => {
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }} />
               </div>
             ))}
+
+            {/* Project details — auto-filled if vision uploaded, otherwise manual */}
             <div>
-              <label className="block text-xs font-bold mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em' }}>PROJECT DETAILS (optional)</label>
-              <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3}
-                placeholder="Tell us about your project — vision, references, anything that helps…"
+              <label className="block text-xs font-bold mb-1.5" style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em' }}>
+                {parsedVision ? 'YOUR VISION (auto-populated from Roadmap)' : 'PROJECT DETAILS (optional)'}
+              </label>
+              <textarea value={message} onChange={e => setMessage(e.target.value)} rows={parsedVision ? 5 : 3}
+                placeholder={parsedVision ? '' : "Tell us about your project — vision, references, anything that helps…"}
                 className="w-full px-4 py-3 text-sm outline-none resize-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }} />
+                style={{
+                  background: parsedVision ? 'rgba(200,168,75,0.04)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${parsedVision ? 'rgba(200,168,75,0.2)' : 'rgba(255,255,255,0.1)'}`,
+                  borderRadius: 12, color: parsedVision ? 'rgba(237,232,220,0.7)' : '#fff',
+                  fontSize: parsedVision ? 12 : 14,
+                }} />
+              {parsedVision && (
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                  Edit above if needed — this goes directly to the SWRV team.
+                </p>
+              )}
             </div>
-            <div className="flex gap-3 mt-2">
+
+            <div className="flex gap-3 mt-1">
               <button onClick={() => setStep('calendar')} className="flex-1 py-3 rounded-full font-bold text-sm"
                 style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>← Back</button>
               <button onClick={() => setStep('payment')} disabled={!name || !email}
