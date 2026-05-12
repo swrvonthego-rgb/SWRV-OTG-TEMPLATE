@@ -26,7 +26,7 @@ export const BRAND = {
   fullAcronym: 'Serving With Righteous Vision',
   tagline: 'Let Love GPS',
   description:
-    'Zion SWRV Birdsong Headquarters. The central hub for artist development, physical training, authorship, and wisdom.',
+    'Full-service creative agency for artists, solopreneurs, and visionaries. Music production, brand strategy, video, and web — built to last.',
   url: 'https://swrvonthego.pro',
   founderName: 'Zion SWRV Birdsong',
   contactEmail: 'info@swrvonthego.pro',
@@ -517,18 +517,18 @@ export const WEB_PACKAGES = {
 // ── FOOTER ─────────────────────────────────────────────────
 export const FOOTER = {
   ecosystemLinks: [
-    'Artist Development',
-    'Brand Planning & LLCs',
-    'Web Design & Strategy',
-    'Books & Wisdom',
-    'Music & Podcast',
+    { label: 'Artist Development',    href: '#services' },
+    { label: 'Brand Planning & LLCs', href: '#services' },
+    { label: 'Web Design & Strategy', href: '#web-packages' },
+    { label: 'Books & Wisdom',        href: '#contact',   event: 'swrv:zion-section', detail: 'books' },
+    { label: 'Music & Podcast',       href: '#contact',   event: 'swrv:zion-section', detail: 'podcast' },
   ],
   resourceLinks: [
-    'About',
-    'Services',
-    'Contact',
-    'Privacy Policy',
-    'Terms of Service',
+    { label: 'About',        href: '#about-swrv' },
+    { label: 'Services',     href: '#services',  event: 'swrv:open-services' },
+    { label: 'Contact',      href: '#contact' },
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
   ],
   legalLinks: [{ label: 'Privacy Policy', href: '/privacy' }, { label: 'Terms of Service', href: '/terms' }],
   copyright: `© ${new Date().getFullYear()} SWRV On The Go. All rights reserved.`,

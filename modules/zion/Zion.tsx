@@ -168,7 +168,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       </div>
 
       {/* HERO */}
-      <section className="hero">
+      <section className="hero" id="hero">
         <div className="hero-bg"></div>
         <div className="hero-lines"></div>
 

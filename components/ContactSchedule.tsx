@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap } from 'lucide-react';
+import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap } from 'lucide-react';
 import { SCHEDULING, SERVICES } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
 
 const TIME_SLOTS = SCHEDULING.timeSlots;
 const AVAILABLE_DAYS = SCHEDULING.availableDays;
-const CONTACT_EMAIL = SCHEDULING.contactEmail;
 
 // Delivery day estimates by service (working days)
 const DELIVERY_DAYS: Record<string, number> = {
@@ -38,6 +37,7 @@ export const ContactSchedule: React.FC = () => {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [payMethod, setPayMethod] = useState<PayMethod>('klarna');
   const [serviceSearch, setServiceSearch] = useState('');
 
   useEffect(() => {
@@ -127,7 +127,7 @@ export const ContactSchedule: React.FC = () => {
               <p className="text-lg font-bold" style={{ color: '#c8a84b' }}>{format(deliveryDate, 'MMMM d, yyyy')}</p>
             </div>
           )}
-          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setName(''); setEmail(''); setPhone(''); setMessage(''); }}
+          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); }}
             className="text-white/40 text-sm underline hover:text-white/70">Book another service</button>
         </div>
       </section>

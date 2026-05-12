@@ -24,6 +24,7 @@ import { ContactSchedule } from './components/ContactSchedule';
 import { Roadmap } from './modules/roadmap/Roadmap';
 import { Zion } from './modules/zion/Zion';
 import { ServicesMenu } from './modules/services-menu/ServicesMenu';
+import { Byob } from './modules/byob/Byob';
 import { LiveChat } from './components/LiveChat';
 
 const App: React.FC = () => {

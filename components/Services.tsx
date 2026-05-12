@@ -138,7 +138,6 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
         {/* Services Grid — everything except Brand Planning (featured above) */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {SERVICES.filter(s => s.title !== "Brand Planning").map((service, idx) => {
-            const isArtistDev = false; // Artist Development now available
             const isBYOB = service.title === "BYOB Training";
             const isAuthorship = service.title === "Authorship";
             const isPodcast = service.title === "SWRV Talk Podcast";
@@ -151,37 +150,29 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
             return (
               <div
                 key={idx}
-                className={`relative border-b border-gray-200 pb-8 transition-colors duration-300 block ${isArtistDev ? 'cursor-not-allowed select-none' : 'group cursor-pointer hover:border-lion-orange'}`}
+                className={`relative border-b border-gray-200 pb-8 transition-colors duration-300 block group cursor-pointer hover:border-lion-orange`}
               >
-                {isArtistDev && (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                    <div className="rotate-[-20deg] border-4 border-lion-orange/70 px-5 py-2 opacity-80">
-                      <span className="text-lion-orange text-sm font-black tracking-[0.3em] uppercase">Coming Soon</span>
+                {isAuthorship || isPodcast ? (
+                  <button
+                    type="button"
+                    className="block text-left w-full"
+                    onClick={() => handleZionSection(isAuthorship ? 'books' : 'podcast')}
+                  >
+                    <div className="text-gray-400 mb-8 group-hover:text-lion-orange transition-colors duration-300">
+                      {IconMap[service.icon]}
                     </div>
-                  </div>
-                )}
-                {!isArtistDev ? (
-                  isAuthorship || isPodcast ? (
-                    <button
-                      type="button"
-                      className="block text-left w-full"
-                      onClick={() => handleZionSection(isAuthorship ? 'books' : 'podcast')}
-                    >
-                      <div className="text-gray-400 mb-8 group-hover:text-lion-orange transition-colors duration-300">
-                        {IconMap[service.icon]}
-                      </div>
-                      <h3 className="text-xl font-bold text-black mb-1 group-hover:text-lion-orange transition-colors">
-                        {service.title}
-                      </h3>
-                      <div className="mb-4" />
-                      <p className="text-gray-600 mb-8 leading-relaxed text-sm">
-                        {service.description}
-                      </p>
-                      <div className="flex items-center text-lion-orange font-bold text-sm tracking-wide opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-                        {isAuthorship ? "VIEW BOOKS" : "LISTEN TO THE PODCAST"} <ArrowRight size={16} className="ml-2" />
-                      </div>
-                    </button>
-                  ) : (
+                    <h3 className="text-xl font-bold text-black mb-1 group-hover:text-lion-orange transition-colors">
+                      {service.title}
+                    </h3>
+                    <div className="mb-4" />
+                    <p className="text-gray-600 mb-8 leading-relaxed text-sm">
+                      {service.description}
+                    </p>
+                    <div className="flex items-center text-lion-orange font-bold text-sm tracking-wide opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                      {isAuthorship ? "VIEW BOOKS" : "LISTEN TO THE PODCAST"} <ArrowRight size={16} className="ml-2" />
+                    </div>
+                  </button>
+                ) : (
                   <a
                     href={href}
                     target={isExternal ? "_blank" : "_self"}
@@ -205,20 +196,6 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
                       {isBYOB ? "VISIT TRAINBYOB.ME" : "EXPLORE BRANCH"} <ArrowRight size={16} className="ml-2" />
                     </div>
                   </a>
-                  )
-                ) : (
-                  <div className="block pointer-events-none opacity-50">
-                    <div className="text-gray-400 mb-8">
-                      {IconMap[service.icon]}
-                    </div>
-                    <h3 className="text-xl font-bold text-black mb-1">
-                      {service.title}
-                    </h3>
-                    <div className="mb-4" />
-                    <p className="text-gray-600 mb-8 leading-relaxed text-sm">
-                      {service.description}
-                    </p>
-                  </div>
                 )}
               </div>
             );
