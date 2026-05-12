@@ -36,7 +36,8 @@ export const ContactSchedule: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
-  const [payMethod, setPayMethod] = useState<PayMethod>('klarna');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [serviceSearch, setServiceSearch] = useState('');
 
   useEffect(() => {
@@ -74,25 +75,34 @@ export const ContactSchedule: React.FC = () => {
     experience: filteredServices.filter(s => s.category === 'experience'),
   };
 
-  const handleBook = () => {
+  const handleBook = async () => {
     if (!selectedService || !selectedDate || !selectedTime || !name || !email) return;
-    const dateStr = format(selectedDate, 'EEEE, MMMM d, yyyy');
-    const delivStr = deliveryDate ? format(deliveryDate, 'MMMM d, yyyy') : 'TBD';
-    const subject = encodeURIComponent(`SWRV Booking — ${selectedService.name} — ${dateStr}`);
-    const body = encodeURIComponent(
-      `SWRV ON THE GO — SERVICE BOOKING\n\n` +
-      `SERVICE: ${selectedService.name}\n` +
-      `PRICE: ${selectedService.price}\n` +
-      `PAYMENT METHOD: ${payMethod === 'klarna' ? 'Klarna (Buy Now Pay Later)' : payMethod === 'card' ? 'Credit/Debit Card' : 'Invoice / Pay Later'}\n` +
-      `KICKOFF DATE: ${dateStr} at ${selectedTime} CST\n` +
-      `EXPECTED DELIVERY: ${delivStr}\n\n` +
-      `CLIENT\n` +
-      `Name: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\n\n` +
-      `PROJECT DETAILS:\n${message || 'None provided.'}\n\n` +
-      `— Submitted via swrvonthego.pro`
-    );
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-    setStep('success');
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const res = await fetch('/api/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceName: selectedService.name,
+          servicePrice: selectedService.price,
+          kickoffDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
+          kickoffTime: selectedTime,
+          deliveryDate: deliveryDate ? format(deliveryDate, 'MMMM d, yyyy') : '',
+          name, email, phone, message, payMethod,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setStep('success');
+      } else {
+        setSubmitError('Something went wrong. Try again or email info@swrvonthego.pro');
+      }
+    } catch {
+      setSubmitError('Connection error. Email info@swrvonthego.pro directly.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const STEP_LABELS: Record<Step, string> = {
@@ -434,10 +444,13 @@ export const ContactSchedule: React.FC = () => {
             <div className="flex gap-3">
               <button onClick={() => setStep('details')} className="flex-1 py-3 rounded-full font-bold text-sm"
                 style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>← Back</button>
-              <button onClick={handleBook}
-                className="flex-1 py-3 rounded-full font-black text-sm transition-all hover:scale-[1.02]"
+              {submitError && (
+                <p className="text-red-400 text-xs text-center mb-2">{submitError}</p>
+              )}
+              <button onClick={handleBook} disabled={submitting}
+                className="flex-1 py-3 rounded-full font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100"
                 style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>
-                {payMethod === 'klarna' ? `Pay 4× $${klarnaAmount} via Klarna →` : payMethod === 'card' ? `Pay ${selectedService.price} →` : 'Submit Booking →'}
+                {submitting ? 'Submitting…' : payMethod === 'klarna' ? `Request Klarna — 4× $${klarnaAmount} →` : payMethod === 'card' ? `Submit Booking — ${selectedService.price} →` : 'Submit Booking →'}
               </button>
             </div>
           </div>

@@ -57,7 +57,7 @@ export const LiveChat: React.FC<{ onOpenBooking?: () => void }> = ({ onOpenBooki
 
   // Show unread indicator after 8s if user hasn't opened
   useEffect(() => {
-    const t = setTimeout(() => { if (!open) setUnread(true); }, 8000);
+    const t = setTimeout(() => { if (!open) setUnread(true); }, 25000);
     return () => clearTimeout(t);
   }, [open]);
 
@@ -341,7 +341,7 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder={done ? "Ask anything…" : "Or type your answer…"}
+              placeholder={done ? "Ask anything…" : "Type a message or tap an option above…"}
               className="flex-1 px-4 py-2.5 text-sm outline-none"
               style={{
                 background: 'rgba(255,255,255,0.05)',

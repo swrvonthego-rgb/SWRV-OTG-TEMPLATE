@@ -530,7 +530,7 @@ export const FOOTER = {
     'Privacy Policy',
     'Terms of Service',
   ],
-  legalLinks: [{ label: 'Privacy Policy', href: '#' }, { label: 'Terms', href: '#' }],
+  legalLinks: [{ label: 'Privacy Policy', href: '/privacy' }, { label: 'Terms of Service', href: '/terms' }],
   copyright: `© ${new Date().getFullYear()} SWRV On The Go. All rights reserved.`,
 } as const;
 

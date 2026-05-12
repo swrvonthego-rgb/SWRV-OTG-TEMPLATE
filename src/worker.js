@@ -34,6 +34,7 @@ export default {
 
     if (url.pathname === '/api/roadmap')        return handleRoadmap(request, env);
     if (url.pathname === '/api/chat')           return handleChat(request, env);
+    if (url.pathname === '/api/booking')        return handleBooking(request, env);
     if (url.pathname === '/api/save-progress')  return handleSaveProgress(request, env);
     if (url.pathname === '/api/load-progress')  return handleLoadProgress(request, env);
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
@@ -83,33 +84,9 @@ async function handleRoadmap(request, env) {
     // matching the RoadmapResult schema. Used if the caller
     // didn't provide one (which is the current frontend behavior).
     // ────────────────────────────────────────────────────────
-    const DEFAULT_SYSTEM_PROMPT = `You are SWRV — a sharp, soulful brand strategist and creative business coach. You read a person's vision and reflect it back with clarity, then map a path forward.
-
-You will receive a person's name, optional email, and a free-form description of their vision for their life and work. Your job: extract their core gift, name their work, articulate their purpose, and propose a real path forward — including brand colors, a business name idea, a website blueprint, and 3 recommended SWRV On The Go services.
-
-You MUST respond with ONLY a valid JSON object (no prose, no markdown) matching exactly this schema:
-
-{
-  "gift": "string — their unique core gift in one tight phrase",
-  "work": "string — what their work IS in one sentence",
-  "purpose": "string — why it matters, the deeper why in one sentence",
-  "vision_summary": "string — 2-3 sentences mirroring their vision back to them",
-  "brand_colors": [
-    { "hex": "#XXXXXX", "name": "Color name", "meaning": "Why this color for them" },
-    { "hex": "#XXXXXX", "name": "Color name", "meaning": "Why this color for them" },
-    { "hex": "#XXXXXX", "name": "Color name", "meaning": "Why this color for them" }
-  ],
-  "business_name_idea": "string — one specific name suggestion",
-  "website_blueprint": "string — 2-3 sentences describing the website structure that fits",
-  "recommended_services": [
-    { "name": "Service Name", "why": "1 sentence on why this fits them", "price": "$XXX" },
-    { "name": "Service Name", "why": "1 sentence on why this fits them", "price": "$XXX" },
-    { "name": "Service Name", "why": "1 sentence on why this fits them", "price": "$XXX" }
-  ],
-  "closing_word": "string — a final personal note to them, 2-3 sentences, like a mentor speaking"
-}
-
-Tone: confident, warm, specific. Use their name. No generic motivational fluff. No "in conclusion" or "remember" filler. Speak like a friend who sees them clearly. Return ONLY the JSON object.`;
+    // System prompt is provided by the frontend (renderSystemPrompt in config.ts).
+    // This fallback fires only if frontend omits it.
+    const DEFAULT_SYSTEM_PROMPT = `You are The Roadmap for SWRV On The Go (swrvonthego.pro), founded by Swerve (Robert Birdsong), 25+ years in the music business. Analyze the user's vision and return ONLY a JSON object with these exact fields: gift (string), work (string), purpose (string), evidence (string — show your reasoning, quote their words), vision_summary (string — use their specific words/places), blueprint (object with: reverse_engineering, mindset, discipline, diet, fitness, community, work_ethic), brand_colors (array of {hex,name,meaning}), business_name_idea (string), website_blueprint (string), vision_services_map (array of {vision_element, quote, services: [{name,price,connection}]}), recommended_services (array of {name, why, price, phase, order}), closing_word (string — quote something specific they said). No markdown. No prose outside JSON. First character { last character }.`;
 
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -450,5 +427,105 @@ async function handleChat(request, env) {
     return new Response(JSON.stringify({
       reply: "Something went off on my end. Email info@swrvonthego.pro and we'll sort you out."
     }), { status: 500, headers: JSON_HEADERS });
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// SERVICE BOOKING — Main site booking form
+// Sends email to info@swrvonthego.pro via Resend
+// Also sends a confirmation to the client
+// ─────────────────────────────────────────────────────────
+async function handleBooking(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+  }
+
+  try {
+    const body = await request.json();
+    const { service, serviceName, servicePrice, kickoffDate, kickoffTime,
+            deliveryDate, name, email, phone, message, payMethod } = body;
+
+    if (!serviceName || !name || !email) {
+      return new Response(JSON.stringify({ error: 'serviceName, name, email required' }), { status: 400, headers: JSON_HEADERS });
+    }
+
+    const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
+    const notifyTo = env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
+    const safe = (x) => String(x ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    const payLabel = payMethod === 'klarna' ? '🟡 Klarna (Buy Now Pay Later)' :
+                     payMethod === 'card'   ? '💳 Credit / Debit Card' : '📋 Invoice / Pay Later';
+
+    // ── Email to SWRV team ──
+    const teamHtml = `
+      <div style="font-family:system-ui,-apple-system,sans-serif;max-width:680px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <div style="border-bottom:2px solid #c8a84b;padding-bottom:16px;margin-bottom:24px;">
+          <h2 style="color:#c8a84b;margin:0;font-size:22px;">🔥 NEW SERVICE BOOKING</h2>
+          <p style="margin:6px 0 0;font-size:12px;color:#8a8070;">SWRV On The Go · swrvonthego.pro</p>
+        </div>
+        ${[
+          ['Service', `<strong style="color:#e8c96a">${safe(serviceName)}</strong>`],
+          ['Price', `<strong style="color:#c8a84b">${safe(servicePrice)}</strong>`],
+          ['Payment', payLabel],
+          ['Kickoff', kickoffDate && kickoffTime ? `${safe(kickoffDate)} at ${safe(kickoffTime)} CST` : 'TBD'],
+          ['Delivery', deliveryDate || 'TBD'],
+          ['', ''],
+          ['Client', `<strong>${safe(name)}</strong>`],
+          ['Email', `<a href="mailto:${safe(email)}" style="color:#c8a84b">${safe(email)}</a>`],
+          ['Phone', phone || 'Not provided'],
+        ].map(([label, val]) => label ? `
+          <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
+            <div style="width:120px;color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em">${label}</div>
+            <div style="flex:1">${val}</div>
+          </div>` : '<div style="height:8px"></div>').join('')}
+        ${message ? `<div style="margin-top:20px"><div style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Project Details</div><div style="background:#110e07;border-left:3px solid #c8a84b;padding:14px;border-radius:4px;font-size:14px;line-height:1.6;white-space:pre-wrap">${safe(message)}</div></div>` : ''}
+        <p style="margin-top:28px;font-size:11px;color:#8a8070;text-align:center;text-transform:uppercase;letter-spacing:.1em">Submitted via swrvonthego.pro booking</p>
+      </div>`;
+
+    // ── Confirmation email to client ──
+    const clientHtml = `
+      <div style="font-family:system-ui,-apple-system,sans-serif;max-width:600px;margin:auto;padding:32px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <img src="https://res.cloudinary.com/dzqxce5hv/image/upload/v1772222265/Swerve_Badge_eow6m0.png" alt="SWRV" style="width:56px;height:56px;border-radius:50%;margin-bottom:24px" />
+        <h1 style="color:#c8a84b;font-size:24px;margin:0 0 8px">Booking Confirmed ✓</h1>
+        <p style="color:#8a8070;font-size:14px;margin:0 0 28px">We received your booking, ${safe(name)}. SWRV On The Go will confirm within 24 hours.</p>
+        <div style="background:#110e07;border:1px solid rgba(200,168,75,.2);border-radius:8px;padding:20px;margin-bottom:24px">
+          <p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Your Service</p>
+          <p style="color:#e8c96a;font-size:18px;font-weight:700;margin:0 0 12px">${safe(serviceName)}</p>
+          <p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Price</p>
+          <p style="color:#c8a84b;font-size:16px;font-weight:700;margin:0 0 12px">${safe(servicePrice)}</p>
+          ${kickoffDate ? `<p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Kickoff</p><p style="color:#ede8dc;font-size:14px;margin:0 0 12px">${safe(kickoffDate)} at ${safe(kickoffTime || '')} CST</p>` : ''}
+          ${deliveryDate ? `<p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Estimated Delivery</p><p style="color:#ede8dc;font-size:14px;margin:0">${safe(deliveryDate)}</p>` : ''}
+        </div>
+        <p style="font-size:14px;line-height:1.7;color:#8a8070">Questions? Reply to this email or reach us at <a href="mailto:info@swrvonthego.pro" style="color:#c8a84b">info@swrvonthego.pro</a></p>
+        <p style="margin-top:28px;font-size:11px;color:#555;text-align:center;text-transform:uppercase;letter-spacing:.1em">SWRV On The Go · swrvonthego.pro</p>
+      </div>`;
+
+    if (!env.RESEND_API_KEY) {
+      // No email service — still return success so booking is tracked
+      return new Response(JSON.stringify({ ok: true, note: 'Email service not configured — booking logged' }), { headers: JSON_HEADERS });
+    }
+
+    // Send to team
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
+        subject: `🔥 New Booking: ${serviceName} — ${name}`, html: teamHtml }),
+    });
+
+    // Send confirmation to client
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: fromAddr, to: [email],
+        subject: `Booking Confirmed: ${serviceName} — SWRV On The Go`, html: clientHtml }),
+    });
+
+    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
+
+  } catch (err) {
+    console.error('Booking error:', err);
+    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
   }
 }
