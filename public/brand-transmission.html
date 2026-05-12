@@ -485,10 +485,13 @@ function speak(text, onEnd, sceneIdx){
     return;
   }
 
-  // ── Use the PRELOADED audio element (created at iframe load time,
-  //    which carried the parent's user activation via allow="autoplay").
-  //    Never create new Audio() mid-session — that consumes user activation
-  //    and causes slides 2+ to be silently blocked.
+  // ── Use the PRELOADED audio element DIRECTLY (no cloning).
+  //    cloneNode() creates a fresh Audio element that isn't unlocked on iOS,
+  //    causing slides 2-7 to be silently blocked. The preloaded elements
+  //    were unlocked en-masse during the INITIATE TRANSMISSION click via
+  //    play→pause priming, so they can all play now.
+  //    Direct property assignment (onplaying/onended/onerror) overwrites
+  //    previous listeners — no manual cleanup needed.
   const audio = preloadedNarration[sceneIdx];
   if (!audio) {
     speakFallback(text, guardedEnd, myEpoch);
@@ -497,10 +500,7 @@ function speak(text, onEnd, sceneIdx){
 
   // Reset from any previous play
   try { audio.pause(); audio.currentTime = 0; } catch(_) {}
-  // Remove stale listeners by cloning
-  const freshAudio = audio.cloneNode();
-  preloadedNarration[sceneIdx] = freshAudio;
-  activeAudio = freshAudio;
+  activeAudio = audio;
 
   let settled = false;
   const fallback = (reason) => {
@@ -508,7 +508,7 @@ function speak(text, onEnd, sceneIdx){
     settled = true;
     console.warn('[narration] scene ' + sceneIdx + ' fell back to TTS:', reason);
     if (epoch !== myEpoch) return;
-    if (activeAudio === freshAudio) activeAudio = null;
+    if (activeAudio === audio) activeAudio = null;
     speakFallback(text, guardedEnd, myEpoch);
   };
   const success = () => {
@@ -521,21 +521,22 @@ function speak(text, onEnd, sceneIdx){
 
   const timeoutId = setTimeout(() => fallback('timeout (6s no playing event)'), 6000);
 
-  freshAudio.addEventListener('playing', () => { clearTimeout(timeoutId); success(); }, { once: true });
-  freshAudio.addEventListener('ended', () => {
+  // Direct property assignment (overwrites previous listeners — no cleanup needed)
+  audio.onplaying = () => { clearTimeout(timeoutId); success(); };
+  audio.onended = () => {
     clearTimeout(timeoutId);
     if (epoch !== myEpoch) return;
     setWave(false);
-    if (activeAudio === freshAudio) activeAudio = null;
+    if (activeAudio === audio) activeAudio = null;
     setTimeout(guardedEnd, 400);
-  }, { once: true });
-  freshAudio.addEventListener('error', (e) => {
+  };
+  audio.onerror = (e) => {
     clearTimeout(timeoutId);
     const code = e && e.target && e.target.error ? e.target.error.code : 'unknown';
     fallback('audio error code ' + code);
-  }, { once: true });
+  };
 
-  freshAudio.play().catch((err) => {
+  audio.play().catch((err) => {
     clearTimeout(timeoutId);
     fallback('play() rejected: ' + (err && err.message ? err.message : 'unknown'));
   });
@@ -719,6 +720,25 @@ document.addEventListener('keydown',e=>{
 ═══════════════════════════════════════ */
 const startEl = document.getElementById('start');
 startEl.addEventListener('click', () => {
+  // ── CRITICAL iOS UNLOCK ────────────────────────────────────
+  // iOS only allows .play() on Audio elements that were "touched"
+  // during a user gesture. Touch ALL 7 narration elements right now,
+  // synchronously, during this exact click. Play→pause each so they're
+  // unlocked but silent. Later .play() calls (slides 2-7) will work.
+  preloadedNarration.forEach((a) => {
+    if (!a) return;
+    try {
+      const p = a.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => { a.pause(); a.currentTime = 0; })
+         .catch(() => {});
+      } else {
+        a.pause();
+        a.currentTime = 0;
+      }
+    } catch (_) {}
+  });
+
   startEl.style.opacity = '0';
   startEl.style.pointerEvents = 'none';
   setTimeout(() => { startEl.style.display = 'none'; }, 700);
