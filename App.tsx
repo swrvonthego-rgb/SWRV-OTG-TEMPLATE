@@ -24,7 +24,7 @@ import { ContactSchedule } from './components/ContactSchedule';
 import { Roadmap } from './modules/roadmap/Roadmap';
 import { Zion } from './modules/zion/Zion';
 import { ServicesMenu } from './modules/services-menu/ServicesMenu';
-import { Byob } from './modules/byob/Byob';
+import { LiveChat } from './components/LiveChat';
 
 const App: React.FC = () => {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
@@ -40,6 +40,13 @@ const App: React.FC = () => {
   const [isByobOpen, setIsByobOpen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
+
+  // LiveChat can request services menu to open
+  useEffect(() => {
+    const handler = () => setIsServicesMenuOpen(true);
+    window.addEventListener('swrv:open-services', handler);
+    return () => window.removeEventListener('swrv:open-services', handler);
+  }, []);
 
   if (!hasStarted) {
     return (
@@ -147,6 +154,9 @@ const App: React.FC = () => {
         isOpen={isByobOpen}
         onClose={() => setIsByobOpen(false)}
       />
+
+      {/* Live Chat — floating widget bottom-right */}
+      <LiveChat onOpenBooking={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} />
     </div>
   );
 };

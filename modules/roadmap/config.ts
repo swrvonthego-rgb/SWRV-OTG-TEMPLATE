@@ -99,7 +99,7 @@ const ROADMAP_SERVICE_EXCLUDE = new Set<string>([
 ]);
 const SWRV_SERVICES: RoadmapService[] = SERVICES
   .filter((svc) => !ROADMAP_SERVICE_EXCLUDE.has(svc.id))
-  .map((svc) => ({ name: svc.name, price: svc.price, category: svc.category }));
+  .map((svc) => ({ name: svc.name, price: svc.price, category: svc.category, blurb: svc.blurb } as any));
 
 export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
   brandName: BRAND.name,
@@ -258,8 +258,9 @@ JSON SCHEMA:
  * Called by the API route at request time.
  */
 export function renderSystemPrompt(config: RoadmapConfig): string {
+  // Include full blurb (what's included) so AI can explain sub-services in vision map
   const servicesList = config.services
-    .map((s) => `- ${s.name} — ${s.price}`)
+    .map((s) => `- ${s.name} — ${s.price}${(s as any).blurb ? ` | INCLUDES: ${(s as any).blurb}` : ''}`)
     .join('\n');
   return config.systemPrompt.replace('{{services}}', servicesList);
 }
