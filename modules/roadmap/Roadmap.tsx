@@ -1361,9 +1361,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                         {phaseServices.map((s, i) => (
                           <div key={i} className="svc-card svc-card-chain">
                             <div className="svc-step">{(s as any).order || (i + 1)}</div>
-                            <div className="svc-name">{s.name}</div>
-                            <div className="svc-why">{s.why}</div>
-                            <div className="svc-price">{s.price}</div>
+                            <div className="svc-content">
+                              <div className="svc-name">{s.name}</div>
+                              <div className="svc-why">{s.why}</div>
+                              <div className="svc-price">{s.price}</div>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1375,9 +1377,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                     {(result.recommended_services || []).map((s, i) => (
                       <div key={i} className="svc-card svc-card-chain">
                         <div className="svc-step">{i + 1}</div>
-                        <div className="svc-name">{s.name}</div>
-                        <div className="svc-why">{s.why}</div>
-                        <div className="svc-price">{s.price}</div>
+                        <div className="svc-content">
+                          <div className="svc-name">{s.name}</div>
+                          <div className="svc-why">{s.why}</div>
+                          <div className="svc-price">{s.price}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1391,7 +1395,6 @@ export const Roadmap: React.FC<RoadmapProps> = ({
               {/* ── CTA ── */}
               <div className="cta-block">
                 <div className="cta-eyebrow">What's Next</div>
-                <div className="cta-headline">{ctaHeadline}</div>
                 <p className="cta-body">{result.closing_word}</p>
                 {onOpenServices ? (
                   <button
