@@ -142,6 +142,16 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
       >×</button>
 
       <div className="sm-inner">
+        {/* HERO IMAGE — Leader of the Revolution */}
+        <div className="sm-hero-image">
+          <img
+            src="https://res.cloudinary.com/dastq6bk5/image/upload/v1775906943/1752950982581945_2_kk3jt3_ui7upw.png"
+            alt="Leader of the Revolution — SWRV On The Go"
+            className="sm-hero-img"
+          />
+          <p className="sm-hero-caption">LEADER OF THE REVOLUTION</p>
+        </div>
+
         {/* HEADER */}
         <header className="sm-header">
           <p className="sm-eyebrow">FULL SERVICE MENU</p>
