@@ -181,6 +181,26 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                     <h3 className="sm-card-name">{svc.name}</h3>
                     <p className="sm-card-price">{svc.price}</p>
                     <p className="sm-card-blurb">{svc.blurb}</p>
+                    <button
+                      type="button"
+                      className="sm-intake-btn"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: svc.id, name: svc.name } }));
+                        onClose?.();
+                      }}
+                    >
+                      Start This Project →
+                    </button>
+                    <button
+                      type="button"
+                      className="sm-intake-btn"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: svc.id, name: svc.name } }));
+                        onClose?.();
+                      }}
+                    >
+                      Start This Project →
+                    </button>
                   </article>
                 );
               })}
@@ -270,6 +290,16 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                     <h3 className="sm-card-name">{svc.name}</h3>
                     <p className="sm-card-price">{svc.price}</p>
                     <p className="sm-card-blurb">{svc.blurb}</p>
+                    <button
+                      type="button"
+                      className="sm-intake-btn"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: svc.id, name: svc.name } }));
+                        onClose?.();
+                      }}
+                    >
+                      Start This Project →
+                    </button>
                   </article>
                 ))}
               </div>

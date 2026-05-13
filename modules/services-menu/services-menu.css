@@ -541,3 +541,24 @@
 .services-menu .sm-empty-title { font-size: 18px; font-weight: 600; color: var(--ink-bright, #ede8dc); margin-bottom: 10px; }
 .services-menu .sm-empty-sub { font-size: 14px; color: rgba(237,232,220,0.5); line-height: 1.6; }
 .services-menu .sm-empty-clear { background: none; border: none; color: #c8a84b; cursor: pointer; text-decoration: underline; font-size: 14px; }
+
+/* ── START THIS PROJECT BUTTON ──────────────────────────────────────── */
+.services-menu .sm-intake-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(200,168,75,0.3);
+  background: rgba(200,168,75,0.06);
+  color: #c8a84b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.services-menu .sm-intake-btn:hover {
+  background: rgba(200,168,75,0.14);
+  border-color: rgba(200,168,75,0.6);
+}

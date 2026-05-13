@@ -82,6 +82,8 @@ export default {
     if (url.pathname === '/api/roadmap')        return handleRoadmap(request, env);
     if (url.pathname === '/api/chat')           return handleChat(request, env);
     if (url.pathname === '/api/booking')        return handleBooking(request, env);
+    if (url.pathname === '/api/intake-ai')      return handleIntakeAI(request, env);
+    if (url.pathname === '/api/intake-submit')  return handleIntakeSubmit(request, env);
     if (url.pathname === '/api/save-progress')  return handleSaveProgress(request, env);
     if (url.pathname === '/api/load-progress')  return handleLoadProgress(request, env);
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
@@ -591,5 +593,165 @@ async function handleBooking(request, env) {
   } catch (err) {
     console.error('Booking error:', err);
     return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// PROJECT INTAKE AI — Generates follow-up questions + project brief
+// ─────────────────────────────────────────────────────────────────────
+async function handleIntakeAI(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+
+  try {
+    const { mode, path, answers, name, email, phone, serviceName } = await request.json();
+
+    if (!env.GROQ_API_KEY) {
+      if (mode === 'brief') {
+        const brief = formatBasicBrief({ path, answers, name, email, phone, serviceName });
+        return new Response(JSON.stringify({ brief }), { headers: JSON_HEADERS });
+      }
+      return new Response(JSON.stringify({ questions: [] }), { headers: JSON_HEADERS });
+    }
+
+    if (mode === 'followup') {
+      const answerSummary = Object.entries(answers || {})
+        .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+        .join('\n');
+
+      const prompt = `You are a creative project manager at SWRV On The Go, a full-service creative agency (music, video, brand, web). A client is filling out a ${path} project intake form. Here is what they have told you so far:\n\n${answerSummary}\n\nGenerate 2-3 smart follow-up questions that SWRV genuinely needs answered to scope and deliver this project properly. These should not repeat anything already asked. They should be specific to THIS client's situation based on their answers — not generic. Ask things that would change how the project is approached or priced. Return ONLY a JSON array of question strings, nothing else. Example: ["Question 1?","Question 2?"]`;
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          max_tokens: 400,
+          temperature: 0.6,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content || '[]';
+      let questions = [];
+      try {
+        const clean = text.replace(/```json|```/g, '').trim();
+        questions = JSON.parse(clean);
+      } catch { questions = []; }
+      return new Response(JSON.stringify({ questions }), { headers: JSON_HEADERS });
+    }
+
+    if (mode === 'brief') {
+      const answerSummary = Object.entries(answers || {})
+        .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+        .filter(([, v]) => v && String(v).trim())
+        .join('\n');
+
+      const prompt = `You are writing a project brief for SWRV On The Go, a creative agency. The client ${name} (${email}${phone ? ', ' + phone : ''}) has submitted a ${path} intake form.\n\nTheir answers:\n${answerSummary}\n\nWrite a professional, clear, and specific project brief in plain text (no markdown). Structure it as:\n\nPROJECT BRIEF — ${(path || 'Project').toUpperCase()}${serviceName ? ' / ' + serviceName.toUpperCase() : ''}\n${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}\n\nCLIENT\n[name, email, phone]\n\nPROJECT OVERVIEW\n[2-3 sentences synthesizing what this client needs and why — drawn from their answers]\n\nKEY REQUIREMENTS\n[Bullet list of the most important requirements drawn from their answers]\n\nTIMELINE\n[their stated timeline or TBD]\n\nSCOPE NOTES\n[1-2 sentences about anything unusual, urgent, or important to flag for the SWRV team]\n\nNEXT STEPS\nSWRV will review this brief and follow up within 24 hours with a project proposal and quote.\n\nReturn only the brief text, nothing else.`;
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          max_tokens: 800,
+          temperature: 0.4,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+
+      const data = await res.json();
+      const brief = data.choices?.[0]?.message?.content || formatBasicBrief({ path, answers, name, email, phone, serviceName });
+      return new Response(JSON.stringify({ brief }), { headers: JSON_HEADERS });
+    }
+
+    return new Response(JSON.stringify({ error: 'Unknown mode' }), { status: 400, headers: JSON_HEADERS });
+
+  } catch (err) {
+    console.error('Intake AI error:', err);
+    return new Response(JSON.stringify({ questions: [], brief: 'Brief generation failed. Your answers have been recorded.' }), { headers: JSON_HEADERS });
+  }
+}
+
+function formatBasicBrief({ path, answers, name, email, phone, serviceName }) {
+  const lines = [
+    `PROJECT BRIEF — ${(path || 'Project').toUpperCase()}${serviceName ? ' / ' + serviceName.toUpperCase() : ''}`,
+    new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}),
+    '',
+    'CLIENT',
+    `Name: ${name}`,
+    `Email: ${email}`,
+    phone ? `Phone: ${phone}` : '',
+    '',
+    'PROJECT DETAILS',
+    ...Object.entries(answers || {})
+      .filter(([,v]) => v && String(v).trim())
+      .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`),
+    '',
+    'NEXT STEPS',
+    'SWRV will review this brief and follow up within 24 hours.',
+  ].filter(l => l !== null);
+  return lines.join('\n');
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// INTAKE SUBMIT — Emails brief to SWRV + confirmation to client
+// ─────────────────────────────────────────────────────────────────────
+async function handleIntakeSubmit(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+
+  try {
+    const { path, pathLabel, answers, name, email, phone, brief, serviceName } = await request.json();
+    const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
+    const notifyTo = env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
+    const safe = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    const briefHtml = (brief || '').split('\n').map(l => `<p style="margin:4px 0;font-size:13px;color:#ede8dc;">${safe(l) || '&nbsp;'}</p>`).join('');
+
+    const teamHtml = `
+      <div style="font-family:system-ui,sans-serif;max-width:680px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <h2 style="color:#c8a84b;margin:0 0 4px">📋 New Project Intake</h2>
+        <p style="color:#8a8070;font-size:12px;margin:0 0 24px">${safe(pathLabel || path)} · swrvonthego.pro</p>
+        <div style="margin-bottom:20px">
+          <p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px">Client</p>
+          <p style="margin:2px 0"><strong>${safe(name)}</strong> · <a href="mailto:${safe(email)}" style="color:#c8a84b">${safe(email)}</a>${phone ? ` · ${safe(phone)}` : ''}</p>
+        </div>
+        <div style="background:#110e07;border:1px solid rgba(200,168,75,.15);border-radius:6px;padding:20px;font-family:monospace;">
+          ${briefHtml}
+        </div>
+        <p style="margin-top:20px;font-size:11px;color:#555;text-align:center">Submitted via swrvonthego.pro Project Intake</p>
+      </div>`;
+
+    const clientHtml = `
+      <div style="font-family:system-ui,sans-serif;max-width:600px;margin:auto;padding:32px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <h1 style="color:#c8a84b;font-size:22px;margin:0 0 6px">Brief Received ✓</h1>
+        <p style="color:#8a8070;margin:0 0 24px">Thanks ${safe(name)} — SWRV has everything they need. Expect a response within 24 hours.</p>
+        <div style="background:#110e07;border:1px solid rgba(200,168,75,.15);border-radius:6px;padding:20px;font-family:monospace;">
+          ${briefHtml}
+        </div>
+        <p style="margin-top:20px;font-size:12px;color:#8a8070">Questions? <a href="mailto:info@swrvonthego.pro" style="color:#c8a84b">info@swrvonthego.pro</a></p>
+      </div>`;
+
+    if (env.RESEND_API_KEY) {
+      await Promise.all([
+        fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
+            subject: `📋 New Project Intake: ${pathLabel || path} — ${name}`, html: teamHtml }),
+        }),
+        fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: fromAddr, to: [email],
+            subject: `Your ${pathLabel || path} Brief — SWRV On The Go`, html: clientHtml }),
+        }),
+      ]);
+    }
+
+    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
+  } catch (err) {
+    console.error('Intake submit error:', err);
+    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS }); // still succeed for client
   }
 }

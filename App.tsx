@@ -26,6 +26,7 @@ import { Zion } from './modules/zion/Zion';
 import { ServicesMenu } from './modules/services-menu/ServicesMenu';
 import { Byob } from './modules/byob/Byob';
 import { LiveChat } from './components/LiveChat';
+import { ProjectIntake } from './components/ProjectIntake';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
 // Fires once on load — brands the devtools, deters casual copying
@@ -53,6 +54,7 @@ const App: React.FC = () => {
   }, []);
 
   const [isByobOpen, setIsByobOpen] = useState(false);
+  const [intakeService, setIntakeService] = useState<{id:string;name:string}|null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
 
@@ -61,6 +63,16 @@ const App: React.FC = () => {
     const handler = () => setIsServicesMenuOpen(true);
     window.addEventListener('swrv:open-services', handler);
     return () => window.removeEventListener('swrv:open-services', handler);
+  }, []);
+
+  // Services menu / cards can open intake for a specific service
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { id, name } = (e as CustomEvent<{id:string;name:string}>).detail;
+      setIntakeService({ id, name });
+    };
+    window.addEventListener('swrv:open-intake', handler);
+    return () => window.removeEventListener('swrv:open-intake', handler);
   }, []);
 
   if (!hasStarted) {
@@ -168,6 +180,14 @@ const App: React.FC = () => {
       <Byob
         isOpen={isByobOpen}
         onClose={() => setIsByobOpen(false)}
+      />
+
+      {/* Project Intake — full intake form overlay */}
+      <ProjectIntake
+        isOpen={!!intakeService}
+        onClose={() => setIntakeService(null)}
+        serviceId={intakeService?.id}
+        serviceName={intakeService?.name}
       />
 
       {/* Live Chat — floating widget bottom-right */}
