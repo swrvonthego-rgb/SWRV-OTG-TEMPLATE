@@ -3,7 +3,7 @@ import './roadmap.css';
 import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme, renderSystemPrompt } from './config';
 import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
-import { SERVICES } from '../../site.config';
+import { SERVICES, ROADMAP_PRICING } from '../../site.config';
 
 // Lookup priceNumeric by service name for accurate total (handles $125/hr, Custom Quote, etc.)
 const SERVICE_PRICE_MAP = new Map(SERVICES.map(s => [s.name, s.priceNumeric]));
@@ -29,6 +29,7 @@ export interface RoadmapProps {
 // ════════════════════════════════════════════════════════════
 
 const PROGRESS_PCT: Record<ScreenId, number> = {
+  paywall: -1,
   intro: 0,
   email: 14,
   disclaimer: 28,
@@ -36,6 +37,9 @@ const PROGRESS_PCT: Record<ScreenId, number> = {
   vision: 56,
   processing: 78,
   results: 100,
+  'qv-input': 10,
+  'qv-processing': 60,
+  'qv-result': 100,
 };
 
 const VALID_THEMES: Theme[] = ['luxe', 'cyberpunk', 'earth', 'street', 'sonic'];
@@ -90,7 +94,29 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   apiEndpoint = '/api/roadmap',
 }) => {
   // ── Screen / progress ─────────────────────────────────────
-  const [screen, setScreen] = useState<ScreenId>('intro');
+  // Check for paid session (Stripe redirect or PayPal manual confirm)
+  const checkPaid = () => {
+    if (typeof window === 'undefined') return false;
+    if (sessionStorage.getItem('swrv_rm_paid') === '1') return true;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('rm_paid') === '1') {
+      sessionStorage.setItem('swrv_rm_paid', '1');
+      // Clean URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('rm_paid');
+      window.history.replaceState({}, '', url.toString());
+      return true;
+    }
+    return false;
+  };
+
+  const [screen, setScreen] = useState<ScreenId>(() => {
+    if (typeof window === 'undefined') return 'paywall';
+    return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'intro' : 'paywall';
+  });
+  const [qvAnswers, setQvAnswers] = useState({ what: '', who: '', success: '' });
+  const [qvResult, setQvResult] = useState<{ gift: string; direction: string; services: Array<{name:string;price:string;why:string}> } | null>(null);
+  const [paymentPending, setPaymentPending] = useState(false);
   const [progress, setProgress] = useState(0);
 
   // ── User input ────────────────────────────────────────────
@@ -857,6 +883,228 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           </div>
         ))}
       </div>
+
+      {/* ════════════════════════════════════════════════
+           SCREEN 0 — PAYWALL
+           Shows before everything else.
+           Full Roadmap ($1) vs Quick Vision (free).
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-paywall" className={`screen ${screen === 'paywall' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="paywall-wrap">
+          <p className="paywall-eyebrow">CHOOSE YOUR EXPERIENCE</p>
+          <h2 className="paywall-title">Before You Begin</h2>
+          <p className="paywall-sub">
+            The Roadmap maps your vision to your path — and to the exact services that build it.<br/>
+            Choose how deep you want to go.
+          </p>
+
+          <div className="paywall-cards">
+            {/* ── QUICK VISION (Free) ── */}
+            <div className="paywall-card paywall-card-free">
+              <div className="paywall-card-badge">Free</div>
+              <h3 className="paywall-card-title">Quick Vision</h3>
+              <p className="paywall-card-tagline">{ROADMAP_PRICING.quick.tagline}</p>
+              <ul className="paywall-card-bullets">
+                {[...ROADMAP_PRICING.quick.bulletPoints].map((b, i) => (
+                  <li key={i}><span className="paywall-check">✓</span>{b}</li>
+                ))}
+              </ul>
+              <button type="button" className="paywall-btn paywall-btn-free"
+                onClick={() => goTo('qv-input')}>
+                Start Free →
+              </button>
+            </div>
+
+            {/* ── FULL ROADMAP ($1) ── */}
+            <div className="paywall-card paywall-card-paid">
+              <div className="paywall-card-badge paywall-badge-gold">
+                {ROADMAP_PRICING.full.price}
+              </div>
+              <h3 className="paywall-card-title">{ROADMAP_PRICING.full.label}</h3>
+              <p className="paywall-card-tagline">{ROADMAP_PRICING.full.tagline}</p>
+              <ul className="paywall-card-bullets">
+                {[...ROADMAP_PRICING.full.bulletPoints].map((b, i) => (
+                  <li key={i}><span className="paywall-check paywall-check-gold">✓</span>{b}</li>
+                ))}
+              </ul>
+              {!paymentPending ? (
+                <button type="button" className="paywall-btn paywall-btn-paid"
+                  onClick={() => {
+                    const link = ROADMAP_PRICING.full.stripeLink || ROADMAP_PRICING.full.paypalLink;
+                    if (link) {
+                      window.open(link, '_blank', 'noopener');
+                    }
+                    setPaymentPending(true);
+                  }}>
+                  Unlock for {ROADMAP_PRICING.full.price} →
+                </button>
+              ) : (
+                <div className="paywall-pending">
+                  <p className="paywall-pending-text">
+                    Complete your {ROADMAP_PRICING.full.price} payment in the tab that opened, then tap below.
+                  </p>
+                  <button type="button" className="paywall-btn paywall-btn-paid"
+                    onClick={() => {
+                      sessionStorage.setItem('swrv_rm_paid', '1');
+                      setPaymentPending(false);
+                      goTo('intro');
+                    }}>
+                    I've Paid — Continue →
+                  </button>
+                  <button type="button" className="paywall-pending-back"
+                    onClick={() => setPaymentPending(false)}>
+                    ← Go back
+                  </button>
+                </div>
+              )}
+              {!ROADMAP_PRICING.full.stripeLink && !ROADMAP_PRICING.full.paypalLink && (
+                <p className="paywall-coming">Payment setup coming soon — check back shortly.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+           SCREEN QV — QUICK VISION INPUT (Free path)
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-qv-input" className={`screen ${screen === 'qv-input' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="qv-wrap">
+          <p className="paywall-eyebrow">QUICK VISION — 3 QUESTIONS</p>
+          <h2 className="qv-title">Tell Us What You're Building</h2>
+          <p className="qv-sub">Be honest and specific. The more real your answers, the more useful this gets.</p>
+
+          <div className="qv-fields">
+            <div className="qv-field">
+              <label className="qv-label">1. What are you working on or trying to build?</label>
+              <textarea className="qv-input" rows={3}
+                placeholder="A music career, a creative agency, a clothing brand, a YouTube channel — whatever it is, say it plainly."
+                value={qvAnswers.what}
+                onChange={e => setQvAnswers(a => ({ ...a, what: e.target.value }))} />
+            </div>
+            <div className="qv-field">
+              <label className="qv-label">2. Who is this for? Who does it serve?</label>
+              <textarea className="qv-input" rows={3}
+                placeholder="Yourself, a specific audience, a community, a client base — who are you ultimately building this for?"
+                value={qvAnswers.who}
+                onChange={e => setQvAnswers(a => ({ ...a, who: e.target.value }))} />
+            </div>
+            <div className="qv-field">
+              <label className="qv-label">3. What does success look like to you in the next 12 months?</label>
+              <textarea className="qv-input" rows={3}
+                placeholder="Be specific. A number, a milestone, a feeling, a moment. What does winning look like?"
+                value={qvAnswers.success}
+                onChange={e => setQvAnswers(a => ({ ...a, success: e.target.value }))} />
+            </div>
+          </div>
+
+          <div className="qv-actions">
+            <button type="button" className="btn-ghost" onClick={() => goTo('paywall')}>← Back</button>
+            <button type="button" className="btn-primary"
+              disabled={!qvAnswers.what.trim() || !qvAnswers.who.trim() || !qvAnswers.success.trim()}
+              onClick={async () => {
+                goTo('qv-processing');
+                try {
+                  const res = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      system: `You are a creative advisor for SWRV On The Go. A person has shared 3 quick answers about what they're building. Return ONLY valid JSON with exactly these fields:
+{"gift":"one sentence naming their unique contribution — specific to what they described","direction":"2-3 sentences describing what they're building and why it matters","services":[{"name":"exact SWRV service name","price":"$XXX","why":"one sentence why this serves their specific vision"}]}
+2-3 services only. Exact names from: Brand Planning ($250), Logo Design ($250), Photography ($800), Content Strategy ($500), Website Presence ($250), Website Platform ($500), Website Ecosystem ($1000), Full Song Production ($3000), Mixing ($500), Mastering ($500), Music Video ($5000), Promo Video ($1250), Podcast Launch Kit ($250), Strategy Call ($375), Artist Development (from $1000), Pitch Deck ($250), LLC Formation ($250). No markdown. First char { last char }.`,
+                      messages: [{
+                        role: 'user',
+                        content: `What I'm building: ${qvAnswers.what}
+Who it's for: ${qvAnswers.who}
+What success looks like: ${qvAnswers.success}`
+                      }]
+                    }),
+                  });
+                  const data = await res.json();
+                  const raw = data.result || data.choices?.[0]?.message?.content || '{}';
+                  const clean = raw.replace(/```json|```/g, '').trim();
+                  const parsed = JSON.parse(clean.slice(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
+                  setQvResult(parsed);
+                  goTo('qv-result');
+                } catch {
+                  setQvResult({ gift: 'Something meaningful is being built here.', direction: 'Your vision is clear. SWRV can help you build it.', services: [] });
+                  goTo('qv-result');
+                }
+              }}>
+              Get My Direction →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+           SCREEN QV-PROCESSING
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-qv-processing" className={`screen ${screen === 'qv-processing' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="processing-inner" style={{ textAlign: 'center', padding: '80px 24px' }}>
+          <div className="spinner" style={{ margin: '0 auto 24px' }} />
+          <p style={{ color: 'var(--ink-bright)', fontSize: 16, fontWeight: 600 }}>Reading your vision…</p>
+          <p style={{ color: 'var(--ink-mid)', fontSize: 13, marginTop: 8 }}>This takes about 10 seconds.</p>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+           SCREEN QV-RESULT
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-qv-result" className={`screen ${screen === 'qv-result' ? 'active' : ''}`}>
+        <div className="grain" />
+        {qvResult && (
+          <div className="qv-result-wrap">
+            <p className="paywall-eyebrow">YOUR QUICK VISION</p>
+            <h2 className="qv-result-title">Here's What We See</h2>
+
+            <div className="qv-result-card">
+              <p className="qv-result-label">YOUR GIFT</p>
+              <p className="qv-result-gift">{qvResult.gift}</p>
+            </div>
+
+            <div className="qv-result-card">
+              <p className="qv-result-label">YOUR DIRECTION</p>
+              <p className="qv-result-direction">{qvResult.direction}</p>
+            </div>
+
+            {qvResult.services?.length > 0 && (
+              <div className="qv-result-card">
+                <p className="qv-result-label">WHERE TO START</p>
+                {qvResult.services.map((s, i) => (
+                  <div key={i} className="qv-result-service">
+                    <div className="qv-result-svc-row">
+                      <span className="qv-result-svc-name">{s.name}</span>
+                      <span className="qv-result-svc-price">{s.price}</span>
+                    </div>
+                    <p className="qv-result-svc-why">{s.why}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="qv-result-upgrade">
+              <p className="qv-result-upgrade-text">
+                Want the full picture? The Full Roadmap goes deeper — your blueprint, your life, your vision mapped to every service you need.
+              </p>
+              <button type="button" className="paywall-btn paywall-btn-paid"
+                onClick={() => { goTo('paywall'); }}>
+                Get the Full Roadmap for {ROADMAP_PRICING.full.price} →
+              </button>
+            </div>
+
+            <div className="qv-result-actions">
+              <button type="button" className="btn-ghost"
+                onClick={() => { document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>
+                Book a Service →
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* ════════ SCREEN 1 — INTRO ════════ */}
       <section id="screen-intro" className={`screen ${screen === 'intro' ? 'active' : ''}`}>

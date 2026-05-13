@@ -42,6 +42,40 @@ export const PAYMENT_CONFIG = {
 } as const;
 
 
+// ── ROADMAP PRICING ────────────────────────────────────────────────────
+// $1 to start — Swerve will raise this over time.
+// Full Roadmap: set stripeLink once your Stripe product is created.
+// PayPal works immediately once paypalLink is set.
+export const ROADMAP_PRICING = {
+  full: {
+    price: '$1',
+    priceNumeric: 1,
+    label: 'The Full Roadmap',
+    tagline: 'Your complete blueprint — vision mapped to services.',
+    bulletPoints: [
+      'Deep evidence-based analysis of your vision',
+      '7-part life blueprint (mindset, diet, fitness, community)',
+      'Every service you need, mapped to what you said',
+      'Yours to download, email, and bring to the booking',
+    ],
+    // Update these once your payment accounts are configured
+    stripeLink: '',   // e.g. 'https://buy.stripe.com/xxxxx' (success_url = swrvonthego.pro/?rm_paid=1)
+    paypalLink: '',   // e.g. 'https://paypal.me/swrvonthego?amount=1'
+  },
+  quick: {
+    price: 'Free',
+    priceNumeric: 0,
+    label: 'Quick Vision',
+    tagline: '3 questions. 90 seconds. Your starting direction.',
+    bulletPoints: [
+      'What you are building and who it is for',
+      'Your core gift named in one line',
+      '2–3 services to get you moving',
+    ],
+  },
+} as const;
+
+
 export const BRAND = {
   name: 'SWRV On The Go',
   shortName: 'SWRV',

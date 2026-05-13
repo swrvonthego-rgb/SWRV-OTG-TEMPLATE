@@ -52,13 +52,17 @@ export interface RoadmapResult {
 }
 
 export type ScreenId =
+  | 'paywall'
   | 'intro'
   | 'email'
   | 'disclaimer'
   | 'duration'
   | 'vision'
   | 'processing'
-  | 'results';
+  | 'results'
+  | 'qv-input'
+  | 'qv-processing'
+  | 'qv-result';
 
 export type Theme = 'luxe' | 'cyberpunk' | 'earth' | 'street' | 'sonic';
 
