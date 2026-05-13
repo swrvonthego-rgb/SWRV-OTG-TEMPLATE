@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap, Upload, FileText, X as XIcon } from 'lucide-react';
+import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap, Upload, FileText, X as XIcon, Paperclip, Trash2 } from 'lucide-react';
 import { SCHEDULING, SERVICES, PAYMENT_CONFIG, SERVICE_ASSETS } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
 
@@ -93,6 +93,9 @@ export const ContactSchedule: React.FC = () => {
   const [payMethod, setPayMethod] = useState<PayMethod>('klarna');
   const [serviceSearch, setServiceSearch] = useState('');
   const [parsedVision, setParsedVision] = useState<ParsedVision | null>(null);
+  const [projectFiles, setProjectFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState('');
+  const referralCode = typeof localStorage !== 'undefined' ? localStorage.getItem('swrv_ref') || '' : '';
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [assetLink, setAssetLink] = useState('');
   const [fileDragging, setFileDragging] = useState(false);
@@ -162,6 +165,24 @@ export const ContactSchedule: React.FC = () => {
     setMessage('');
     setUploadError('');
   };
+
+  const ALLOWED_TYPES = ['image/jpeg','image/png','image/gif','image/webp','application/pdf','application/zip','application/x-zip-compressed','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain','audio/mpeg','audio/wav','audio/x-wav','video/mp4','video/quicktime'];
+  const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
+  const MAX_FILES = 5;
+
+  const handleProjectFileAdd = (files: FileList | null) => {
+    if (!files) return;
+    setFileError('');
+    const toAdd = Array.from(files).slice(0, MAX_FILES - projectFiles.length);
+    const invalid = toAdd.filter(f => !ALLOWED_TYPES.includes(f.type));
+    const tooBig = toAdd.filter(f => f.size > MAX_FILE_SIZE);
+    if (invalid.length) { setFileError(`Unsupported file type. Accepted: images, PDF, Word, audio, video, ZIP.`); return; }
+    if (tooBig.length) { setFileError(`Files must be under 15MB each.`); return; }
+    if (projectFiles.length + toAdd.length > MAX_FILES) { setFileError(`Max ${MAX_FILES} files per booking.`); return; }
+    setProjectFiles(prev => [...prev, ...toAdd]);
+  };
+
+  const removeProjectFile = (idx: number) => setProjectFiles(prev => prev.filter((_, i) => i !== idx));
 
   const handleBook = async () => {
     if (!selectedService || !selectedDate || !selectedTime || !name || !email) return;
@@ -272,7 +293,7 @@ export const ContactSchedule: React.FC = () => {
             </a>
           </div>
 
-          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); setUploadedFiles([]); setAssetLink(''); }}
+          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); setProjectFiles([]); setFileError(''); setUploadedFiles([]); setAssetLink(''); }}
             className="text-white/30 text-sm underline hover:text-white/60">Book another service</button>
         </div>
       </section>
@@ -349,7 +370,25 @@ export const ContactSchedule: React.FC = () => {
                         <div className="flex justify-between items-start gap-3">
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-white text-sm mb-1">{svc.name}</p>
-                            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{svc.blurb}</p>
+                            <p className="text-xs leading-relaxed mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>{svc.blurb}</p>
+                            {/* Fiverr-beating metadata row */}
+                            <div className="flex flex-wrap gap-2">
+                              {(svc as any).deliveryDays && (
+                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                                  ⏱ {(svc as any).deliveryDays}d delivery
+                                </span>
+                              )}
+                              {(svc as any).revisions !== undefined && (svc as any).revisions > 0 && (
+                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                                  ↩ {(svc as any).revisions} revision{(svc as any).revisions > 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {(svc as any).includes?.length > 0 && (
+                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(200,168,75,0.08)', color: 'rgba(200,168,75,0.6)' }}>
+                                  ✓ {(svc as any).includes.length} items included
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="font-bold text-sm" style={{ color: '#c8a84b' }}>{svc.price}</p>
@@ -628,6 +667,59 @@ export const ContactSchedule: React.FC = () => {
                 )}
               </div>
             )}
+
+            {/* ── PROJECT ASSETS — What SWRV needs from you ── */}
+            <div>
+              {(selectedService as any).assetsNeeded?.length > 0 && (
+                <div className="p-4 rounded-2xl mb-3" style={{ background: 'rgba(200,168,75,0.05)', border: '1px solid rgba(200,168,75,0.15)' }}>
+                  <p className="text-xs font-bold tracking-[0.15em] uppercase mb-2" style={{ color: 'rgba(200,168,75,0.7)' }}>What We Need From You</p>
+                  <ul className="flex flex-col gap-1.5">
+                    {((selectedService as any).assetsNeeded as string[]).map((item: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                        <span style={{ color: '#c8a84b', flexShrink: 0, marginTop: 1 }}>→</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>UPLOAD PROJECT ASSETS</p>
+              <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                Attach logos, photos, audio files, briefs — anything we need to start. Max 5 files, 15MB each.
+              </p>
+
+              {/* Uploaded files list */}
+              {projectFiles.length > 0 && (
+                <div className="flex flex-col gap-2 mb-3">
+                  {projectFiles.map((file, i) => (
+                    <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <Paperclip size={14} style={{ color: '#c8a84b', flexShrink: 0 }} />
+                      <span className="flex-1 text-xs truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{file.name}</span>
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{(file.size / 1024).toFixed(0)}KB</span>
+                      <button type="button" onClick={() => removeProjectFile(i)} className="p-1 hover:text-red-400 transition-colors" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {projectFiles.length < 5 && (
+                <label
+                  className="flex items-center justify-center gap-2 py-3 rounded-xl cursor-pointer transition-all text-xs"
+                  style={{ border: '1.5px dashed rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.35)' }}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); handleProjectFileAdd(e.dataTransfer.files); }}>
+                  <Upload size={14} />
+                  <span>Add files <span style={{ color: '#c8a84b' }}>browse</span></span>
+                  <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.zip,.mp3,.wav,.mp4,.mov" className="sr-only"
+                    onChange={e => { handleProjectFileAdd(e.target.files); e.target.value = ''; }} />
+                </label>
+              )}
+
+              {fileError && <p className="text-xs mt-2" style={{ color: '#f87171' }}>{fileError}</p>}
+            </div>
 
             {/* ── FIELDS ── */}
             {[

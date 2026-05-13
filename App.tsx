@@ -58,6 +58,27 @@ const App: React.FC = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
 
+  // ── REFERRAL TRACKING ─────────────────────────────────────────────
+  // Capture ?ref=CODE from URL and store in localStorage for attribution
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('swrv_ref', ref.toUpperCase());
+      localStorage.setItem('swrv_ref_ts', Date.now().toString());
+      // Clean URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('ref');
+      window.history.replaceState({}, '', url.toString());
+    }
+    // Expire after 30 days
+    const ts = localStorage.getItem('swrv_ref_ts');
+    if (ts && Date.now() - parseInt(ts) > 30 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem('swrv_ref');
+      localStorage.removeItem('swrv_ref_ts');
+    }
+  }, []);
+
   // LiveChat can request services menu to open
   useEffect(() => {
     const handler = () => setIsServicesMenuOpen(true);

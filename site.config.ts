@@ -293,6 +293,22 @@ export const SERVICE_PACKAGES: Record<string, Array<{
 };
 
 
+// ── REFERRAL / AFFILIATE CONFIG ────────────────────────────────────────
+// SWRV clients and partners get a unique referral code.
+// Anyone who books via their link → they earn a finder fee.
+// Payout is tracked automatically and sent manually (or via PayPal Payouts API later).
+export const REFERRAL_CONFIG = {
+  finderFeePercent: 15,          // 15% of the service price goes to the referrer
+  cookieDays: 30,                // how many days the referral attribution lasts
+  badgeText: 'Built by SWRV On The Go',
+  badgeCta: 'Want a site like this?',
+  baseUrl: 'https://swrvonthego.pro',
+  // Add partner referral codes here as you sign them up
+  // Format: { code: 'UNIQUE_CODE', name: 'Business Name', payTo: 'cash.app/$handle or email' }
+  partners: [] as Array<{ code: string; name: string; payTo: string }>,
+} as const;
+
+
 export const BRAND = {
   name: 'SWRV On The Go',
   shortName: 'SWRV',
@@ -402,10 +418,14 @@ export interface Service {
   id: string;
   name: string;
   category: 'execution' | 'experience' | 'identity';
-  price: string; // displayed as-is (e.g. "$500" or "From $250" or "$50/mo")
-  priceNumeric: number; // for math / sorting / cart totals
+  price: string;
+  priceNumeric: number;
   blurb: string;
-  // Optional — featured tile (only one service can be featured at a time)
+  deliveryDays?: number;
+  revisions?: number;
+  includes?: string[];
+  notIncludes?: string[];
+  assetsNeeded?: string[];
   featured?: boolean;
 }
 
@@ -420,6 +440,11 @@ export const SERVICES: Service[] = [
     priceNumeric: 250,
     blurb: 'Live, AI-powered Roadmap experience that maps your gift, purpose, and brand identity. Includes vision + mission writing, color palette, and full brand direction — custom-built for you, not recycled.',
     featured: true,
+    deliveryDays: 2,
+    revisions: 1,
+    includes: ["60-min brand strategy session", "Mission & vision statement", "AI Roadmap session (full blueprint)", "Brand color palette", "Brand voice guide", "Delivered as PDF brand brief"],
+    notIncludes: ["Logo design (separate service)", "Website design (separate service)"],
+    assetsNeeded: ["Any existing brand materials (logos, colors, past designs)", "Description of your business and target audience", "3 competitor brands or brands you admire"],
   },
   {
     id: 'logo-design',
@@ -428,6 +453,11 @@ export const SERVICES: Service[] = [
     price: '$250',
     priceNumeric: 250,
     blurb: 'Custom logo system with primary, secondary, and submark variations. 2 rounds of revisions. Proprietary — not templated.',
+    deliveryDays: 10,
+    revisions: 2,
+    includes: ["Primary logo mark", "2 alternate versions (horizontal, icon-only)", "Full color + black/white versions", "Source files (.ai, .eps, .svg, .png)", "2 rounds of revisions"],
+    notIncludes: ["Brand strategy (see Brand Planning)", "Business cards or print design"],
+    assetsNeeded: ["Business name (final — not placeholder)", "Brand description and audience", "Color preferences or existing brand colors", "Examples of logos you like and why"],
   },
   {
     id: 'photography',
@@ -436,6 +466,11 @@ export const SERVICES: Service[] = [
     price: '$800',
     priceNumeric: 800,
     blurb: 'Half-day brand + lifestyle photoshoot. Full day of shooting, 3-5 hours of professional editing. Color grading included. Deliverables ready for web, press, and social.',
+    deliveryDays: 7,
+    revisions: 0,
+    includes: ["Half-day shoot (3-5 hours)", "Professional editing", "Color grading", "30+ final edited images", "Delivery via online gallery"],
+    notIncludes: ["Travel outside metro area (fee may apply)", "Wardrobe styling"],
+    assetsNeeded: ["Shot list or creative direction (optional)", "Wardrobe options (3-4 looks recommended)", "Location preferences or approval to select"],
   },
   {
     id: 'content-system',
@@ -454,6 +489,11 @@ export const SERVICES: Service[] = [
     price: '$250',
     priceNumeric: 250,
     blurb: '3-page essential site. Mobile-friendly. Brand-aligned. Domain + email setup included. Live in 7 days. SEO audit at 3-6 months included.',
+    deliveryDays: 7,
+    revisions: 1,
+    includes: ["Up to 3 pages", "Mobile responsive design", "Contact form", "SEO foundations", "1 round of revisions", "Launch-ready in 7 days"],
+    notIncludes: ["E-commerce", "Booking system", "Custom animations"],
+    assetsNeeded: ["Logo (any format)", "Written copy for each page", "1-3 high quality photos or images", "Color preferences (if no branding exists yet)"],
   },
   {
     id: 'website-platform',
@@ -470,6 +510,11 @@ export const SERVICES: Service[] = [
     price: '$1,000',
     priceNumeric: 1000,
     blurb: 'A multifaceted digital home for solopreneurs who operate as a whole company. Custom-built — you won\'t find this anywhere else because we designed this concept. Vision-first: we get what\'s in your head out and into a digital space you can grow into over time. Your Roadmap drives every design decision. Includes domain, email, SEO audit at 3-6 months. Live in 21 days.',
+    deliveryDays: 21,
+    revisions: 3,
+    includes: ["Full modular website", "Custom brand integration", "Mobile-first responsive design", "Booking or inquiry system", "Blog or content hub", "E-commerce ready", "SEO foundations", "Brand Transmission section", "3 rounds of revisions", "SEO audit at 90 days"],
+    notIncludes: ["Monthly hosting fees (billed separately)", "Content writing (can be added)", "Custom photography (can be added)"],
+    assetsNeeded: ["Logo files (.svg, .png)", "Brand colors and fonts (if available)", "All written copy for each page", "Professional photos or imagery", "Any existing domain/hosting login credentials"],
   },
   {
     id: 'enterprise-ecosystem',
@@ -514,6 +559,11 @@ export const SERVICES: Service[] = [
     priceNumeric: 3000,
     blurb: 'Complete song from concept to master — beat/instrumental creation, vocal recording, arranging, vocal production, vocal coaching, mixing, mastering, and final delivery. 5-day turnaround. Industry standard: $4,000-$8,000.',
     featured: true,
+    deliveryDays: 5,
+    revisions: 2,
+    includes: ["Custom beat/production", "Studio recording session", "Vocal coaching & direction", "Mixing", "Mastering", "Broadcast-ready stereo file (.wav)", "2 rounds of revisions"],
+    notIncludes: ["Lyric writing (can be added)", "Music video production"],
+    assetsNeeded: ["Written lyrics or concept notes", "Reference tracks for sound direction", "Any existing stems or recordings if building on prior work"],
   },
   {
     id: 'mixing',
@@ -522,6 +572,11 @@ export const SERVICES: Service[] = [
     price: '$500',
     priceNumeric: 500,
     blurb: 'Professional mixing for your finished recordings. Balances every element — levels, panning, EQ, compression, effects. Broadcast-ready output.',
+    deliveryDays: 3,
+    revisions: 2,
+    includes: ["Professional mix of 1 song", "Vocal balance, EQ, compression, effects", "Broadcast-ready stereo file (.wav)", "2 rounds of revisions"],
+    notIncludes: ["Mastering (separate service — bundle for savings)", "Beat production"],
+    assetsNeeded: ["All individual track files (stems) in .wav format", "Reference track for mix direction", "Tempo/key info if available"],
   },
   {
     id: 'mastering',
@@ -578,6 +633,11 @@ export const SERVICES: Service[] = [
     price: '$250 + $125/hr',
     priceNumeric: 250,
     blurb: '$250 covers full strategy, branding, and tech setup — hosting, RSS, distribution on Spotify + Apple Podcasts. Recording sessions at $125/hr. Everything built around your voice and audience.',
+    deliveryDays: 7,
+    revisions: 1,
+    includes: ["Show concept consultation", "RSS feed setup", "Cover art design", "Submission to Spotify & Apple Podcasts", "Episode template", "Launch strategy doc"],
+    notIncludes: ["Ongoing episode editing (see Podcast Editing)", "Recording equipment"],
+    assetsNeeded: ["Show name and description", "Target audience description", "Host name and bio", "Headshot for cover art"],
   },
   {
     id: 'podcast-editing',
@@ -597,6 +657,11 @@ export const SERVICES: Service[] = [
     priceNumeric: 5000,
     blurb: 'Full music video production — concept, 1-day shoot, 5-day post-production, unlimited premium effects and transitions, color grading, and 2 rounds of revisions. Industry standard: $7,000-$15,000.',
     featured: true,
+    deliveryDays: 7,
+    revisions: 2,
+    includes: ["Concept development session", "1 full day of filming", "5-day professional edit", "Unlimited premium effects & transitions", "Color grading", "2 rounds of revisions", "Delivery in 4K + compressed web version"],
+    notIncludes: ["Song production (must be mixed & mastered)", "Talent casting fees", "Location permits"],
+    assetsNeeded: ["Finished, mastered audio file (.wav or .mp3)", "Creative concept or mood board (optional but helpful)", "Any specific wardrobe, props, or visual references"],
   },
   {
     id: 'video-promo',

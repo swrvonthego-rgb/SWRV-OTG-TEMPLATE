@@ -84,6 +84,7 @@ export default {
     if (url.pathname === '/api/booking')        return handleBooking(request, env);
     if (url.pathname === '/api/intake-ai')      return handleIntakeAI(request, env);
     if (url.pathname === '/api/intake-submit')  return handleIntakeSubmit(request, env);
+    if (url.pathname === '/api/referral-report') return handleReferralReport(request, env);
     if (url.pathname === '/api/save-progress')  return handleSaveProgress(request, env);
     if (url.pathname === '/api/load-progress')  return handleLoadProgress(request, env);
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
@@ -547,6 +548,11 @@ async function handleBooking(request, env) {
             ${assetLink ? `<p style="font-size:13px;color:#ede8dc;margin:0">Link: <a href="${safe(assetLink)}" style="color:#c8a84b">${safe(assetLink)}</a></p>` : ''}
           </div>
         ` : ''}
+        ${referralCode ? `
+          <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
+            <div style="width:120px;color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em">Referred By</div>
+            <div style="flex:1;color:#c8a84b;font-weight:700;">${safe(referralCode)}</div>
+          </div>` : ''}
         ${message ? `<div style="margin-top:20px"><div style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Project Details</div><div style="background:#110e07;border-left:3px solid #c8a84b;padding:14px;border-radius:4px;font-size:14px;line-height:1.6;white-space:pre-wrap">${safe(message)}</div></div>` : ''}
         <p style="margin-top:28px;font-size:11px;color:#8a8070;text-align:center;text-transform:uppercase;letter-spacing:.1em">Submitted via swrvonthego.pro booking</p>
       </div>`;
@@ -574,12 +580,19 @@ async function handleBooking(request, env) {
       return new Response(JSON.stringify({ ok: true, note: 'Email service not configured — booking logged' }), { headers: JSON_HEADERS });
     }
 
+    // Build Resend attachments from base64 files (limit to first 3, max 10MB each)
+    const attachments = (fileAttachments || [])
+      .slice(0, 3)
+      .map(f => ({ filename: f.name, content: f.data }));
+
     // Send to team
     const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
-        subject: `🔥 New Booking: ${serviceName} — ${name}`, html: teamHtml }),
+        subject: `🔥 New Booking: ${serviceName} — ${name}${referralCode ? ` (ref: ${referralCode})` : ''}`,
+        html: teamHtml,
+        attachments: attachments.length ? attachments : undefined }),
     });
 
     // Send confirmation to client
@@ -762,4 +775,27 @@ async function handleIntakeSubmit(request, env) {
     console.error('Intake submit error:', err);
     return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS }); // still succeed for client
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// REFERRAL REPORT — GET /api/referral-report?secret=YOUR_SECRET
+// Shows all referral credits. Swerve uses this to know who to pay.
+// ─────────────────────────────────────────────────────────────────────
+async function handleReferralReport(request, env) {
+  const url = new URL(request.url);
+  const secret = url.searchParams.get('secret');
+  // Simple secret check — set REFERRAL_SECRET env var in Cloudflare
+  if (!env.REFERRAL_SECRET || secret !== env.REFERRAL_SECRET) {
+    return new Response('Forbidden', { status: 403, headers: SECURITY_HEADERS });
+  }
+  // Referrals are tracked via booking emails (the referralCode field).
+  // This endpoint returns a summary from KV if available.
+  if (!env.PROGRESS) {
+    return new Response(JSON.stringify({
+      message: 'KV not configured. Referrals are tracked in booking emails — search info@swrvonthego.pro for "ref:" to see attributed bookings.',
+      tip: 'To activate KV tracking, bind a KV namespace to the PROGRESS binding in your Cloudflare Worker settings.'
+    }), { headers: JSON_HEADERS });
+  }
+  const raw = await env.PROGRESS.get('referrals:all') || '[]';
+  return new Response(raw, { headers: JSON_HEADERS });
 }
