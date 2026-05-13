@@ -76,6 +76,223 @@ export const ROADMAP_PRICING = {
 } as const;
 
 
+// ── SERVICE ASSET REQUIREMENTS ──────────────────────────────────────────
+// What each service needs from the client before work begins.
+// Drives the file upload guidance in the booking flow.
+export const SERVICE_ASSETS: Record<string, {
+  title: string;
+  required: string[];
+  optional: string[];
+  formats: string;
+  note?: string;
+}> = {
+  'music-video': {
+    title: "What we need for your Music Video",
+    required: ['Mastered song file (WAV, MP3, or FLAC)', 'Artist reference photos'],
+    optional: ['Written concept or treatment doc', 'Reference video links', 'Location ideas or mood board'],
+    formats: '.wav,.mp3,.flac,.pdf,.doc,.docx,.jpg,.jpeg,.png',
+    note: 'Song must be final mix and mastered before shoot day.',
+  },
+  'video-promo': {
+    title: "What we need for your Promo Video",
+    required: ['Brand guide or logo files (if applicable)', 'Key message or script (even rough)'],
+    optional: ['Reference promo videos (links)', 'Brand colors / fonts', 'Existing footage to incorporate'],
+    formats: '.pdf,.ai,.eps,.svg,.jpg,.png,.mp4,.mov,.doc,.docx',
+  },
+  'full-song': {
+    title: "What we need for Full Song Production",
+    required: ['Voice memo of your melody or hook', 'Lyrics doc or at minimum the concept'],
+    optional: ['Reference tracks (Spotify/YouTube links)', 'Detailed notes on vibe/direction', 'Any demo recordings'],
+    formats: '.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt',
+  },
+  'mixing': {
+    title: "What we need for Mixing",
+    required: ['All individual stems/tracks (WAV, 24-bit if possible)', 'Reference mix if you have one'],
+    optional: ['Mixing notes or direction', 'Lyrics sheet for balance reference'],
+    formats: '.wav,.aif,.mp3',
+    note: 'Stems must be exported from session start (bar 1). Label tracks clearly.',
+  },
+  'mastering': {
+    title: "What we need for Mastering",
+    required: ['Final mixed file (WAV or AIFF, -3dBFS headroom minimum)'],
+    optional: ['Reference track for target loudness', 'ISRC codes if you have them', 'Release platform (Spotify, Apple, etc.)'],
+    formats: '.wav,.aif',
+    note: 'Do not submit a compressed MP3 for mastering. WAV only.',
+  },
+  'brand-planning': {
+    title: "What we need for Brand Planning",
+    required: ['Business name and any taglines you are considering', 'Brief description of your business and target audience'],
+    optional: ['Existing logo or brand elements', 'Competitor examples', 'Visual inspiration (Pinterest board, screenshots, links)'],
+    formats: '.pdf,.doc,.docx,.jpg,.png,.ai,.eps',
+  },
+  'logo-design': {
+    title: "What we need for Logo Design",
+    required: ['Brand planning brief or answers to our intake form', 'Color preferences or mood reference'],
+    optional: ['Existing brand assets to work with or replace', 'Font preferences', 'Examples of logos you like or dislike and why'],
+    formats: '.pdf,.jpg,.png,.ai,.eps,.doc,.docx',
+  },
+  'photography': {
+    title: "What we need for your Photo Shoot",
+    required: ['Shot list or usage goal (album cover, social, press, brand)'],
+    optional: ['Mood board or visual reference images', 'Wardrobe plan / outfit ideas', 'Location preferences or restrictions'],
+    formats: '.pdf,.jpg,.png,.doc,.docx',
+  },
+  'website-presence': {
+    title: "What we need for your Website",
+    required: ['Brand guide or logo file (PNG, SVG, or AI format)', 'Written content for each page (copy, bio, services)'],
+    optional: ['Professional photography', 'Color palette / brand colors', 'Reference websites you like'],
+    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.txt',
+    note: 'The more content you provide, the faster and better the result.',
+  },
+  'website-platform': {
+    title: "What we need for your Website",
+    required: ['Brand guide (logo, colors, fonts)', 'Written copy for all pages', 'Professional photography or image direction'],
+    optional: ['Competitor / reference sites', 'Sitemap or page structure preference', 'Existing domain/hosting credentials'],
+    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx',
+  },
+  'website-ecosystem': {
+    title: "What we need for your Website Ecosystem",
+    required: ['Full brand guide', 'All written copy (or approve SWRV to write it)', 'Photography / visual assets', 'Domain and hosting access'],
+    optional: ['CRM / booking system preferences', 'E-commerce product list if applicable', 'Any API keys (Stripe, etc.)'],
+    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.zip',
+    note: 'For Ecosystem builds, a kickoff call is included. Come prepared.',
+  },
+  'enterprise-ecosystem': {
+    title: "Enterprise Intake — Custom Scope",
+    required: ['Executive brief or project overview', 'Brand guide and all existing assets', 'Technical requirements doc if applicable'],
+    optional: ['Existing codebase or documentation', 'Team access credentials', 'Budget and timeline constraints'],
+    formats: '.pdf,.zip,.docx,.pptx',
+    note: 'Enterprise scopes start with a paid discovery session.',
+  },
+  'podcast-launch': {
+    title: "What we need for your Podcast Launch",
+    required: ['Show concept doc (name, premise, target audience, format)', 'Host bio and headshot'],
+    optional: ['Episode outline for pilot episode', 'Intro/outro music direction', 'Brand guide or logo for cover art'],
+    formats: '.pdf,.doc,.docx,.jpg,.png,.mp3,.wav',
+  },
+  'pitch-deck': {
+    title: "What we need for your Pitch Deck",
+    required: ['Business overview doc or notes (even rough is fine)', 'Target audience for the deck (investors, partners, clients)'],
+    optional: ['Financial projections or data', 'Brand guide', 'Previous deck if updating one', 'Competitor analysis'],
+    formats: '.pdf,.pptx,.doc,.docx,.xls,.xlsx',
+    note: 'The more context you give us, the more persuasive the deck.',
+  },
+  'llc-formation': {
+    title: "What we need for LLC Formation",
+    required: ['Government-issued ID', 'Desired business name (plus 2 alternates)', 'Business address'],
+    optional: ['Operating agreement template preferences', 'Business bank preferences'],
+    formats: '.jpg,.jpeg,.png,.pdf',
+    note: 'SWRV handles the filing. You review and sign.',
+  },
+  'artist-development': {
+    title: "What we need for Artist Development",
+    required: ['Artist bio (short version is fine)', 'Links to existing music, video, or social media'],
+    optional: ['Existing press kit or EPK', 'Goals and timeline doc', 'Current team structure'],
+    formats: '.pdf,.doc,.docx,.jpg,.png,.mp3',
+  },
+};
+
+// ── SERVICE PACKAGES (Fiverr-style tiers) ───────────────────────────────
+export const SERVICE_PACKAGES: Record<string, Array<{
+  name: string;
+  price: string;
+  deliveryDays: number;
+  revisions: number;
+  includes: string[];
+  featured?: boolean;
+}>> = {
+  website: [
+    {
+      name: 'The Presence',
+      price: '$250',
+      deliveryDays: 7,
+      revisions: 1,
+      includes: ['Up to 3 pages', 'Mobile responsive', 'SEO foundations', 'Contact form', '1 round of revisions'],
+    },
+    {
+      name: 'The Platform',
+      price: '$500',
+      deliveryDays: 14,
+      revisions: 2,
+      includes: ['Up to 5 pages', 'Booking or inquiry system', 'Blog or content section', 'Analytics', '2 rounds of revisions'],
+      featured: true,
+    },
+    {
+      name: 'The Ecosystem',
+      price: '$1,000',
+      deliveryDays: 21,
+      revisions: 3,
+      includes: ['Full modular site', 'Custom integrations', 'E-commerce or booking', 'Brand Transmission section', '3 rounds of revisions', 'SEO audit at 90 days'],
+    },
+  ],
+  video: [
+    {
+      name: 'Promo',
+      price: '$1,250',
+      deliveryDays: 2,
+      revisions: 2,
+      includes: ['Under 60 seconds', 'Concept + shoot + edit', 'Color grading', '2 revision rounds'],
+    },
+    {
+      name: 'Music Video',
+      price: '$5,000',
+      deliveryDays: 7,
+      revisions: 2,
+      includes: ['2:30–4 minutes', 'Full concept development', '1-day shoot', '5-day post-production', 'Unlimited premium effects', 'Color grading', '2 revision rounds'],
+      featured: true,
+    },
+  ],
+  music: [
+    {
+      name: 'Single',
+      price: '$3,000',
+      deliveryDays: 5,
+      revisions: 2,
+      includes: ['Full beat production', 'Studio recording', 'Vocal coaching', 'Mixing', 'Mastering', 'Ready for distribution'],
+      featured: true,
+    },
+    {
+      name: 'Mix Only',
+      price: '$500',
+      deliveryDays: 3,
+      revisions: 2,
+      includes: ['Stem mixing', 'Broadcast-ready output', 'Stereo + stems delivery', '2 revision rounds'],
+    },
+    {
+      name: 'Master Only',
+      price: '$500',
+      deliveryDays: 2,
+      revisions: 1,
+      includes: ['Streaming-ready master', 'Broadcast loudness standards', 'WAV + MP3 delivery'],
+    },
+  ],
+  brand: [
+    {
+      name: 'Logo',
+      price: '$250',
+      deliveryDays: 10,
+      revisions: 2,
+      includes: ['Primary logo mark', 'Color variants (light + dark)', 'Web + print formats', '2 revision rounds'],
+    },
+    {
+      name: 'Brand Planning',
+      price: '$250',
+      deliveryDays: 1,
+      revisions: 1,
+      includes: ['Vision + mission statement', 'Brand color palette', 'AI Roadmap session', 'Strategic brief'],
+    },
+    {
+      name: 'Full Identity',
+      price: '$1,000',
+      deliveryDays: 14,
+      revisions: 3,
+      includes: ['Brand planning', 'Logo design', 'Typography system', 'Color palette', 'Social templates', 'Brand guide PDF'],
+      featured: true,
+    },
+  ],
+};
+
+
 export const BRAND = {
   name: 'SWRV On The Go',
   shortName: 'SWRV',

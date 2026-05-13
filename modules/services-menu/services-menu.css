@@ -562,3 +562,112 @@
   background: rgba(200,168,75,0.14);
   border-color: rgba(200,168,75,0.6);
 }
+
+/* ── SERVICE PACKAGES (Fiverr-style tiers) ──────────────────────────── */
+.services-menu .sm-packages-section {
+  margin-bottom: 56px;
+}
+.services-menu .sm-pkg-group {
+  margin-bottom: 36px;
+}
+.services-menu .sm-pkg-group-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-bright);
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.services-menu .sm-pkg-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.services-menu .sm-pkg-card {
+  position: relative;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s;
+}
+.services-menu .sm-pkg-featured {
+  border-color: rgba(200,168,75,0.4);
+  background: linear-gradient(135deg, rgba(200,168,75,0.07), rgba(200,168,75,0.02));
+}
+.services-menu .sm-pkg-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #c8a84b, #e8c96a);
+  color: #0a0804;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.services-menu .sm-pkg-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-bright);
+}
+.services-menu .sm-pkg-price {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent-1);
+}
+.services-menu .sm-pkg-meta {
+  font-size: 11px;
+  color: rgba(237,232,220,0.4);
+  display: flex;
+  gap: 6px;
+}
+.services-menu .sm-pkg-includes {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.services-menu .sm-pkg-includes li {
+  font-size: 12px;
+  color: rgba(237,232,220,0.6);
+  display: flex;
+  gap: 6px;
+  line-height: 1.4;
+}
+.services-menu .sm-pkg-check {
+  color: var(--accent-1);
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.services-menu .sm-pkg-cta {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 999px;
+  background: rgba(200,168,75,0.1);
+  border: 1px solid rgba(200,168,75,0.3);
+  color: #c8a84b;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.services-menu .sm-pkg-featured .sm-pkg-cta {
+  background: linear-gradient(135deg,#c8a84b,#e8c96a);
+  color: #0a0804;
+  border: none;
+}
+.services-menu .sm-pkg-cta:hover { opacity: 0.85; }

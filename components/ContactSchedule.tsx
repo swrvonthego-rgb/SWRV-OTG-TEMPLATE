@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap, Upload, FileText, X as XIcon } from 'lucide-react';
-import { SCHEDULING, SERVICES, PAYMENT_CONFIG } from '../site.config';
+import { SCHEDULING, SERVICES, PAYMENT_CONFIG, SERVICE_ASSETS } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
 
 const TIME_SLOTS = SCHEDULING.timeSlots;
@@ -93,6 +93,9 @@ export const ContactSchedule: React.FC = () => {
   const [payMethod, setPayMethod] = useState<PayMethod>('klarna');
   const [serviceSearch, setServiceSearch] = useState('');
   const [parsedVision, setParsedVision] = useState<ParsedVision | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [assetLink, setAssetLink] = useState('');
+  const [fileDragging, setFileDragging] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
@@ -175,6 +178,8 @@ export const ContactSchedule: React.FC = () => {
           kickoffTime: selectedTime,
           deliveryDate: deliveryDate ? format(deliveryDate, 'MMMM d, yyyy') : '',
           name, email, phone, message, payMethod,
+          assetLink,
+          uploadedFileNames: uploadedFiles.map(f => `${f.name} (${(f.size / 1024).toFixed(0)}KB)`).join(', '),
         }),
       });
       const data = await res.json();
@@ -267,7 +272,7 @@ export const ContactSchedule: React.FC = () => {
             </a>
           </div>
 
-          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); }}
+          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); setUploadedFiles([]); setAssetLink(''); }}
             className="text-white/30 text-sm underline hover:text-white/60">Book another service</button>
         </div>
       </section>
@@ -456,6 +461,102 @@ export const ContactSchedule: React.FC = () => {
         {/* ── STEP 3: DETAILS ── */}
         {step === 'details' && (
           <div className="flex flex-col gap-5">
+
+            {/* ── PROJECT ASSETS ── */}
+            {selectedService && SERVICE_ASSETS[selectedService.id] && (() => {
+              const req = SERVICE_ASSETS[selectedService.id];
+              return (
+                <div>
+                  <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(200,168,75,0.6)' }}>
+                    PROJECT ASSETS
+                  </p>
+                  <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>{req.title}</p>
+
+                  {/* Required + Optional checklists */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,80,80,0.7)' }}>Required</p>
+                      {req.required.map((r, i) => (
+                        <p key={i} className="text-xs mb-1 flex gap-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                          <span style={{ color: 'rgba(200,168,75,0.8)', flexShrink: 0 }}>→</span>{r}
+                        </p>
+                      ))}
+                    </div>
+                    {req.optional.length > 0 && (
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Optional but helpful</p>
+                        {req.optional.map((r, i) => (
+                          <p key={i} className="text-xs mb-1 flex gap-1.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                            <span style={{ flexShrink: 0 }}>+</span>{r}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {req.note && (
+                    <p className="text-xs mb-4 px-3 py-2 rounded-xl" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.15)', color: 'rgba(200,168,75,0.8)' }}>
+                      ⚠ {req.note}
+                    </p>
+                  )}
+
+                  {/* File Upload */}
+                  <label
+                    onDragOver={e => { e.preventDefault(); setFileDragging(true); }}
+                    onDragLeave={() => setFileDragging(false)}
+                    onDrop={e => {
+                      e.preventDefault(); setFileDragging(false);
+                      const files = Array.from(e.dataTransfer.files).slice(0, 8);
+                      setUploadedFiles(prev => [...prev, ...files].slice(0, 8));
+                    }}
+                    className="flex flex-col items-center justify-center gap-2 py-5 rounded-2xl cursor-pointer transition-all mb-3"
+                    style={{
+                      border: `1.5px dashed ${fileDragging ? 'rgba(200,168,75,0.7)' : 'rgba(255,255,255,0.1)'}`,
+                      background: fileDragging ? 'rgba(200,168,75,0.05)' : 'transparent',
+                    }}>
+                    <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      Drop files here, or <span style={{ color: '#c8a84b' }}>browse</span>
+                    </p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{req.formats} · Up to 8 files</p>
+                    <input type="file" accept={req.formats} multiple className="sr-only"
+                      onChange={e => {
+                        const files = Array.from(e.target.files || []).slice(0, 8);
+                        setUploadedFiles(prev => [...prev, ...files].slice(0, 8));
+                        e.target.value = '';
+                      }} />
+                  </label>
+
+                  {/* Uploaded file list */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="mb-3 flex flex-col gap-1.5">
+                      {uploadedFiles.map((f, i) => (
+                        <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl text-xs"
+                          style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.15)' }}>
+                          <span style={{ color: '#c8a84b' }}>✓</span>
+                          <span className="flex-1 mx-2 truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{f.name}</span>
+                          <span style={{ color: 'rgba(255,255,255,0.3)' }}>{(f.size / 1024).toFixed(0)}KB</span>
+                          <button type="button" onClick={() => setUploadedFiles(files => files.filter((_, j) => j !== i))}
+                            className="ml-2" style={{ color: 'rgba(255,255,255,0.3)' }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Large file link */}
+                  <div>
+                    <label className="block text-xs mb-1.5 uppercase tracking-widest font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      LARGE FILES — Paste a Google Drive, Dropbox, or WeTransfer link
+                    </label>
+                    <input type="url" value={assetLink} onChange={e => setAssetLink(e.target.value)}
+                      placeholder="https://drive.google.com/..."
+                      className="w-full px-4 py-2.5 text-xs outline-none"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, color: '#fff' }} />
+                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      For audio stems, video files, raw images, or anything over 50MB — share via cloud link.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ── VISION UPLOAD ── */}
             {!parsedVision ? (

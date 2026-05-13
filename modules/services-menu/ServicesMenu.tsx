@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './services-menu.css';
-import { SERVICES } from '../../site.config';
+import { SERVICES, SERVICE_PACKAGES } from '../../site.config';
 
 interface Props {
   isOpen: boolean;
@@ -316,6 +316,56 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             <p className="sm-empty-title">No services found for "{q}"</p>
             <p className="sm-empty-sub">Try a different keyword, or <button type="button" className="sm-empty-clear" onClick={() => setSearchQuery('')}>clear search</button> to see all services.</p>
           </div>
+        )}
+
+        {/* ── SERVICE PACKAGES (Fiverr-style tiers) ── */}
+        {Object.keys(SERVICE_PACKAGES).length > 0 && (
+          <section className="sm-packages-section">
+            <div className="sm-section-header">
+              <h2 className="sm-section-title">
+                <span>Service Packages</span>
+              </h2>
+              <p className="sm-section-desc">Compare tiers and pick what fits. All packages include direct communication with the SWRV team — no middlemen.</p>
+            </div>
+            {(Object.entries(SERVICE_PACKAGES) as [string, typeof SERVICE_PACKAGES[string]][]).map(([groupKey, pkgs]) => (
+              <div key={groupKey} className="sm-pkg-group">
+                <h3 className="sm-pkg-group-label">
+                  {groupKey === 'website' ? '🌐 Website' :
+                   groupKey === 'video'   ? '🎬 Video Production' :
+                   groupKey === 'music'   ? '🎵 Music & Audio' :
+                   groupKey === 'brand'   ? '✨ Brand Identity' : groupKey}
+                </h3>
+                <div className="sm-pkg-row">
+                  {pkgs.map((pkg, i) => (
+                    <div key={i} className={`sm-pkg-card ${pkg.featured ? 'sm-pkg-featured' : ''}`}>
+                      {pkg.featured && <div className="sm-pkg-badge">Most Popular</div>}
+                      <div className="sm-pkg-name">{pkg.name}</div>
+                      <div className="sm-pkg-price">{pkg.price}</div>
+                      <div className="sm-pkg-meta">
+                        <span>{pkg.deliveryDays}d delivery</span>
+                        <span>·</span>
+                        <span>{pkg.revisions} revision{pkg.revisions !== 1 ? 's' : ''}</span>
+                      </div>
+                      <ul className="sm-pkg-includes">
+                        {pkg.includes.map((item, j) => (
+                          <li key={j}><span className="sm-pkg-check">✓</span>{item}</li>
+                        ))}
+                      </ul>
+                      <button type="button" className="sm-pkg-cta"
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('swrv:open-intake', {
+                            detail: { id: pkg.name.toLowerCase().replace(/\s+/g, '-'), name: pkg.name }
+                          }));
+                          onClose?.();
+                        }}>
+                        Start This Package →
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </section>
         )}
 
         {/* CTA FOOTER */}

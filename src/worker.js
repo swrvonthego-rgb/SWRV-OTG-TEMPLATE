@@ -493,7 +493,8 @@ async function handleBooking(request, env) {
   try {
     const body = await request.json();
     const { service, serviceName, servicePrice, kickoffDate, kickoffTime,
-            deliveryDate, name, email, phone, message, payMethod } = body;
+            deliveryDate, name, email, phone, message, payMethod,
+            assetLink, uploadedFileNames } = body;
 
     if (!serviceName || !name || !email) {
       return new Response(JSON.stringify({ error: 'serviceName, name, email required' }), { status: 400, headers: JSON_HEADERS });
@@ -539,6 +540,13 @@ async function handleBooking(request, env) {
             <div style="width:120px;color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em">${label}</div>
             <div style="flex:1">${val}</div>
           </div>` : '<div style="height:8px"></div>').join('')}
+        ${(uploadedFileNames || assetLink) ? `
+          <div style="margin-top:16px;padding:12px 16px;background:#1a1610;border-left:3px solid #c8a84b;border-radius:4px;">
+            <div style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Project Assets</div>
+            ${uploadedFileNames ? `<p style="font-size:13px;color:#ede8dc;margin:0 0 4px">Files: ${safe(uploadedFileNames)}</p>` : ''}
+            ${assetLink ? `<p style="font-size:13px;color:#ede8dc;margin:0">Link: <a href="${safe(assetLink)}" style="color:#c8a84b">${safe(assetLink)}</a></p>` : ''}
+          </div>
+        ` : ''}
         ${message ? `<div style="margin-top:20px"><div style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Project Details</div><div style="background:#110e07;border-left:3px solid #c8a84b;padding:14px;border-radius:4px;font-size:14px;line-height:1.6;white-space:pre-wrap">${safe(message)}</div></div>` : ''}
         <p style="margin-top:28px;font-size:11px;color:#8a8070;text-align:center;text-transform:uppercase;letter-spacing:.1em">Submitted via swrvonthego.pro booking</p>
       </div>`;
