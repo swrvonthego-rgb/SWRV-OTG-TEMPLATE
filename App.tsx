@@ -27,6 +27,20 @@ import { ServicesMenu } from './modules/services-menu/ServicesMenu';
 import { Byob } from './modules/byob/Byob';
 import { LiveChat } from './components/LiveChat';
 
+// ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
+// Fires once on load — brands the devtools, deters casual copying
+if (typeof window !== 'undefined') {
+  const s1 = 'color:#c8a84b;font-size:18px;font-weight:900;font-family:Georgia,serif';
+  const s2 = 'color:#ede8dc;font-size:12px;font-family:monospace';
+  const s3 = 'color:#888;font-size:11px';
+  console.log('%cSWRV ON THE GO', s1);
+  console.log('%c© 2025 Swerve (Robert Birdsong). All rights reserved.', s2);
+  console.log('%cThis site is proprietary. Unauthorized copying is prohibited.', s3);
+  console.log('%cswrvonthego.pro', s3);
+}
+
+
+
 const App: React.FC = () => {
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
   const [isZionOpen, setIsZionOpen] = useState(false);

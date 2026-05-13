@@ -17,20 +17,67 @@ import { renderRoadmapEmail } from './email-template.js';
 //   EMAIL_FROM        (var)    — sender address, e.g. "SWRV <hello@swrvonthego.pro>"
 //   PROGRESS          (KV)     — namespace binding for session persistence
 
+// Allowed origins — add any preview/staging URLs here too
+const ALLOWED_ORIGINS = new Set([
+  'https://swrvonthego.pro',
+  'https://www.swrvonthego.pro',
+  'https://swrv-otg-template.swrvonthego.workers.dev',
+]);
+
+function getCorsHeaders(request) {
+  const origin = request.headers.get('Origin') || '';
+  const allowed = ALLOWED_ORIGINS.has(origin)
+    ? origin
+    : 'https://swrvonthego.pro'; // fallback keeps headers valid
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
+    'Vary': 'Origin',
+  };
+}
+
+// Security headers added to every response
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options':  'nosniff',
+  'X-Frame-Options':         'SAMEORIGIN',
+  'Referrer-Policy':         'strict-origin-when-cross-origin',
+  'Permissions-Policy':      'camera=(), microphone=(), geolocation=()',
+  'X-XSS-Protection':        '1; mode=block',
+};
+
+// Legacy static headers (for handlers that build their own response)
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://swrvonthego.pro',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
+  'Vary': 'Origin',
 };
 
 const JSON_HEADERS = {
   ...CORS_HEADERS,
+  ...SECURITY_HEADERS,
   'Content-Type': 'application/json',
 };
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // Block API calls from unknown origins (protects Groq/Resend keys)
+    if (url.pathname.startsWith('/api/')) {
+      const origin = request.headers.get('Origin') || '';
+      const referer = request.headers.get('Referer') || '';
+      const isKnownOrigin = !origin || // same-origin requests have no Origin header
+        ALLOWED_ORIGINS.has(origin) ||
+        [...ALLOWED_ORIGINS].some(o => referer.startsWith(o));
+      if (!isKnownOrigin) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json', ...SECURITY_HEADERS },
+        });
+      }
+    }
 
     if (url.pathname === '/api/roadmap')        return handleRoadmap(request, env);
     if (url.pathname === '/api/chat')           return handleChat(request, env);

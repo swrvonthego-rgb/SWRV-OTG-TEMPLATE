@@ -19,8 +19,8 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react(), tailwindcss(), devApiPlugin()],
     define: {
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      // ⚠️  Do NOT put API keys here — they get embedded in the compiled JS bundle
+      // All secrets live in Cloudflare Worker environment variables only
     },
     resolve: {
       alias: {
