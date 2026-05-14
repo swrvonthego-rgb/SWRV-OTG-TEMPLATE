@@ -1054,3 +1054,24 @@
 .roadmap-experience .qv-result-upgrade{margin:24px 0 16px;padding:20px;border:1px solid rgba(200,168,75,.25);border-radius:16px;background:rgba(200,168,75,.04);}
 .roadmap-experience .qv-result-upgrade-text{font-size:13px;color:var(--ink-mid);line-height:1.7;margin:0 0 14px;}
 .roadmap-experience .qv-result-actions{display:flex;gap:10px;padding-top:8px;}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 2 — 16 GUIDED QUESTIONS
+══════════════════════════════════════════════════════════════ */
+.roadmap-experience .phase2-wrap{max-width:640px;margin:0 auto;padding:32px 24px;width:100%;display:flex;flex-direction:column;gap:18px;}
+.roadmap-experience .phase2-progress-row{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.roadmap-experience .phase2-step{font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--accent-1);opacity:.7;white-space:nowrap;}
+.roadmap-experience .phase2-progress-bar{flex:1;height:2px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;}
+.roadmap-experience .phase2-progress-fill{height:100%;background:linear-gradient(90deg,#c8a84b,#e8c96a);transition:width .4s ease;}
+.roadmap-experience .phase2-intro{font-size:14px;line-height:1.7;color:var(--ink-mid);margin:4px 0 8px;padding:16px;background:rgba(200,168,75,.05);border-left:2px solid rgba(200,168,75,.4);border-radius:8px;}
+.roadmap-experience .phase2-question{font-family:var(--font-display);font-size:clamp(22px,3.5vw,30px);font-weight:400;font-style:italic;color:var(--ink-bright);margin:8px 0 4px;line-height:1.3;}
+.roadmap-experience .phase2-context{font-size:13px;color:var(--ink-mid);line-height:1.6;margin:0 0 8px;opacity:.75;}
+.roadmap-experience .phase2-input{background:var(--bg-soft);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:15px;color:var(--ink-bright);line-height:1.7;resize:none;outline:none;transition:border-color .2s;font-family:var(--font-body);min-height:120px;}
+.roadmap-experience .phase2-input:focus{border-color:var(--accent-mid);}
+.roadmap-experience .phase2-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.roadmap-experience .phase2-actions .btn-primary{margin-left:auto;}
+.roadmap-experience .phase2-actions .btn-primary:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.roadmap-experience .phase2-skip{opacity:.5;}
+.roadmap-experience .phase2-finish-anytime{text-align:center;font-size:12px;color:var(--ink-mid);opacity:.6;margin:8px 0 0;}
+.roadmap-experience .phase2-finish-link{background:none;border:none;color:var(--accent-1);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit;}
+.roadmap-experience .phase2-finish-link:hover{opacity:.8;}

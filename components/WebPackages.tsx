@@ -136,6 +136,22 @@ export const WebPackages: React.FC = () => {
                 {/* Note */}
                 <p className="text-xs text-gray-600 italic mb-6 leading-relaxed">{tier.note}</p>
 
+                {/* Live Example */}
+                {tier.liveExample && (
+                  <a
+                    href={tier.liveExample.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block mb-4 p-3 rounded-lg border border-lion-orange/30 bg-lion-orange/5 hover:bg-lion-orange/10 hover:border-lion-orange/60 transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs font-bold tracking-[0.15em] uppercase text-lion-orange">{tier.liveExample.label}</span>
+                      <ArrowRight size={12} className="text-lion-orange transition-transform group-hover:translate-x-1" />
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">{tier.liveExample.description}</p>
+                  </a>
+                )}
+
                 {/* CTA */}
                 <button
                   onClick={() => handleCTA(tier.id)}

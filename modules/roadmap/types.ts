@@ -58,6 +58,7 @@ export type ScreenId =
   | 'disclaimer'
   | 'duration'
   | 'vision'
+  | 'phase2'
   | 'processing'
   | 'results'
   | 'qv-input'

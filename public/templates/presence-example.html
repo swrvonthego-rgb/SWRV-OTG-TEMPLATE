@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!--
+  THE PRESENCE — Example Template
+  © 2025 SWRV On The Go. Demo only.
+  This is what a $250 Presence build looks like. Replace [BRACKETS] with real client info.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Marcus Hill, LLC — Tax & Financial Services</title>
+<meta name="description" content="Personal tax preparation and financial planning services in Atlanta, GA. Trusted by 400+ clients since 2018.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:#0a0a0a;color:#ede8dc;line-height:1.6;overflow-x:hidden}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+.section{padding:96px 0}
+
+/* Demo banner */
+.demo-banner{position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#c8a84b,#e8c96a);color:#0a0a0a;text-align:center;padding:8px 16px;font-size:12px;font-weight:700;z-index:1000;letter-spacing:.05em}
+.demo-banner a{color:#0a0a0a;text-decoration:underline;font-weight:800}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;background:radial-gradient(ellipse at top,rgba(200,168,75,0.08),transparent 60%),#0a0a0a;padding-top:40px}
+.hero-content{max-width:680px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.35em;text-transform:uppercase;color:#c8a84b;margin-bottom:20px;opacity:.8}
+.hero h1{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(36px,6vw,68px);line-height:1.1;color:#fff;margin-bottom:24px}
+.hero h1 .accent{color:#c8a84b}
+.hero-sub{font-size:18px;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:36px;max-width:540px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:linear-gradient(135deg,#c8a84b,#e8c96a);color:#0a0a0a;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 24px rgba(200,168,75,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,168,75,.5)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:1px solid rgba(255,255,255,.15);color:#fff;font-weight:600;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:border-color .2s}
+.btn-ghost:hover{border-color:#c8a84b}
+
+/* Stats strip */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:32px;margin-top:64px;padding-top:48px;border-top:1px solid rgba(255,255,255,.06)}
+.stat-num{font-family:'Playfair Display',serif;font-style:italic;font-size:42px;color:#c8a84b;font-weight:600;line-height:1}
+.stat-label{font-size:12px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.15em;margin-top:8px}
+
+/* About */
+.about{background:#0d0d0d}
+.about-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:80px;align-items:center}
+.about-photo{aspect-ratio:4/5;background:linear-gradient(135deg,#1a1a1a,#0a0a0a);border-radius:16px;display:flex;align-items:center;justify-content:center;color:rgba(200,168,75,.3);font-size:13px;letter-spacing:.2em;text-align:center;padding:32px;border:1px solid rgba(200,168,75,.1)}
+h2.section-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(30px,4.5vw,46px);line-height:1.2;color:#fff;margin-bottom:24px}
+.about-body{font-size:16px;color:rgba(255,255,255,.7);line-height:1.8}
+.about-body p{margin-bottom:20px}
+.about-body strong{color:#c8a84b;font-weight:600}
+
+/* Services */
+.services{background:#0a0a0a}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:48px}
+.service-card{padding:32px;background:#0d0d0d;border:1px solid rgba(255,255,255,.06);border-radius:16px;transition:border-color .2s,transform .2s}
+.service-card:hover{border-color:rgba(200,168,75,.4);transform:translateY(-4px)}
+.service-icon{font-size:32px;margin-bottom:16px}
+.service-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:10px}
+.service-desc{font-size:14px;color:rgba(255,255,255,.55);line-height:1.7}
+
+/* Contact */
+.contact{background:linear-gradient(180deg,#0d0d0d,#0a0a0a);text-align:center}
+.contact h2{margin-bottom:16px}
+.contact-sub{font-size:18px;color:rgba(255,255,255,.6);margin-bottom:40px;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.7}
+.contact-form{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.contact-form input,.contact-form textarea{width:100%;padding:14px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-family:inherit;font-size:15px;outline:none;transition:border-color .2s}
+.contact-form input:focus,.contact-form textarea:focus{border-color:#c8a84b}
+.contact-form textarea{min-height:120px;resize:vertical}
+
+/* Footer */
+footer{padding:48px 24px 32px;text-align:center;border-top:1px solid rgba(255,255,255,.06);background:#080808}
+.footer-row{display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+.footer-row a{color:rgba(255,255,255,.5);text-decoration:none;font-size:13px;transition:color .2s}
+.footer-row a:hover{color:#c8a84b}
+.copyright{font-size:12px;color:rgba(255,255,255,.3)}
+.built-by{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:11px;color:rgba(200,168,75,.5);text-decoration:none;letter-spacing:.1em;text-transform:uppercase}
+.built-by:hover{color:#c8a84b}
+
+@media(max-width:768px){
+  .about-grid{grid-template-columns:1fr;gap:40px}
+  .section{padding:64px 0}
+}
+</style>
+</head>
+<body>
+
+<div class="demo-banner">
+  ⚡ DEMO TEMPLATE — The Presence ($250) · <a href="https://swrvonthego.pro">Build mine →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="eyebrow">Marcus Hill, LLC · Atlanta, GA</div>
+      <h1>Your finances, <span class="accent">handled with care.</span></h1>
+      <p class="hero-sub">Personal tax preparation, business filings, and financial planning for working families and small businesses across Georgia. Real people, real numbers, real peace of mind.</p>
+      <div class="cta-row">
+        <a href="#contact" class="btn-primary">Book Free Consultation</a>
+        <a href="#services" class="btn-ghost">See Services</a>
+      </div>
+
+      <div class="stats">
+        <div><div class="stat-num">400+</div><div class="stat-label">Clients Served</div></div>
+        <div><div class="stat-num">7yrs</div><div class="stat-label">Established</div></div>
+        <div><div class="stat-num">$2.1M</div><div class="stat-label">Refunds Filed</div></div>
+        <div><div class="stat-num">5★</div><div class="stat-label">Avg Rating</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-photo">[CLIENT PHOTO]<br>4:5 portrait</div>
+      <div>
+        <div class="eyebrow">About Marcus</div>
+        <h2 class="section-title">Numbers tell a story. <br>I help you read yours.</h2>
+        <div class="about-body">
+          <p>I've been doing taxes professionally since 2018, but I've been helping my family with money my whole life. <strong>Coming from a family that worked hard but never had a financial advisor in the room</strong>, I know what it's like to feel like the system was built for someone else.</p>
+          <p>That's why Marcus Hill, LLC exists. I work with the same people I grew up with — single parents, gig workers, small business owners, working families — and walk them through their finances like we're sitting at the kitchen table.</p>
+          <p>No jargon. No judgment. Just clear answers and a plan that fits your life.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section services" id="services">
+  <div class="container">
+    <div class="eyebrow" style="text-align:center;margin-bottom:12px">What I Do</div>
+    <h2 class="section-title" style="text-align:center">Built for real life.</h2>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">📄</div>
+        <div class="service-name">Personal Tax Prep</div>
+        <p class="service-desc">Individual returns, side hustle filings, and rideshare/gig worker specialty. Maximize every deduction you qualify for.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🏢</div>
+        <div class="service-name">Small Business Filings</div>
+        <p class="service-desc">LLC, S-Corp, and sole prop filings. Quarterly tax planning. Bookkeeping cleanup if your books got messy.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">📊</div>
+        <div class="service-name">Financial Planning</div>
+        <p class="service-desc">Budget building, debt strategy, and savings plans tailored to your income — not a textbook example.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🛡️</div>
+        <div class="service-name">IRS Support</div>
+        <p class="service-desc">Got a letter from the IRS? Don't panic. I'll handle the response and represent you through resolution.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section contact" id="contact">
+  <div class="container">
+    <div class="eyebrow">Let's Talk</div>
+    <h2 class="section-title">Schedule your free consultation.</h2>
+    <p class="contact-sub">15 minutes. No pressure. Just an honest conversation about where you are and what comes next.</p>
+    <form class="contact-form" onsubmit="event.preventDefault();alert('Demo form — would send to client email.')">
+      <input type="text" placeholder="Your name" required>
+      <input type="email" placeholder="Email address" required>
+      <input type="tel" placeholder="Phone number (optional)">
+      <textarea placeholder="What can I help you with?" required></textarea>
+      <button type="submit" class="btn-primary" style="margin-top:8px;border:none;cursor:pointer">Send Message →</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-row">
+    <a href="mailto:hello@marcushillllc.com">hello@marcushillllc.com</a>
+    <span style="color:rgba(255,255,255,.2)">·</span>
+    <a href="tel:+14045551234">(404) 555-1234</a>
+    <span style="color:rgba(255,255,255,.2)">·</span>
+    <a href="#">Instagram</a>
+    <a href="#">LinkedIn</a>
+  </div>
+  <p class="copyright">© 2025 Marcus Hill, LLC · All rights reserved.</p>
+  <a href="https://swrvonthego.pro" target="_blank" rel="noopener" class="built-by">Built by SWRV On The Go →</a>
+</footer>
+
+</body>
+</html>

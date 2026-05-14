@@ -4,6 +4,7 @@ import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme, renderSystemPrompt } from '.
 import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING } from '../../site.config';
+import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
 
 // Lookup priceNumeric by service name for accurate total (handles $125/hr, Custom Quote, etc.)
 const SERVICE_PRICE_MAP = new Map(SERVICES.map(s => [s.name, s.priceNumeric]));
@@ -35,7 +36,8 @@ const PROGRESS_PCT: Record<ScreenId, number> = {
   disclaimer: 28,
   duration: 42,
   vision: 56,
-  processing: 78,
+  phase2: 70,
+  processing: 85,
   results: 100,
   'qv-input': 10,
   'qv-processing': 60,
@@ -117,6 +119,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [qvAnswers, setQvAnswers] = useState({ what: '', who: '', success: '' });
   const [qvResult, setQvResult] = useState<{ gift: string; direction: string; services: Array<{name:string;price:string;why:string}> } | null>(null);
   const [paymentPending, setPaymentPending] = useState(false);
+  const [phase2Answers, setPhase2Answers] = useState<Record<string, string>>({});
+  const [phase2Idx, setPhase2Idx] = useState(0);
   const [progress, setProgress] = useState(0);
 
   // ── User input ────────────────────────────────────────────
@@ -165,7 +169,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const nowPlayingTimerRef = useRef<number | null>(null);
 
-  // ── Vision session timer (5 min / 10 min / no limit) ─────
+  // ── Vision session timer (5 min / 10 min) ─────
   const [sessionDuration, setSessionDuration] = useState<5 | 10 | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null); // seconds
 
@@ -418,6 +422,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     setActiveStep(0);
     setDoneSteps(new Set());
     setShowTimeout(false);
+    setPhase2Answers({});
+    setPhase2Idx(0);
     goTo('intro');
   }, [goTo, mic]);
 
@@ -462,8 +468,10 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       showToast('Paint the full picture — morning, work, evening, night.');
       return;
     }
-    proceedToProcessRef.current(false);
-  }, [words, mic, showToast]);
+    // Phase 1 complete — move to Phase 2 (16 guided questions)
+    goTo('phase2');
+    setPhase2Idx(0);
+  }, [words, mic, showToast, goTo]);
 
   // ── API call ─────────────────────────────────────────────
   const callApi = useCallback(
@@ -473,15 +481,24 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       );
 
       try {
+        // Format Phase 2 answers as a labeled block
+        const phase2Block = PHASE_2_QUESTIONS
+          .map(q => {
+            const ans = (phase2Answers[q.id] || '').trim();
+            return ans ? `Q${q.number}. ${q.question}\nA: ${ans}` : '';
+          })
+          .filter(Boolean)
+          .join('\n\n');
+
         const fetchPromise = fetch(apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: renderSystemPrompt(config),
+            system: renderSystemPrompt(config) + '\n\n' + BOOK_WISDOM_PROMPT,
             messages: [
               {
                 role: 'user',
-                content: `Name: ${userName}\nEmail: ${userEmail || 'not provided'}\n\nVision:\n${visionText}`,
+                content: `Name: ${userName}\nEmail: ${userEmail || 'not provided'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 1 — THEIR VISION (told in their own words)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${visionText}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 2 — THE 16 GUIDED QUESTIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${phase2Block || '(no Phase 2 answers provided)'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNow combine both phases into the final assessment. Phase 1 shows you what they see. Phase 2 shows you who they are. Weave them into one complete blueprint.`,
               },
             ],
           }),
@@ -524,7 +541,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         goTo('results');
       }
     },
-    [apiEndpoint, userName, userEmail, goTo],
+    [apiEndpoint, userName, userEmail, goTo, phase2Answers],
   );
 
   const proceedToProcess = useCallback(
@@ -1380,7 +1397,7 @@ What success looks like: ${qvAnswers.success}`
         </div>
       </section>
 
-      {/* ════════ SCREEN 3.5 — DURATION (5 / 10 / no limit) ════════ */}
+      {/* ════════ SCREEN 3.5 — DURATION (5 / 10) ════════ */}
       <section id="screen-duration" className={`screen ${screen === 'duration' ? 'active' : ''}`}>
         <div className="duration-box">
           <div className="disc-ornament" style={{ marginBottom: 28 }}>
@@ -1390,7 +1407,7 @@ What success looks like: ${qvAnswers.success}`
           </div>
           <h2 className="email-title">How much time<br />do you want?</h2>
           <p className="email-sub">
-            Take your time. There's no race. Pick a window or take as long as you need.
+            Take your time. There's no race. Pick the window that feels right for where you are today.
           </p>
           <div className="duration-options">
             <button type="button" className="duration-btn" onClick={() => selectDuration(5)}>
@@ -1403,12 +1420,85 @@ What success looks like: ${qvAnswers.success}`
               <span className="duration-unit">minutes</span>
               <span className="duration-vibe">deeper picture</span>
             </button>
-            <button type="button" className="duration-btn" onClick={() => selectDuration(null)}>
-              <span className="duration-num">∞</span>
-              <span className="duration-unit">no limit</span>
-              <span className="duration-vibe">paint freely</span>
-            </button>
           </div>
+        </div>
+      </section>
+
+      {/* ════════ SCREEN 3.75 — PHASE 2 (16 GUIDED QUESTIONS) ════════ */}
+      <section id="screen-phase2" className={`screen ${screen === 'phase2' ? 'active' : ''}`}>
+        <div className="phase2-wrap">
+          {(() => {
+            const q = PHASE_2_QUESTIONS[phase2Idx];
+            const total = PHASE_2_QUESTIONS.length;
+            const answer = phase2Answers[q.id] || '';
+            const isLast = phase2Idx === total - 1;
+            return (
+              <>
+                <div className="phase2-progress-row">
+                  <span className="phase2-step">Question {phase2Idx + 1} of {total}</span>
+                  <div className="phase2-progress-bar">
+                    <div className="phase2-progress-fill" style={{ width: `${((phase2Idx + 1) / total) * 100}%` }} />
+                  </div>
+                </div>
+
+                {phase2Idx === 0 && (
+                  <p className="phase2-intro">
+                    You painted the picture. Now let's bring it into focus.<br/>
+                    16 questions. Take your time. Be honest. There's no wrong answer.
+                  </p>
+                )}
+
+                <h2 className="phase2-question">{q.question}</h2>
+                {q.context && <p className="phase2-context">{q.context}</p>}
+
+                <textarea
+                  className="phase2-input"
+                  rows={4}
+                  placeholder={q.placeholder || 'Your answer...'}
+                  value={answer}
+                  onChange={e => setPhase2Answers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                  autoFocus
+                />
+
+                <div className="phase2-actions">
+                  {phase2Idx > 0 && (
+                    <button type="button" className="btn-ghost"
+                      onClick={() => setPhase2Idx(i => i - 1)}>
+                      ← Back
+                    </button>
+                  )}
+                  <button type="button" className="btn-ghost phase2-skip"
+                    onClick={() => {
+                      if (isLast) {
+                        proceedToProcessRef.current(false);
+                      } else {
+                        setPhase2Idx(i => i + 1);
+                      }
+                    }}>
+                    Skip
+                  </button>
+                  <button type="button" className="btn-primary"
+                    disabled={!answer.trim()}
+                    onClick={() => {
+                      if (isLast) {
+                        proceedToProcessRef.current(false);
+                      } else {
+                        setPhase2Idx(i => i + 1);
+                      }
+                    }}>
+                    {isLast ? 'Complete →' : 'Next →'}
+                  </button>
+                </div>
+
+                <p className="phase2-finish-anytime">
+                  Done early? <button type="button" className="phase2-finish-link"
+                    onClick={() => proceedToProcessRef.current(false)}>
+                    Finish now and generate my roadmap →
+                  </button>
+                </p>
+              </>
+            );
+          })()}
         </div>
       </section>
 

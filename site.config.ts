@@ -520,9 +520,9 @@ export const SERVICES: Service[] = [
     id: 'enterprise-ecosystem',
     name: 'Enterprise Ecosystem',
     category: 'execution',
-    price: 'Custom Quote',
-    priceNumeric: 10000,
-    blurb: 'For those building something the size of Apple, Microsoft, or a full digital record label — with multiple divisions, offices, and operations under one digital roof. Multi-brand architecture, team portals, artist rosters, revenue streams, and expansive infrastructure. Vision-first, built to scale. Custom-quoted based on scope.',
+    price: 'From $5,000',
+    priceNumeric: 5000,
+    blurb: 'For those building something the size of Apple, Microsoft, or a full digital record label — with multiple divisions, offices, and operations under one digital roof. Multi-brand architecture, team portals, artist rosters, revenue streams, and expansive infrastructure. Vision-first, built to scale. Starts at $5,000, custom-quoted based on scope.',
     featured: true,
   },
   {
@@ -994,6 +994,11 @@ export interface WebPackageTier {
   accentColor: string;    // tailwind text class
   badgeBg: string;        // tailwind bg class
   cta: string;
+  liveExample?: {         // optional live demo preview
+    url: string;          // can be external link or '/templates/xxx.html'
+    label: string;        // 'See Live Example →'
+    description: string;  // 'A live LLC presence page'
+  };
 }
 
 export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
@@ -1023,6 +1028,11 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     accentColor: 'text-white',
     badgeBg: '',
     cta: 'Get The Presence',
+    liveExample: {
+      url: '/templates/presence-example.html',
+      label: 'See a Live Presence Example →',
+      description: 'A real LLC presence page — clean, professional, ready for funding apps or portfolio links.',
+    },
   },
   {
     id: 'platform',
@@ -1053,6 +1063,11 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     accentColor: 'text-lion-orange',
     badgeBg: 'bg-lion-orange',
     cta: 'Get The Platform',
+    liveExample: {
+      url: 'https://trainbyob.me',
+      label: 'See a Live Platform Example →',
+      description: 'BYOB Training — booking system, paid programs, brand video. Built on this exact tier.',
+    },
   },
   {
     id: 'ecosystem',
@@ -1088,6 +1103,11 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     accentColor: 'text-white',
     badgeBg: '',
     cta: 'Get The Ecosystem',
+    liveExample: {
+      url: 'https://swrvonthego.pro',
+      label: 'See a Live Ecosystem Example →',
+      description: 'SWRV On The Go itself — the gold standard. Multi-section, AI-powered, full e-commerce, brand transmission, the works.',
+    },
   },
 ];
 
