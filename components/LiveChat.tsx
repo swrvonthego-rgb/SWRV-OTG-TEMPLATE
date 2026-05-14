@@ -231,7 +231,7 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
       {/* ── FLOATING BUTTON ── */}
       <button
         onClick={() => { setOpen(true); setUnread(false); }}
-        className="fixed bottom-6 right-6 z-[9990] w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300"
+        className="fixed bottom-6 left-6 z-[9990] w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300"
         style={{
           background: 'linear-gradient(135deg, #c8a84b, #e8c96a)',
           boxShadow: open ? 'none' : '0 8px 32px rgba(200,168,75,0.5), 0 2px 8px rgba(200,168,75,0.3)',
@@ -248,7 +248,7 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
       {/* ── CHAT PANEL ── */}
       {open && (
         <div
-          className="fixed bottom-6 right-6 z-[9991] flex flex-col"
+          className="fixed bottom-6 left-6 z-[9991] flex flex-col"
           style={{
             width: 'min(400px, calc(100vw - 24px))',
             height: 'min(580px, calc(100svh - 80px))',
