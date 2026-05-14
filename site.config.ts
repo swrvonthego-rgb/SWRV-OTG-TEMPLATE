@@ -25,9 +25,9 @@
 // BNPL merchant portals are for Swerve to apply; API keys go in Cloudflare.
 export const PAYMENT_CONFIG = {
   // ── DIRECT PAYMENT (live now once handles are set) ──────────────────
-  paypal:  'https://paypal.me/REPLACE_WITH_YOUR_HANDLE',   // e.g. paypal.me/swrvonthego
-  cashapp: 'https://cash.app/$REPLACE_WITH_YOUR_CASHTAG',  // e.g. cash.app/$swrvonthego
-  venmo:   'https://venmo.com/u/REPLACE_WITH_YOUR_HANDLE', // e.g. venmo.com/u/swrvbirdsong
+  paypal:  'https://paypal.me/swrvonthego',   // swrvonthego@gmail.com
+  cashapp: 'https://cash.app/$SwrvOnTheGo',
+  venmo:   'https://venmo.com/u/swrvonthego',
 
   // ── BNPL MERCHANT SIGNUP PORTALS (for Swerve to apply) ─────────────
   // Once approved + API keys added to Cloudflare → remove 'pending: true'
@@ -59,8 +59,8 @@ export const ROADMAP_PRICING = {
       'Yours to download, email, and bring to the booking',
     ],
     // Update these once your payment accounts are configured
-    stripeLink: '',   // e.g. 'https://buy.stripe.com/xxxxx' (success_url = swrvonthego.pro/?rm_paid=1)
-    paypalLink: '',   // e.g. 'https://paypal.me/swrvonthego?amount=1'
+    stripeLink: 'https://book.stripe.com/9B66oGdAOduw7SIfhJaEE00',
+    paypalLink: 'https://paypal.me/swrvonthego?amount=1',
   },
   quick: {
     price: 'Free',

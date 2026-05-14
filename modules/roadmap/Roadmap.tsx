@@ -946,16 +946,27 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 ))}
               </ul>
               {!paymentPending ? (
-                <button type="button" className="paywall-btn paywall-btn-paid"
-                  onClick={() => {
-                    const link = ROADMAP_PRICING.full.stripeLink || ROADMAP_PRICING.full.paypalLink;
-                    if (link) {
-                      window.open(link, '_blank', 'noopener');
-                    }
-                    setPaymentPending(true);
-                  }}>
-                  Unlock for {ROADMAP_PRICING.full.price} →
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {ROADMAP_PRICING.full.stripeLink && (
+                    <button type="button" className="paywall-btn paywall-btn-paid"
+                      onClick={() => {
+                        window.open(ROADMAP_PRICING.full.stripeLink, '_blank', 'noopener');
+                        setPaymentPending(true);
+                      }}>
+                      Pay with Card (Stripe) →
+                    </button>
+                  )}
+                  {ROADMAP_PRICING.full.paypalLink && (
+                    <button type="button" className="paywall-btn paywall-btn-free"
+                      style={{ background: 'rgba(0,112,186,0.12)', borderColor: 'rgba(0,112,186,0.4)', color: '#60a5fa' }}
+                      onClick={() => {
+                        window.open(ROADMAP_PRICING.full.paypalLink, '_blank', 'noopener');
+                        setPaymentPending(true);
+                      }}>
+                      Pay with PayPal →
+                    </button>
+                  )}
+                </div>
               ) : (
                 <div className="paywall-pending">
                   <p className="paywall-pending-text">
