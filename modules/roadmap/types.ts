@@ -36,19 +36,38 @@ export interface VisionServiceMapping {
   services: VisionServiceItem[];
 }
 
+export interface RoadmapPhase {
+  phase: string;           // Foundation / Building / Momentum / Arrival
+  timeframe: string;       // e.g. "0–6 months"
+  title: string;           // evocative name for this leg of the trip
+  description: string;     // what this phase looks like in their life
+  milestones: string[];    // specific things that mark progress
+  challenges: string[];    // what they'll likely run into
+  character_needed: string; // who they need to become to survive this phase
+}
+
+export interface QAReflection {
+  question: string;
+  answer: string;          // grammatically corrected version of what they said
+}
+
 export interface RoadmapResult {
   gift: string;
   work: string;
   purpose: string;
-  evidence: string;             // NEW: how we arrived at each conclusion, quoting them
+  evidence: string;
   vision_summary: string;
-  blueprint: Blueprint;         // NEW: deep life analysis
+  blueprint: Blueprint;
   brand_colors: BrandColor[];
   business_name_idea: string;
   website_blueprint: string;
-  vision_services_map: VisionServiceMapping[]; // NEW: vision element → services
+  vision_services_map: VisionServiceMapping[];
   recommended_services: RecommendedService[];
   closing_word: string;
+  // The Route — Apple Maps for their life
+  roadmap_timeline?: RoadmapPhase[];
+  // Q&A Reflection — their answers, grammatically corrected
+  qa_reflection?: QAReflection[];
 }
 
 export type ScreenId =

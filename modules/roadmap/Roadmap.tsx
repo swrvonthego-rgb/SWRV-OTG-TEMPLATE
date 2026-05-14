@@ -116,7 +116,20 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     if (typeof window === 'undefined') return 'paywall';
     return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'intro' : 'paywall';
   });
-  const [qvAnswers, setQvAnswers] = useState({ what: '', who: '', success: '' });
+  const QV_QUESTIONS = [
+    { id: "problem",    q: "What's the problem you couldn't ignore that made you want to find — or BE — the solution?",     ph: "The thing that kept showing up in your life until you stopped pretending you didn't see it." },
+    { id: "easy",       q: "What do you do most easily that others can't seem to do?",                                      ph: "The thing people always come to you for. The thing that feels like breathing to you and like math to everyone else." },
+    { id: "younger",    q: "What would you do for the younger or past version of you — in your hardest times?",            ph: "If you could go back and be there for yourself, what would you show up with?" },
+    { id: "allmoods",   q: "What do you unconsciously commit to doing in all moods — happy, mad, sad, bored?",             ph: "What do you keep coming back to no matter how you feel?" },
+    { id: "loved",      q: "What do your family and friends love most about you?",                                          ph: "What do the people closest to you say when they brag about you to someone else?" },
+    { id: "afraid",     q: "What makes you afraid or intimidates you when you think about actually doing it?",             ph: "The thing that excites and terrifies you at the same time." },
+    { id: "pride",      q: "What do you have a sense of pride in — and what conversations do you feel uncomfortable being left out of?", ph: "What can you talk about for hours and feel like an expert?" },
+    { id: "yearn",      q: "What do you yearn to do for others?",                                                          ph: "If you could fix one thing in someone else's life, what would it be?" },
+    { id: "seeself",    q: "Who do you very badly want to see yourself as?",                                               ph: "The version of you that you are always reaching for." },
+    { id: "undeniable", q: "What is that special something — even people who don't like you can't deny about you?",       ph: "The thing your critics can't take away from you." },
+  ];
+  const [qvIdx, setQvIdx] = useState(0);
+  const [qvAnswers, setQvAnswers] = useState<Record<string, string>>({});
   const [qvResult, setQvResult] = useState<{ gift: string; direction: string; services: Array<{name:string;price:string;why:string}> } | null>(null);
   const [paymentPending, setPaymentPending] = useState(false);
   const [phase2Answers, setPhase2Answers] = useState<Record<string, string>>({});
@@ -205,6 +218,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       setInterimVision(interim);
     }
   }, []);
+  const micTarget = React.useRef<"vision" | "phase2">("vision");
   const mic = useSpeechRecognition({ onTranscript: handleTranscript });
 
   // ── Effective vision (committed + live interim) ─────────
@@ -424,7 +438,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     setShowTimeout(false);
     setPhase2Answers({});
     setPhase2Idx(0);
-    goTo('intro');
+    setQvIdx(0);
+    setQvAnswers({});
+    setPhase2Answers({});
+    setPhase2Idx(0);
+    goTo("intro");
   }, [goTo, mic]);
 
   const goToEmail = useCallback(() => {
@@ -753,6 +771,34 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
   }, [effectiveVision]);
 
+
+  // ── QV API: fires when qv-processing screen is shown ────────────
+  useEffect(() => {
+    if (screen !== 'qv-processing') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const sysPrompt = 'You are a gift advisor for SWRV On The Go. A person answered 10 questions to locate their gift. Their gift is the thread across all answers. Return ONLY valid JSON: {"gift":"one specific sentence — their irreducible gift","direction":"3-4 sentences on what they are here to do and why it matters — from their actual words","services":[{"name":"exact SWRV service name","price":"$XXX","why":"one sentence from their words"}]} 2-3 services max. Exact names: Brand Planning ($250), Logo Design ($250), Photography ($800), Content Strategy ($500), Website Presence ($250), Website Platform ($500), Website Ecosystem ($1000), Full Song Production ($3000), Mixing ($500), Mastering ($500), Music Video ($5000), Promo Video ($1250), Podcast Launch Kit ($250), Strategy Call ($375), Artist Development (from $1000), Pitch Deck ($250), LLC Formation ($250). No markdown.';
+        const userContent = QV_QUESTIONS.map(q => 'Q: ' + q.q + '\nA: ' + (qvAnswers[q.id] || '(skipped)').trim()).join('\n\n');
+        const res = await fetch(apiEndpoint, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ system: sysPrompt, messages: [{ role: 'user', content: userContent }] }),
+        });
+        if (cancelled) return;
+        const data = await res.json();
+        const raw = (data.result || data.choices?.[0]?.message?.content || '{}').replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
+        if (!cancelled) { setQvResult(parsed); goTo('qv-result'); }
+      } catch {
+        if (!cancelled) {
+          setQvResult({ gift: 'Your gift is real — it showed up across everything you shared.', direction: 'SWRV can help you build a vehicle around it. Book a Strategy Call to go deeper.', services: [{ name: 'Strategy Call', price: '$375', why: 'A direct conversation with Swerve to map your gift into a plan.' }] });
+          goTo('qv-result');
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [screen]);
+
   if (!isOpen) return null;
 
   // ── Computed for results screen ──────────────────────────
@@ -999,72 +1045,40 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       ═══════════════════════════════════════════════ */}
       <section id="screen-qv-input" className={`screen ${screen === 'qv-input' ? 'active' : ''}`}>
         <div className="grain" />
-        <div className="qv-wrap">
-          <p className="paywall-eyebrow">QUICK VISION — 3 QUESTIONS</p>
-          <h2 className="qv-title">Tell Us What You're Building</h2>
-          <p className="qv-sub">Be honest and specific. The more real your answers, the more useful this gets.</p>
-
-          <div className="qv-fields">
-            <div className="qv-field">
-              <label className="qv-label">1. What are you working on or trying to build?</label>
-              <textarea className="qv-input" rows={3}
-                placeholder="A music career, a creative agency, a clothing brand, a YouTube channel — whatever it is, say it plainly."
-                value={qvAnswers.what}
-                onChange={e => setQvAnswers(a => ({ ...a, what: e.target.value }))} />
+        {(() => {
+          const qvQ = QV_QUESTIONS[qvIdx];
+          const qvAnswer = qvAnswers[qvQ.id] || '';
+          const isFirst = qvIdx === 0;
+          const isLast = qvIdx === QV_QUESTIONS.length - 1;
+          const pct = Math.round(((qvIdx + 1) / QV_QUESTIONS.length) * 100);
+          return (
+            <div className="qv-wrap">
+              <div className="phase2-progress-row" style={{ marginBottom: 24 }}>
+                <span className="phase2-step">Question {qvIdx + 1} of {QV_QUESTIONS.length}</span>
+                <div className="phase2-progress-bar">
+                  <div className="phase2-progress-fill" style={{ width: pct + "%" }} />
+                </div>
+              </div>
+              {isFirst && <p className="phase2-intro">Your gift is your vehicle. These 10 questions help locate it.<br/>Be honest. Be specific. There are no wrong answers here.</p>}
+              <h2 className="phase2-question">{qvQ.q}</h2>
+              <textarea className="phase2-input" rows={4} autoFocus
+                placeholder={qvQ.ph}
+                value={qvAnswer}
+                onChange={e => setQvAnswers(prev => ({ ...prev, [qvQ.id]: e.target.value }))}
+              />
+              <div className="phase2-actions">
+                {!isFirst && <button type="button" className="btn-ghost" onClick={() => setQvIdx(i => i - 1)}>← Back</button>}
+                <button type="button" className="btn-ghost phase2-skip"
+                  onClick={() => isLast ? goTo('qv-processing') : setQvIdx(i => i + 1)}>Skip</button>
+                <button type="button" className="btn-primary" disabled={!qvAnswer.trim()}
+                  onClick={() => isLast ? goTo('qv-processing') : setQvIdx(i => i + 1)}>
+                  {isLast ? 'Find My Gift →' : 'Next →'}
+                </button>
+              </div>
+              <p className="phase2-finish-anytime">Done early? <button type="button" className="phase2-finish-link" onClick={() => goTo('qv-processing')}>Generate my quick vision now →</button></p>
             </div>
-            <div className="qv-field">
-              <label className="qv-label">2. Who is this for? Who does it serve?</label>
-              <textarea className="qv-input" rows={3}
-                placeholder="Yourself, a specific audience, a community, a client base — who are you ultimately building this for?"
-                value={qvAnswers.who}
-                onChange={e => setQvAnswers(a => ({ ...a, who: e.target.value }))} />
-            </div>
-            <div className="qv-field">
-              <label className="qv-label">3. What does success look like to you in the next 12 months?</label>
-              <textarea className="qv-input" rows={3}
-                placeholder="Be specific. A number, a milestone, a feeling, a moment. What does winning look like?"
-                value={qvAnswers.success}
-                onChange={e => setQvAnswers(a => ({ ...a, success: e.target.value }))} />
-            </div>
-          </div>
-
-          <div className="qv-actions">
-            <button type="button" className="btn-ghost" onClick={() => goTo('paywall')}>← Back</button>
-            <button type="button" className="btn-primary"
-              disabled={!qvAnswers.what.trim() || !qvAnswers.who.trim() || !qvAnswers.success.trim()}
-              onClick={async () => {
-                goTo('qv-processing');
-                try {
-                  const res = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      system: `You are a creative advisor for SWRV On The Go. A person has shared 3 quick answers about what they're building. Return ONLY valid JSON with exactly these fields:
-{"gift":"one sentence naming their unique contribution — specific to what they described","direction":"2-3 sentences describing what they're building and why it matters","services":[{"name":"exact SWRV service name","price":"$XXX","why":"one sentence why this serves their specific vision"}]}
-2-3 services only. Exact names from: Brand Planning ($250), Logo Design ($250), Photography ($800), Content Strategy ($500), Website Presence ($250), Website Platform ($500), Website Ecosystem ($1000), Full Song Production ($3000), Mixing ($500), Mastering ($500), Music Video ($5000), Promo Video ($1250), Podcast Launch Kit ($250), Strategy Call ($375), Artist Development (from $1000), Pitch Deck ($250), LLC Formation ($250). No markdown. First char { last char }.`,
-                      messages: [{
-                        role: 'user',
-                        content: `What I'm building: ${qvAnswers.what}
-Who it's for: ${qvAnswers.who}
-What success looks like: ${qvAnswers.success}`
-                      }]
-                    }),
-                  });
-                  const data = await res.json();
-                  const raw = data.result || data.choices?.[0]?.message?.content || '{}';
-                  const clean = raw.replace(/```json|```/g, '').trim();
-                  const parsed = JSON.parse(clean.slice(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
-                  setQvResult(parsed);
-                  goTo('qv-result');
-                } catch {
-                  setQvResult({ gift: 'Something meaningful is being built here.', direction: 'Your vision is clear. SWRV can help you build it.', services: [] });
-                  goTo('qv-result');
-                }
-              }}>
-              Get My Direction →
-            </button>
-          </div>
-        </div>
+          );
+        })()}
       </section>
 
       {/* ════════════════════════════════════════════════
@@ -1074,8 +1088,8 @@ What success looks like: ${qvAnswers.success}`
         <div className="grain" />
         <div className="processing-inner" style={{ textAlign: 'center', padding: '80px 24px' }}>
           <div className="spinner" style={{ margin: '0 auto 24px' }} />
-          <p style={{ color: 'var(--ink-bright)', fontSize: 16, fontWeight: 600 }}>Reading your vision…</p>
-          <p style={{ color: 'var(--ink-mid)', fontSize: 13, marginTop: 8 }}>This takes about 10 seconds.</p>
+          <p style={{ color: 'var(--ink-bright)', fontSize: 16, fontWeight: 600 }}>Locating your gift…</p>
+          <p style={{ color: 'var(--ink-mid)', fontSize: 13, marginTop: 8 }}>Reading everything you shared. About 15 seconds.</p>
         </div>
       </section>
 
@@ -1462,10 +1476,26 @@ What success looks like: ${qvAnswers.success}`
                 <h2 className="phase2-question">{q.question}</h2>
                 {q.context && <p className="phase2-context">{q.context}</p>}
 
+                <div className="phase2-mic-row">
+                  <button type="button"
+                    className={"mic-btn" + (mic.isListening && micTarget.current === "phase2" ? " recording" : "")}
+                    onClick={() => { micTarget.current = "phase2"; mic.toggle(); }}
+                    disabled={mic.state === "unsupported"} title="Speak your answer">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                  </button>
+                  <button type="button" className={musicBtnClass}
+                    onClick={() => setMusicMuted(m => !m)} title={musicMuted ? "Unmute" : "Mute music"}>
+                    {musicMuted
+                      ? <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                      : <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    }
+                  </button>
+                  {mic.isListening && micTarget.current === "phase2" && <span className="phase2-recording-label">● Recording…</span>}
+                </div>
                 <textarea
                   className="phase2-input"
                   rows={4}
-                  placeholder={q.placeholder || 'Your answer...'}
+                  placeholder={q.placeholder || 'Type or tap the mic to speak your answer…'}
                   value={answer}
                   onChange={e => setPhase2Answers(prev => ({ ...prev, [q.id]: e.target.value }))}
                   autoFocus
@@ -1741,6 +1771,63 @@ What success looks like: ${qvAnswers.success}`
                 </div>
               </div>
 
+
+              {/* ── THE ROUTE ── */}
+              {(result.roadmap_timeline || []).length > 0 && (
+                <div className="route-section">
+                  <div className="cta-eyebrow" style={{ marginBottom: 6 }}>THE ROUTE</div>
+                  <h3 className="route-title">Your Gift. Your Vehicle. Here's the Drive.</h3>
+                  <p className="route-sub">You told us where you're going. Here's the map — phase by phase, what to expect, what to prepare for, and who you need to become to get there.</p>
+                  <div className="route-phases">
+                    {(result.roadmap_timeline || []).map((phase, i) => (
+                      <div key={i} className="route-phase">
+                        <div className="route-phase-header">
+                          <div className="route-phase-num">{i + 1}</div>
+                          <div>
+                            <div className="route-phase-label">{phase.phase} · <span className="route-phase-time">{phase.timeframe}</span></div>
+                            <div className="route-phase-title">{phase.title}</div>
+                          </div>
+                        </div>
+                        <p className="route-phase-desc">{phase.description}</p>
+                        {(phase.milestones || []).length > 0 && (
+                          <div className="route-phase-block">
+                            <p className="route-block-label">Milestones</p>
+                            <ul className="route-list">{(phase.milestones || []).map((m: string, j: number) => <li key={j}><span className="route-check">✓</span>{m}</li>)}</ul>
+                          </div>
+                        )}
+                        {(phase.challenges || []).length > 0 && (
+                          <div className="route-phase-block">
+                            <p className="route-block-label">Prepare For</p>
+                            <ul className="route-list">{(phase.challenges || []).map((ch: string, j: number) => <li key={j}><span className="route-warn">→</span>{ch}</li>)}</ul>
+                          </div>
+                        )}
+                        {phase.character_needed && (
+                          <div className="route-phase-block">
+                            <p className="route-block-label">Character Required</p>
+                            <p className="route-character">{phase.character_needed}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* ── Q&A REFLECTION ── */}
+              {(result.qa_reflection || []).length > 0 && (
+                <div className="qa-section">
+                  <div className="cta-eyebrow" style={{ marginBottom: 6 }}>YOUR COORDINATES</div>
+                  <h3 className="route-title">Everything You Said — Mapped</h3>
+                  <p className="route-sub">The exact questions we asked and your answers — clarified. This is what built your Roadmap.</p>
+                  <div className="qa-list">
+                    {(result.qa_reflection || []).map((qa, i) => (
+                      <div key={i} className="qa-item">
+                        <p className="qa-question"><span className="qa-num">Q{i + 1}  </span>{qa.question}</p>
+                        <p className="qa-answer">{qa.answer}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* ── CTA ── */}
               <div className="cta-block">
                 <div className="cta-eyebrow">What's Next</div>
