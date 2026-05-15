@@ -309,6 +309,42 @@ export const REFERRAL_CONFIG = {
 } as const;
 
 
+// ── SWRV PIPELINE — Pre-rollout projects ───────────────────────────
+export interface PipelineProject {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  status: 'live-preview' | 'in-development' | 'coming-soon';
+  statusLabel: string;
+  url?: string;
+  ctaLabel: string;
+  accentColor: string;
+  supportCta?: string;     // optional "Support this project" link
+  supportUrl?: string;
+}
+
+export const PIPELINE_PROJECTS: PipelineProject[] = [
+  {
+    id: 'no-bs-bible',
+    name: 'The SWRV No BS Bible',
+    tagline: 'The Word — without the whitewash.',
+    description: `A free Bible for everyone. Original canons translated the way they were actually written — with kingdom culture, historical accuracy, and zero colonial agenda. We are not afraid of the truth. We are afraid of what happens when young people never encounter it.
+
+This includes the Book of Enoch, the Dead Sea Scrolls, and every scripture source that is historically relevant and aligned with the Word as God intended it. We have also documented how the Bible was assembled — not to create controversy, but because the people deserve to understand what they are reading and why.
+
+Built with AI tools wielded by people who actually have a relationship with God. Free to access. Supported by the community.`,
+    status: 'live-preview',
+    statusLabel: 'Live Preview',
+    url: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
+    ctaLabel: 'Access the Preview →',
+    accentColor: '#c8a84b',
+    supportCta: 'Support This Project',
+    supportUrl: 'https://swrvonthego.pro/#contact',
+  },
+];
+
+
 export const BRAND = {
   name: 'SWRV On The Go',
   shortName: 'SWRV',

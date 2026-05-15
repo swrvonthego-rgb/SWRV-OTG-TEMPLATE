@@ -27,6 +27,7 @@ import { ServicesMenu } from './modules/services-menu/ServicesMenu';
 import { Byob } from './modules/byob/Byob';
 import { LiveChat } from './components/LiveChat';
 import { ProjectIntake } from './components/ProjectIntake';
+import { Pipeline } from './components/Pipeline';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
 // Fires once on load — brands the devtools, deters casual copying
@@ -160,6 +161,7 @@ const App: React.FC = () => {
         <WebPackages />
         <Stats />
         <Shop />
+        <Pipeline />
         <ContactSchedule />
       </main>
 
