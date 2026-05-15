@@ -1096,9 +1096,9 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     badgeBg: 'bg-lion-orange',
     cta: 'Get The Platform',
     liveExample: {
-      url: 'https://trainbyob.me',
+      url: '/templates/platform-example.html',
       label: 'See a Live Platform Example →',
-      description: 'BYOB Training — booking system, paid programs, brand video. Built on this exact tier.',
+      description: 'Kofi Ware Music — beats for sale, session booking, sync licensing. A creator who sells.',
     },
   },
   {
@@ -1136,10 +1136,11 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     badgeBg: '',
     cta: 'Get The Ecosystem',
     liveExample: {
-      url: 'https://swrvonthego.pro',
+      url: '/templates/ecosystem-example.html',
       label: 'See a Live Ecosystem Example →',
-      description: 'SWRV On The Go itself — the gold standard. Multi-section, AI-powered, full e-commerce, brand transmission, the works.',
+      description: 'VANTA Creative — artist development agency. Multi-section, roster, full services, application booking.',
     },
+
   },
 ];
 
@@ -1160,6 +1161,7 @@ export const HEADER = {
     { label: 'BYOB TRAINING', href: '#byob', external: false },  // opens in-site BYOB overlay
     { label: 'ABOUT SWRV', href: '#about-swrv', external: false },
     { label: 'ZION SWRV BIRDSONG', href: '#meet-zion', external: false },
+    { label: 'THE PIPELINE', href: '#pipeline', external: false },
   ],
   // Inline "Connect" button copy
   connectLabel: 'Connect',

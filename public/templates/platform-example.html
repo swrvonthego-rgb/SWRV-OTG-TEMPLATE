@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<!--
+  THE PLATFORM — Example Template ($500)
+  © 2025 SWRV On The Go. Demo only.
+  A creator who sells. Beats, sessions, coaching, merch.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Kofi Ware — Producer · Composer · Sound Architect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',-apple-system,sans-serif;background:#080810;color:#e8e4f0;line-height:1.6;overflow-x:hidden}
+
+/* Demo banner */
+.demo-banner{position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;text-align:center;padding:8px 16px;font-size:12px;font-weight:700;z-index:1000;letter-spacing:.05em}
+.demo-banner a{color:#fff;text-decoration:underline;opacity:.85}
+
+/* Nav */
+nav{position:fixed;top:33px;left:0;right:0;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;z-index:99;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.05)}
+.nav-logo{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;letter-spacing:.05em;color:#fff}
+.nav-logo span{color:#a855f7}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:13px;font-weight:500;color:rgba(255,255,255,0.6);text-decoration:none;letter-spacing:.05em;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-cta{padding:8px 20px;background:#7c3aed;color:#fff;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:.05em;transition:background .2s}
+.nav-cta:hover{background:#6d28d9}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 32px 80px;background:radial-gradient(ellipse at 70% 30%,rgba(124,58,237,0.15),transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(168,85,247,0.08),transparent 50%)}
+.hero-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.2fr 1fr;gap:80px;align-items:center;width:100%}
+.hero-tag{display:inline-block;padding:4px 12px;border:1px solid rgba(168,85,247,0.4);border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#a855f7;margin-bottom:20px}
+.hero h1{font-size:clamp(36px,5.5vw,68px);line-height:1.0;font-weight:700;color:#fff;margin-bottom:20px;letter-spacing:-.02em}
+.hero h1 .outline{-webkit-text-stroke:1px rgba(168,85,247,0.6);color:transparent}
+.hero-sub{font-size:17px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:36px;max-width:500px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;border-radius:6px;text-decoration:none;transition:transform .2s,opacity .2s}
+.btn-primary:hover{transform:translateY(-2px);opacity:.9}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;border-radius:6px;text-decoration:none;transition:border-color .2s}
+.btn-ghost:hover{border-color:rgba(168,85,247,0.6)}
+
+/* Waveform visual */
+.waveform-visual{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:16px;padding:40px 32px;display:flex;flex-direction:column;gap:20px}
+.wave-bars{display:flex;align-items:flex-end;gap:3px;height:80px}
+.wave-bars span{flex:1;background:linear-gradient(180deg,#a855f7,#7c3aed);border-radius:3px;min-height:8px;animation:wave-anim 1.5s ease-in-out infinite}
+.wave-bars span:nth-child(2n){animation-delay:.15s}
+.wave-bars span:nth-child(3n){animation-delay:.3s}
+.wave-bars span:nth-child(4n){animation-delay:.45s}
+@keyframes wave-anim{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.8)}}
+.track-info{display:flex;flex-direction:column;gap:12px}
+.track-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.track-row:last-child{border-bottom:none}
+.track-name{font-size:14px;font-weight:600;color:#e8e4f0}
+.track-genre{font-size:11px;color:rgba(255,255,255,0.4);font-family:'Space Mono',monospace;letter-spacing:.1em}
+.track-price{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#a855f7}
+
+/* Stats */
+.stats-strip{background:rgba(124,58,237,0.06);border-top:1px solid rgba(124,58,237,0.15);border-bottom:1px solid rgba(124,58,237,0.15);padding:40px 32px}
+.stats-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+.stat-num{font-family:'Space Mono',monospace;font-size:36px;font-weight:700;color:#a855f7;line-height:1}
+.stat-label{font-size:12px;color:rgba(255,255,255,0.45);letter-spacing:.15em;text-transform:uppercase;margin-top:8px}
+
+/* Beats store */
+.section{padding:96px 32px}
+.section-inner{max-width:1200px;margin:0 auto}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:#a855f7;margin-bottom:12px;opacity:.8}
+h2.section-title{font-size:clamp(28px,4vw,44px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:40px;letter-spacing:-.02em}
+.beats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.beat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;transition:border-color .2s,transform .2s}
+.beat-card:hover{border-color:rgba(124,58,237,0.5);transform:translateY(-4px)}
+.beat-cover{height:180px;background:linear-gradient(135deg,#1a0a2e,#0d0828);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.beat-cover-1{background:linear-gradient(135deg,#0d1b3e,#1a0a2e)}
+.beat-cover-2{background:linear-gradient(135deg,#0a1a14,#142816)}
+.beat-cover-3{background:linear-gradient(135deg,#1a0a0a,#280f0f)}
+.beat-cover-4{background:linear-gradient(135deg,#1a1a0a,#28260f)}
+.beat-cover-5{background:linear-gradient(135deg,#0a0a1a,#0d0f28)}
+.beat-cover-6{background:linear-gradient(135deg,#1a0a2e,#2a1040)}
+.beat-visual{font-family:'Space Mono',monospace;font-size:32px;font-weight:700;opacity:.15;position:absolute;letter-spacing:-4px}
+.beat-play{width:48px;height:48px;border-radius:50%;background:rgba(168,85,247,0.9);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;position:relative;z-index:1}
+.beat-play:hover{transform:scale(1.1)}
+.beat-tag{position:absolute;top:12px;right:12px;padding:3px 10px;background:rgba(0,0,0,0.7);border-radius:4px;font-size:10px;font-weight:700;color:#a855f7;letter-spacing:.1em;text-transform:uppercase;z-index:1}
+.beat-info{padding:16px}
+.beat-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.beat-meta{font-size:12px;color:rgba(255,255,255,0.4);font-family:'Space Mono',monospace;letter-spacing:.05em;margin-bottom:14px}
+.beat-footer{display:flex;align-items:center;justify-content:space-between}
+.beat-price{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#a855f7}
+.beat-buy{padding:8px 18px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a855f7;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;letter-spacing:.05em}
+.beat-buy:hover{background:rgba(124,58,237,0.3);border-color:#a855f7}
+
+/* Services */
+.services-bg{background:#050508}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.svc-card{padding:28px;border:1px solid rgba(255,255,255,0.06);border-radius:12px;background:rgba(255,255,255,0.02);transition:border-color .2s}
+.svc-card:hover{border-color:rgba(124,58,237,0.4)}
+.svc-icon{font-size:28px;margin-bottom:16px}
+.svc-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px}
+.svc-desc{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:16px}
+.svc-price{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:#a855f7}
+
+/* Contact */
+.contact-section{background:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.1),transparent 60%)}
+.contact-form{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.contact-form input,.contact-form textarea,.contact-form select{width:100%;padding:14px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e8e4f0;font-family:'Space Grotesk',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+.contact-form input:focus,.contact-form textarea:focus,.contact-form select:focus{border-color:rgba(124,58,237,0.6)}
+.contact-form select option{background:#0d0d1a}
+.contact-form textarea{min-height:120px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+footer{padding:48px 32px 32px;border-top:1px solid rgba(255,255,255,0.05);text-align:center}
+.footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:20px}
+.footer-links a{font-size:13px;color:rgba(255,255,255,0.4);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:#a855f7}
+.copyright{font-size:12px;color:rgba(255,255,255,0.2)}
+.built-by{display:inline-block;margin-top:16px;font-size:11px;color:rgba(168,85,247,0.5);text-decoration:none;letter-spacing:.1em;text-transform:uppercase}
+.built-by:hover{color:#a855f7}
+
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px}.stats-grid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}.nav-links{display:none}}
+</style>
+</head>
+<body>
+
+<div class="demo-banner">
+  ⚡ DEMO TEMPLATE — The Platform ($500) · <a href="https://swrvonthego.pro">Build mine →</a>
+</div>
+
+<nav>
+  <div class="nav-logo">KW<span>.</span>MUSIC</div>
+  <div class="nav-links">
+    <a href="#beats">Beats</a>
+    <a href="#services">Services</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="#contact" class="nav-cta">Book a Session</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid" style="max-width:1200px;margin:0 auto;width:100%">
+    <div>
+      <div class="hero-tag">Producer · Composer · Sound Architect</div>
+      <h1>Sound that<br/>moves <span class="outline">people.</span></h1>
+      <p class="hero-sub">Atlanta-based music producer and sound designer. Beats for sync, licensing, and independent artists. Sessions by appointment. Work that hits.</p>
+      <div class="cta-row">
+        <a href="#beats" class="btn-primary">Shop Beats</a>
+        <a href="#services" class="btn-ghost">View Services</a>
+      </div>
+    </div>
+    <div class="waveform-visual">
+      <div class="wave-bars">
+        <span style="height:30%"></span><span style="height:60%"></span><span style="height:45%"></span><span style="height:80%"></span><span style="height:50%"></span><span style="height:90%"></span><span style="height:40%"></span><span style="height:70%"></span><span style="height:55%"></span><span style="height:85%"></span><span style="height:35%"></span><span style="height:65%"></span><span style="height:75%"></span><span style="height:45%"></span><span style="height:95%"></span><span style="height:50%"></span><span style="height:60%"></span><span style="height:40%"></span><span style="height:70%"></span><span style="height:55%"></span>
+      </div>
+      <div class="track-info">
+        <div class="track-row">
+          <div><div class="track-name">Midnight Frequency</div><div class="track-genre">TRAP · 142 BPM · Am</div></div>
+          <div class="track-price">$49</div>
+        </div>
+        <div class="track-row">
+          <div><div class="track-name">Sovereign Wave</div><div class="track-genre">R&B/SOUL · 92 BPM · Dm</div></div>
+          <div class="track-price">$59</div>
+        </div>
+        <div class="track-row">
+          <div><div class="track-name">Crown Frequency</div><div class="track-genre">AFROBEATS · 108 BPM · Gm</div></div>
+          <div class="track-price">$79</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stats-grid">
+    <div><div class="stat-num">340+</div><div class="stat-label">Beats Sold</div></div>
+    <div><div class="stat-num">12yrs</div><div class="stat-label">In the Game</div></div>
+    <div><div class="stat-num">6</div><div class="stat-label">Sync Placements</div></div>
+    <div><div class="stat-num">5★</div><div class="stat-label">Avg Rating</div></div>
+  </div>
+</div>
+
+<!-- BEATS STORE -->
+<section class="section" id="beats">
+  <div class="section-inner">
+    <div class="eyebrow">The Catalog</div>
+    <h2 class="section-title">Shop Beats</h2>
+    <div class="beats-grid">
+      <div class="beat-card">
+        <div class="beat-cover beat-cover-1">
+          <div class="beat-visual">808</div>
+          <div class="beat-tag">NEW</div>
+          <div class="beat-play" onclick="alert('Demo — would play audio preview.')">▶</div>
+        </div>
+        <div class="beat-info">
+          <div class="beat-name">Midnight Frequency</div>
+          <div class="beat-meta">TRAP · 142 BPM · A MINOR</div>
+          <div class="beat-footer"><div class="beat-price">$49</div><a href="#contact" class="beat-buy">Buy Now</a></div>
+        </div>
+      </div>
+      <div class="beat-card">
+        <div class="beat-cover beat-cover-2">
+          <div class="beat-visual">SOL</div>
+          <div class="beat-tag">HOT</div>
+          <div class="beat-play" onclick="alert('Demo — would play audio preview.')">▶</div>
+        </div>
+        <div class="beat-info">
+          <div class="beat-name">Sovereign Wave</div>
+          <div class="beat-meta">R&B · 92 BPM · D MINOR</div>
+          <div class="beat-footer"><div class="beat-price">$59</div><a href="#contact" class="beat-buy">Buy Now</a></div>
+        </div>
+      </div>
+      <div class="beat-card">
+        <div class="beat-cover beat-cover-3">
+          <div class="beat-visual">AFR</div>
+          <div class="beat-tag">SYNC</div>
+          <div class="beat-play" onclick="alert('Demo — would play audio preview.')">▶</div>
+        </div>
+        <div class="beat-info">
+          <div class="beat-name">Crown Frequency</div>
+          <div class="beat-meta">AFROBEATS · 108 BPM · G MINOR</div>
+          <div class="beat-footer"><div class="beat-price">$79</div><a href="#contact" class="beat-buy">Buy Now</a></div>
+        </div>
+      </div>
+      <div class="beat-card">
+        <div class="beat-cover beat-cover-4">
+          <div class="beat-visual">GLO</div>
+          <div class="beat-play" onclick="alert('Demo — would play audio preview.')">▶</div>
+        </div>
+        <div class="beat-info">
+          <div class="beat-name">Golden Hour</div>
+          <div class="beat-meta">POP/R&B · 88 BPM · E MAJOR</div>
+          <div class="beat-footer"><div class="beat-price">$49</div><a href="#contact" class="beat-buy">Buy Now</a></div>
+        </div>
+      </div>
+      <div class="beat-card">
+        <div class="beat-cover beat-cover-5">
+          <div class="beat-visual">VRT</div>
+          <div class="beat-tag">COLLAB</div>
+          <div class="beat-play" onclick="alert('Demo — would play audio preview.')">▶</div>
+        </div>
+        <div class="beat-info">
+          <div class="beat-name">Vertical Horizon</div>
+          <div class="beat-meta">CINEMATIC · 76 BPM · B MINOR</div>
+          <div class="beat-footer"><div class="beat-price">$99</div><a href="#contact" class="beat-buy">Buy Now</a></div>
+        </div>
+      </div>
+      <div class="beat-card">
+        <div class="beat-cover beat-cover-6">
+          <div class="beat-visual">NXS</div>
+          <div class="beat-play" onclick="alert('Demo — would play audio preview.')">▶</div>
+        </div>
+        <div class="beat-info">
+          <div class="beat-name">Nexus</div>
+          <div class="beat-meta">DRILL · 138 BPM · F# MINOR</div>
+          <div class="beat-footer"><div class="beat-price">$59</div><a href="#contact" class="beat-buy">Buy Now</a></div>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:40px;font-size:13px;color:rgba(255,255,255,0.3)">All beats include tagged MP3. Purchase an exclusive or lease license for full stems + trackout.</p>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section services-bg" id="services">
+  <div class="section-inner">
+    <div class="eyebrow">What I Offer</div>
+    <h2 class="section-title">Studio Services</h2>
+    <div class="services-grid">
+      <div class="svc-card">
+        <div class="svc-icon">🎙</div>
+        <div class="svc-name">Recording Session</div>
+        <p class="svc-desc">Fully engineered tracking session at my private studio. Comfortably fitted for solo artists and small groups.</p>
+        <div class="svc-price">$125/hr</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">🎚</div>
+        <div class="svc-name">Mixing & Mastering</div>
+        <p class="svc-desc">Broadcast-ready mix and master for your single or project. Stems required. 2 revision rounds included.</p>
+        <div class="svc-price">From $500</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">🎬</div>
+        <div class="svc-name">Sync Licensing</div>
+        <p class="svc-desc">Place your music in film, TV, and digital content. I handle the paperwork, splits, and placement.</p>
+        <div class="svc-price">Rev Share</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-icon">🎓</div>
+        <div class="svc-name">Production Coaching</div>
+        <p class="svc-desc">1-on-1 sessions covering composition, sound design, mix fundamentals, and the business of music production.</p>
+        <div class="svc-price">$200/session</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT / BOOKING -->
+<section class="section contact-section" id="contact">
+  <div class="section-inner" style="text-align:center">
+    <div class="eyebrow">Let's Create</div>
+    <h2 class="section-title">Book a Session</h2>
+    <p style="font-size:16px;color:rgba(255,255,255,0.5);margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto">Ready to make something? Fill this out and I'll get back within 24 hours.</p>
+    <form class="contact-form" onsubmit="event.preventDefault();alert('Demo form — would send to producer email.')">
+      <div class="form-row">
+        <input type="text" placeholder="Your name" required>
+        <input type="email" placeholder="Email address" required>
+      </div>
+      <select required>
+        <option value="">What do you need?</option>
+        <option>Beat Purchase / Licensing</option>
+        <option>Recording Session</option>
+        <option>Mixing & Mastering</option>
+        <option>Production Coaching</option>
+        <option>Sync Licensing Inquiry</option>
+        <option>Custom Beat Commission</option>
+      </select>
+      <textarea placeholder="Tell me about your project — genre, vibe, timeline, budget." required></textarea>
+      <button type="submit" class="btn-primary" style="border:none;cursor:pointer;justify-content:center">Send It →</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-links">
+    <a href="#beats">Beats</a>
+    <a href="#services">Services</a>
+    <a href="mailto:kofi@kwmusic.co">kofi@kwmusic.co</a>
+    <a href="#">Instagram</a>
+    <a href="#">SoundCloud</a>
+    <a href="#">YouTube</a>
+  </div>
+  <p class="copyright">© 2025 Kofi Ware Music. All rights reserved.</p>
+  <a href="https://swrvonthego.pro" target="_blank" rel="noopener" class="built-by">Built by SWRV On The Go →</a>
+</footer>
+
+</body>
+</html>
