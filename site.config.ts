@@ -66,10 +66,10 @@ export const ROADMAP_PRICING = {
     price: 'Free',
     priceNumeric: 0,
     label: 'Quick Vision',
-    tagline: '3 questions. 90 seconds. Your starting direction.',
+    tagline: '10 questions. 3 minutes. Your gift, named.',
     bulletPoints: [
-      'What you are building and who it is for',
-      'Your core gift named in one line',
+      '10 gift-locating questions, one at a time',
+      'Your gift named in one specific sentence',
       '2–3 services to get you moving',
     ],
   },

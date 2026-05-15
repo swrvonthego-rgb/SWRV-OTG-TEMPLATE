@@ -81,6 +81,19 @@ function parseRoadmapFile(text: string): ParsedVision | null {
 export const ContactSchedule: React.FC = () => {
   const [step, setStep] = useState<Step>('service');
   const [selectedService, setSelectedService] = useState<typeof SERVICES[0] | null>(null);
+  const [cart, setCart] = useState<Array<typeof SERVICES[0]>>([]);
+  const cartTotal = cart.reduce((sum, s) => sum + s.priceNumeric, 0);
+
+  const addToCart = (svc: typeof SERVICES[0]) => {
+    setCart(prev => prev.find(s => s.id === svc.id) ? prev : [...prev, svc]);
+  };
+  const removeFromCart = (id: string) => setCart(prev => prev.filter(s => s.id !== id));
+  const checkoutCart = () => {
+    if (cart.length === 0) return;
+    // Use first item for calendar delivery calculation; full cart in email
+    setSelectedService(cart[0]);
+    setStep('calendar');
+  };
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState('');
@@ -193,8 +206,13 @@ export const ContactSchedule: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          serviceName: selectedService.name,
-          servicePrice: selectedService.price,
+          serviceName: cart.length > 1
+            ? cart.map(s => s.name).join(' + ')
+            : selectedService.name,
+          servicePrice: cart.length > 1
+            ? '$' + cartTotal.toLocaleString() + ' total'
+            : selectedService.price,
+          cartItems: cart.map(s => ({ name: s.name, price: s.price })),
           kickoffDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
           kickoffTime: selectedTime,
           deliveryDate: deliveryDate ? format(deliveryDate, 'MMMM d, yyyy') : '',
@@ -293,7 +311,7 @@ export const ContactSchedule: React.FC = () => {
             </a>
           </div>
 
-          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); setProjectFiles([]); setFileError(''); setUploadedFiles([]); setAssetLink(''); }}
+          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); setProjectFiles([]); setFileError(''); setUploadedFiles([]); setAssetLink(''); setCart([]); }}
             className="text-white/30 text-sm underline hover:text-white/60">Book another service</button>
         </div>
       </section>
@@ -344,70 +362,128 @@ export const ContactSchedule: React.FC = () => {
 
         {/* ── STEP 1: SERVICE SELECTION ── */}
         {step === 'service' && (
-          <div>
-            <input
-              type="search"
-              placeholder="Search services…"
-              value={serviceSearch}
-              onChange={e => setServiceSearch(e.target.value)}
-              className="w-full px-5 py-3 mb-6 text-sm outline-none"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, color: '#fff' }}
-            />
-            {Object.entries({ 'Brand Identity': grouped.identity, 'Production & Digital': grouped.execution, 'Coaching & Mentorship': grouped.experience })
-              .filter(([, svcs]) => svcs.length > 0)
-              .map(([cat, svcs]) => (
-                <div key={cat} className="mb-8">
-                  <p className="text-xs font-bold tracking-[0.25em] uppercase mb-3" style={{ color: 'rgba(200,168,75,0.6)' }}>{cat}</p>
-                  <div className="grid gap-3">
-                    {svcs.map(svc => (
-                      <button key={svc.id} onClick={() => { setSelectedService(svc); setStep('calendar'); }}
-                        className="w-full text-left p-4 rounded-2xl transition-all hover:scale-[1.01]"
-                        style={{
-                          background: selectedService?.id === svc.id ? 'rgba(200,168,75,0.12)' : 'rgba(255,255,255,0.03)',
-                          border: `1px solid ${selectedService?.id === svc.id ? 'rgba(200,168,75,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                          boxShadow: selectedService?.id === svc.id ? '0 4px 20px rgba(200,168,75,0.15)' : 'none',
-                        }}>
-                        <div className="flex justify-between items-start gap-3">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white text-sm mb-1">{svc.name}</p>
-                            <p className="text-xs leading-relaxed mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>{svc.blurb}</p>
-                            {/* Fiverr-beating metadata row */}
-                            <div className="flex flex-wrap gap-2">
-                              {(svc as any).deliveryDays && (
-                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
-                                  ⏱ {(svc as any).deliveryDays}d delivery
-                                </span>
-                              )}
-                              {(svc as any).revisions !== undefined && (svc as any).revisions > 0 && (
-                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
-                                  ↩ {(svc as any).revisions} revision{(svc as any).revisions > 1 ? 's' : ''}
-                                </span>
-                              )}
-                              {(svc as any).includes?.length > 0 && (
-                                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(200,168,75,0.08)', color: 'rgba(200,168,75,0.6)' }}>
-                                  ✓ {(svc as any).includes.length} items included
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="font-bold text-sm" style={{ color: '#c8a84b' }}>{svc.price}</p>
-                            {svc.priceNumeric >= 500 && (
-                              <p className="text-xs mt-0.5" style={{ color: 'rgba(200,168,75,0.5)' }}>
-                                4× ${(svc.priceNumeric / 4).toFixed(0)} Klarna
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+          <div className="flex flex-col gap-0">
+
+            {/* ── CART ── */}
+            {cart.length > 0 && (
+              <div className="mb-6 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(200,168,75,0.35)', background: 'rgba(200,168,75,0.05)' }}>
+                <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(200,168,75,0.15)' }}>
+                  <span className="text-xs font-bold tracking-[0.2em] uppercase" style={{ color: '#c8a84b' }}>
+                    Your Cart · {cart.length} item{cart.length > 1 ? 's' : ''}
+                  </span>
+                  <span className="font-black text-sm" style={{ color: '#c8a84b' }}>
+                    ${cartTotal.toLocaleString()}
+                  </span>
                 </div>
-              ))}
+                <div className="flex flex-col divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                  {cart.map(item => (
+                    <div key={item.id} className="flex items-center justify-between px-4 py-2.5 gap-3">
+                      <span className="text-sm text-white flex-1 truncate">{item.name}</span>
+                      <span className="text-sm font-bold flex-shrink-0" style={{ color: '#c8a84b' }}>{item.price}</span>
+                      <button type="button" onClick={() => removeFromCart(item.id)}
+                        className="text-xs flex-shrink-0 hover:text-red-400 transition-colors"
+                        style={{ color: 'rgba(255,255,255,0.3)' }}>
+                        <XIcon size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="px-4 pb-4 pt-3 flex flex-col gap-2">
+                  {cartTotal >= 500 && (
+                    <p className="text-xs text-center pb-1" style={{ color: 'rgba(200,168,75,0.6)' }}>
+                      Pay in 4 via Klarna: 4 × ${(cartTotal / 4).toFixed(0)} — SWRV gets paid in full
+                    </p>
+                  )}
+                  <button onClick={checkoutCart}
+                    className="w-full py-3.5 rounded-full font-black text-sm"
+                    style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>
+                    Checkout — ${cartTotal.toLocaleString()} →
+                  </button>
+                  <button type="button" onClick={() => setCart([])}
+                    className="text-xs text-center py-1 hover:text-white/60 transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    Clear cart
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── SERVICE SEARCH ── */}
+            <div className="relative mb-4">
+              <input
+                type="text"
+                placeholder="Search services…"
+                value={serviceSearch}
+                onChange={e => setServiceSearch(e.target.value)}
+                className="w-full px-4 py-3 text-sm outline-none pl-10"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff' }}
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </span>
+            </div>
+
+            {/* ── SERVICE LIST ── */}
+            <div className="flex flex-col gap-2">
+              {SERVICES
+                .filter(svc => !serviceSearch || svc.name.toLowerCase().includes(serviceSearch.toLowerCase()) || svc.blurb.toLowerCase().includes(serviceSearch.toLowerCase()))
+                .map(svc => {
+                  const inCart = cart.some(s => s.id === svc.id);
+                  return (
+                    <div key={svc.id}
+                      className="flex items-start gap-4 p-4 rounded-2xl transition-all"
+                      style={{
+                        background: inCart ? 'rgba(200,168,75,0.08)' : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${inCart ? 'rgba(200,168,75,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                      }}>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white text-sm mb-0.5">{svc.name}</p>
+                        <p className="text-xs leading-relaxed mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>{svc.blurb}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(svc as any).deliveryDays && (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                              ⏱ {(svc as any).deliveryDays}d
+                            </span>
+                          )}
+                          {(svc as any).revisions > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                              ↩ {(svc as any).revisions} rev
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <p className="font-bold text-sm" style={{ color: '#c8a84b' }}>{svc.price}</p>
+                        {svc.priceNumeric >= 500 && (
+                          <p className="text-xs" style={{ color: 'rgba(200,168,75,0.5)' }}>
+                            4× ${(svc.priceNumeric / 4).toFixed(0)}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => inCart ? removeFromCart(svc.id) : addToCart(svc)}
+                          className="text-xs px-3 py-1.5 rounded-full font-bold transition-all"
+                          style={{
+                            background: inCart ? 'rgba(200,168,75,0.15)' : 'rgba(255,255,255,0.08)',
+                            color: inCart ? '#c8a84b' : 'rgba(255,255,255,0.6)',
+                            border: `1px solid ${inCart ? 'rgba(200,168,75,0.4)' : 'rgba(255,255,255,0.12)'}`,
+                          }}>
+                          {inCart ? '✓ Added' : '+ Add'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            {cart.length === 0 && (
+              <p className="text-xs text-center mt-6" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                Add services above, then tap Checkout.
+              </p>
+            )}
           </div>
         )}
 
-        {/* ── STEP 2: CALENDAR ── */}
         {step === 'calendar' && selectedService && (
           <div>
             {/* Service summary pill */}
@@ -775,11 +851,26 @@ export const ContactSchedule: React.FC = () => {
             {/* Order summary */}
             <div className="p-5 rounded-2xl mb-6" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.2)' }}>
               <p className="text-xs font-bold tracking-[0.2em] uppercase mb-3" style={{ color: 'rgba(200,168,75,0.6)' }}>ORDER SUMMARY</p>
-              <div className="flex justify-between items-center mb-2">
-                <p className="font-bold text-white">{selectedService.name}</p>
-                <p className="font-black text-lg" style={{ color: '#c8a84b' }}>{selectedService.price}</p>
-              </div>
-              {selectedDate && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Kickoff: {format(selectedDate, 'MMMM d, yyyy')} at {selectedTime} CST</p>}
+              {cart.length > 1 ? (
+                <>
+                  {cart.map(item => (
+                    <div key={item.id} className="flex justify-between items-center mb-1.5">
+                      <p className="text-sm text-white">{item.name}</p>
+                      <p className="text-sm font-bold" style={{ color: '#c8a84b' }}>{item.price}</p>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center mt-3 pt-3" style={{ borderTop: '1px solid rgba(200,168,75,0.2)' }}>
+                    <p className="font-bold text-white">Total</p>
+                    <p className="font-black text-lg" style={{ color: '#c8a84b' }}>${cartTotal.toLocaleString()}</p>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between items-center mb-2">
+                  <p className="font-bold text-white">{selectedService.name}</p>
+                  <p className="font-black text-lg" style={{ color: '#c8a84b' }}>{selectedService.price}</p>
+                </div>
+              )}
+              {selectedDate && <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.4)' }}>Kickoff: {format(selectedDate, 'MMMM d, yyyy')} at {selectedTime} CST</p>}
               {deliveryDate && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Delivery by: {format(deliveryDate, 'MMMM d, yyyy')}</p>}
             </div>
 
@@ -815,7 +906,7 @@ export const ContactSchedule: React.FC = () => {
                         </div>
                       </div>
                       <p className="text-sm font-black" style={{ color: sel ? opt.color : 'rgba(255,255,255,0.3)' }}>
-                        4× ${(selectedService.priceNumeric / 4).toFixed(0)}
+                        4× ${((cart.length > 1 ? cartTotal : selectedService.priceNumeric) / 4).toFixed(0)}
                       </p>
                     </div>
                   </button>
@@ -889,7 +980,7 @@ export const ContactSchedule: React.FC = () => {
                    : payMethod === 'paypal'  ? 'Book + Pay via PayPal →'
                    : payMethod === 'cashapp' ? 'Book + Pay via Cash App →'
                    : payMethod === 'venmo'   ? 'Book + Pay via Venmo →'
-                   : `Submit Booking — ${selectedService.price} →`}
+                   : `Submit Booking — $${cartTotal > 0 ? cartTotal.toLocaleString() : selectedService.price} →`}
               </button>
             </div>
           </div>
