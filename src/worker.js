@@ -85,6 +85,23 @@ export default {
     if (url.pathname === '/api/intake-ai')      return handleIntakeAI(request, env);
     if (url.pathname === '/api/intake-submit')  return handleIntakeSubmit(request, env);
     if (url.pathname === '/api/referral-report') return handleReferralReport(request, env);
+
+    // Stripe payment success redirect — set as your Stripe Payment Link success URL:
+    // https://swrvonthego.pro/roadmap-unlock
+    if (url.pathname === '/roadmap-unlock') {
+      return new Response(
+        `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payment Complete — SWRV</title>
+        <script>
+          try { sessionStorage.setItem('swrv_rm_paid','1'); } catch(e){}
+          window.location.replace('https://swrvonthego.pro/?rm_paid=1');
+        </script>
+        <style>body{background:#0a0804;color:#c8a84b;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;}p{font-size:14px;opacity:.7;}</style>
+        </head><body>
+          <div><p>Payment confirmed. Taking you to your Roadmap…</p></div>
+        </body></html>`,
+        { headers: { 'Content-Type': 'text/html', ...SECURITY_HEADERS } }
+      );
+    }
     if (url.pathname === '/api/save-progress')  return handleSaveProgress(request, env);
     if (url.pathname === '/api/load-progress')  return handleLoadProgress(request, env);
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);

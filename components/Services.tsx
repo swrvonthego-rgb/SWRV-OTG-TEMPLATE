@@ -217,6 +217,19 @@ export const Services: React.FC<{ onOpenRoadmap?: () => void; onOpenZion?: () =>
             40+ services · à la carte or bundled · From $30/mo
           </p>
         </div>
+
+        {/* ── Connector to Booking ── */}
+        <div className="mt-16 pt-10 border-t border-gray-100 text-center">
+          <p className="text-sm text-gray-400 mb-4">
+            Know what you want? Skip straight to booking.
+          </p>
+          <a
+            href="#contact"
+            className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 text-gray-700 hover:border-black hover:text-black transition-all text-sm font-semibold tracking-wide rounded-sm"
+          >
+            Book a Service →
+          </a>
+        </div>
       </div>
     </section>
 

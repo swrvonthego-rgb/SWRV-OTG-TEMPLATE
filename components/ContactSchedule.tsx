@@ -306,18 +306,18 @@ export const ContactSchedule: React.FC = () => {
 
         {/* Header */}
         <div className="text-center mb-10">
-          <p className="text-xs font-bold tracking-[0.4em] uppercase mb-2" style={{ color: '#c8a84b' }}>BOOK A SESSION</p>
+          <p className="text-xs font-bold tracking-[0.4em] uppercase mb-2" style={{ color: '#c8a84b' }}>BOOK YOUR SERVICE</p>
           <h2 className="text-4xl md:text-5xl font-black mb-3">
-            {step === 'service' && "What Are We Building?"}
+            {step === 'service' && "Let's Get to Work."}
             {step === 'calendar' && "Pick Your Kickoff Date"}
             {step === 'details' && "Tell Us About You"}
             {step === 'payment' && "How Do You Want to Pay?"}
           </h2>
           <p className="text-white/40 text-sm">
-            {step === 'service' && "Select a service. Everything will be explained — no surprises."}
+            {step === 'service' && "Pick your service. Prices are exact — no surprises, no upsells."}
             {step === 'calendar' && "Choose the day you want to kick this off."}
             {step === 'details' && "Name, email, and any notes. That's it."}
-            {step === 'payment' && "Klarna lets you pay in 4. We get paid in full upfront."}
+            {step === 'payment' && "BNPL options let you pay in 4. SWRV gets paid in full upfront."}
           </p>
         </div>
 
