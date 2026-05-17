@@ -1161,7 +1161,7 @@ export const HEADER = {
     { label: 'TRAIN BYOB', href: '#byob', external: false },
     { label: 'ABOUT SWRV ON THE GO', href: '#about-swrv', external: false },
     { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
-    { label: 'REVVING UP', href: '#pipeline', external: false },
+    { label: 'REVVING UP', href: '#revving-up', external: false },
   ],
   // Inline "Connect" button copy
   connectLabel: 'Connect',

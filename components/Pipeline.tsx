@@ -12,7 +12,7 @@ export const Pipeline: React.FC = () => {
 
   return (
     <section
-      id="pipeline"
+      id="revving-up"
       style={{
         background: 'linear-gradient(180deg, #080806 0%, #0a0804 100%)',
         padding: '96px 0',
