@@ -336,7 +336,7 @@ export const PIPELINE_PROJECTS: PipelineProject[] = [
     ctaLabel: 'Access the Preview →',
     accentColor: '#c8a84b',
     supportCta: 'Support This Project',
-    supportUrl: 'https://swrvonthego.pro/#contact',
+    supportUrl: 'https://square.link/u/wXrlUcBY?src=sheet',
   },
 ];
 
