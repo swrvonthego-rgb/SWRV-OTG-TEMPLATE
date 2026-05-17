@@ -1157,10 +1157,10 @@ export const HEADER = {
   ],
   // Main navigation items
   navItems: [
-    { label: 'THE ECOSYSTEM', href: '#ecosystem', external: false },
-    { label: 'BYOB TRAINING', href: '#byob', external: false },  // opens in-site BYOB overlay
-    { label: 'ABOUT SWRV', href: '#about-swrv', external: false },
-    { label: 'ZION SWRV BIRDSONG', href: '#meet-zion', external: false },
+    { label: 'THE SWRV ECOSYSTEM', href: '#ecosystem', external: false },
+    { label: 'TRAIN BYOB', href: '#byob', external: false },
+    { label: 'ABOUT SWRV ON THE GO', href: '#about-swrv', external: false },
+    { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
     { label: 'REVVING UP', href: '#pipeline', external: false },
   ],
   // Inline "Connect" button copy
