@@ -1161,7 +1161,7 @@ export const HEADER = {
     { label: 'BYOB TRAINING', href: '#byob', external: false },  // opens in-site BYOB overlay
     { label: 'ABOUT SWRV', href: '#about-swrv', external: false },
     { label: 'ZION SWRV BIRDSONG', href: '#meet-zion', external: false },
-    { label: 'THE PIPELINE', href: '#pipeline', external: false },
+    { label: 'REVVING UP', href: '#pipeline', external: false },
   ],
   // Inline "Connect" button copy
   connectLabel: 'Connect',

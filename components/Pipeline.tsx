@@ -28,7 +28,7 @@ export const Pipeline: React.FC = () => {
             textTransform: 'uppercase', color: 'rgba(200,168,75,0.6)',
             marginBottom: 12,
           }}>
-            SWRV PIPELINE
+            REVVING UP
           </p>
           <h2 style={{
             fontFamily: 'Georgia, "Times New Roman", serif',
@@ -39,7 +39,7 @@ export const Pipeline: React.FC = () => {
             lineHeight: 1.2,
             margin: '0 0 16px',
           }}>
-            What We're Building Next
+            Revving Up
           </h2>
           <p style={{
             fontSize: 16, color: 'rgba(255,255,255,0.5)',
