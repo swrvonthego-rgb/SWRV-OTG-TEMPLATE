@@ -88,6 +88,20 @@ export const ContactSchedule: React.FC = () => {
     setCart(prev => prev.find(s => s.id === svc.id) ? prev : [...prev, svc]);
   };
   const removeFromCart = (id: string) => setCart(prev => prev.filter(s => s.id !== id));
+
+  // Listen for external add-to-cart events from the Marketplace section
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { serviceId } = (e as CustomEvent<{ serviceId: string }>).detail;
+      const svc = SERVICES.find(s => s.id === serviceId);
+      if (svc) {
+        addToCart(svc);
+        document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('swrv:add-to-cart', handler);
+    return () => window.removeEventListener('swrv:add-to-cart', handler);
+  }, []);
   const checkoutCart = () => {
     if (cart.length === 0) return;
     // Use first item for calendar delivery calculation; full cart in email

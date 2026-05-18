@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { SecondaryIntro } from './components/SecondaryIntro';
 import { Hero } from './components/Hero';
-import { Services } from './components/Services';
+// import { Services } from './components/Services'; // replaced by Marketplace
 import { Stats } from './components/Stats';
 import { Shop } from './modules/shop/Shop';
 import { Footer } from './components/Footer';
 import { Play, X } from 'lucide-react';
 import { BrandTransmission } from './components/BrandTransmission';
-import { WebPackages } from './components/WebPackages';
+// import { WebPackages } from './components/WebPackages'; // replaced by Marketplace
 import { AboutSWRV } from './components/AboutSWRV';
 import { ContactSchedule } from './components/ContactSchedule';
 
@@ -28,6 +28,7 @@ import { Byob } from './modules/byob/Byob';
 import { LiveChat } from './components/LiveChat';
 import { ProjectIntake } from './components/ProjectIntake';
 import { Pipeline } from './components/Pipeline';
+import { Marketplace } from './components/Marketplace';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
 // Fires once on load — brands the devtools, deters casual copying
@@ -157,8 +158,7 @@ const App: React.FC = () => {
         />
         <BrandTransmission />
         <AboutSWRV />
-        <Services onOpenRoadmap={() => setIsRoadmapOpen(true)} onOpenZion={() => setIsZionOpen(true)} onOpenServicesMenu={() => setIsServicesMenuOpen(true)} />
-        <WebPackages />
+        <Marketplace onOpenRoadmap={() => setIsRoadmapOpen(true)} />
         <Stats />
         <Shop />
         <Pipeline />

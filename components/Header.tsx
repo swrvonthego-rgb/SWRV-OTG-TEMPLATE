@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-8">
             {HEADER.navItems.map((item) => {
-              if (item.label === 'BYOB TRAINING' && onOpenByob) {
+              if (item.label === 'TRAIN BYOB' && onOpenByob) {
                 return (
                   <button key={item.label} type="button" onClick={onOpenByob}
                     className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans">
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
                   </button>
                 );
               }
-              if (item.label === 'ZION SWRV BIRDSONG' && onOpenZion) {
+              if (item.label === 'ZION BIRDSONG' && onOpenZion) {
                 return (
                   <button key={item.label} type="button" onClick={onOpenZion}
                     className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans">
@@ -127,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
           {mobileMenuOpen && (
             <div className="absolute top-0 left-0 w-full h-screen bg-black flex flex-col items-center justify-center gap-8 lg:hidden z-40">
               {HEADER.navItems.map((item) => {
-                if (item.label === 'BYOB TRAINING' && onOpenByob) {
+                if (item.label === 'TRAIN BYOB' && onOpenByob) {
                   return (
                     <button key={item.label} type="button"
                       onClick={() => { setMobileMenuOpen(false); onOpenByob(); }}
@@ -136,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
                     </button>
                   );
                 }
-                if (item.label === 'ZION SWRV BIRDSONG' && onOpenZion) {
+                if (item.label === 'ZION BIRDSONG' && onOpenZion) {
                   return (
                     <button key={item.label} type="button"
                       onClick={() => { setMobileMenuOpen(false); onOpenZion(); }}
