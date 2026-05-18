@@ -48,10 +48,10 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
         <div style={{ textAlign: 'center', marginBottom: 64 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: GOLD, marginBottom: 16, opacity: 0.85 }}>THE SWRV ECOSYSTEM</p>
           <h2 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(36px,6vw,64px)', fontWeight: 400, lineHeight: 1.1, margin: '0 0 24px', color: '#fff' }}>
-            AI builds storefronts.<br/><span style={{ color: GOLD }}>We build the business.</span>
+            You handle the vision.<br/><span style={{ color: GOLD }}>We handle the operation.</span>
           </h2>
           <p style={{ fontSize: 17, color: INK_MID, lineHeight: 1.7, maxWidth: 640, margin: '0 auto' }}>
-            Anyone can build a website with AI now. We get that. So we focused on what actually matters — what's running under the hood. Your roadmap, your engine, your payments, your workflow. The system that turns a webpage into a moving business.
+            You tell us what you want people to see. We build the operation behind it and keep it running — so you can focus on what matters most: your time.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 16 }} className="mkt-grid">
             {[
               { Icon: Cpu,      title: 'THE ROADMAP', desc: 'We map your gift to a real route. Human direction, real questions, and a roadmap that shows you exactly where your gift is meant to take you.' },
-              { Icon: Settings, title: 'THE BACKEND', desc: "Payments, databases, automations, integrations, security. The engine that keeps your business running while you stay focused on the road. The part AI doesn't handle." },
+              { Icon: Settings, title: 'THE BACKEND', desc: "Payments, databases, automations, integrations, security. The engine that keeps your business running while you stay focused on driving it forward." },
               { Icon: Shield,   title: 'THE SYSTEM',  desc: 'Workflows, bots, customer journeys, content pipelines. You set the destination — we make sure the ride gets you there clean.' },
             ].map((card, i) => (
               <div key={i} style={{ background: BG_SOFT, border: `1px solid ${BORDER}`, borderRadius: 18, padding: 28, position: 'relative', overflow: 'hidden' }}>
@@ -74,7 +74,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
             ))}
           </div>
           <p style={{ textAlign: 'center', marginTop: 32, fontSize: 14, color: 'rgba(237,232,220,0.4)', fontStyle: 'italic', maxWidth: 580, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.7 }}>
-            "AI is the engine. We're the drivers — and we know the road."
+            "Your time is the only thing we can't replace. That's why we handle everything else."
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
               </span>
               <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 400, margin: '0 0 12px', lineHeight: 1.1, color: '#fff' }}>The Roadmap</h3>
               <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, margin: 0, maxWidth: 580 }}>
-                Don't know what you need? Take The Roadmap. AI-powered vision experience that names your gift, maps your path, and tells you exactly which services build your specific business. Yours forever.
+                Don't know what you need? Take The Roadmap. A guided vision experience that names your gift, maps your path, and tells you exactly which services build your specific business. Yours forever.
               </p>
             </div>
             <div style={{ flexShrink: 0 }}>
