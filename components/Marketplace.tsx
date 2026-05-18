@@ -60,7 +60,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 16 }} className="mkt-grid">
             {[
               { Icon: Cpu,      title: 'THE ROADMAP', desc: 'We map your gift to a real route. Human direction, real questions, and a roadmap that shows you exactly where your gift is meant to take you.' },
-              { Icon: Settings, title: 'THE BACKEND', desc: 'Payments, databases, automations, integrations, security. The engine that keeps your business running while you stay focused on the road. The part AI doesn't handle.' },
+              { Icon: Settings, title: 'THE BACKEND', desc: "Payments, databases, automations, integrations, security. The engine that keeps your business running while you stay focused on the road. The part AI doesn't handle." },
               { Icon: Shield,   title: 'THE SYSTEM',  desc: 'Workflows, bots, customer journeys, content pipelines. You set the destination — we make sure the ride gets you there clean.' },
             ].map((card, i) => (
               <div key={i} style={{ background: BG_SOFT, border: `1px solid ${BORDER}`, borderRadius: 18, padding: 28, position: 'relative', overflow: 'hidden' }}>
