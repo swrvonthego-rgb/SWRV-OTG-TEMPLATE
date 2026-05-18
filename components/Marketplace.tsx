@@ -51,7 +51,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
             AI builds storefronts.<br/><span style={{ color: GOLD }}>We build the business.</span>
           </h2>
           <p style={{ fontSize: 17, color: INK_MID, lineHeight: 1.7, maxWidth: 640, margin: '0 auto' }}>
-            Anyone can spin up a website with AI now. We get that. So we focused on what actually matters — the system behind the site. Your roadmap, your backend, your payments, your workflow. The stuff that turns a webpage into a working business.
+            Anyone can build a website with AI now. We get that. So we focused on what actually matters — what's running under the hood. Your roadmap, your engine, your payments, your workflow. The system that turns a webpage into a moving business.
           </p>
         </div>
 
@@ -59,9 +59,9 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
         <div style={{ marginBottom: 80 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 16 }} className="mkt-grid">
             {[
-              { Icon: Cpu,      title: 'THE ROADMAP', desc: 'We map your gift to a real business plan. With human care, real questions, and a system that names what you\'re actually here to build.' },
-              { Icon: Settings, title: 'THE BACKEND', desc: 'Payments, databases, automations, integrations, security. The plumbing that runs your business while you sleep. The part AI doesn\'t handle.' },
-              { Icon: Shield,   title: 'THE SYSTEM',  desc: 'Workflows, bots, customer journeys, content pipelines. You design the store — we hire the staff and run the operation behind it.' },
+              { Icon: Cpu,      title: 'THE ROADMAP', desc: 'We map your gift to a real route. Human direction, real questions, and a roadmap that shows you exactly where your gift is meant to take you.' },
+              { Icon: Settings, title: 'THE BACKEND', desc: 'Payments, databases, automations, integrations, security. The engine that keeps your business running while you stay focused on the road. The part AI doesn't handle.' },
+              { Icon: Shield,   title: 'THE SYSTEM',  desc: 'Workflows, bots, customer journeys, content pipelines. You set the destination — we make sure the ride gets you there clean.' },
             ].map((card, i) => (
               <div key={i} style={{ background: BG_SOFT, border: `1px solid ${BORDER}`, borderRadius: 18, padding: 28, position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'radial-gradient(circle,rgba(200,168,75,0.12),transparent 70%)', pointerEvents: 'none' }} />
@@ -74,7 +74,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
             ))}
           </div>
           <p style={{ textAlign: 'center', marginTop: 32, fontSize: 14, color: 'rgba(237,232,220,0.4)', fontStyle: 'italic', maxWidth: 580, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.7 }}>
-            "AI is a tool. We're the team that knows how to wield it — and the human eyes that know what to wield it for."
+            "AI is the engine. We're the drivers — and we know the road."
           </p>
         </div>
 
