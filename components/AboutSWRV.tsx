@@ -96,6 +96,15 @@ export const AboutSWRV: React.FC = () => {
           <p className="text-white font-bold text-lg">
             We don't stop. <span className="text-lion-orange">We Swerve On The Go.</span>
           </p>
+
+          {/* Flow into Marketplace */}
+          <div className="flex gap-3 flex-wrap mt-10">
+            <a href="#ecosystem"
+              className="inline-flex items-center gap-2 px-6 py-3 font-bold text-sm tracking-widest uppercase rounded-full transition-all"
+              style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804' }}>
+              See What We Offer →
+            </a>
+          </div>
         </div>
 
       </div>

@@ -60,6 +60,13 @@ const App: React.FC = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
 
+  // Hero 'Take the Roadmap' button
+  useEffect(() => {
+    const handler = () => setIsRoadmapOpen(true);
+    window.addEventListener('swrv:open-roadmap', handler);
+    return () => window.removeEventListener('swrv:open-roadmap', handler);
+  }, []);
+
   // ── REFERRAL TRACKING ─────────────────────────────────────────────
   // Capture ?ref=CODE from URL and store in localStorage for attribution
   useEffect(() => {

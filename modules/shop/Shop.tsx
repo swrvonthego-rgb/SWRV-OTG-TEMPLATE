@@ -101,6 +101,12 @@ export const Shop: React.FC = () => {
           <p className="text-xs text-white/40 mt-4 tracking-wider">
             {cfg.fulfillmentNote}
           </p>
+          <div className="mt-8 pt-8 border-t border-white/10">
+            <p className="text-white/40 text-xs tracking-wider uppercase mb-3">Looking for creative services?</p>
+            <a href="#ecosystem" className="inline-flex items-center gap-2 text-sm font-semibold tracking-wider" style={{ color: '#c8a84b' }}>
+              Back to the Ecosystem →
+            </a>
+          </div>
         </div>
       </div>
     </section>

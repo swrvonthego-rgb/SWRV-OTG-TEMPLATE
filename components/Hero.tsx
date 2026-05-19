@@ -85,6 +85,23 @@ export const Hero: React.FC<{ onOpenConsultation: () => void }> = ({ onOpenConsu
              <p className="text-gray-300 font-light text-lg leading-relaxed">
               {HERO_CAROUSEL.taglineBody}
             </p>
+
+            {/* Hero CTAs */}
+            <div className="flex gap-3 flex-wrap mt-6">
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}
+                className="inline-flex items-center gap-2 px-6 py-3 font-bold text-sm tracking-wider rounded-full transition-all"
+                style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 6px 20px rgba(200,168,75,0.35)' }}
+              >
+                Take the Roadmap — $1
+              </button>
+              <a href="#ecosystem"
+                className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-sm tracking-wider rounded-full transition-all"
+                style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)' }}
+              >
+                See Services →
+              </a>
+            </div>
           </div>
           
           <VideoIntro />
