@@ -113,7 +113,7 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
     introTitle: { line1: 'Your Vision.', emphasis: 'Your Vehicle.', line3: 'Your Roadmap.' },
     introSub: "Before you build a brand, a business, a plan —\nyou have to know where you're actually going.",
     videoLabel: 'A word from Swerve',
-    videoUrl: 'https://res.cloudinary.com/ddzyvfolr/video/upload/v1778549172/vcompress_1_j33pa2.mp4',
+    videoUrl: 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/vcompress_1_j33pa2.mp4',
     nameFieldLabel: "What's your first name?",
     namePlaceholder: 'Your name',
     introCta: "I'm Ready",
@@ -169,7 +169,7 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
       name: 'Luxe',
       tagline: 'gold, marble, expensive',
       audio: {
-        url: 'https://res.cloudinary.com/ddzyvfolr/video/upload/v1778186908/ROADMAP_APP_-_LOFI_OCEAN_PIER_ndlqu8.mp3',
+        url: 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/ROADMAP_APP_-_LOFI_OCEAN_PIER_ndlqu8.mp3',
         name: 'Lofi Ocean Pier',
       },
     },
@@ -184,7 +184,7 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
       name: 'Earth',
       tagline: 'zen, daylight, grounded',
       audio: {
-        url: 'https://res.cloudinary.com/ddzyvfolr/video/upload/v1778186909/ROADMAP_APP_-_PEACEFUL_NATURE_SOUNDS_vnplxv.mp3',
+        url: 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/ROADMAP_APP_-_PEACEFUL_NATURE_SOUNDS_vnplxv.mp3',
         name: 'Peaceful Nature Sounds',
       },
     },
@@ -199,7 +199,7 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
       name: 'Sonic',
       tagline: 'jazz, brass, velvet',
       audio: {
-        url: 'https://res.cloudinary.com/ddzyvfolr/video/upload/v1778186909/ROADMAP_APP_-_PEACEFUL_NATURE_suii2m.mp3',
+        url: 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/ROADMAP_APP_-_PEACEFUL_NATURE_suii2m.mp3',
         name: 'Peaceful Nature',
       },
     },

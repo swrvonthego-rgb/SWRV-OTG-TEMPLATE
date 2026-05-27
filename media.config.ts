@@ -18,16 +18,14 @@
 //   • ddzyvfolr  — roadmap theme music tracks
 // ════════════════════════════════════════════════════════════
 
-const CLOUDINARY = {
-  brand: 'https://res.cloudinary.com/dzqxce5hv/image/upload',
-  marketing: 'https://res.cloudinary.com/dastq6bk5/image/upload',
-  artist: 'https://res.cloudinary.com/dlxkwdyk7/image/upload',
-  music: 'https://res.cloudinary.com/ddzyvfolr/video/upload',
+const R2 = {
+  swrvOtg: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets',
+  roadmap: 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets',
 } as const;
 
 export const MEDIA = {
   brand: {
-    logo: `${CLOUDINARY.brand}/v1772222265/Swerve_Badge_eow6m0.png`,
+    logo: `${R2.swrvOtg}/SWRV_BADGE_2024_transparent_bb8kyy.png`,
   },
 
   hero: {
@@ -39,9 +37,9 @@ export const MEDIA = {
         'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop',
       realtors:
         'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop',
-      petLovers: `${CLOUDINARY.marketing}/v1776950508/cld-sample_p72mk2.jpg`,
-      travelers: `${CLOUDINARY.marketing}/v1776950507/shoe_e9qvna.jpg`,
-      fashionDesigners: `${CLOUDINARY.marketing}/v1776950507/man-portrait_xykmg4.jpg`,
+      petLovers: `${R2.swrvOtg}/cld-sample-4_r2rwnh.jpg`,
+      travelers: `${R2.swrvOtg}/shoe_e9qvna.jpg`,
+      fashionDesigners: `${R2.swrvOtg}/man-portrait_xykmg4.jpg`,
       musicalArtists:
         'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop',
     },
@@ -49,6 +47,6 @@ export const MEDIA = {
 
   services: {
     // The "Meet the Leader of the Revolution" tile image
-    leaderTile: `${CLOUDINARY.marketing}/v1775906943/1752950982581945_2_kk3jt3_ui7upw.png`,
+    leaderTile: `${R2.swrvOtg}/1752950982581945_2_kk3jt3_ui7upw.png`,
   },
 } as const;

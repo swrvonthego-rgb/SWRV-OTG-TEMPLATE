@@ -110,7 +110,7 @@ export const ShowcaseVideo: React.FC = () => {
     <section ref={containerRef} className={`relative w-full h-screen bg-black overflow-hidden transition-all duration-500 ${isDismissed ? 'hidden' : ''}`}>
       <video
         ref={videoRef}
-        src="https://res.cloudinary.com/dastq6bk5/video/upload/v1775906956/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov"
+        src="https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov"
         muted={isMuted}
         onEnded={handleVideoEnded}
         playsInline

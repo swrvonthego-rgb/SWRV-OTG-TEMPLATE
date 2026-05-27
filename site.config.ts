@@ -948,16 +948,16 @@ export const HERO_CAROUSEL: {
     { image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop', title: 'FIGHTING ARTS', subtitle: 'MARTIAL ARTS' },
     { image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop', title: 'CULINARY ARTS', subtitle: '' },
     { image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop', title: 'REALTORS', subtitle: 'INTERIOR DESIGN' },
-    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950508/cld-sample_p72mk2.jpg', title: 'PET LOVERS', subtitle: 'COMMUNITY' },
-    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/shoe_e9qvna.jpg', title: 'TRAVELERS', subtitle: 'EXPLORATION' },
-    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/man-portrait_xykmg4.jpg', title: 'FASHION DESIGNERS', subtitle: 'STYLE' },
+    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/cld-sample_p72mk2.jpg', title: 'PET LOVERS', subtitle: 'COMMUNITY' },
+    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/shoe_e9qvna.jpg', title: 'TRAVELERS', subtitle: 'EXPLORATION' },
+    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/man-portrait_xykmg4.jpg', title: 'FASHION DESIGNERS', subtitle: 'STYLE' },
   ],
   column2: [
     { image: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop', title: 'MUSICAL ARTISTS', subtitle: 'PRODUCTION' },
     { image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop', title: 'FAN ENGAGEMENT', subtitle: 'COMMUNITY' },
     { image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop', title: 'GRAPHIC DESIGNERS', subtitle: 'CREATIVE' },
-    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/w_800,h_800,c_fill,q_auto/1752950982581945_2_kk3jt3_ui7upw.png', title: 'CONTENT CREATORS', subtitle: 'DIGITAL MEDIA' },
-    { image: 'https://res.cloudinary.com/dastq6bk5/image/upload/v1776950507/woman-on-a-football-field_agfcng.jpg', title: 'SUPER-DOPE PEOPLE', subtitle: 'LIFESTYLE' },
+    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/1752950982581945_2_kk3jt3_ui7upw.png', title: 'CONTENT CREATORS', subtitle: 'DIGITAL MEDIA' },
+    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/woman-on-a-football-field_agfcng.jpg', title: 'SUPER-DOPE PEOPLE', subtitle: 'LIFESTYLE' },
   ],
 };
 
@@ -965,10 +965,10 @@ export const HERO_CAROUSEL: {
 export const INTRO_VIDEOS = {
   // Full-screen takeover that plays before the page is interactive
   primary:
-    'https://res.cloudinary.com/dastq6bk5/video/upload/v1775906948/SWRV_WEB_4k_gifq4n_u5zwta.mp4',
+    'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/SWRV_WEB_4k_gifq4n_u5zwta.mp4',
   // Secondary intro that plays after the primary shrinks
   secondary:
-    'https://res.cloudinary.com/dastq6bk5/video/upload/v1775906956/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov',
+    'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov',
 } as const;
 
 // ── SCHEDULING (Calendar / Contact form) ───────────────────

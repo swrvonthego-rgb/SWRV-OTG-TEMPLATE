@@ -40,7 +40,7 @@ export const SHOP_CONFIG = {
       tagline: 'wear the wisdom',
       accent: 'from-orange-500/15 via-orange-500/5 to-transparent',
       image:
-        'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299527/womens-cropped-hoodie-black-front-69fdcb05dc414_lqi1p7.png',
+        'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/womens-cropped-hoodie-black-front-69fdcb05dc414_lqi1p7.png',
       bgWhite: true,
     },
     {
@@ -48,14 +48,14 @@ export const SHOP_CONFIG = {
       tagline: 'everyday revolution',
       accent: 'from-amber-500/15 via-amber-500/5 to-transparent',
       image:
-        'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299621/all-over-print-recycled-unisex-sports-jersey-white-front-69fdcb512b252_mxop04.png',
+        'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/all-over-print-recycled-unisex-sports-jersey-white-front-69fdcb512b252_mxop04.png',
     },
     {
       label: 'Dad Hats',
       tagline: 'small flexes',
       accent: 'from-yellow-500/15 via-yellow-500/5 to-transparent',
       image:
-        'https://res.cloudinary.com/dastq6bk5/image/upload/v1778299694/classic-dad-hat-black-front-69fdcbb11318f_rlpg8c.png',
+        'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/classic-dad-hat-black-front-69fdcbb11318f_rlpg8c.png',
     },
   ] as ShopProduct[],
 } as const;
