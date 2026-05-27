@@ -386,15 +386,13 @@ export const ContactSchedule: React.FC = () => {
                   <span className="text-xs font-bold tracking-[0.2em] uppercase" style={{ color: '#c8a84b' }}>
                     Your Cart · {cart.length} item{cart.length > 1 ? 's' : ''}
                   </span>
-                  <span className="font-black text-sm" style={{ color: '#c8a84b' }}>
-                    ${cartTotal.toLocaleString()}
-                  </span>
+                  {showPricing && <span className="font-black text-sm" style={{ color: '#c8a84b' }}>${cartTotal.toLocaleString()}</span>}
                 </div>
                 <div className="flex flex-col divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
                   {cart.map(item => (
                     <div key={item.id} className="flex items-center justify-between px-4 py-2.5 gap-3">
                       <span className="text-sm text-white flex-1 truncate">{item.name}</span>
-                      <span className="text-sm font-bold flex-shrink-0" style={{ color: '#c8a84b' }}>{item.price}</span>
+                      {showPricing && <span className="text-sm font-bold flex-shrink-0" style={{ color: '#c8a84b' }}>{item.price}</span>}
                       <button type="button" onClick={() => removeFromCart(item.id)}
                         className="text-xs flex-shrink-0 hover:text-red-400 transition-colors"
                         style={{ color: 'rgba(255,255,255,0.3)' }}>
@@ -404,7 +402,7 @@ export const ContactSchedule: React.FC = () => {
                   ))}
                 </div>
                 <div className="px-4 pb-4 pt-3 flex flex-col gap-2">
-                  {cartTotal >= 500 && (
+                  {showPricing && cartTotal >= 500 && (
                     <p className="text-xs text-center pb-1" style={{ color: 'rgba(200,168,75,0.6)' }}>
                       Pay in 4 via Klarna: 4 × ${(cartTotal / 4).toFixed(0)} — SWRV gets paid in full
                     </p>
@@ -412,7 +410,7 @@ export const ContactSchedule: React.FC = () => {
                   <button onClick={checkoutCart}
                     className="w-full py-3.5 rounded-full font-black text-sm"
                     style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>
-                    Checkout — ${cartTotal.toLocaleString()} →
+                    {showPricing ? `Checkout — $${cartTotal.toLocaleString()} →` : 'Proceed to Booking →'}
                   </button>
                   <button type="button" onClick={() => setCart([])}
                     className="text-xs text-center py-1 hover:text-white/60 transition-colors"

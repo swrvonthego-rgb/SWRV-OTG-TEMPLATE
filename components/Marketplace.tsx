@@ -83,15 +83,17 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
               <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, margin: '0 0 16px', maxWidth: 580 }}>
                 Don't know what you need? Take The Roadmap. A guided vision experience that names your gift, maps your path, and tells you exactly which services build your specific business. Yours forever.
               </p>
-              {/* Pricing options visible BEFORE clicking */}
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: `1px solid ${GOLD}`, borderRadius: 999, fontSize: 12, fontWeight: 700, color: GOLD }}>
-                  Full Roadmap — {ROADMAP_PRICING.full.price}
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 999, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>
-                  Quick Vision — {ROADMAP_PRICING.quick.price}
-                </span>
-              </div>
+              {/* Pricing options — hidden in launch mode */}
+              {!LAUNCH_MODE.active && (
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: `1px solid ${GOLD}`, borderRadius: 999, fontSize: 12, fontWeight: 700, color: GOLD }}>
+                    Full Roadmap — {ROADMAP_PRICING.full.price}
+                  </span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 999, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>
+                    Quick Vision — {ROADMAP_PRICING.quick.price}
+                  </span>
+                </div>
+              )}
             </div>
             <div style={{ flexShrink: 0 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 28px', background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: BG, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', borderRadius: 999, whiteSpace: 'nowrap', boxShadow: '0 8px 24px rgba(200,168,75,0.35)' }}>
