@@ -344,13 +344,13 @@ export const ContactSchedule: React.FC = () => {
             {step === 'service' && "Let's Get to Work."}
             {step === 'calendar' && "Pick Your Kickoff Date"}
             {step === 'details' && "Tell Us About You"}
-            {step === 'payment' && "How Do You Want to Pay?"}
+            {step === 'payment' && (showPricing ? "How Do You Want to Pay?" : "Send Your Request")}
           </h2>
           <p className="text-white/40 text-sm">
             {step === 'service' && "Pick your service. Prices are exact — no surprises, no upsells."}
             {step === 'calendar' && "Choose the day you want to kick this off."}
             {step === 'details' && "Name, email, and any notes. That's it."}
-            {step === 'payment' && "BNPL options let you pay in 4. SWRV gets paid in full upfront."}
+            {step === 'payment' && (showPricing ? "BNPL options let you pay in 4. SWRV gets paid in full upfront." : "Submit this request and SWRV will follow up with custom pricing within 24 hours.")}
           </p>
         </div>
 
@@ -466,11 +466,15 @@ export const ContactSchedule: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <p className="font-bold text-sm" style={{ color: '#c8a84b' }}>{svc.price}</p>
-                        {svc.priceNumeric >= 500 && (
-                          <p className="text-xs" style={{ color: 'rgba(200,168,75,0.5)' }}>
-                            4× ${(svc.priceNumeric / 4).toFixed(0)}
-                          </p>
+                        {showPricing && (
+                          <>
+                            <p className="font-bold text-sm" style={{ color: '#c8a84b' }}>{svc.price}</p>
+                            {svc.priceNumeric >= 500 && (
+                              <p className="text-xs" style={{ color: 'rgba(200,168,75,0.5)' }}>
+                                4× ${(svc.priceNumeric / 4).toFixed(0)}
+                              </p>
+                            )}
+                          </>
                         )}
                         <button
                           type="button"
@@ -887,7 +891,9 @@ export const ContactSchedule: React.FC = () => {
               {deliveryDate && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Delivery by: {format(deliveryDate, 'MMMM d, yyyy')}</p>}
             </div>
 
-            {/* ── BUY NOW PAY LATER — SWRV gets paid 100% upfront ── */}
+            {/* ── BUY NOW PAY LATER — only when pricing is on ── */}
+            {showPricing && (
+              <>
             <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>BUY NOW, PAY LATER</p>
             <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>SWRV receives full payment immediately. You repay your provider interest-free.</p>
             <div className="flex flex-col gap-2 mb-5">
@@ -954,7 +960,7 @@ export const ContactSchedule: React.FC = () => {
                           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{opt.sub}</p>
                         </div>
                       </div>
-                      <p className="text-sm font-black" style={{ color: sel ? opt.color : 'rgba(255,255,255,0.3)' }}>{selectedService.price}</p>
+                      {showPricing && <p className="text-sm font-black" style={{ color: sel ? opt.color : 'rgba(255,255,255,0.3)' }}>{selectedService.price}</p>}
                     </div>
                   </button>
                 );
@@ -977,6 +983,15 @@ export const ContactSchedule: React.FC = () => {
                 After submitting, you will be redirected to complete payment.
               </div>
             )}
+              </>
+            )}
+
+            {!showPricing && (
+              <div className="p-5 rounded-2xl mb-6 text-sm" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.2)', color: 'rgba(255,255,255,0.75)', lineHeight: 1.7 }}>
+                <p className="font-bold mb-2" style={{ color: '#c8a84b', letterSpacing: '0.05em' }}>NO PAYMENT REQUIRED — INQUIRY ONLY</p>
+                <p>Submit your request and SWRV will follow up within 24 hours with custom pricing and next steps. No card needed today.</p>
+              </div>
+            )}
 
             {submitError && (
               <p className="text-red-400 text-xs text-center mb-2 w-full">{submitError}</p>
@@ -987,7 +1002,7 @@ export const ContactSchedule: React.FC = () => {
               <button onClick={handleBook} disabled={submitting}
                 className="flex-1 py-3 rounded-full font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100"
                 style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>
-                {submitting ? 'Submitting…' :
+                {submitting ? 'Submitting…' : !showPricing ? 'Send Booking Request →' :
                  ['klarna','afterpay','affirm','zip','sezzle','paylater'].includes(payMethod)
                    ? `Book — Pay Later via ${PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.name || payMethod} →`
                    : payMethod === 'paypal'  ? 'Book + Pay via PayPal →'
