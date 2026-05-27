@@ -4,13 +4,25 @@ export interface BrandColor {
   meaning: string;
 }
 
+export interface ServiceComponent {
+  name: string;       // e.g. "Song Production"
+  what: string;       // what it is and why it's needed
+  note?: string;      // optional: if they don't have this yet, etc.
+}
+
 export interface RecommendedService {
-  name: string;
-  why: string;
-  price: string;
+  name: string;       // e.g. "Music Video"
+  why: string;        // why their specific vision needs this
+  components: ServiceComponent[];  // what it's made up of — NO prices
   phase?: 'Foundation' | 'Production' | 'Delivery' | 'Growth';
   order?: number;
 }
+
+export interface VisionElevation {
+  elevated: string;           // their vision rewritten with depth and implication
+  unseen_needs: string[];     // 3-5 things they didn't think about but will need
+}
+
 
 // ── NEW: Deep life blueprint derived from the vision ──────────────────
 export interface Blueprint {
@@ -66,8 +78,10 @@ export interface RoadmapResult {
   closing_word: string;
   // The Route — Apple Maps for their life
   roadmap_timeline?: RoadmapPhase[];
-  // Q&A Reflection — their answers, grammatically corrected
+  // Q&A Reflection — their answers, elevated not just corrected
   qa_reflection?: QAReflection[];
+  // Vision Elevation — expanded beyond what they said
+  vision_elevation?: VisionElevation;
 }
 
 export type ScreenId =
@@ -79,10 +93,7 @@ export type ScreenId =
   | 'vision'
   | 'phase2'
   | 'processing'
-  | 'results'
-  | 'qv-input'
-  | 'qv-processing'
-  | 'qv-result';
+  | 'results';
 
 export type Theme = 'luxe' | 'cyberpunk' | 'earth' | 'street' | 'sonic';
 

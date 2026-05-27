@@ -1114,3 +1114,29 @@
 .roadmap-experience .qa-question{font-size:12px;font-weight:600;color:var(--ink-mid);margin:0 0 8px;display:flex;align-items:flex-start;gap:8px;line-height:1.5;opacity:.8;}
 .roadmap-experience .qa-num{color:var(--accent-1);font-size:11px;font-weight:700;letter-spacing:.1em;flex-shrink:0;margin-top:1px;min-width:24px;}
 .roadmap-experience .qa-answer{font-size:14px;color:var(--ink-bright);line-height:1.8;margin:0;padding-left:32px;}
+
+/* ═══════════════════════════════════════════════════════════════
+   SERVICE COMPONENT BREAKDOWN
+══════════════════════════════════════════════════════════════ */
+.roadmap-experience .svc-components{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);}
+.roadmap-experience .svc-components-label{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-1);opacity:.6;margin:0 0 10px;}
+.roadmap-experience .svc-component{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.roadmap-experience .svc-component:last-child{border-bottom:none;}
+.roadmap-experience .svc-comp-name{font-size:13px;font-weight:700;color:var(--ink-bright);}
+.roadmap-experience .svc-comp-what{font-size:12px;color:var(--ink-mid);line-height:1.5;}
+.roadmap-experience .svc-comp-note{font-size:11px;color:var(--accent-1);opacity:.7;font-style:italic;margin-top:2px;}
+
+/* ═══════════════════════════════════════════════════════════════
+   VISION ELEVATION
+══════════════════════════════════════════════════════════════ */
+.roadmap-experience .elevation-section{margin:40px 0;}
+.roadmap-experience .elevation-card{padding:24px;background:rgba(200,168,75,0.06);border:1px solid rgba(200,168,75,0.2);border-radius:16px;margin:16px 0 24px;}
+.roadmap-experience .elevation-text{font-size:16px;color:var(--ink-bright);line-height:1.85;margin:0;font-weight:500;font-style:italic;}
+.roadmap-experience .elevation-unseen{margin-top:8px;}
+.roadmap-experience .unseen-grid{display:flex;flex-direction:column;gap:12px;}
+.roadmap-experience .unseen-item{display:flex;align-items:flex-start;gap:14px;padding:14px;background:var(--bg-soft);border:1px solid var(--border);border-radius:12px;}
+.roadmap-experience .unseen-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#c8a84b,#e8c96a);color:var(--bg-deep);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.roadmap-experience .unseen-text{font-size:14px;color:var(--ink-mid);line-height:1.7;margin:0;padding-top:4px;}
+
+/* Single-option paywall */
+.roadmap-experience .paywall-single{display:flex;justify-content:center;}

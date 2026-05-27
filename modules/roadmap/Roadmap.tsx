@@ -39,9 +39,7 @@ const PROGRESS_PCT: Record<ScreenId, number> = {
   phase2: 70,
   processing: 85,
   results: 100,
-  'qv-input': 10,
-  'qv-processing': 60,
-  'qv-result': 100,
+
 };
 
 const VALID_THEMES: Theme[] = ['luxe', 'cyberpunk', 'earth', 'street', 'sonic'];
@@ -772,33 +770,6 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   }, [effectiveVision]);
 
 
-  // ── QV API: fires when qv-processing screen is shown ────────────
-  useEffect(() => {
-    if (screen !== 'qv-processing') return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const sysPrompt = 'You are a gift advisor for SWRV On The Go. A person answered 10 questions to locate their gift. Their gift is the thread across all answers. Return ONLY valid JSON: {"gift":"one specific sentence — their irreducible gift","direction":"3-4 sentences on what they are here to do and why it matters — from their actual words","services":[{"name":"exact SWRV service name","price":"$XXX","why":"one sentence from their words"}]} 2-3 services max. Exact names: Brand Planning ($250), Logo Design ($250), Photography ($800), Content Strategy ($500), Website Presence ($250), Website Platform ($500), Website Ecosystem ($1000), Full Song Production ($3000), Mixing ($500), Mastering ($500), Music Video ($5000), Promo Video ($1250), Podcast Launch Kit ($250), Strategy Call ($375), Artist Development (from $1000), Pitch Deck ($250), LLC Formation ($250). No markdown.';
-        const userContent = QV_QUESTIONS.map(q => 'Q: ' + q.q + '\nA: ' + (qvAnswers[q.id] || '(skipped)').trim()).join('\n\n');
-        const res = await fetch(apiEndpoint, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ system: sysPrompt, messages: [{ role: 'user', content: userContent }] }),
-        });
-        if (cancelled) return;
-        const data = await res.json();
-        const raw = (data.result || data.choices?.[0]?.message?.content || '{}').replace(/```json|```/g, '').trim();
-        const parsed = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
-        if (!cancelled) { setQvResult(parsed); goTo('qv-result'); }
-      } catch {
-        if (!cancelled) {
-          setQvResult({ gift: 'Your gift is real — it showed up across everything you shared.', direction: 'SWRV can help you build a vehicle around it. Book a Strategy Call to go deeper.', services: [{ name: 'Strategy Call', price: '$375', why: 'A direct conversation with Swerve to map your gift into a plan.' }] });
-          goTo('qv-result');
-        }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [screen]);
-
   if (!isOpen) return null;
 
   // ── Computed for results screen ──────────────────────────
@@ -962,491 +933,64 @@ export const Roadmap: React.FC<RoadmapProps> = ({
             Choose how deep you want to go.
           </p>
 
-          <div className="paywall-cards">
-            {/* ── QUICK VISION (Free) ── */}
-            <div className="paywall-card paywall-card-free">
-              <div className="paywall-card-badge">Free</div>
-              <h3 className="paywall-card-title">Quick Vision</h3>
-              <p className="paywall-card-tagline">{ROADMAP_PRICING.quick.tagline}</p>
-              <ul className="paywall-card-bullets">
-                {[...ROADMAP_PRICING.quick.bulletPoints].map((b, i) => (
-                  <li key={i}><span className="paywall-check">✓</span>{b}</li>
-                ))}
-              </ul>
-              <button type="button" className="paywall-btn paywall-btn-free"
-                onClick={() => goTo('qv-input')}>
-                Start Free →
-              </button>
-            </div>
-
-            {/* ── FULL ROADMAP ($1) ── */}
-            <div className="paywall-card paywall-card-paid">
-              <div className="paywall-card-badge paywall-badge-gold">
-                {ROADMAP_PRICING.full.price}
-              </div>
-              <h3 className="paywall-card-title">{ROADMAP_PRICING.full.label}</h3>
-              <p className="paywall-card-tagline">{ROADMAP_PRICING.full.tagline}</p>
-              <ul className="paywall-card-bullets">
-                {[...ROADMAP_PRICING.full.bulletPoints].map((b, i) => (
-                  <li key={i}><span className="paywall-check paywall-check-gold">✓</span>{b}</li>
-                ))}
-              </ul>
-              {!paymentPending ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {ROADMAP_PRICING.full.stripeLink && (
+          <div className="paywall-single">
+              <div className="paywall-card paywall-card-paid" style={{ maxWidth: 480, margin: '0 auto' }}>
+                <div className="paywall-card-badge paywall-badge-gold">
+                  {ROADMAP_PRICING.full.price}
+                </div>
+                <h3 className="paywall-card-title">{ROADMAP_PRICING.full.label}</h3>
+                <p className="paywall-card-tagline">{ROADMAP_PRICING.full.tagline}</p>
+                <ul className="paywall-card-bullets">
+                  {[...ROADMAP_PRICING.full.bulletPoints].map((b, i) => (
+                    <li key={i}><span className="paywall-check paywall-check-gold">✓</span>{b}</li>
+                  ))}
+                </ul>
+                {!paymentPending ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {ROADMAP_PRICING.full.stripeLink && (
+                      <button type="button" className="paywall-btn paywall-btn-paid"
+                        onClick={() => {
+                          window.open(ROADMAP_PRICING.full.stripeLink, '_blank', 'noopener');
+                          setPaymentPending(true);
+                        }}>
+                        Pay with Card →
+                      </button>
+                    )}
+                    {ROADMAP_PRICING.full.paypalLink && (
+                      <button type="button" className="paywall-btn paywall-btn-free"
+                        style={{ background: 'rgba(0,112,186,0.12)', borderColor: 'rgba(0,112,186,0.4)', color: '#60a5fa' }}
+                        onClick={() => {
+                          window.open(ROADMAP_PRICING.full.paypalLink, '_blank', 'noopener');
+                          setPaymentPending(true);
+                        }}>
+                        Pay with PayPal →
+                      </button>
+                    )}
+                    {!ROADMAP_PRICING.full.stripeLink && !ROADMAP_PRICING.full.paypalLink && (
+                      <p className="paywall-coming">Payment setup coming soon.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="paywall-pending">
+                    <p className="paywall-pending-text">
+                      Complete your {ROADMAP_PRICING.full.price} payment in the tab that opened, then tap below.
+                    </p>
                     <button type="button" className="paywall-btn paywall-btn-paid"
                       onClick={() => {
-                        window.open(ROADMAP_PRICING.full.stripeLink, '_blank', 'noopener');
-                        setPaymentPending(true);
+                        sessionStorage.setItem('swrv_rm_paid', '1');
+                        setPaymentPending(false);
+                        goTo('intro');
                       }}>
-                      Pay with Card (Stripe) →
+                      I've Paid — Begin →
                     </button>
-                  )}
-                  {ROADMAP_PRICING.full.paypalLink && (
-                    <button type="button" className="paywall-btn paywall-btn-free"
-                      style={{ background: 'rgba(0,112,186,0.12)', borderColor: 'rgba(0,112,186,0.4)', color: '#60a5fa' }}
-                      onClick={() => {
-                        window.open(ROADMAP_PRICING.full.paypalLink, '_blank', 'noopener');
-                        setPaymentPending(true);
-                      }}>
-                      Pay with PayPal →
+                    <button type="button" className="paywall-pending-back"
+                      onClick={() => setPaymentPending(false)}>
+                      ← Go back
                     </button>
-                  )}
-                </div>
-              ) : (
-                <div className="paywall-pending">
-                  <p className="paywall-pending-text">
-                    Complete your {ROADMAP_PRICING.full.price} payment in the tab that opened, then tap below.
-                  </p>
-                  <button type="button" className="paywall-btn paywall-btn-paid"
-                    onClick={() => {
-                      sessionStorage.setItem('swrv_rm_paid', '1');
-                      setPaymentPending(false);
-                      goTo('intro');
-                    }}>
-                    I've Paid — Continue →
-                  </button>
-                  <button type="button" className="paywall-pending-back"
-                    onClick={() => setPaymentPending(false)}>
-                    ← Go back
-                  </button>
-                </div>
-              )}
-              {!ROADMAP_PRICING.full.stripeLink && !ROADMAP_PRICING.full.paypalLink && (
-                <p className="paywall-coming">Payment setup coming soon — check back shortly.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════
-           SCREEN QV — QUICK VISION INPUT (Free path)
-      ═══════════════════════════════════════════════ */}
-      <section id="screen-qv-input" className={`screen ${screen === 'qv-input' ? 'active' : ''}`}>
-        <div className="grain" />
-        {(() => {
-          const qvQ = QV_QUESTIONS[qvIdx];
-          const qvAnswer = qvAnswers[qvQ.id] || '';
-          const isFirst = qvIdx === 0;
-          const isLast = qvIdx === QV_QUESTIONS.length - 1;
-          const pct = Math.round(((qvIdx + 1) / QV_QUESTIONS.length) * 100);
-          return (
-            <div className="qv-wrap">
-              <div className="phase2-progress-row" style={{ marginBottom: 24 }}>
-                <span className="phase2-step">Question {qvIdx + 1} of {QV_QUESTIONS.length}</span>
-                <div className="phase2-progress-bar">
-                  <div className="phase2-progress-fill" style={{ width: pct + "%" }} />
-                </div>
-              </div>
-              {isFirst && <p className="phase2-intro">Your gift is your vehicle. These 10 questions help locate it.<br/>Be honest. Be specific. There are no wrong answers here.</p>}
-              <h2 className="phase2-question">{qvQ.q}</h2>
-              <textarea className="phase2-input" rows={4} autoFocus
-                placeholder={qvQ.ph}
-                value={qvAnswer}
-                onChange={e => setQvAnswers(prev => ({ ...prev, [qvQ.id]: e.target.value }))}
-              />
-              <div className="phase2-actions">
-                {!isFirst && <button type="button" className="btn-ghost" onClick={() => setQvIdx(i => i - 1)}>← Back</button>}
-                <button type="button" className="btn-ghost phase2-skip"
-                  onClick={() => isLast ? goTo('qv-processing') : setQvIdx(i => i + 1)}>Skip</button>
-                <button type="button" className="btn-primary" disabled={!qvAnswer.trim()}
-                  onClick={() => isLast ? goTo('qv-processing') : setQvIdx(i => i + 1)}>
-                  {isLast ? 'Find My Gift →' : 'Next →'}
-                </button>
-              </div>
-              <p className="phase2-finish-anytime">Done early? <button type="button" className="phase2-finish-link" onClick={() => goTo('qv-processing')}>Generate my quick vision now →</button></p>
-            </div>
-          );
-        })()}
-      </section>
-
-      {/* ════════════════════════════════════════════════
-           SCREEN QV-PROCESSING
-      ═══════════════════════════════════════════════ */}
-      <section id="screen-qv-processing" className={`screen ${screen === 'qv-processing' ? 'active' : ''}`}>
-        <div className="grain" />
-        <div className="processing-inner" style={{ textAlign: 'center', padding: '80px 24px' }}>
-          <div className="spinner" style={{ margin: '0 auto 24px' }} />
-          <p style={{ color: 'var(--ink-bright)', fontSize: 16, fontWeight: 600 }}>Locating your gift…</p>
-          <p style={{ color: 'var(--ink-mid)', fontSize: 13, marginTop: 8 }}>Reading everything you shared. About 15 seconds.</p>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════
-           SCREEN QV-RESULT
-      ═══════════════════════════════════════════════ */}
-      <section id="screen-qv-result" className={`screen ${screen === 'qv-result' ? 'active' : ''}`}>
-        <div className="grain" />
-        {qvResult && (
-          <div className="qv-result-wrap">
-            <p className="paywall-eyebrow">YOUR QUICK VISION</p>
-            <h2 className="qv-result-title">Here's What We See</h2>
-
-            <div className="qv-result-card">
-              <p className="qv-result-label">YOUR GIFT</p>
-              <p className="qv-result-gift">{qvResult.gift}</p>
-            </div>
-
-            <div className="qv-result-card">
-              <p className="qv-result-label">YOUR DIRECTION</p>
-              <p className="qv-result-direction">{qvResult.direction}</p>
-            </div>
-
-            {qvResult.services?.length > 0 && (
-              <div className="qv-result-card">
-                <p className="qv-result-label">WHERE TO START</p>
-                {qvResult.services.map((s, i) => (
-                  <div key={i} className="qv-result-service">
-                    <div className="qv-result-svc-row">
-                      <span className="qv-result-svc-name">{s.name}</span>
-                      <span className="qv-result-svc-price">{s.price}</span>
-                    </div>
-                    <p className="qv-result-svc-why">{s.why}</p>
                   </div>
-                ))}
-              </div>
-            )}
-
-            <div className="qv-result-upgrade">
-              <p className="qv-result-upgrade-text">
-                Want the full picture? The Full Roadmap goes deeper — your blueprint, your life, your vision mapped to every service you need.
-              </p>
-              <button type="button" className="paywall-btn paywall-btn-paid"
-                onClick={() => { goTo('paywall'); }}>
-                Get the Full Roadmap for {ROADMAP_PRICING.full.price} →
-              </button>
-            </div>
-
-            <div className="qv-result-actions">
-              <button type="button" className="btn-ghost"
-                onClick={() => { document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>
-                Book a Service →
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* ════════ SCREEN 1 — INTRO ════════ */}
-      <section id="screen-intro" className={`screen ${screen === 'intro' ? 'active' : ''}`}>
-        <div className="grain" />
-        <div className="intro-content">
-          <span className="logo-mark">{config.copy.introLogo}</span>
-          <h1 className="intro-title">
-            {config.copy.introTitle.line1}<br />
-            <em>{config.copy.introTitle.emphasis}</em><br />
-            {config.copy.introTitle.line3}
-          </h1>
-          <p className="intro-sub">{config.copy.introSub}</p>
-
-          <div className="video-wrap">
-            {config.copy.videoUrl ? (
-              <>
-                <video
-                  ref={videoRef}
-                  className="video-player"
-                  src={config.copy.videoUrl}
-                  controls
-                  autoPlay
-                  muted={videoMuted}
-                  playsInline
-                  preload="auto"
-                  aria-label={config.copy.videoLabel}
-                />
-                {videoMuted && (
-                  <button
-                    type="button"
-                    className="video-unmute-btn"
-                    onClick={() => {
-                      if (videoRef.current) {
-                        videoRef.current.muted = false;
-                        videoRef.current.volume = 1;
-                        videoRef.current.play();
-                      }
-                      setVideoMuted(false);
-                    }}
-                  >
-                    <span className="video-unmute-icon">🔊</span>
-                    <span className="video-unmute-label">TAP TO HEAR</span>
-                  </button>
                 )}
-              </>
-            ) : (
-              <button
-                type="button"
-                className="video-cover"
-                onClick={() => showToast('Video dropping soon — Swerve is recording 🎬')}
-              >
-                <span className="play-ring">
-                  <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                </span>
-                <span className="video-label">{config.copy.videoLabel}</span>
-              </button>
-            )}
-          </div>
-
-          <div className="name-field-wrap">
-            <label className="field-label" htmlFor="user-name">{config.copy.nameFieldLabel}</label>
-            <input
-              ref={nameInputRef}
-              id="user-name"
-              className={`text-input ${nameError ? 'error' : ''}`}
-              type="text"
-              placeholder={nameError ? 'Please enter your name' : config.copy.namePlaceholder}
-              maxLength={40}
-              autoComplete="given-name"
-              autoCorrect="off"
-              spellCheck={false}
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') goToEmail(); }}
-            />
-          </div>
-
-          <button type="button" className="btn-primary" onClick={goToEmail}>
-            {config.copy.introCta}
-          </button>
-
-          <p className="intro-vibe-hint">
-            <span aria-hidden="true">⤴︎</span>  Tap the speaker to pick your music · Tap the palette to choose your world
-          </p>
-        </div>
-      </section>
-
-      {/* ════════ SCREEN 2 — DISCLAIMER ════════ */}
-      <section id="screen-disclaimer" className={`screen ${screen === 'disclaimer' ? 'active' : ''}`}>
-        <div className="disc-box">
-          <div className="disc-ornament">
-            <span />
-            <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>
-            <span />
-          </div>
-          <h2 className="disc-title">
-            {config.copy.disclaimerTitle.line1}<br />{config.copy.disclaimerTitle.line2}
-          </h2>
-          {config.copy.disclaimerBody.map((p, i) => (
-            <p key={i} className="disc-text">{renderInlineEmphasis(p)}</p>
-          ))}
-          <hr className="disc-rule" />
-          <p className="disc-note">{config.copy.disclaimerNote}</p>
-          <div className="btn-row">
-            <button type="button" className="btn-ghost" onClick={() => goTo('intro')}>
-              {config.copy.disclaimerBack}
-            </button>
-            <button type="button" className="btn-primary" onClick={() => goTo('duration')}>
-              {config.copy.disclaimerNext}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════ SCREEN 3 — VISION ════════ */}
-      <section id="screen-vision" className={`screen ${screen === 'vision' ? 'active' : ''}`}>
-        <nav className="vision-nav">
-          <span className="logo-mark" style={{ margin: 0 }}>The Roadmap</span>
-          {timeRemaining !== null && (
-            <span
-              className={`vision-timer ${timeRemaining <= 60 ? 'urgent' : ''}`}
-              aria-label={`Time remaining: ${formatTime(timeRemaining)}`}
-            >
-              ⏱ {formatTime(timeRemaining)}
-            </span>
-          )}
-          <span className="step-label">Your Vision</span>
-        </nav>
-        <div className="vision-main">
-          <h2 className="vision-prompt">
-            {config.copy.visionPrompt.line1} <em>{config.copy.visionPrompt.emphasis}</em><br />
-            {config.copy.visionPrompt.line3.split('\n').map((line, i, arr) => (
-              <React.Fragment key={i}>
-                {line}{i < arr.length - 1 ? <br /> : null}
-              </React.Fragment>
-            ))}
-          </h2>
-          <p className="vision-sub">{config.copy.visionSub}</p>
-
-          <div className="time-row">
-            {(['morning', 'afternoon', 'evening', 'night'] as const).map((key) => {
-              const labels = {
-                morning: '☀ Morning', afternoon: '◑ Afternoon',
-                evening: '◐ Evening', night: '☽ Night',
-              };
-              return (
-                <div key={key} className={`time-pill ${litPills.has(key) ? 'lit' : ''}`}>
-                  {labels[key]}
-                </div>
-              );
-            })}
-          </div>
-
-          <textarea
-            ref={textareaRef}
-            className={`vision-textarea ${shake ? 'shake' : ''}`}
-            placeholder={config.copy.visionPlaceholder}
-            value={effectiveVision}
-            onChange={(e) => { setVision(e.target.value); setInterimVision(''); }}
-            onFocus={(e) => {
-              window.setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
-            }}
-          />
-
-          <div className="mic-section">
-            <button
-              type="button"
-              className={`mic-btn ${mic.isListening ? 'recording' : ''}`}
-              onClick={mic.toggle}
-              title="Speak your vision"
-              aria-label="Toggle voice input"
-              disabled={mic.state === 'unsupported'}
-            >
-              <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" /></svg>
-            </button>
-            <div className={`viz-bars ${mic.isListening ? 'active' : ''}`}>
-              {mic.bars.map((h, i) => (
-                <div key={i} className="viz-bar" style={{ height: `${h}px` }} />
-              ))}
-            </div>
-            <span className="mic-status">
-              {mic.state === 'unsupported' && 'Not supported — use Chrome or Edge'}
-              {mic.state === 'blocked' && 'Mic blocked — allow mic in browser settings'}
-              {mic.state === 'network-error' && 'Network error — check connection'}
-              {mic.state === 'requesting' && 'Asking for mic permission…'}
-              {mic.state === 'listening' && 'Listening — speak freely'}
-              {mic.state === 'idle' && 'Tap to speak'}
-            </span>
-            {mic.state === 'idle' && <span className="mic-note">Chrome / Edge recommended</span>}
-
-            {/* Live controls during recording — volume slider + finished button */}
-            {/* Use mic.userListening (sticky) NOT mic.isListening (flickers during auto-restart) */}
-            {mic.userListening && (
-              <div className="vision-live-controls">
-                <div className="vision-volume">
-                  <span className="vision-volume-label">🎵 Music</span>
-                  <input
-                    id="vision-volume-slider"
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    defaultValue="0.15"
-                    aria-label="Background music volume"
-                    onInput={(e) => {
-                      const audio = audioRef.current;
-                      if (audio) audio.volume = parseFloat((e.target as HTMLInputElement).value);
-                    }}
-                  />
-                </div>
-                <button
-                  type="button"
-                  className="vision-finished-btn"
-                  onClick={() => mic.stop()}
-                  aria-label="I'm finished speaking"
-                >
-                  ✓ I'm Finished
-                </button>
               </div>
-            )}
-          </div>
-
-          <div className="word-counter">{words} word{words !== 1 ? 's' : ''}</div>
-
-          <div className="vision-footer">
-            <span className="char-hint">
-              {words > 0 && words < 30 ? `${30 - words} more words to unlock` : ''}
-            </span>
-            <button type="button" className="btn-primary" onClick={submitVision}>
-              {config.copy.visionCta}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════ SCREEN 3.5 — EMAIL ════════ */}
-      <section id="screen-email" className={`screen ${screen === 'email' ? 'active' : ''}`}>
-        <div className="email-box">
-          <div className="disc-ornament" style={{ marginBottom: 28 }}>
-            <span />
-            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" /></svg>
-            <span />
-          </div>
-          <h2 className="email-title">
-            Where should we send<br />your Roadmap?
-          </h2>
-          <p className="email-sub">
-            We'll save your progress and email it to you — including a link to pick up where you left off and choose your next step.
-          </p>
-          <div className="email-fields">
-            <input
-              className="text-input"
-              type="email"
-              placeholder="your@email.com"
-              autoComplete="email"
-              value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
-              style={{ maxWidth: '100%', textAlign: 'left', padding: '14px 18px', fontSize: 16 }}
-              onKeyDown={(e) => { if (e.key === 'Enter') goToDisclaimerFromEmail(false); }}
-            />
-          </div>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => goToDisclaimerFromEmail(false)}
-            style={{ width: '100%', maxWidth: 360 }}
-          >
-            Continue
-          </button>
-          <button type="button" className="skip-link" onClick={() => goToDisclaimerFromEmail(true)}>
-            Skip — I don't want my Roadmap emailed
-          </button>
-        </div>
-      </section>
-
-      {/* ════════ SCREEN 3.5 — DURATION (5 / 10) ════════ */}
-      <section id="screen-duration" className={`screen ${screen === 'duration' ? 'active' : ''}`}>
-        <div className="duration-box">
-          <div className="disc-ornament" style={{ marginBottom: 28 }}>
-            <span />
-            <svg viewBox="0 0 24 24"><path d="M11 17a1 1 0 0 0 2 0v-6a1 1 0 0 0-2 0v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z" /></svg>
-            <span />
-          </div>
-          <h2 className="email-title">How much time<br />do you want?</h2>
-          <p className="email-sub">
-            Take your time. There's no race. Pick the window that feels right for where you are today.
-          </p>
-          <div className="duration-options">
-            <button type="button" className="duration-btn" onClick={() => selectDuration(5)}>
-              <span className="duration-num">5</span>
-              <span className="duration-unit">minutes</span>
-              <span className="duration-vibe">quick & focused</span>
-            </button>
-            <button type="button" className="duration-btn" onClick={() => selectDuration(10)}>
-              <span className="duration-num">10</span>
-              <span className="duration-unit">minutes</span>
-              <span className="duration-vibe">deeper picture</span>
-            </button>
-          </div>
-        </div>
+            </div></div>
       </section>
 
       {/* ════════ SCREEN 3.75 — PHASE 2 (16 GUIDED QUESTIONS) ════════ */}
@@ -1759,18 +1303,49 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                         <div className="svc-content">
                           <div className="svc-name">{s.name}</div>
                           <div className="svc-why">{s.why}</div>
-                          <div className="svc-price">{s.price}</div>
+                          {/* Component breakdown */}
+                          {(s as any).components?.length > 0 && (
+                            <div className="svc-components">
+                              <p className="svc-components-label">What this is made of:</p>
+                              {((s as any).components as Array<{name:string;what:string;note?:string}>).map((comp, ci) => (
+                                <div key={ci} className="svc-component">
+                                  <span className="svc-comp-name">{comp.name}</span>
+                                  <span className="svc-comp-what">{comp.what}</span>
+                                  {comp.note && <span className="svc-comp-note">{comp.note}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
-                <div className="total-row">
-                  <span className="total-label">Estimated Investment</span>
-                  <span className="total-amount">${total.toLocaleString()}</span>
-                </div>
               </div>
 
+              {/* ── VISION ELEVATION — What they said, and what they didn't think about ── */}
+              {(result as any).vision_elevation && (
+                <div className="elevation-section">
+                  <div className="cta-eyebrow" style={{ marginBottom: 6 }}>YOUR VISION, ELEVATED</div>
+                  <h3 className="route-title">What You're Actually Building</h3>
+                  <div className="elevation-card">
+                    <p className="elevation-text">{(result as any).vision_elevation.elevated}</p>
+                  </div>
+                  {((result as any).vision_elevation.unseen_needs || []).length > 0 && (
+                    <div className="elevation-unseen">
+                      <p className="route-block-label" style={{ marginBottom: 16 }}>What You Haven't Thought About Yet</p>
+                      <div className="unseen-grid">
+                        {((result as any).vision_elevation.unseen_needs as string[]).map((need, i) => (
+                          <div key={i} className="unseen-item">
+                            <span className="unseen-num">{i + 1}</span>
+                            <p className="unseen-text">{need}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* ── THE ROUTE ── */}
               {(result.roadmap_timeline || []).length > 0 && (
