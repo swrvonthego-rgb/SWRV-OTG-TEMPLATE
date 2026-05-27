@@ -28,6 +28,7 @@ import { Byob } from './modules/byob/Byob';
 import { LiveChat } from './components/LiveChat';
 import { ProjectIntake } from './components/ProjectIntake';
 import { Pipeline } from './components/Pipeline';
+import { LaunchBanner } from './components/LaunchBanner';
 import { Marketplace } from './components/Marketplace';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
@@ -159,6 +160,7 @@ const App: React.FC = () => {
       <Header onOpenByob={() => setIsByobOpen(true)} onOpenZion={() => setIsZionOpen(true)} />
 
       <main>
+        <LaunchBanner />
         <SecondaryIntro skipIntro={skipIntro} />
         <Hero
           onOpenConsultation={() => setIsRoadmapOpen(true)}

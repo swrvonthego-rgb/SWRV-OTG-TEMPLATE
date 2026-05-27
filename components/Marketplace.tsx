@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Check, Cpu, Settings, Shield } from 'lucide-react';
-import { SERVICES, WEB_PACKAGE_TIERS, ROADMAP_PRICING } from '../site.config';
+import { SERVICES, WEB_PACKAGE_TIERS, ROADMAP_PRICING, LAUNCH_MODE } from '../site.config';
 
 interface Props {
   onOpenRoadmap?: () => void;
@@ -123,15 +123,34 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
 
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#c8a84b', opacity: 0.8, marginBottom: 12 }}>
-            CHOOSE YOUR TIER
-          </p>
-          <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(26px,4vw,42px)', fontWeight: 400, margin: '0 0 10px', color: '#0a0804', lineHeight: 1.15 }}>
-            Four tiers. One built right for you.
-          </h3>
-          <p style={{ fontSize: 15, color: 'rgba(10,8,4,0.55)', lineHeight: 1.7, maxWidth: 520, margin: 0 }}>
-            Select what you need, add it to the cart, and check out below. Prices are exact. No surprises.
-          </p>
+          {LAUNCH_MODE.active ? (
+            <>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#c8a84b', opacity: 0.8, marginBottom: 14 }}>
+                NOW ACCEPTING CLIENTS
+              </p>
+              <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(26px,4vw,46px)', fontWeight: 400, margin: '0 0 14px', color: '#0a0804', lineHeight: 1.1 }}>
+                We just opened the doors.
+              </h3>
+              <p style={{ fontSize: 16, color: 'rgba(10,8,4,0.6)', lineHeight: 1.75, maxWidth: 560, margin: '0 0 20px' }}>
+                {LAUNCH_MODE.subline}
+              </p>
+              <a href="#contact" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 28px', background: '#0a0804', color: '#fff', textDecoration: 'none', borderRadius: 999, fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 32 }}>
+                Book a Consultation →
+              </a>
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#c8a84b', opacity: 0.8, marginBottom: 12 }}>
+                CHOOSE YOUR TIER
+              </p>
+              <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(26px,4vw,42px)', fontWeight: 400, margin: '0 0 10px', color: '#0a0804', lineHeight: 1.15 }}>
+                Four tiers. One built right for you.
+              </h3>
+              <p style={{ fontSize: 15, color: 'rgba(10,8,4,0.55)', lineHeight: 1.7, maxWidth: 520, margin: 0 }}>
+                Select what you need, add it to the cart, and check out below. Prices are exact. No surprises.
+              </p>
+            </>
+          )}
         </div>
 
         {/* Packages */}
@@ -158,11 +177,17 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
                 )}
                 <h4 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 22, fontWeight: 400, margin: '8px 0 4px', color: '#0a0804' }}>{tier.name}</h4>
                 <p style={{ fontSize: 12, color: 'rgba(10,8,4,0.5)', margin: '0 0 18px', lineHeight: 1.6, minHeight: 36 }}>{tier.tagline}</p>
-                <p style={{ fontSize: 38, fontWeight: 800, margin: '0 0 2px', color: '#0a0804', letterSpacing: '-0.02em' }}>
-                  ${tier.price.toLocaleString()}
-                  {tier.id === 'enterprise' && <span style={{ fontSize: 14, fontWeight: 400, opacity: 0.4, marginLeft: 4 }}>+</span>}
-                </p>
-                <p style={{ fontSize: 11, color: 'rgba(10,8,4,0.35)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 20 }}>{tier.deliveryDays || 'Custom timeline'}</p>
+                {LAUNCH_MODE.active ? (
+                  <p style={{ fontSize: 14, fontWeight: 700, margin: '0 0 20px', color: '#c8a84b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Pricing on Request</p>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 38, fontWeight: 800, margin: '0 0 2px', color: '#0a0804', letterSpacing: '-0.02em' }}>
+                      ${tier.price.toLocaleString()}
+                      {tier.id === 'enterprise' && <span style={{ fontSize: 14, fontWeight: 400, opacity: 0.4, marginLeft: 4 }}>+</span>}
+                    </p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,8,4,0.35)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 20 }}>{tier.deliveryDays || 'Custom timeline'}</p>
+                  </>
+                )}
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
                   {tier.includes.slice(0, 5).map((item, i) => (
                     <li key={i} style={{ display: 'flex', gap: 8, fontSize: 13, color: 'rgba(10,8,4,0.65)', alignItems: 'flex-start', lineHeight: 1.5 }}>
@@ -172,7 +197,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
                   ))}
                 </ul>
                 <button
-                  onClick={() => matchSvc && handleAdd(matchSvc.id)}
+                  onClick={() => LAUNCH_MODE.active ? document.getElementById('contact')?.scrollIntoView({behavior:'smooth'}) : (matchSvc && handleAdd(matchSvc.id))}
                   disabled={!matchSvc}
                   style={{
                     width: '100%', padding: '13px',
@@ -182,7 +207,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
                     borderRadius: 10, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
                     cursor: matchSvc ? 'pointer' : 'not-allowed', transition: 'all 0.2s', textTransform: 'uppercase',
                   }}>
-                  {isAdded ? '✓ Added to Cart' : 'Add to Cart →'}
+                  {LAUNCH_MODE.active ? 'Get a Quote →' : (isAdded ? '✓ Added to Cart' : 'Add to Cart →')}
                 </button>
                 {tier.liveExample && (
                   <a href={tier.liveExample.url} target="_blank" rel="noopener noreferrer"

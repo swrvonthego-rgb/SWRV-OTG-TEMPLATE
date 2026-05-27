@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, ChevronLeft, ChevronRight, CreditCard, Zap, Upload, FileText, X as XIcon, Paperclip, Trash2 } from 'lucide-react';
-import { SCHEDULING, SERVICES, PAYMENT_CONFIG, SERVICE_ASSETS } from '../site.config';
+import { SCHEDULING, SERVICES, PAYMENT_CONFIG, SERVICE_ASSETS, LAUNCH_MODE } from '../site.config';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, isBefore, startOfToday, getDay, eachDayOfInterval, addBusinessDays } from 'date-fns';
 
 const TIME_SLOTS = SCHEDULING.timeSlots;
@@ -83,6 +83,7 @@ export const ContactSchedule: React.FC = () => {
   const [selectedService, setSelectedService] = useState<typeof SERVICES[0] | null>(null);
   const [cart, setCart] = useState<Array<typeof SERVICES[0]>>([]);
   const cartTotal = cart.reduce((sum, s) => sum + s.priceNumeric, 0);
+  const showPricing = !LAUNCH_MODE.active;
 
   const addToCart = (svc: typeof SERVICES[0]) => {
     setCart(prev => prev.find(s => s.id === svc.id) ? prev : [...prev, svc]);

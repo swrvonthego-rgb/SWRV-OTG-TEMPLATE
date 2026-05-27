@@ -341,6 +341,19 @@ export const PIPELINE_PROJECTS: PipelineProject[] = [
 ];
 
 
+// ── LAUNCH MODE ────────────────────────────────────────────────────
+// Set to true to hide pricing and drive inquiries.
+// Flip to false when ready to show prices again.
+export const LAUNCH_MODE = {
+  active: true,
+  badge: 'NOW OPEN',
+  headline: 'SWRV On The Go — Grand Opening',
+  subline: 'We are officially open for business and now accepting new clients. Reach out to discuss your project and receive custom pricing.',
+  pricingCta: 'Request Pricing',
+  pricingNote: 'Pricing available on request. Book a consultation or reach out directly.',
+} as const;
+
+
 export const BRAND = {
   name: 'SWRV On The Go',
   shortName: 'SWRV',
