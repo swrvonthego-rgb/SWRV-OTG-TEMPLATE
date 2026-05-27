@@ -3,7 +3,7 @@ import './roadmap.css';
 import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme, renderSystemPrompt } from './config';
 import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
-import { SERVICES, ROADMAP_PRICING } from '../../site.config';
+import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
 import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
 
 // Lookup priceNumeric by service name for accurate total (handles $125/hr, Custom Quote, etc.)
@@ -948,9 +948,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
           <div className="paywall-single">
               <div className="paywall-card paywall-card-paid" style={{ maxWidth: 480, margin: '0 auto' }}>
-                <div className="paywall-card-badge paywall-badge-gold">
-                  {ROADMAP_PRICING.full.price}
-                </div>
+                {!LAUNCH_MODE.active && (
+                  <div className="paywall-card-badge paywall-badge-gold">
+                    {ROADMAP_PRICING.full.price}
+                  </div>
+                )}
                 <h3 className="paywall-card-title">{ROADMAP_PRICING.full.label}</h3>
                 <p className="paywall-card-tagline">{ROADMAP_PRICING.full.tagline}</p>
                 <ul className="paywall-card-bullets">
@@ -986,7 +988,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 ) : (
                   <div className="paywall-pending">
                     <p className="paywall-pending-text">
-                      Complete your {ROADMAP_PRICING.full.price} payment in the tab that opened, then tap below.
+                      Complete your payment in the tab that opened, then tap below.
                     </p>
                     <button type="button" className="paywall-btn paywall-btn-paid"
                       onClick={() => {
