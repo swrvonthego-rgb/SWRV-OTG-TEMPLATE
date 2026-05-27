@@ -933,6 +933,19 @@ export const Roadmap: React.FC<RoadmapProps> = ({
             Choose how deep you want to go.
           </p>
 
+          {/* Vision scriptures */}
+          <div className="paywall-scriptures">
+            <p className="paywall-vision-line">Vision is your purpose in pictures.</p>
+            <div className="paywall-scripture">
+              <p className="paywall-scripture-text">"Without vision, the people cast off restraint and run wild with no direction."</p>
+              <span className="paywall-scripture-ref">Proverbs 29:18</span>
+            </div>
+            <div className="paywall-scripture">
+              <p className="paywall-scripture-text">"Write the vision, make it plain — so the people you want to see it can help you run with it."</p>
+              <span className="paywall-scripture-ref">Habakkuk 2:2</span>
+            </div>
+          </div>
+
           <div className="paywall-single">
               <div className="paywall-card paywall-card-paid" style={{ maxWidth: 480, margin: '0 auto' }}>
                 <div className="paywall-card-badge paywall-badge-gold">
