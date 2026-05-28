@@ -411,9 +411,10 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     type: 'Single-Page Application',
     description: 'A SPA currently in active development — a focused application built to streamline patrol, monitoring, and reporting workflows into one clean interface.',
     role: 'Sole creator — design, development, and everything end to end',
-    stack: ['React', 'SPA Architecture', 'Real-Time Data'],
-    status: 'in-development',
-    statusLabel: 'In Development',
+    stack: ['React', 'SPA Architecture', 'Cloudflare Workers', 'Real-Time Data'],
+    status: 'live',
+    statusLabel: 'Live',
+    url: 'https://spa-patrol.swrvonthego.workers.dev',
     accent: '#3d5a80',
   },
   {
