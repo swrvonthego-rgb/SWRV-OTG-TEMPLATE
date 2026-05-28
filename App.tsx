@@ -29,6 +29,7 @@ import { LiveChat } from './components/LiveChat';
 import { ProjectIntake } from './components/ProjectIntake';
 import { Pipeline } from './components/Pipeline';
 import { LaunchBanner } from './components/LaunchBanner';
+import { Portfolio } from './components/Portfolio';
 import { Marketplace } from './components/Marketplace';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
@@ -171,6 +172,7 @@ const App: React.FC = () => {
         <Stats />
         <Shop />
         <Pipeline />
+        <Portfolio />
         <ContactSchedule />
       </main>
 

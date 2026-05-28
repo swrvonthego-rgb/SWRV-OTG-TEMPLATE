@@ -354,6 +354,94 @@ export const LAUNCH_MODE = {
 } as const;
 
 
+// ── PORTFOLIO — Showcase for employers / collaborators ─────────────
+export interface PortfolioProject {
+  id: string;
+  name: string;
+  type: string;            // "Full-Stack Web App", "Website", "SPA", "Tool"
+  description: string;
+  role: string;            // what Zion did
+  stack: string[];         // tech / skills
+  status: 'live' | 'in-development' | 'ongoing';
+  statusLabel: string;
+  url?: string;
+  accent: string;          // hex accent color
+}
+
+export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
+  {
+    id: 'swrv-otg',
+    name: 'SWRV On The Go',
+    type: 'Full-Stack Creative Platform',
+    description: 'The flagship. A complete creative agency platform with an AI-powered vision experience (The Roadmap), e-commerce, booking system, payment integrations, referral tracking, and dynamic service marketplace — all custom built.',
+    role: 'Sole architect, designer & developer',
+    stack: ['React', 'TypeScript', 'Cloudflare Workers', 'AI Integration', 'Stripe/PayPal'],
+    status: 'live',
+    statusLabel: 'Live',
+    url: 'https://swrvonthego.pro',
+    accent: '#c8a84b',
+  },
+  {
+    id: 'no-bs-bible',
+    name: 'The SWRV No BS Bible',
+    type: 'Full-Stack Web App',
+    description: 'A free, historically accurate Bible web app featuring original canon translations, the Book of Enoch, and Dead Sea Scrolls — with documentation on how scripture was assembled. Built to make the Word accessible without whitewashing.',
+    role: 'Full-stack developer & researcher',
+    stack: ['React', 'Cloudflare Workers', 'AI-Assisted Translation', 'Payment Integration'],
+    status: 'live',
+    statusLabel: 'Live',
+    url: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
+    accent: '#d4a373',
+  },
+  {
+    id: 'trainbyob',
+    name: 'TrainBYOB.me',
+    type: 'Business Website',
+    description: 'Fitness and self-defense coaching website — "Train your body, protect your peace." Built to convert visitors into booked coaching clients with a clean, motivating brand presence.',
+    role: 'Designer & developer',
+    stack: ['React', 'Cloudflare Pages', 'Responsive Design', 'Brand Identity'],
+    status: 'live',
+    statusLabel: 'Live',
+    url: 'https://trainbyob.me',
+    accent: '#e07a5f',
+  },
+  {
+    id: 'mypatrol',
+    name: 'MyPatrol',
+    type: 'Single-Page Application',
+    description: 'A SPA currently in active development — a focused application built to streamline patrol, monitoring, and reporting workflows into one clean interface.',
+    role: 'Architect & developer',
+    stack: ['React', 'SPA Architecture', 'Real-Time Data'],
+    status: 'in-development',
+    statusLabel: 'In Development',
+    accent: '#3d5a80',
+  },
+  {
+    id: 'byob-timer',
+    name: 'BYOB Timer',
+    type: 'Web Tool / App',
+    description: 'A custom interval and workout timer built for the BYOB training programs — purpose-built for coaching sessions, rounds, and structured workouts.',
+    role: 'Developer',
+    stack: ['JavaScript', 'Web App', 'UI/UX Design'],
+    status: 'live',
+    statusLabel: 'Live',
+    accent: '#81b29a',
+  },
+  {
+    id: 'hr205',
+    name: 'HR205.org',
+    type: 'Template System / Website',
+    description: 'A modular website template system serving as the foundation for client builds — reusable, customizable blocks that can be adapted per client. The engine behind rapid, consistent site delivery.',
+    role: 'System architect & developer',
+    stack: ['React', 'Modular Architecture', 'Reusable Components', 'Template Engine'],
+    status: 'ongoing',
+    statusLabel: 'Active',
+    url: 'https://hr205.org',
+    accent: '#9d4edd',
+  },
+];
+
+
 export const BRAND = {
   name: 'SWRV On The Go',
   shortName: 'SWRV',
@@ -1175,6 +1263,7 @@ export const HEADER = {
     { label: 'ABOUT SWRV ON THE GO', href: '#about-swrv', external: false },
     { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
     { label: 'REVVING UP', href: '#revving-up', external: false },
+    { label: 'PORTFOLIO', href: '#portfolio', external: false },
   ],
   // Inline "Connect" button copy
   connectLabel: 'Connect',
