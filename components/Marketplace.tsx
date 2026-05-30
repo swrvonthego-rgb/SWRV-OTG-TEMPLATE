@@ -222,6 +222,93 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
           })}
         </div>
 
+
+        {/* ── PAYMENT OPTIONS PROMO BANNER ── */}
+        <div style={{
+          margin: '40px 0 32px',
+          background: 'linear-gradient(135deg, #0a0804 0%, #1a1005 100%)',
+          border: '1px solid rgba(200,168,75,0.3)',
+          borderRadius: 20,
+          padding: '32px 36px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Gold accent top border */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #c8a84b, transparent)' }} />
+          {/* Glow */}
+          <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(200,168,75,0.08), transparent 70%)', pointerEvents: 'none' }} />
+
+          <div style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ flex: '1 1 320px' }}>
+              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#c8a84b', opacity: 0.85, marginBottom: 8 }}>
+                🏷 LIMITED OFFER — FLEXIBLE PAYMENT
+              </p>
+              <h4 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(18px,2.5vw,24px)', fontWeight: 400, color: '#fff', margin: '0 0 10px', lineHeight: 1.2 }}>
+                Pay your way. We work with all of it.
+              </h4>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, margin: '0 0 16px', maxWidth: 480 }}>
+                We accept Cash App, Venmo, PayPal, and Stripe — whatever is easiest for you.
+                Need to split it up? <strong style={{ color: 'rgba(255,255,255,0.85)' }}>We partner with Klarna</strong> so you can break your investment into manageable payments.
+                Klarna pays us upfront — you pay them on your schedule. No friction, no excuses.
+              </p>
+              {/* Payment method pills */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {[
+                  { label: 'Cash App', handle: '$SwrvOnTheGo', color: '#00D632' },
+                  { label: 'Venmo', handle: '@swrvonthego', color: '#3D95CE' },
+                  { label: 'PayPal', handle: 'paypal.me/swrvonthego', color: '#009CDE' },
+                  { label: 'Stripe', handle: 'Secure checkout', color: '#635BFF' },
+                  { label: 'Klarna', handle: 'Buy now, pay later', color: '#FFB3C7' },
+                ].map(({ label, handle, color }) => (
+                  <div key={label} style={{
+                    display: 'flex', alignItems: 'center', gap: 7,
+                    padding: '6px 14px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 999,
+                    fontSize: 12,
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                    <span style={{ fontWeight: 700, color: '#fff' }}>{label}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>{handle}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Klarna callout */}
+            <div style={{
+              flex: '0 0 auto',
+              background: 'rgba(200,168,75,0.08)',
+              border: '1px solid rgba(200,168,75,0.25)',
+              borderRadius: 16,
+              padding: '20px 24px',
+              textAlign: 'center',
+              minWidth: 180,
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🔀</div>
+              <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c8a84b', margin: '0 0 6px' }}>Split It</p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, margin: '0 0 14px' }}>
+                4 payments.<br/>0% interest.<br/>We get paid now.
+              </p>
+              <a href="#contact" style={{
+                display: 'inline-block',
+                padding: '8px 18px',
+                background: 'linear-gradient(135deg,#c8a84b,#e8c96a)',
+                color: '#0a0804',
+                borderRadius: 999,
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: '0.1em',
+                textDecoration: 'none',
+                textTransform: 'uppercase',
+              }}>
+                Ask About Klarna
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Cart note */}
         <div style={{ textAlign: 'center', paddingTop: 8 }}>
           <p style={{ fontSize: 13, color: 'rgba(10,8,4,0.4)', marginBottom: 14 }}>Need a different service? You can select any service in the booking step below.</p>
