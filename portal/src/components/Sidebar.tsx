@@ -18,7 +18,7 @@ const clientNav = [
 
 const adminNav = [
   { id: 'dashboard', label: 'Dashboard',  icon: LayoutDashboard },
-  { id: 'clients',   label: 'All Clients', icon: Users },
+  { id: 'admin',     label: 'Admin',       icon: Users },
   { id: 'projects',  label: 'Projects',    icon: FolderOpen },
   { id: 'billing',   label: 'Billing',     icon: CreditCard },
   { id: 'account',   label: 'Account',     icon: Settings },

@@ -5,6 +5,43 @@ import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
 import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
+// ── Portal vision sync ────────────────────────────────────────────────
+// Silently saves completed Roadmap results to the SWRV client portal.
+// Only fires if the user is logged into app.swrvonthego.pro (has a
+// Supabase session in localStorage). Fails silently — never blocks UI.
+async function saveVisionToPortal(
+  result: RoadmapResult,
+  visionText: string,
+  phase2Answers: Record<string, string>,
+  userName: string,
+): Promise<void> {
+  try {
+    const SUPABASE_KEY = 'sb-jbnwpgvzyykqyqagzcjt-auth-token';
+    const raw = localStorage.getItem(SUPABASE_KEY);
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    const jwt = session?.access_token;
+    if (!jwt) return;
+    await fetch('https://swrvonthego.pro/api/save-vision', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        title: userName ? `${userName}'s Vision` : 'My Vision',
+        quickAnswers: { vision: visionText },
+        roadmapAnswers: phase2Answers,
+        route: result.roadmap_timeline ?? null,
+        coordinates: result.qa_reflection ?? null,
+      }),
+    });
+  } catch {
+    // fail silently
+  }
+}
+
+
 
 // Lookup priceNumeric by service name for accurate total (handles $125/hr, Custom Quote, etc.)
 const SERVICE_PRICE_MAP = new Map(SERVICES.map(s => [s.name, s.priceNumeric]));
@@ -545,6 +582,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         setDoneSteps(new Set([0, 1, 2, 3, 4]));
         setResult(parsed);
         setError(null);
+        // Silently sync to portal if user is logged in
+        saveVisionToPortal(parsed, visionText, phase2Answers, userName).catch(() => {});
         goTo('results');
       } catch (err: any) {
         if (err.message === 'TIMEOUT') {

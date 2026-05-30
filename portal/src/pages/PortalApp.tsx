@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Bell, Menu, X } from 'lucide-react';
+import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import Sidebar from '../components/Sidebar';
 import Dashboard from './Dashboard';
 import VisionsPage from './VisionsPage';
 import ProjectsPage from './ProjectsPage';
 import BillingPage from './BillingPage';
 import AccountPage from './AccountPage';
+import AdminPage from './AdminPage';
 
 const PAGE_TITLES: Record<string, string> = {
   dashboard: 'Dashboard',
@@ -15,12 +18,28 @@ const PAGE_TITLES: Record<string, string> = {
   billing:   'Billing',
   account:   'Account',
   clients:   'All Clients',
+  admin:     'Admin Dashboard',
 };
 
 export default function PortalApp() {
   const { profile } = useAuth();
   const [page, setPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    async function loadNotifs() {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('read', false);
+      setUnreadCount(count || 0);
+    }
+    loadNotifs();
+    // Poll every 60s
+    const interval = setInterval(loadNotifs, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const renderPage = () => {
     switch (page) {
@@ -29,6 +48,7 @@ export default function PortalApp() {
       case 'projects':  return <ProjectsPage />;
       case 'billing':   return <BillingPage />;
       case 'account':   return <AccountPage />;
+      case 'admin':    return <AdminPage />;
       default:          return <Dashboard onNavigate={setPage} />;
     }
   };
@@ -67,7 +87,7 @@ export default function PortalApp() {
             )}
             <button className="notif-btn" aria-label="Notifications">
               <Bell size={18} />
-              {/* <span className="notif-dot" /> */}
+              {unreadCount > 0 && <span className="notif-dot" />}
             </button>
           </div>
         </header>
