@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import { Mail, Lock, User, Chrome } from 'lucide-react';
 
 type Mode = 'signin' | 'signup' | 'reset';
@@ -27,6 +28,12 @@ export default function AuthPage() {
     } else if (mode === 'signin') {
       const { error } = await signInWithEmail(email, password);
       if (error) setError('Invalid email or password.');
+    } else if (mode === 'reset') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://app.swrvonthego.pro/auth/update-password',
+      });
+      if (error) setError(error.message);
+      else setSuccess('Reset link sent — check your email.');
     }
     setLoading(false);
   };

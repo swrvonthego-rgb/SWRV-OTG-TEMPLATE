@@ -1,9 +1,16 @@
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import AuthPage from './pages/AuthPage';
+import AuthCallback from './pages/AuthCallback';
 import PortalApp from './pages/PortalApp';
 
 function AppInner() {
   const { user, loading } = useAuth();
+
+  // Handle OAuth and password reset callbacks
+  const path = window.location.pathname;
+  if (path === '/auth/callback' || path === '/auth/update-password') {
+    return <AuthCallback />;
+  }
 
   if (loading) {
     return (

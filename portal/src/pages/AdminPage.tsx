@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showCreateInvoice, setShowCreateInvoice] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -208,6 +209,17 @@ export default function AdminPage() {
 
   return (
     <div>
+      {showCreateInvoice && (
+        <CreateInvoiceModal
+          clients={clients}
+          projects={projects}
+          onClose={() => setShowCreateInvoice(false)}
+          onCreated={async () => {
+            const { data } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
+            setInvoices((data as Invoice[]) || []);
+          }}
+        />
+      )}
       <div className="section-header fade-up" style={{ marginBottom: 24 }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', letterSpacing: '0.06em' }}>
@@ -251,8 +263,9 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="fade-up delay-2" style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
+      {/* Tabs + action button */}
+      <div className="fade-up delay-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0 }}>
+        <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', paddingBottom: 0, flex: 1 }}>
         {(['projects', 'clients', 'invoices'] as Tab[]).map(t => (
           <button
             key={t}
@@ -268,6 +281,13 @@ export default function AdminPage() {
             }}
           >{t}</button>
         ))}
+        </div>
+        {tab === 'invoices' && (
+          <button className="btn btn-primary" style={{ padding: '7px 16px', fontSize: '0.82rem', marginLeft: 12, marginBottom: 1 }}
+            onClick={() => setShowCreateInvoice(true)}>
+            + Invoice
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -341,6 +361,91 @@ export default function AdminPage() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── CreateInvoiceModal ───────────────────────────────────────────────────────
+export function CreateInvoiceModal({ clients, projects, onClose, onCreated }: {
+  clients: Profile[];
+  projects: Project[];
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [clientId, setClientId] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const [desc, setDesc] = useState('');
+  const [amount, setAmount] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleCreate = async () => {
+    if (!clientId || !desc || !amount) { setError('Client, description and amount are required.'); return; }
+    setSaving(true);
+    const total = parseFloat(amount);
+    const { error } = await supabase.from('invoices').insert({
+      client_id: clientId,
+      project_id: projectId || null,
+      invoice_number: `SWRV-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+      status: 'draft',
+      line_items: [{ desc, qty: 1, price: total }],
+      subtotal: total,
+      tax: 0,
+      total,
+      amount_paid: 0,
+      due_date: dueDate || null,
+    });
+    if (error) { setError(error.message); setSaving(false); return; }
+    onCreated();
+    onClose();
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+      <div className="card" style={{ width: '100%', maxWidth: 480, position: 'relative' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', letterSpacing: '0.06em' }}>Create <span className="gold">Invoice</span></div>
+          <button className="btn btn-ghost" style={{ padding: 4 }} onClick={onClose}><X size={18} /></button>
+        </div>
+        {error && <div className="error-msg" style={{ marginBottom: 14 }}>{error}</div>}
+        <div className="auth-form">
+          <div className="form-group">
+            <label className="form-label">Client</label>
+            <select className="form-input" value={clientId} onChange={e => setClientId(e.target.value)}>
+              <option value="">Select client...</option>
+              {clients.filter(c => c.role === 'client').map(c => (
+                <option key={c.id} value={c.id}>{c.full_name || c.email}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Project (optional)</label>
+            <select className="form-input" value={projectId} onChange={e => setProjectId(e.target.value)}>
+              <option value="">No project</option>
+              {projects.filter(p => p.client_id === clientId).map(p => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Description</label>
+            <input className="form-input" placeholder="e.g. Presence Website Build" value={desc} onChange={e => setDesc(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Amount ($)</label>
+            <input className="form-input" type="number" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Due Date (optional)</label>
+            <input className="form-input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+          </div>
+          <button className="btn btn-primary btn-full" onClick={handleCreate} disabled={saving}>
+            {saving ? <span className="spinner" style={{ width: 16, height: 16 }} /> : <Check size={15} />}
+            Create Invoice
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
