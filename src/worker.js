@@ -22,6 +22,8 @@ const ALLOWED_ORIGINS = new Set([
   'https://swrvonthego.pro',
   'https://www.swrvonthego.pro',
   'https://swrv-otg-template.swrvonthego.workers.dev',
+  'https://app.swrvonthego.pro',
+  'https://swrv-portal.pages.dev',
 ]);
 
 function getCorsHeaders(request) {
@@ -85,6 +87,8 @@ export default {
     if (url.pathname === '/api/intake-ai')      return handleIntakeAI(request, env);
     if (url.pathname === '/api/intake-submit')  return handleIntakeSubmit(request, env);
     if (url.pathname === '/api/referral-report') return handleReferralReport(request, env);
+    if (url.pathname === '/api/upload')          return handleUpload(request, env);
+    if (url.pathname === '/api/save-vision')     return handleSaveVision(request, env);
 
     // Stripe payment success redirect — set as your Stripe Payment Link success URL:
     // https://swrvonthego.pro/roadmap-unlock
@@ -815,4 +819,186 @@ async function handleReferralReport(request, env) {
   }
   const raw = await env.PROGRESS.get('referrals:all') || '[]';
   return new Response(raw, { headers: JSON_HEADERS });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// UPLOAD — POST /api/upload
+// Accepts multipart/form-data with a `file` field.
+// Stores in R2 bucket under `uploads/{folder}/{timestamp}-{filename}`.
+// Protected by UPLOAD_TOKEN secret — pass as Authorization: Bearer <token>
+//   or ?token=<token> query param.
+// Returns: { ok: true, url: "https://cdn.swrvonthego.pro/uploads/..." }
+//
+// Required Cloudflare setup:
+//   1. Create R2 bucket "swrv-uploads" in Cloudflare dashboard
+//   2. Add R2 binding in wrangler.jsonc:
+//      "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "swrv-uploads" }]
+//   3. Set secret: wrangler secret put UPLOAD_TOKEN
+//   4. (Optional) Set CDN_BASE var to your R2 public URL or custom domain
+// ─────────────────────────────────────────────────────────────────────
+async function handleUpload(request, env) {
+  const corsH = getCorsHeaders(request);
+
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: corsH });
+  }
+
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405, headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Auth check
+  const authHeader = request.headers.get('Authorization') || '';
+  const urlToken   = new URL(request.url).searchParams.get('token') || '';
+  const token      = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : urlToken;
+
+  if (!env.UPLOAD_TOKEN || token !== env.UPLOAD_TOKEN) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401, headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // R2 binding check
+  if (!env.UPLOADS) {
+    return new Response(JSON.stringify({
+      error: 'R2 bucket not configured',
+      setup: 'Add r2_buckets binding "UPLOADS" pointing to bucket "swrv-uploads" in wrangler.jsonc'
+    }), { status: 503, headers: { ...corsH, 'Content-Type': 'application/json' } });
+  }
+
+  try {
+    const formData = await request.formData();
+    const file     = formData.get('file');
+    const folder   = formData.get('folder') || 'general'; // e.g. 'clients', 'deliverables', 'assets'
+
+    if (!file || typeof file === 'string') {
+      return new Response(JSON.stringify({ error: 'No file provided' }), {
+        status: 400, headers: { ...corsH, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Sanitize filename
+    const safeName  = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const timestamp = Date.now();
+    const key       = `uploads/${folder}/${timestamp}-${safeName}`;
+
+    // Upload to R2
+    await env.UPLOADS.put(key, file.stream(), {
+      httpMetadata: {
+        contentType: file.type || 'application/octet-stream',
+        cacheControl: 'public, max-age=31536000',
+      },
+      customMetadata: {
+        originalName: file.name,
+        uploadedAt:   new Date().toISOString(),
+        folder,
+      },
+    });
+
+    // Build public URL
+    const cdnBase = env.CDN_BASE || `https://pub-swrv.r2.dev`; // update after enabling R2 public access
+    const url     = `${cdnBase}/${key}`;
+
+    return new Response(JSON.stringify({ ok: true, url, key }), {
+      headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+
+  } catch (err) {
+    console.error('Upload error:', err);
+    return new Response(JSON.stringify({ error: 'Upload failed', detail: err.message }), {
+      status: 500, headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// SAVE VISION — POST /api/save-vision
+// Called from the main site after a user completes their Roadmap.
+// Requires a valid Supabase JWT in Authorization: Bearer <jwt>
+// Body: { title, quickAnswers, roadmapAnswers, route, coordinates }
+// Upserts into the portal's `visions` table via Supabase REST API.
+// ─────────────────────────────────────────────────────────────────────
+async function handleSaveVision(request, env) {
+  const corsH = getCorsHeaders(request);
+
+  if (request.method === 'OPTIONS') return new Response(null, { headers: corsH });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405, headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Extract Supabase JWT — user must be logged into the portal
+  const authHeader = request.headers.get('Authorization') || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Missing auth token' }), {
+      status: 401, headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+  }
+  const jwt = authHeader.slice(7);
+
+  // Supabase project config
+  const SUPABASE_URL     = 'https://jbnwpgvzyykqyqagzcjt.supabase.co';
+  const SUPABASE_ANON    = env.SUPABASE_ANON_KEY ||
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibndwZ3Z6eXlrcXlxYWd6Y2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMTE0NzcsImV4cCI6MjA5NTY4NzQ3N30.NUNwgH8BNJQXFlBlg0Zaeh4vzvhmnHQEc7LUWhNcjAk';
+
+  try {
+    const { title, quickAnswers, roadmapAnswers, route, coordinates } = await request.json();
+
+    // Get the user's ID from Supabase using their JWT
+    const userResp = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+        'apikey': SUPABASE_ANON,
+      },
+    });
+
+    if (!userResp.ok) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired session' }), {
+        status: 401, headers: { ...corsH, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { id: userId } = await userResp.json();
+
+    // Insert vision into portal DB
+    const visionResp = await fetch(`${SUPABASE_URL}/rest/v1/visions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+        'apikey': SUPABASE_ANON,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+      },
+      body: JSON.stringify({
+        user_id:         userId,
+        title:           title || 'My Vision',
+        status:          route ? 'complete' : 'draft',
+        quick_answers:   quickAnswers   || null,
+        roadmap_answers: roadmapAnswers || null,
+        route:           route          || null,
+        coordinates:     coordinates    || null,
+        completed_at:    route ? new Date().toISOString() : null,
+      }),
+    });
+
+    if (!visionResp.ok) {
+      const err = await visionResp.text();
+      throw new Error(err);
+    }
+
+    const [vision] = await visionResp.json();
+
+    return new Response(JSON.stringify({ ok: true, visionId: vision.id }), {
+      headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+
+  } catch (err) {
+    console.error('Save vision error:', err);
+    return new Response(JSON.stringify({ error: 'Failed to save vision', detail: err.message }), {
+      status: 500, headers: { ...corsH, 'Content-Type': 'application/json' },
+    });
+  }
 }

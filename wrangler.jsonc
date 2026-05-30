@@ -15,16 +15,36 @@
   // KV namespace for "finish later" persistence.
   // To enable: Cloudflare Dashboard → Workers & Pages → KV →
   //   Create namespace "swrv_progress" → copy the ID below.
-  // Until then, this binding is commented out and the worker
-  // returns {status: "skipped"} for /api/save-progress (no harm).
   // ─────────────────────────────────────────────────────────
   // "kv_namespaces": [
   //   { "binding": "PROGRESS", "id": "<paste-namespace-id-here>" }
   // ],
 
-  // Email "from" address (non-secret). Add as plaintext var if/when
-  // you wire up Resend. Reasonable default in code.
+  // ─────────────────────────────────────────────────────────
+  // R2 bucket for file uploads (/api/upload)
+  // To enable:
+  //   1. Cloudflare Dashboard → R2 → Create bucket "swrv-uploads"
+  //   2. Enable public access on the bucket → copy the public URL
+  //   3. Uncomment the binding below
+  //   4. Set secrets: wrangler secret put UPLOAD_TOKEN
+  //   5. Add var CDN_BASE with your R2 public URL
+  // ─────────────────────────────────────────────────────────
+  // "r2_buckets": [
+  //   { "binding": "UPLOADS", "bucket_name": "swrv-uploads" }
+  // ],
+
   "vars": {
-    "EMAIL_FROM": "SWRV <hello@swrvonthego.pro>"
-  }
+    "EMAIL_FROM": "SWRV <hello@swrvonthego.pro>",
+    // R2 public CDN base URL — update after enabling R2 public access
+    // "CDN_BASE": "https://cdn.swrvonthego.pro"
+  },
+
+  // ─────────────────────────────────────────────────────────
+  // Secrets (set via: wrangler secret put SECRET_NAME)
+  // ─────────────────────────────────────────────────────────
+  // GROQ_API_KEY       — AI generation
+  // RESEND_API_KEY     — email sending
+  // REFERRAL_SECRET    — referral report access
+  // UPLOAD_TOKEN       — protects /api/upload endpoint
+  // SUPABASE_ANON_KEY  — portal vision saves (already hardcoded as fallback)
 }
