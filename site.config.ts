@@ -1263,6 +1263,7 @@ export const HEADER = {
     { label: 'THE SWRV ECOSYSTEM', href: '#ecosystem', external: false },
     { label: 'PORTFOLIO', href: '#portfolio', external: false },
     { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
+    { label: 'THE BIRDSONG METHOD', href: '#birdsong-method', external: false },
     { label: 'TRAIN BYOB', href: '#byob', external: false },
     { label: 'REVVING UP', href: '#revving-up', external: false },
     { label: 'CONTACT', href: '#contact', external: false },
@@ -1313,3 +1314,4 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     icon: 'Database',
   },
 ];
+

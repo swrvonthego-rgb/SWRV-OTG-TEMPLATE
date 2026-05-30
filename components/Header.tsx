@@ -4,8 +4,8 @@ import { BRAND, HEADER } from '../site.config';
 import { MEDIA } from '../media.config';
 import { Button } from './Button';
 
-interface HeaderProps { onOpenByob?: () => void; onOpenZion?: () => void; }
-export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
+interface HeaderProps { onOpenByob?: () => void; onOpenZion?: () => void; onOpenBirdsong?: () => void; }
+export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBirdsong }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -92,6 +92,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
                   </button>
                 );
               }
+              if (item.label === 'THE BIRDSONG METHOD' && onOpenBirdsong) {
+                return (
+                  <button key={item.label} type="button" onClick={onOpenBirdsong}
+                    className="text-[13px] font-bold text-white hover:text-lion-orange transition-colors tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans">
+                    {item.label}
+                  </button>
+                );
+              }
               return (
                 <a key={item.label} href={item.href}
                   target={item.external ? '_blank' : undefined}
@@ -140,6 +148,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion }) => {
                   return (
                     <button key={item.label} type="button"
                       onClick={() => { setMobileMenuOpen(false); onOpenZion(); }}
+                      className="text-xl font-bold text-white hover:text-lion-orange bg-transparent border-0 cursor-pointer p-0 font-sans">
+                      {item.label}
+                    </button>
+                  );
+                }
+                if (item.label === 'THE BIRDSONG METHOD' && onOpenBirdsong) {
+                  return (
+                    <button key={item.label} type="button"
+                      onClick={() => { setMobileMenuOpen(false); onOpenBirdsong(); }}
                       className="text-xl font-bold text-white hover:text-lion-orange bg-transparent border-0 cursor-pointer p-0 font-sans">
                       {item.label}
                     </button>

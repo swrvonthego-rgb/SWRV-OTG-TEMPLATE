@@ -25,6 +25,7 @@ import { Roadmap } from './modules/roadmap/Roadmap';
 import { Zion } from './modules/zion/Zion';
 import { ServicesMenu } from './modules/services-menu/ServicesMenu';
 import { Byob } from './modules/byob/Byob';
+import { Birdsong } from './modules/birdsong/Birdsong';
 import { LiveChat } from './components/LiveChat';
 import { ProjectIntake } from './components/ProjectIntake';
 import { Pipeline } from './components/Pipeline';
@@ -58,6 +59,7 @@ const App: React.FC = () => {
   }, []);
 
   const [isByobOpen, setIsByobOpen] = useState(false);
+  const [isBirdsongOpen, setIsBirdsongOpen] = useState(false);
   const [intakeService, setIntakeService] = useState<{id:string;name:string}|null>(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [skipIntro, setSkipIntro] = useState(false);
@@ -168,7 +170,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-lion-black">
-      <Header onOpenByob={() => setIsByobOpen(true)} onOpenZion={() => setIsZionOpen(true)} />
+      <Header onOpenByob={() => setIsByobOpen(true)} onOpenZion={() => setIsZionOpen(true)} onOpenBirdsong={() => setIsBirdsongOpen(true)} />
 
       <main>
         <LaunchBanner />
@@ -226,6 +228,12 @@ const App: React.FC = () => {
         onClose={() => setIsByobOpen(false)}
       />
 
+      {/* The Birdsong Method — vocal training overlay */}
+      <Birdsong
+        isOpen={isBirdsongOpen}
+        onClose={() => setIsBirdsongOpen(false)}
+      />
+
       {/* Project Intake — full intake form overlay */}
       <ProjectIntake
         isOpen={!!intakeService}
@@ -241,3 +249,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
