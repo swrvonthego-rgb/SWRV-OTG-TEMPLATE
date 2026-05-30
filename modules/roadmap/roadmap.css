@@ -3,7 +3,7 @@
 ═══════════════════════════════════════════════════════ */
 .roadmap-experience{
   /* surfaces */
-  --bg-deep:#111009;
+  --bg-deep:#0d1117;
   --bg-mid:#0d0b08;
   --bg-soft:rgba(255,255,255,.012);
   --bg-glass:rgba(13,11,8,.94);
@@ -49,7 +49,7 @@
    THEME 1 — LUXE (default)  dark elegant gold/marble
 ═══════════════════════════════════════════════════════ */
 .roadmap-experience[data-theme="luxe"]{
-  --bg-deep:#111009;--bg-mid:#0d0b08;
+  --bg-deep:#0d1117;--bg-mid:#10151c;
   --ink-bright:#f7f2ea;--ink-base:#e8dcc8;--ink-mute:rgba(232,220,200,.4);
   --accent-1:#c4923a;--accent-2:#d4a843;--accent-3:#8b4513;
   --accent-soft:rgba(196,146,58,.08);--accent-mid:rgba(196,146,58,.18);--accent-strong:rgba(196,146,58,.35);
@@ -297,11 +297,25 @@
     repeating-linear-gradient(90deg,transparent,transparent 59px,var(--accent-soft) 60px);
   opacity:.45;}
 
-.roadmap-experience .grain{position:absolute;inset:-50%;width:200%;height:200%;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events:none;opacity:var(--sig-grain-opacity);
-  animation:grainShift 8s steps(2) infinite;}
-@keyframes grainShift{0%,100%{transform:translate(0,0);}25%{transform:translate(-2%,-1%);}50%{transform:translate(1%,2%);}75%{transform:translate(2%,-2%);}}
+.roadmap-experience .grain{position:absolute;inset:0;
+  background-color:#0d1117;
+  background-image:
+    /* Coordinate grid — like map graticules */
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+    /* Subtle radial fade so center is darker than edges */
+    radial-gradient(ellipse at center, rgba(13,17,23,0) 0%, rgba(6,8,12,0.6) 100%);
+  background-size: 80px 80px, 80px 80px, 100% 100%;
+  background-position: 0 0, 0 0, center;
+  pointer-events:none;opacity:1;}
+
+/* Road lines overlay — sits on top of the grid */
+.roadmap-experience .grain::before{
+  content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800' preserveAspectRatio='xMidYMid slice'%3E%3Cg stroke='%23ffffff' stroke-width='2' fill='none' opacity='0.06'%3E%3Cpath d='M0 200 Q 300 180 600 300 T 1200 250'/%3E%3Cpath d='M0 500 Q 400 480 700 600 T 1200 580'/%3E%3Cpath d='M150 0 Q 200 300 400 500 T 350 800'/%3E%3Cpath d='M800 0 Q 850 200 950 400 T 900 800'/%3E%3C/g%3E%3Cg stroke='%23c8a84b' stroke-width='2.5' fill='none' opacity='0.18'%3E%3Cpath d='M0 350 Q 300 330 600 450 T 1200 400'/%3E%3C/g%3E%3Cg fill='%23c8a84b' opacity='0.35'%3E%3Ccircle cx='600' cy='450' r='4'/%3E%3Ccircle cx='200' cy='340' r='3'/%3E%3Ccircle cx='1000' cy='420' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:cover;background-position:center;
+  pointer-events:none;
+}
 
 .roadmap-experience .intro-content{text-align:center;max-width:660px;padding:60px 28px;position:relative;z-index:2;}
 .roadmap-experience .intro-content>*{opacity:0;transform:translateY(20px);animation:fadeUp .8s ease forwards;}
@@ -1150,3 +1164,9 @@
 .roadmap-experience .paywall-scripture:first-of-type{border-top:none;padding-top:0;}
 .roadmap-experience .paywall-scripture-text{font-size:14px;color:var(--ink-mid);line-height:1.75;margin:0;font-style:italic;}
 .roadmap-experience .paywall-scripture-ref{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-1);opacity:.7;}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PAYWALL — OPEN ACCESS (single Begin button, no payment)
+══════════════════════════════════════════════════════════════ */
+.roadmap-experience .paywall-card-open .paywall-btn-paid{margin-top:8px;font-size:15px;padding:16px 28px;}

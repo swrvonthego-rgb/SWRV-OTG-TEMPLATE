@@ -947,12 +947,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           </div>
 
           <div className="paywall-single">
-              <div className="paywall-card paywall-card-paid" style={{ maxWidth: 480, margin: '0 auto' }}>
-                {!LAUNCH_MODE.active && (
-                  <div className="paywall-card-badge paywall-badge-gold">
-                    {ROADMAP_PRICING.full.price}
-                  </div>
-                )}
+              <div className="paywall-card paywall-card-paid paywall-card-open" style={{ maxWidth: 520, margin: '0 auto' }}>
                 <h3 className="paywall-card-title">{ROADMAP_PRICING.full.label}</h3>
                 <p className="paywall-card-tagline">{ROADMAP_PRICING.full.tagline}</p>
                 <ul className="paywall-card-bullets">
@@ -960,50 +955,13 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                     <li key={i}><span className="paywall-check paywall-check-gold">✓</span>{b}</li>
                   ))}
                 </ul>
-                {!paymentPending ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {ROADMAP_PRICING.full.stripeLink && (
-                      <button type="button" className="paywall-btn paywall-btn-paid"
-                        onClick={() => {
-                          window.open(ROADMAP_PRICING.full.stripeLink, '_blank', 'noopener');
-                          setPaymentPending(true);
-                        }}>
-                        Pay with Card →
-                      </button>
-                    )}
-                    {ROADMAP_PRICING.full.paypalLink && (
-                      <button type="button" className="paywall-btn paywall-btn-free"
-                        style={{ background: 'rgba(0,112,186,0.12)', borderColor: 'rgba(0,112,186,0.4)', color: '#60a5fa' }}
-                        onClick={() => {
-                          window.open(ROADMAP_PRICING.full.paypalLink, '_blank', 'noopener');
-                          setPaymentPending(true);
-                        }}>
-                        Pay with PayPal →
-                      </button>
-                    )}
-                    {!ROADMAP_PRICING.full.stripeLink && !ROADMAP_PRICING.full.paypalLink && (
-                      <p className="paywall-coming">Payment setup coming soon.</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="paywall-pending">
-                    <p className="paywall-pending-text">
-                      Complete your payment in the tab that opened, then tap below.
-                    </p>
-                    <button type="button" className="paywall-btn paywall-btn-paid"
-                      onClick={() => {
-                        sessionStorage.setItem('swrv_rm_paid', '1');
-                        setPaymentPending(false);
-                        goTo('intro');
-                      }}>
-                      I've Paid — Begin →
-                    </button>
-                    <button type="button" className="paywall-pending-back"
-                      onClick={() => setPaymentPending(false)}>
-                      ← Go back
-                    </button>
-                  </div>
-                )}
+                <button type="button" className="paywall-btn paywall-btn-paid"
+                  onClick={() => {
+                    sessionStorage.setItem('swrv_rm_paid', '1');
+                    goTo('intro');
+                  }}>
+                  Begin the Roadmap →
+                </button>
               </div>
             </div></div>
       </section>
