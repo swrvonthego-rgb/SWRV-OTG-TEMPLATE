@@ -178,11 +178,11 @@ const App: React.FC = () => {
         />
         <BrandTransmission />
         <AboutSWRV />
-        <Marketplace onOpenRoadmap={() => setIsRoadmapOpen(true)} />
-        <Stats />
         <Shop />
-        <Pipeline />
         <Portfolio />
+        <Stats />
+        <Marketplace onOpenRoadmap={() => setIsRoadmapOpen(true)} />
+        <Pipeline />
         <ContactSchedule />
       </main>
 

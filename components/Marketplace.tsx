@@ -77,11 +77,11 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
           <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 32, alignItems: 'center' }} className="mkt-roadmap-grid">
             <div>
               <span style={{ display: 'inline-block', padding: '6px 16px', background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: BG, fontSize: 11, fontWeight: 800, letterSpacing: '0.25em', textTransform: 'uppercase', borderRadius: 999, marginBottom: 20 }}>
-                START HERE
+                YOUR NEXT MOVE
               </span>
-              <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 400, margin: '0 0 12px', lineHeight: 1.1, color: '#fff' }}>The Roadmap</h3>
+              <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(28px,4vw,42px)', fontWeight: 400, margin: '0 0 12px', lineHeight: 1.1, color: '#fff' }}>Ready to map your route?</h3>
               <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, margin: '0 0 16px', maxWidth: 580 }}>
-                Don't know what you need? Take The Roadmap. A guided vision experience that names your gift, maps your path, and tells you exactly which services build your specific business. Yours forever.
+                You've seen what we do. Now let's figure out exactly what you need. The Roadmap is a guided vision experience — it names your gift, maps your path, and shows you which services build your specific business. No guesswork. Just your route.
               </p>
               {/* Pricing options — hidden in launch mode */}
               {!LAUNCH_MODE.active && (

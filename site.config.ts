@@ -1259,12 +1259,12 @@ export const HEADER = {
   ],
   // Main navigation items
   navItems: [
-    { label: 'THE SWRV ECOSYSTEM', href: '#ecosystem', external: false },
-    { label: 'TRAIN BYOB', href: '#byob', external: false },
     { label: 'ABOUT SWRV ON THE GO', href: '#about-swrv', external: false },
-    { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
-    { label: 'REVVING UP', href: '#revving-up', external: false },
+    { label: 'THE SWRV ECOSYSTEM', href: '#ecosystem', external: false },
     { label: 'PORTFOLIO', href: '#portfolio', external: false },
+    { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
+    { label: 'TRAIN BYOB', href: '#byob', external: false },
+    { label: 'REVVING UP', href: '#revving-up', external: false },
     { label: 'CONTACT', href: '#contact', external: false },
   ],
   // Inline "Connect" button copy
