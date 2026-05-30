@@ -199,6 +199,8 @@
   background:var(--bg-deep);color:var(--ink-base);
   font-family:var(--font-body);min-height:100vh;overflow-x:hidden;
   transition:background-color .55s ease,color .55s ease;
+  /* Fullscreen overlay */
+  position:fixed;inset:0;z-index:1000;overflow-y:auto;
 }
 
 /* progress */

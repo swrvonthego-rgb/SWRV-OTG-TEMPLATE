@@ -294,6 +294,18 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       if (audioRef.current) audioRef.current.pause();
     } else {
       window.scrollTo(0, 0);
+      // Re-evaluate starting screen every time the overlay opens.
+      // The useState initializer only runs once at mount, so if
+      // payment state or session changed since mount we'd show the
+      // wrong screen. Re-check here to always start correctly.
+      const paid = checkPaid();
+      if (paid && screen === 'paywall') {
+        setScreen('intro');
+      } else if (!paid && screen !== 'paywall' && screen !== 'results') {
+        // Only reset to paywall if they haven't reached results yet
+        // (don't wipe a completed session on re-open)
+      }
+      // If results are already showing, leave them — user is reviewing their output
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
