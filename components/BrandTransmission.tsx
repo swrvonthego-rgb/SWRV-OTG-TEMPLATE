@@ -14,7 +14,7 @@ export const BrandTransmission: React.FC = () => {
 
   return (
     <section
-      id="swrv-ecosystem"
+      id="brand-transmission"
       style={{
         position: 'relative',
         width: '100%',

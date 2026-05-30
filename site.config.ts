@@ -1265,6 +1265,7 @@ export const HEADER = {
     { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
     { label: 'REVVING UP', href: '#revving-up', external: false },
     { label: 'PORTFOLIO', href: '#portfolio', external: false },
+    { label: 'CONTACT', href: '#contact', external: false },
   ],
   // Inline "Connect" button copy
   connectLabel: 'Connect',
