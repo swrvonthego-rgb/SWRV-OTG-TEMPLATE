@@ -109,6 +109,15 @@ const App: React.FC = () => {
 
   if (!hasStarted) {
     return (
+      <>
+      <Roadmap
+        isOpen={isRoadmapOpen}
+        onClose={() => setIsRoadmapOpen(false)}
+        onOpenServices={() => {
+          setIsRoadmapOpen(false);
+          setIsServicesMenuOpen(true);
+        }}
+      />
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white font-sans relative overflow-hidden">
         {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -153,6 +162,7 @@ const App: React.FC = () => {
         </button>
         <p className="mt-5 text-white/30 text-xs tracking-widest uppercase">Enables audio &amp; animations</p>
       </div>
+      </>
     );
   }
 
