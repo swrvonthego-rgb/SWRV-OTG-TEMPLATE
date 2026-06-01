@@ -149,7 +149,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
   const [screen, setScreen] = useState<ScreenId>(() => {
     if (typeof window === 'undefined') return 'paywall';
-    return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'phase2' : 'paywall';
+    return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'intro' : 'paywall';
   });
   const QV_QUESTIONS = [
     { id: "problem",    q: "What's the problem you couldn't ignore that made you want to find — or BE — the solution?",     ph: "The thing that kept showing up in your life until you stopped pretending you didn't see it." },
@@ -300,7 +300,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       // wrong screen. Re-check here to always start correctly.
       const paid = checkPaid();
       if (paid && screen === 'paywall') {
-        setScreen('phase2');
+        setScreen('intro');
       } else if (!paid && screen !== 'paywall' && screen !== 'results') {
         // Only reset to paywall if they haven't reached results yet
         // (don't wipe a completed session on re-open)
@@ -970,6 +970,192 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       </div>
 
       {/* ════════════════════════════════════════════════
+           SCREEN 1 — INTRO
+           Blueprint background. Brand statement, optional
+           video from Swerve, and first-name capture.
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-intro" className={`screen ${screen === 'intro' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="intro-content">
+          <span className="logo-mark">{config.copy.introLogo}</span>
+          <h1 className="intro-title">
+            {config.copy.introTitle.line1}<br />
+            <em>{config.copy.introTitle.emphasis}</em><br />
+            {config.copy.introTitle.line3}
+          </h1>
+          <p className="intro-sub">
+            {config.copy.introSub.split('\n').map((line, i, arr) => (
+              <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+            ))}
+          </p>
+
+          {config.copy.videoUrl && (
+            <div className="video-wrap">
+              <video
+                ref={videoRef}
+                src={config.copy.videoUrl}
+                playsInline
+                controls
+                preload="metadata"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+          )}
+
+          <div className="name-field-wrap">
+            <label className="field-label" htmlFor="rm-name-input">{config.copy.nameFieldLabel}</label>
+            <input
+              id="rm-name-input"
+              ref={nameInputRef}
+              className={`text-input ${nameError ? 'error' : ''}`}
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') goToEmail(); }}
+              placeholder={config.copy.namePlaceholder}
+              autoComplete="given-name"
+            />
+          </div>
+
+          <button type="button" className="btn-primary" onClick={goToEmail}>
+            {config.copy.introCta}
+          </button>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+           SCREEN 2 — EMAIL
+           Where to send the finished Roadmap. Skippable.
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-email" className={`screen ${screen === 'email' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="intro-content">
+          <span className="logo-mark">{config.copy.introLogo}</span>
+          <h1 className="intro-title">
+            {config.copy.emailTitle.line1}<br />
+            <em>{config.copy.emailTitle.line2}</em>
+          </h1>
+          <p className="intro-sub">{config.copy.emailSub}</p>
+
+          <div className="name-field-wrap">
+            <label className="field-label" htmlFor="rm-email-input">Your email</label>
+            <input
+              id="rm-email-input"
+              className="text-input"
+              type="email"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') goToDisclaimerFromEmail(false); }}
+              placeholder="you@email.com"
+              autoComplete="email"
+            />
+          </div>
+
+          <button type="button" className="btn-primary" onClick={() => goToDisclaimerFromEmail(false)}>
+            {config.copy.emailCta}
+          </button>
+          <div className="action-row">
+            <button type="button" className="skip-link" onClick={() => goToDisclaimerFromEmail(true)}>
+              {config.copy.emailSkip}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+           SCREEN 3 — DISCLAIMER
+           "One rule" — clear the deck before the vision.
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-disclaimer" className={`screen ${screen === 'disclaimer' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="disc-box">
+          <div className="disc-ornament">
+            <span />
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7v7c0 5 4 8 10 8s10-3 10-8V7L12 2z" /></svg>
+            <span />
+          </div>
+          <h2 className="disc-title">
+            {config.copy.disclaimerTitle.line1}<br />
+            {config.copy.disclaimerTitle.line2}
+          </h2>
+          {config.copy.disclaimerBody.map((para, i) => (
+            <p className="disc-text" key={i}>{renderInlineEmphasis(para)}</p>
+          ))}
+          <hr className="disc-rule" />
+          <p className="disc-note">
+            {config.copy.disclaimerNote.split('\n').map((line, i, arr) => (
+              <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+            ))}
+          </p>
+          <div className="action-row">
+            <button type="button" className="skip-link" onClick={() => goTo('intro')}>
+              {config.copy.disclaimerBack}
+            </button>
+            <button type="button" className="btn-primary" onClick={() => goTo('vision')}>
+              {config.copy.disclaimerNext}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+           SCREEN 4 — VISION (Phase 1)
+           "You are 50 years old. Walk me through your day."
+           Free-form text + mic. Min 30 words to proceed.
+      ═══════════════════════════════════════════════ */}
+      <section id="screen-vision" className={`screen ${screen === 'vision' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="vision-nav">
+          <button type="button" className="skip-link" onClick={() => goTo('disclaimer')}>
+            ← Back
+          </button>
+          {timeRemaining !== null && (
+            <span className="vision-timer">{formatTime(timeRemaining)}</span>
+          )}
+        </div>
+        <div className="vision-main">
+          <h2 className="vision-prompt">
+            {config.copy.visionPrompt.line1} <em>{config.copy.visionPrompt.emphasis}</em><br />
+            {config.copy.visionPrompt.line3.split('\n').map((line, i, arr) => (
+              <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+            ))}
+          </h2>
+          <p className="vision-sub">
+            {config.copy.visionSub.split('\n').map((line, i, arr) => (
+              <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+            ))}
+          </p>
+
+          <div className="phase2-mic-row">
+            <button
+              type="button"
+              className={'mic-btn' + (mic.isListening && micTarget.current === 'vision' ? ' recording' : '')}
+              onClick={() => { micTarget.current = 'vision'; mic.toggle(); }}
+              disabled={mic.state === 'unsupported'}
+              title="Speak your vision"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm6-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" /></svg>
+            </button>
+            {mic.isListening && micTarget.current === 'vision' && <span className="phase2-recording-label">● Recording…</span>}
+          </div>
+
+          <textarea
+            ref={textareaRef}
+            className={`vision-textarea ${shake ? 'shake' : ''}`}
+            defaultValue={effectiveVision}
+            onChange={(e) => setVision(e.target.value)}
+            placeholder={config.copy.visionPlaceholder}
+          />
+
+          <div className="vision-footer">
+            <button type="button" className="btn-primary" onClick={submitVision}>
+              {config.copy.visionCta}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
            SCREEN 0 — PAYWALL
            Shows before everything else.
            Full Roadmap ($1) vs Quick Vision (free).
@@ -1009,7 +1195,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 <button type="button" className="paywall-btn paywall-btn-paid"
                   onClick={() => {
                     sessionStorage.setItem('swrv_rm_paid', '1');
-                    goTo('phase2');
+                    goTo('intro');
                   }}>
                   Begin the Roadmap →
                 </button>
@@ -1150,7 +1336,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 type="button"
                 className="btn-primary"
                 style={{ marginTop: 32 }}
-                onClick={() => { setError(null); goTo('phase2'); }}
+                onClick={() => { setError(null); goTo('vision'); }}
               >
                 ← Try Again
               </button>
