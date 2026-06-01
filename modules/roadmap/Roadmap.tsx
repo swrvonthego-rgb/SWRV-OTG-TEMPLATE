@@ -149,7 +149,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
   const [screen, setScreen] = useState<ScreenId>(() => {
     if (typeof window === 'undefined') return 'paywall';
-    return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'intro' : 'paywall';
+    return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'phase2' : 'paywall';
   });
   const QV_QUESTIONS = [
     { id: "problem",    q: "What's the problem you couldn't ignore that made you want to find — or BE — the solution?",     ph: "The thing that kept showing up in your life until you stopped pretending you didn't see it." },
@@ -300,7 +300,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       // wrong screen. Re-check here to always start correctly.
       const paid = checkPaid();
       if (paid && screen === 'paywall') {
-        setScreen('intro');
+        setScreen('phase2');
       } else if (!paid && screen !== 'paywall' && screen !== 'results') {
         // Only reset to paywall if they haven't reached results yet
         // (don't wipe a completed session on re-open)
@@ -1009,7 +1009,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 <button type="button" className="paywall-btn paywall-btn-paid"
                   onClick={() => {
                     sessionStorage.setItem('swrv_rm_paid', '1');
-                    goTo('intro');
+                    goTo('phase2');
                   }}>
                   Begin the Roadmap →
                 </button>
@@ -1150,7 +1150,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 type="button"
                 className="btn-primary"
                 style={{ marginTop: 32 }}
-                onClick={() => { setError(null); goTo('vision'); }}
+                onClick={() => { setError(null); goTo('phase2'); }}
               >
                 ← Try Again
               </button>
