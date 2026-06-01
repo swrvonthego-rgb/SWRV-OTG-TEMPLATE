@@ -208,7 +208,7 @@
   transition:width .6s cubic-bezier(.4,0,.2,1);z-index:200;width:0%;}
 
 /* screens */
-.roadmap-experience .screen{display:none;min-height:100vh;flex-direction:column;}
+.roadmap-experience .screen{display:none;min-height:100vh;flex-direction:column;isolation:isolate;}
 .roadmap-experience .screen.active{display:flex;}
 
 /* ════════════════════════════════════════════════════════
@@ -298,7 +298,7 @@
     repeating-linear-gradient(90deg,transparent,transparent 59px,var(--accent-soft) 60px);
   opacity:.45;}
 
-.roadmap-experience .grain{position:absolute;inset:0;
+.roadmap-experience .grain{position:absolute;inset:0;z-index:-1;
   background-color:#0a1929;
   background-image:
     /* Dark overlay so foreground content reads */
