@@ -396,14 +396,23 @@
 .roadmap-experience .name-field-wrap{margin-bottom:24px;}
 .roadmap-experience .field-label{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
   color:var(--ink-base);opacity:.5;margin-bottom:10px;font-family:var(--font-body);}
-.roadmap-experience .text-input{background:var(--bg-soft);border:1px solid var(--border);
-  border-radius:var(--radius-btn);padding:14px 20px;width:100%;max-width:300px;
-  color:var(--ink-bright);font-family:var(--font-italic);font-size:18px;
-  text-align:center;outline:none;transition:border-color .3s;letter-spacing:.05em;}
+.roadmap-experience .text-input{background:rgba(10,25,41,0.92);border:1px solid var(--accent-mid);
+  border-radius:var(--radius-btn);padding:16px 22px;width:100%;max-width:340px;
+  color:#fff;font-family:var(--font-italic);font-size:20px;
+  text-align:center;outline:none;transition:border-color .3s,box-shadow .3s;letter-spacing:.05em;
+  box-shadow:0 4px 24px rgba(0,0,0,0.5),inset 0 0 0 1px rgba(0,0,0,0.3);
+  -webkit-text-fill-color:#fff;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
 .roadmap-experience[data-theme="cyberpunk"] .text-input, .roadmap-experience[data-theme="street"] .text-input{font-family:var(--font-body);}
-.roadmap-experience .text-input::placeholder{color:var(--ink-mute);font-style:italic;}
-.roadmap-experience .text-input:focus{border-color:var(--accent-strong);}
+.roadmap-experience .text-input::placeholder{color:rgba(255,255,255,0.4);font-style:italic;-webkit-text-fill-color:rgba(255,255,255,0.4);}
+.roadmap-experience .text-input:focus{border-color:var(--accent-1);box-shadow:0 4px 28px rgba(0,0,0,0.6),0 0 0 3px var(--accent-soft);}
 .roadmap-experience .text-input.error{border-color:var(--error);}
+/* Kill browser autofill washing out the text */
+.roadmap-experience .text-input:-webkit-autofill,
+.roadmap-experience .text-input:-webkit-autofill:hover,
+.roadmap-experience .text-input:-webkit-autofill:focus{
+  -webkit-text-fill-color:#fff;
+  -webkit-box-shadow:0 0 0 1000px rgba(10,25,41,0.96) inset;
+  caret-color:#fff;}
 
 .roadmap-experience .btn-primary{background:var(--accent-1);color:var(--bg-deep);border:none;
   padding:18px 56px;font-family:var(--font-body);font-size:13px;font-weight:600;
