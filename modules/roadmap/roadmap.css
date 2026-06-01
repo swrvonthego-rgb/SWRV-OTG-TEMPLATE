@@ -2,6 +2,8 @@
    BASE — variables that every theme overrides
 ═══════════════════════════════════════════════════════ */
 .roadmap-experience{
+  /* Fullscreen overlay — must be here to survive CSS minification */
+  position:fixed;inset:0;z-index:1000;overflow-y:auto;scroll-behavior:smooth;
   /* surfaces */
   --bg-deep:#0a1929;
   --bg-mid:#0d0b08;
@@ -194,13 +196,10 @@
    GLOBAL RESET + LAYOUT
 ═══════════════════════════════════════════════════════ */
 .roadmap-experience *, .roadmap-experience *::before, .roadmap-experience *::after{margin:0;padding:0;box-sizing:border-box;}
-.roadmap-experience{scroll-behavior:smooth;}
 .roadmap-experience{
   background:var(--bg-deep);color:var(--ink-base);
   font-family:var(--font-body);min-height:100vh;overflow-x:hidden;
   transition:background-color .55s ease,color .55s ease;
-  /* Fullscreen overlay */
-  position:fixed;inset:0;z-index:1000;overflow-y:auto;
 }
 
 /* progress */
