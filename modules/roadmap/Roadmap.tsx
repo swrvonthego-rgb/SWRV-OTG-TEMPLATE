@@ -273,6 +273,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const micTarget = React.useRef<"vision" | "phase2">("vision");
   // Stable refs the transcript callback can read without being recreated
   const micTargetRef = micTarget;
+  // State mirror so recording label + volume slider re-render when dictation starts
+  const [activeMicTarget, setActiveMicTarget] = useState<"vision" | "phase2">("vision");
   const phase2QidRef = React.useRef<string | null>(null);
   // User's preferred music volume while speaking (ducked). Persisted in session.
   const duckVolumeRef = React.useRef<number>(
@@ -858,13 +860,6 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     showToast('Roadmap saved ✓');
   }, [result, userName, config, showToast]);
 
-  // ── Sync textarea while not focused ──────────────────────
-  useEffect(() => {
-    if (textareaRef.current && document.activeElement !== textareaRef.current) {
-      textareaRef.current.value = effectiveVision;
-    }
-  }, [effectiveVision]);
-
 
   if (!isOpen) return null;
 
@@ -1176,15 +1171,15 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           <div className="phase2-mic-row">
             <button
               type="button"
-              className={'mic-btn' + (mic.isListening && micTarget.current === 'vision' ? ' recording' : '')}
-              onClick={() => { micTarget.current = 'vision'; mic.toggle(); }}
+              className={'mic-btn' + (mic.isListening && activeMicTarget === 'vision' ? ' recording' : '')}
+              onClick={() => { micTarget.current = 'vision'; setActiveMicTarget('vision'); mic.toggle(); }}
               disabled={mic.state === 'unsupported'}
               title="Speak your vision"
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm6-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" /></svg>
             </button>
-            {mic.isListening && micTarget.current === 'vision' && <span className="phase2-recording-label">● Recording…</span>}
-            {mic.isListening && micTarget.current === 'vision' && hasMusic && !musicMuted && (
+            {mic.isListening && activeMicTarget === 'vision' && <span className="phase2-recording-label">● Recording…</span>}
+            {mic.isListening && activeMicTarget === 'vision' && !musicMuted && (
               <div className="mic-volume-wrap" title="Music volume while you speak">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
                 <input
@@ -1206,8 +1201,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           <textarea
             ref={textareaRef}
             className={`vision-textarea ${shake ? 'shake' : ''}`}
-            defaultValue={effectiveVision}
-            onChange={(e) => setVision(e.target.value)}
+            value={effectiveVision}
+            onChange={(e) => { setInterimVision(''); setVision(e.target.value); }}
             placeholder={config.copy.visionPlaceholder}
           />
 
@@ -1269,11 +1264,18 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
       {/* ════════ SCREEN 3.75 — PHASE 2 (16 GUIDED QUESTIONS) ════════ */}
       <section id="screen-phase2" className={`screen ${screen === 'phase2' ? 'active' : ''}`}>
+        <div className="grain grain-dim" />
         <div className="phase2-wrap">
           {(() => {
             const q = PHASE_2_QUESTIONS[phase2Idx];
             const total = PHASE_2_QUESTIONS.length;
-            const answer = phase2Answers[q.id] || '';
+            const baseAnswer = phase2Answers[q.id] || '';
+            // While the mic is dictating THIS question, show the live interim
+            // words appended so the speaker sees text appear automatically.
+            const isDictatingThis = mic.isListening && activeMicTarget === 'phase2' && phase2QidRef.current === q.id;
+            const answer = isDictatingThis && interimVision
+              ? baseAnswer + (baseAnswer && !baseAnswer.endsWith(' ') ? ' ' : '') + interimVision
+              : baseAnswer;
             const isLast = phase2Idx === total - 1;
             return (
               <>
@@ -1296,8 +1298,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
                 <div className="phase2-mic-row">
                   <button type="button"
-                    className={"mic-btn" + (mic.isListening && micTarget.current === "phase2" ? " recording" : "")}
-                    onClick={() => { micTarget.current = "phase2"; phase2QidRef.current = q.id; mic.toggle(); }}
+                    className={"mic-btn" + (mic.isListening && activeMicTarget === "phase2" ? " recording" : "")}
+                    onClick={() => { micTarget.current = "phase2"; phase2QidRef.current = q.id; setActiveMicTarget("phase2"); mic.toggle(); }}
                     disabled={mic.state === "unsupported"} title="Speak your answer">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
@@ -1308,8 +1310,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                       : <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
                     }
                   </button>
-                  {mic.isListening && micTarget.current === "phase2" && <span className="phase2-recording-label">● Recording…</span>}
-                  {mic.isListening && micTarget.current === "phase2" && hasMusic && !musicMuted && (
+                  {mic.isListening && activeMicTarget === "phase2" && <span className="phase2-recording-label">● Recording…</span>}
+                  {mic.isListening && activeMicTarget === "phase2" && !musicMuted && (
                     <div className="mic-volume-wrap" title="Music volume while you speak">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
                       <input
@@ -1331,19 +1333,20 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                   rows={4}
                   placeholder={q.placeholder || 'Type or tap the mic to speak your answer…'}
                   value={answer}
-                  onChange={e => setPhase2Answers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                  onChange={e => { setInterimVision(''); setPhase2Answers(prev => ({ ...prev, [q.id]: e.target.value })); }}
                   autoFocus
                 />
 
                 <div className="phase2-actions">
                   {phase2Idx > 0 && (
                     <button type="button" className="btn-ghost"
-                      onClick={() => setPhase2Idx(i => i - 1)}>
+                      onClick={() => { mic.stop(); setInterimVision(''); setPhase2Idx(i => i - 1); }}>
                       ← Back
                     </button>
                   )}
                   <button type="button" className="btn-ghost phase2-skip"
                     onClick={() => {
+                      mic.stop(); setInterimVision('');
                       if (isLast) {
                         proceedToProcessRef.current(false);
                       } else {
@@ -1355,6 +1358,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                   <button type="button" className="btn-primary"
                     disabled={!answer.trim()}
                     onClick={() => {
+                      mic.stop(); setInterimVision('');
                       if (isLast) {
                         proceedToProcessRef.current(false);
                       } else {
@@ -1367,7 +1371,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
                 <p className="phase2-finish-anytime">
                   Done early? <button type="button" className="phase2-finish-link"
-                    onClick={() => proceedToProcessRef.current(false)}>
+                    onClick={() => { mic.stop(); setInterimVision(''); proceedToProcessRef.current(false); }}>
                     Finish now and generate my roadmap →
                   </button>
                 </p>
