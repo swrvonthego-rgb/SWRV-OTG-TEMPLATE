@@ -462,6 +462,27 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       .catch(() => { /* blocked */ });
   }, [firstGestureDone, musicMuted, effectiveTrack, announceTrack]);
 
+  // ── Start music on the FIRST user gesture anywhere in the Roadmap ──
+  // Browsers block autoplay until the user interacts. We listen for the
+  // first pointer/touch/key event while the overlay is open and kick off
+  // playback then — so music reliably comes in no matter which screen.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = () => {
+      if (!firstGestureDone && !musicMuted) {
+        startMusicOnFirstGesture();
+      }
+    };
+    document.addEventListener('pointerdown', handler, { once: true });
+    document.addEventListener('touchstart', handler, { once: true });
+    document.addEventListener('keydown', handler, { once: true });
+    return () => {
+      document.removeEventListener('pointerdown', handler);
+      document.removeEventListener('touchstart', handler);
+      document.removeEventListener('keydown', handler);
+    };
+  }, [isOpen, firstGestureDone, musicMuted, startMusicOnFirstGesture]);
+
   // ── Navigation ───────────────────────────────────────────
   const goTo = useCallback((id: ScreenId) => {
     setScreen(id);
@@ -869,7 +890,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       <div id="progress-bar" style={{ width: `${progress}%` }} />
 
       {/* Background music — single audio element, source swapped per track */}
-      <audio ref={audioRef} loop={loop} preload="none" crossOrigin="anonymous" />
+      <audio ref={audioRef} loop={loop} preload="auto" />
 
       {/* Now-playing pill (top center) */}
       <div id="now-playing" className={nowPlaying ? 'show' : ''}>
