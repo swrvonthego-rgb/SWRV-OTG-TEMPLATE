@@ -243,6 +243,23 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
   // ── Speech recognition ───────────────────────────────────
   const handleTranscript = useCallback((appendFinal: string, interim: string) => {
+    // Route dictation to whichever field the mic was opened for.
+    if (micTargetRef.current === 'phase2') {
+      const qid = phase2QidRef.current;
+      if (!qid) return;
+      if (appendFinal) {
+        setPhase2Answers((prev) => {
+          const cur = prev[qid] || '';
+          const sep = cur && !cur.endsWith(' ') ? ' ' : '';
+          return { ...prev, [qid]: cur + sep + appendFinal };
+        });
+        setInterimVision('');
+      } else {
+        setInterimVision(interim);
+      }
+      return;
+    }
+    // Default: Phase 1 vision free-text
     if (appendFinal) {
       setVision((prev) => {
         const sep = prev && !prev.endsWith(' ') ? ' ' : '';
@@ -254,6 +271,13 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
   }, []);
   const micTarget = React.useRef<"vision" | "phase2">("vision");
+  // Stable refs the transcript callback can read without being recreated
+  const micTargetRef = micTarget;
+  const phase2QidRef = React.useRef<string | null>(null);
+  // User's preferred music volume while speaking (ducked). Persisted in session.
+  const duckVolumeRef = React.useRef<number>(
+    (() => { const v = parseFloat(ls.get('roadmap-duck-vol') || '0.15'); return isNaN(v) ? 0.15 : v; })()
+  );
   const mic = useSpeechRecognition({ onTranscript: handleTranscript });
 
   // ── Effective vision (committed + live interim) ─────────
@@ -343,17 +367,17 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     if (manualTrackId) ls.set('roadmap-manual-track', manualTrackId);
   }, [manualTrackId]);
 
-  // ── Mic + Music: music keeps playing during speaking, user controls volume via slider ──
-  // Slider is uncontrolled (no React state) so adjusting volume won't trigger re-renders
-  // that could interrupt the active speech recognition session.
+  // ── Mic + Music: music ducks while speaking; user sets a comfortable
+  //    level with the slider, which is remembered for the rest of the session.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !effectiveTrack) return;
     if (mic.isListening) {
-      // Initial duck when mic starts — user can adjust UP via slider after
-      audio.volume = 0.15;
-      const slider = document.getElementById('vision-volume-slider') as HTMLInputElement | null;
-      if (slider) slider.value = '0.15';
+      // Duck to the user's preferred speaking-volume (default low) so the
+      // music doesn't fight the mic. Slider lets them raise it live.
+      audio.volume = duckVolumeRef.current;
+      const slider = document.getElementById('mic-volume-slider') as HTMLInputElement | null;
+      if (slider) slider.value = String(duckVolumeRef.current);
       if (firstGestureDone && !musicMuted) {
         audio.play().catch(() => { /* autoplay blocked */ });
       }
@@ -1135,17 +1159,19 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           )}
         </div>
         <div className="vision-main">
-          <h2 className="vision-prompt">
-            {config.copy.visionPrompt.line1} <em>{config.copy.visionPrompt.emphasis}</em><br />
-            {config.copy.visionPrompt.line3.split('\n').map((line, i, arr) => (
-              <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
-            ))}
-          </h2>
-          <p className="vision-sub">
-            {config.copy.visionSub.split('\n').map((line, i, arr) => (
-              <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
-            ))}
-          </p>
+          <div className="vision-prompt-panel">
+            <h2 className="vision-prompt">
+              {config.copy.visionPrompt.line1} <em>{config.copy.visionPrompt.emphasis}</em><br />
+              {config.copy.visionPrompt.line3.split('\n').map((line, i, arr) => (
+                <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+              ))}
+            </h2>
+            <p className="vision-sub">
+              {config.copy.visionSub.split('\n').map((line, i, arr) => (
+                <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+              ))}
+            </p>
+          </div>
 
           <div className="phase2-mic-row">
             <button
@@ -1158,6 +1184,23 @@ export const Roadmap: React.FC<RoadmapProps> = ({
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm6-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" /></svg>
             </button>
             {mic.isListening && micTarget.current === 'vision' && <span className="phase2-recording-label">● Recording…</span>}
+            {mic.isListening && micTarget.current === 'vision' && hasMusic && !musicMuted && (
+              <div className="mic-volume-wrap" title="Music volume while you speak">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                <input
+                  id="mic-volume-slider"
+                  className="mic-volume-slider"
+                  type="range" min="0" max="0.6" step="0.01"
+                  defaultValue={duckVolumeRef.current}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    duckVolumeRef.current = v;
+                    if (audioRef.current) audioRef.current.volume = v;
+                    ls.set('roadmap-duck-vol', String(v));
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           <textarea
@@ -1254,7 +1297,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 <div className="phase2-mic-row">
                   <button type="button"
                     className={"mic-btn" + (mic.isListening && micTarget.current === "phase2" ? " recording" : "")}
-                    onClick={() => { micTarget.current = "phase2"; mic.toggle(); }}
+                    onClick={() => { micTarget.current = "phase2"; phase2QidRef.current = q.id; mic.toggle(); }}
                     disabled={mic.state === "unsupported"} title="Speak your answer">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
@@ -1266,6 +1309,22 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                     }
                   </button>
                   {mic.isListening && micTarget.current === "phase2" && <span className="phase2-recording-label">● Recording…</span>}
+                  {mic.isListening && micTarget.current === "phase2" && hasMusic && !musicMuted && (
+                    <div className="mic-volume-wrap" title="Music volume while you speak">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                      <input
+                        className="mic-volume-slider"
+                        type="range" min="0" max="0.6" step="0.01"
+                        defaultValue={duckVolumeRef.current}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          duckVolumeRef.current = v;
+                          if (audioRef.current) audioRef.current.volume = v;
+                          ls.set('roadmap-duck-vol', String(v));
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <textarea
                   className="phase2-input"

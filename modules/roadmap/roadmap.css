@@ -1215,3 +1215,78 @@
   -webkit-backdrop-filter:blur(12px);
   box-shadow:0 12px 50px rgba(0,0,0,0.5);
 }
+
+/* ════════════════════════════════════════════════════════
+   READABILITY PANELS — keep copy legible over blueprint bg
+   Frosted dark panels behind text-heavy screens so the map
+   never washes out the words. Matches .paywall-scriptures.
+═══════════════════════════════════════════════════════ */
+.roadmap-experience .disc-box{
+  background:rgba(10,25,41,0.82);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(200,168,75,0.30);
+  border-radius:16px;
+  box-shadow:0 12px 48px rgba(0,0,0,0.55);
+  padding:44px 38px;
+  margin:0 auto;
+}
+.roadmap-experience .disc-text{color:#f3ece0;text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+.roadmap-experience .disc-note{color:#cdbfa6;opacity:.75;}
+
+/* Email screen panel — wrap the centered content */
+.roadmap-experience #screen-email .intro-content{
+  background:rgba(10,25,41,0.82);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(200,168,75,0.30);
+  border-radius:16px;
+  box-shadow:0 12px 48px rgba(0,0,0,0.55);
+  padding:48px 40px;
+}
+.roadmap-experience #screen-email .intro-sub{color:#f3ece0;opacity:.92;}
+
+/* Vision screen — panel behind prompt + sub so it reads */
+.roadmap-experience .vision-prompt-panel{
+  background:rgba(10,25,41,0.80);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(200,168,75,0.28);
+  border-radius:16px;
+  box-shadow:0 12px 48px rgba(0,0,0,0.55);
+  padding:32px 30px;
+  margin-bottom:24px;
+}
+.roadmap-experience .vision-prompt-panel .vision-prompt{margin-bottom:18px;}
+.roadmap-experience .vision-prompt-panel .vision-sub{margin-bottom:0;color:#e9dfce;opacity:.85;}
+
+/* Intro sub gets a soft pill so the tagline reads on the map */
+.roadmap-experience #screen-intro .intro-sub{
+  display:inline-block;
+  background:rgba(10,25,41,0.70);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-radius:12px;
+  padding:16px 24px;
+}
+
+/* ── Mic music-ducking volume slider (shows while recording) ── */
+.roadmap-experience .mic-volume-wrap{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 14px;border-radius:var(--radius-pill);
+  background:rgba(10,25,41,0.85);border:1px solid var(--accent-mid);
+  box-shadow:0 4px 18px rgba(0,0,0,0.4);
+}
+.roadmap-experience .mic-volume-wrap svg{fill:var(--accent-1);opacity:.8;flex-shrink:0;}
+.roadmap-experience .mic-volume-slider{
+  -webkit-appearance:none;appearance:none;
+  width:110px;height:4px;border-radius:4px;
+  background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+  outline:none;cursor:pointer;
+}
+.roadmap-experience .mic-volume-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--accent-2);border:2px solid #0a1929;cursor:pointer;
+  box-shadow:0 2px 6px rgba(0,0,0,0.5);
+}
+.roadmap-experience .mic-volume-slider::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--accent-2);border:2px solid #0a1929;cursor:pointer;
+}
