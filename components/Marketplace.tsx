@@ -96,9 +96,12 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
               )}
             </div>
             <div style={{ flexShrink: 0 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 28px', background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: BG, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', borderRadius: 999, whiteSpace: 'nowrap', boxShadow: '0 8px 24px rgba(200,168,75,0.35)' }}>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onOpenRoadmap?.(); }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 28px', background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: BG, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', borderRadius: 999, whiteSpace: 'nowrap', boxShadow: '0 8px 24px rgba(200,168,75,0.35)', border: 'none', cursor: 'pointer' }}>
                 START ROADMAP <ArrowRight size={15} />
-              </span>
+              </button>
             </div>
           </div>
         </button>
