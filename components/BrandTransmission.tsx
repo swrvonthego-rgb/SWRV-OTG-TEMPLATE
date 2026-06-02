@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const BrandTransmission: React.FC = () => {
+export const BrandTransmission: React.FC<{ skipIntro?: boolean }> = ({ skipIntro = false }) => {
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
@@ -26,7 +26,8 @@ export const BrandTransmission: React.FC = () => {
     >
       {/* iframe fills the entire section — tap inside it triggers audio on iOS */}
       <iframe
-        src="/brand-transmission.html"
+        src={skipIntro ? "about:blank" : "/brand-transmission.html"}
+        loading="lazy"
         title="Swrv On-The-Go — Brand Transmission"
         style={{
           position: 'absolute',

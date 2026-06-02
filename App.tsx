@@ -48,7 +48,12 @@ if (typeof window !== 'undefined') {
 
 
 const App: React.FC = () => {
-  const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
+  // Initialize roadmap open state from URL — ?roadmap=1 opens it immediately
+  // with zero delay so the user never sees the underlying page first.
+  const [isRoadmapOpen, setIsRoadmapOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).get('roadmap') === '1';
+  });
   const [isZionOpen, setIsZionOpen] = useState(false);
   const [isServicesMenuOpen, setIsServicesMenuOpen] = useState(false);
   // Open services menu if URL is /services (deep linking)
@@ -63,11 +68,9 @@ const App: React.FC = () => {
     const { hash, search } = window.location;
     const params = new URLSearchParams(search);
 
-    // ?roadmap=1 opens the Roadmap overlay directly
-    if (params.get('roadmap') === '1') {
-      setTimeout(() => setIsRoadmapOpen(true), 100);
-      return;
-    }
+    // ?roadmap=1 — already handled by useState initializer above;
+    // just make sure hasStarted is true so the Roadmap renders
+    if (params.get('roadmap') === '1') return;
 
     // #byob and #meet-zion open their modals instead of scrolling
     if (hash === '#byob') { setIsByobOpen(true); return; }
@@ -80,7 +83,7 @@ const App: React.FC = () => {
       const attempt = (tries = 0) => {
         const el = document.getElementById(target);
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.scrollIntoView({ behavior: 'instant', block: 'start' });
         } else if (tries < 10) {
           setTimeout(() => attempt(tries + 1), 150);
         }
@@ -215,7 +218,7 @@ const App: React.FC = () => {
         <Hero
           onOpenConsultation={() => setIsRoadmapOpen(true)}
         />
-        <BrandTransmission />
+        <BrandTransmission skipIntro={skipIntro} />
         <AboutSWRV />
         <Shop />
         <Portfolio />
