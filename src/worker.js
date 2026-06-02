@@ -66,6 +66,32 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    // ── Deep-link shortcuts ─────────────────────────────────────
+    // Clean shareable paths that redirect to the right section/app.
+    // Lives in the Worker (not _redirects) so it actually runs.
+    const SHORTCUTS = {
+      // Sections on the main site — redirect to a hash so the SPA scrolls
+      '/services':    'https://swrvonthego.pro/#ecosystem',
+      '/portfolio':   'https://swrvonthego.pro/#portfolio',
+      '/about':       'https://swrvonthego.pro/#about-swrv',
+      '/contact':     'https://swrvonthego.pro/#contact',
+      '/byob':        'https://swrvonthego.pro/#byob',
+      '/revving-up':  'https://swrvonthego.pro/#revving-up',
+      '/shop':        'https://swrvonthego.pro/#shop',
+      // Roadmap — open the overlay directly via query param
+      '/roadmap':     'https://swrvonthego.pro/?roadmap=1',
+      '/the-roadmap': 'https://swrvonthego.pro/?roadmap=1',
+      '/start':       'https://swrvonthego.pro/?roadmap=1',
+      // External products
+      '/portal':      'https://app.swrvonthego.pro',
+      '/bible':       'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
+      '/patrol':      'https://spa-patrol.swrvonthego.workers.dev/',
+      '/patrol-app':  'https://spa-patrol.swrvonthego.workers.dev/app',
+    };
+    if (SHORTCUTS[url.pathname]) {
+      return Response.redirect(SHORTCUTS[url.pathname], 301);
+    }
+
     // Block API calls from unknown origins (protects Groq/Resend keys)
     if (url.pathname.startsWith('/api/')) {
       const origin = request.headers.get('Origin') || '';
