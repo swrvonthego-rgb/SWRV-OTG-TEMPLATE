@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Birdsong Method — SWRV OTG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:#0a060f;color:#ede8f5;line-height:1.6;overflow-x:hidden}
+:root{--accent:#9d4edd;--accent-light:#c77dff;--accent-glow:rgba(157,78,221,0.18)}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;background:rgba(10,6,15,0.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.05)}
+.nav-brand{font-size:12px;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,0.45);text-decoration:none}.nav-brand span{color:var(--accent)}
+.nav-cta{padding:8px 20px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:opacity .2s}.nav-cta:hover{opacity:.85}
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;background:radial-gradient(ellipse at 30% 40%,var(--accent-glow),transparent 60%),#0a060f}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;opacity:.9}
+.hero h1{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(40px,7vw,82px);line-height:1.0;color:#fff;margin-bottom:28px}
+.hero h1 em{color:var(--accent-light)}
+.hero-sub{font-size:18px;color:rgba(255,255,255,.6);line-height:1.75;margin-bottom:40px;max-width:580px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 28px rgba(157,78,221,.35)}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(157,78,221,.5)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:1px solid rgba(255,255,255,.15);color:#fff;font-weight:600;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:border-color .2s}.btn-ghost:hover{border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:32px;margin-top:64px;padding-top:48px;border-top:1px solid rgba(255,255,255,.06)}
+.stat-num{font-family:'Playfair Display',serif;font-style:italic;font-size:44px;color:var(--accent-light);font-weight:600;line-height:1}
+.stat-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.18em;margin-top:8px}
+.mockup-section{padding:100px 0;background:linear-gradient(180deg,#0a060f,#0e0a14)}
+.mockup-inner{display:flex;gap:80px;align-items:center;flex-wrap:wrap}
+.mockup-copy{flex:1 1 340px}
+.mockup-copy h2{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(28px,4vw,44px);color:#fff;margin-bottom:20px;line-height:1.2}
+.mockup-copy p{font-size:16px;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:28px}
+.mockup-frame-wrap{flex:0 0 auto;display:flex;justify-content:center}
+.phone-outer{width:300px;background:linear-gradient(145deg,#1e1028,#120a1c);border-radius:44px;padding:12px;box-shadow:0 40px 80px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.06),inset 0 0 0 2px rgba(255,255,255,.03)}
+.phone-inner{background:#0a060f;border-radius:34px;overflow:hidden;height:600px}
+.phone-notch{width:100px;height:28px;background:#120a1c;border-radius:0 0 20px 20px;margin:0 auto}
+.phone-screen{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center}
+.viz-bar{display:flex;align-items:flex-end;gap:3px;height:60px;margin-bottom:20px}
+.viz-bar span{width:6px;background:var(--accent);border-radius:3px;animation:vizPulse 1s ease-in-out infinite}
+.viz-bar span:nth-child(1){height:20px;animation-delay:0s}
+.viz-bar span:nth-child(2){height:45px;animation-delay:.1s}
+.viz-bar span:nth-child(3){height:30px;animation-delay:.2s}
+.viz-bar span:nth-child(4){height:55px;animation-delay:.3s}
+.viz-bar span:nth-child(5){height:25px;animation-delay:.4s}
+.viz-bar span:nth-child(6){height:50px;animation-delay:.5s}
+.viz-bar span:nth-child(7){height:35px;animation-delay:.6s}
+@keyframes vizPulse{0%,100%{opacity:.5;transform:scaleY(.8)}50%{opacity:1;transform:scaleY(1)}}
+.score-ring{width:110px;height:110px;border-radius:50%;border:5px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 28px rgba(157,78,221,.3)}
+.score-num{font-family:'Playfair Display',serif;font-size:32px;color:#fff;font-weight:600;line-height:1}
+.score-label{font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-top:3px}
+.score-row{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.score-pill{padding:6px 14px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em}
+.score-pill.good{background:rgba(157,78,221,.2);color:var(--accent-light)}
+.score-pill.note{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5)}
+.features{padding:100px 0;background:#0a060f}.section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;opacity:.9}
+.section-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(28px,4vw,44px);color:#fff;margin-bottom:48px;line-height:1.2}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.feature-card{padding:32px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:18px;transition:border-color .2s,transform .2s}.feature-card:hover{border-color:rgba(157,78,221,.35);transform:translateY(-4px)}
+.feature-icon{font-size:30px;margin-bottom:16px}.feature-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:10px}.feature-desc{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7}
+footer{padding:56px 24px 36px;text-align:center;border-top:1px solid rgba(255,255,255,.06);background:#070410}
+.footer-brand{font-size:11px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:12px}
+.footer-link{color:var(--accent);text-decoration:none;font-size:13px;font-weight:600}
+.copyright{font-size:11px;color:rgba(255,255,255,.2);margin-top:16px}
+@media(max-width:768px){.mockup-inner{flex-direction:column;gap:48px}.mockup-frame-wrap{order:-1}}
+</style>
+</head>
+<body>
+<nav><a href="https://swrvonthego.pro" class="nav-brand">SWRV <span>OTG</span></a><a href="https://swrvonthego.pro/#zion" class="nav-cta">Zion Birdsong →</a></nav>
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow">SWRV OTG Portfolio</div>
+    <h1>THE BIRDSONG<br><em>METHOD</em></h1>
+    <p class="hero-sub">An AI-powered vocal analysis platform. Record or upload a performance and get instant feedback on pitch accuracy, tone consistency, breath control, and stylistic approach — built from 25 years of real vocal coaching experience.</p>
+    <div class="cta-row">
+      <a href="https://swrvonthego.pro/#zion" class="btn-primary">🎤 Analyze Your Voice</a>
+      <a href="https://swrvonthego.pro" class="btn-ghost">Back to SWRV →</a>
+    </div>
+    <div class="stats">
+      <div><div class="stat-num">25</div><div class="stat-label">Years of coaching</div></div>
+      <div><div class="stat-num">AI</div><div class="stat-label">Analysis engine</div></div>
+      <div><div class="stat-num">Live</div><div class="stat-label">Real-time feedback</div></div>
+      <div><div class="stat-num">0</div><div class="stat-label">Judgment</div></div>
+    </div>
+  </div>
+</section>
+<section class="mockup-section">
+  <div class="container">
+    <div class="mockup-inner">
+      <div class="mockup-copy">
+        <div class="section-eyebrow">The Experience</div>
+        <h2>Your voice, analyzed by someone who actually knows it.</h2>
+        <p>The Birdsong Method isn't generic vocal feedback — it's built on Zion Birdsong's 25-year coaching methodology, translated into an AI that scores what matters: pitch, tone, breath, and authenticity.</p>
+        <p>Record straight from your phone, upload a file, or paste a URL. Get a score, a breakdown, and specific next steps — not a generic rubric.</p>
+        <a href="https://swrvonthego.pro/#zion" class="btn-primary">Try It Free →</a>
+      </div>
+      <div class="mockup-frame-wrap">
+        <div class="phone-outer">
+          <div class="phone-inner">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="viz-bar">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="score-ring">
+                <div class="score-num">87</div>
+                <div class="score-label">Overall</div>
+              </div>
+              <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:12px">Vocal Analysis Complete</div>
+              <div class="score-row">
+                <span class="score-pill good">Pitch ✓</span>
+                <span class="score-pill note">Breath →</span>
+              </div>
+              <div class="score-row" style="margin-top:8px">
+                <span class="score-pill good">Tone ✓</span>
+                <span class="score-pill good">Range ✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="features">
+  <div class="container">
+    <div class="section-eyebrow">What It Does</div>
+    <h2 class="section-title">25 years of coaching. Now on demand.</h2>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">🎯</div><div class="feature-name">Pitch Accuracy</div><div class="feature-desc">Measures how consistently you hit target notes and identifies patterns in where drift happens most.</div></div>
+      <div class="feature-card"><div class="feature-icon">🌊</div><div class="feature-name">Breath Control</div><div class="feature-desc">Analyzes support, phrase length, and where breath breaks interrupt your performance flow.</div></div>
+      <div class="feature-card"><div class="feature-icon">🎨</div><div class="feature-name">Tonal Quality</div><div class="feature-desc">Evaluates richness, resonance, and the unique character of your voice — not just technical correctness.</div></div>
+      <div class="feature-card"><div class="feature-icon">📈</div><div class="feature-name">Progress Tracking</div><div class="feature-desc">Compare analyses over time to see where you've grown and what still needs work across sessions.</div></div>
+      <div class="feature-card"><div class="feature-icon">🎤</div><div class="feature-name">Record or Upload</div><div class="feature-desc">Record live from your phone mic, upload an existing audio file, or drop in a URL. Works with all of it.</div></div>
+      <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-name">Actionable Feedback</div><div class="feature-desc">Not a score and a shrug. Specific, practical next steps tied to what was actually heard in your performance.</div></div>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="footer-brand">SWRV On The Go</div>
+  <a href="https://swrvonthego.pro" class="footer-link">swrvonthego.pro →</a>
+  <p class="copyright">© 2025 SWRV On The Go · Villa Rica, GA · Full-Service Branding, Content & App Development</p>
+</footer>
+</body>
+</html>

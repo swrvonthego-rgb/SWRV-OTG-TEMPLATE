@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BYOB Timer — SWRV OTG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:#060e0a;color:#e8f0ec;line-height:1.6;overflow-x:hidden}
+:root{--accent:#81b29a;--accent-light:#9dcfb4;--accent-glow:rgba(129,178,154,0.16);--accent-dark:#060e0a}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;background:rgba(6,14,10,0.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.05)}
+.nav-brand{font-size:12px;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,0.45);text-decoration:none}.nav-brand span{color:var(--accent)}
+.nav-cta{padding:8px 20px;background:var(--accent);color:#060e0a;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:opacity .2s}.nav-cta:hover{opacity:.85}
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;background:radial-gradient(ellipse at 25% 45%,var(--accent-glow),transparent 60%),#060e0a}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;opacity:.9}
+.hero h1{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(40px,7vw,82px);line-height:1.0;color:#fff;margin-bottom:28px}
+.hero h1 em{color:var(--accent-light)}
+.hero-sub{font-size:18px;color:rgba(255,255,255,.6);line-height:1.75;margin-bottom:40px;max-width:580px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--accent);color:#060e0a;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 28px rgba(129,178,154,.35)}.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(129,178,154,.5)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:1px solid rgba(255,255,255,.15);color:#fff;font-weight:600;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:border-color .2s}.btn-ghost:hover{border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:32px;margin-top:64px;padding-top:48px;border-top:1px solid rgba(255,255,255,.06)}
+.stat-num{font-family:'Playfair Display',serif;font-style:italic;font-size:44px;color:var(--accent-light);font-weight:600;line-height:1}
+.stat-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.18em;margin-top:8px}
+.mockup-section{padding:100px 0;background:linear-gradient(180deg,#060e0a,#0a140e)}
+.mockup-inner{display:flex;gap:80px;align-items:center;flex-wrap:wrap}
+.mockup-copy{flex:1 1 340px}
+.mockup-copy h2{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(28px,4vw,44px);color:#fff;margin-bottom:20px;line-height:1.2}
+.mockup-copy p{font-size:16px;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:28px}
+.mockup-frame-wrap{flex:0 0 auto;display:flex;justify-content:center}
+.phone-outer{width:300px;background:linear-gradient(145deg,#0f1f16,#081009);border-radius:44px;padding:12px;box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06),inset 0 0 0 2px rgba(255,255,255,.03)}
+.phone-inner{background:#060e0a;border-radius:34px;overflow:hidden;height:600px}
+.phone-notch{width:100px;height:28px;background:#081009;border-radius:0 0 20px 20px;margin:0 auto}
+.phone-screen{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.timer-ring{width:160px;height:160px;border-radius:50%;border:6px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 0 32px rgba(129,178,154,.3)}
+.timer-digits{font-family:'Playfair Display',serif;font-size:40px;color:#fff;font-weight:600;line-height:1}
+.timer-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.12em;margin-top:4px}
+.timer-round{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:20px}
+.timer-btns{display:flex;gap:10px;justify-content:center}
+.t-btn{padding:10px 20px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer}
+.t-btn.start{background:var(--accent);color:#060e0a}
+.t-btn.stop{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
+.features{padding:100px 0;background:#060e0a}.section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;opacity:.9}
+.section-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(28px,4vw,44px);color:#fff;margin-bottom:48px;line-height:1.2}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.feature-card{padding:32px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:18px;transition:border-color .2s,transform .2s}.feature-card:hover{border-color:rgba(129,178,154,.35);transform:translateY(-4px)}
+.feature-icon{font-size:30px;margin-bottom:16px}.feature-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:10px}.feature-desc{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7}
+footer{padding:56px 24px 36px;text-align:center;border-top:1px solid rgba(255,255,255,.06);background:#040a06}
+.footer-brand{font-size:11px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:12px}
+.footer-link{color:var(--accent);text-decoration:none;font-size:13px;font-weight:600}
+.copyright{font-size:11px;color:rgba(255,255,255,.2);margin-top:16px}
+@media(max-width:768px){.mockup-inner{flex-direction:column;gap:48px}.mockup-frame-wrap{order:-1}}
+</style>
+</head>
+<body>
+<nav><a href="https://swrvonthego.pro" class="nav-brand">SWRV <span>OTG</span></a><a href="https://swrvonthego.pro/#byob" class="nav-cta">Train BYOB →</a></nav>
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow">SWRV OTG Portfolio</div>
+    <h1>BYOB<br><em>TIMER</em></h1>
+    <p class="hero-sub">A custom interval and workout timer purpose-built for the BYOB training program. Rounds, rest periods, session structure — one clean interface built for coaches and athletes who don't need anything extra.</p>
+    <div class="cta-row">
+      <a href="https://swrvonthego.pro/#byob" class="btn-primary">⏱ Launch Timer</a>
+      <a href="https://swrvonthego.pro" class="btn-ghost">Back to SWRV →</a>
+    </div>
+    <div class="stats">
+      <div><div class="stat-num">0</div><div class="stat-label">Setup required</div></div>
+      <div><div class="stat-num">∞</div><div class="stat-label">Session types</div></div>
+      <div><div class="stat-num">Free</div><div class="stat-label">Always</div></div>
+      <div><div class="stat-num">📱</div><div class="stat-label">Mobile first</div></div>
+    </div>
+  </div>
+</section>
+<section class="mockup-section">
+  <div class="container">
+    <div class="mockup-inner">
+      <div class="mockup-copy">
+        <div class="section-eyebrow">The Experience</div>
+        <h2>All the timer you need. Nothing you don't.</h2>
+        <p>Built specifically for BYOB training sessions — warm-up, active rounds, rest intervals, and cooldown. Tap to start, tap to stop. Works offline, runs on any phone, no app install required.</p>
+        <p>Clean enough to not distract. Precise enough to run a real session.</p>
+        <a href="https://swrvonthego.pro/#byob" class="btn-primary">Start a Session →</a>
+      </div>
+      <div class="mockup-frame-wrap">
+        <div class="phone-outer">
+          <div class="phone-inner">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="timer-round">Round 3 of 5 · ACTIVE</div>
+              <div class="timer-ring">
+                <div class="timer-digits">2:45</div>
+                <div class="timer-label">remaining</div>
+              </div>
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:20px;letter-spacing:.08em;text-transform:uppercase">Rest in · 2:45</div>
+              <div class="timer-btns">
+                <div class="t-btn stop">Pause</div>
+                <div class="t-btn start">Next Round</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="features">
+  <div class="container">
+    <div class="section-eyebrow">What It Does</div>
+    <h2 class="section-title">Purpose-built for BYOB sessions.</h2>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">🔄</div><div class="feature-name">Interval Rounds</div><div class="feature-desc">Set work intervals and rest periods. The timer tracks rounds automatically and signals transitions audibly.</div></div>
+      <div class="feature-card"><div class="feature-icon">📱</div><div class="feature-name">Phone Screen Stays On</div><div class="feature-desc">Screen doesn't lock mid-session. Glance at the countdown without unlocking your phone.</div></div>
+      <div class="feature-card"><div class="feature-icon">🔇</div><div class="feature-name">Audio Cues</div><div class="feature-desc">Sound alerts for round start, halfway point, and rest transitions — so you can keep eyes on form, not the screen.</div></div>
+      <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-name">Instant Start</div><div class="feature-desc">No login, no settings screen, no tutorial. Tap start and go. The structure is already built in.</div></div>
+      <div class="feature-card"><div class="feature-icon">📴</div><div class="feature-name">Works Offline</div><div class="feature-desc">No wifi required. Works in the gym, in the field, on a track — wherever the work happens.</div></div>
+      <div class="feature-card"><div class="feature-icon">🏗️</div><div class="feature-name">Zero Dependencies</div><div class="feature-desc">Pure HTML, CSS, and JS. Single file. No framework, no npm. Runs anywhere a browser runs.</div></div>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="footer-brand">SWRV On The Go</div>
+  <a href="https://swrvonthego.pro" class="footer-link">swrvonthego.pro →</a>
+  <p class="copyright">© 2025 SWRV On The Go · Villa Rica, GA · Full-Service Branding, Content & App Development</p>
+</footer>
+</body>
+</html>

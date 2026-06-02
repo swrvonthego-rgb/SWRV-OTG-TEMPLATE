@@ -100,6 +100,34 @@ export const Portfolio: React.FC = () => {
                       </span>
                     ))}
                   </div>
+
+                  {/* CTA row — showcase + live links */}
+                  {(project.showcaseUrl || project.url) && (
+                    <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
+                      {project.showcaseUrl && (
+                        <a
+                          href={project.showcaseUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: project.accent + '22', border: `1px solid ${project.accent}55`, borderRadius: 999, fontSize: 12, fontWeight: 700, color: project.accent, textDecoration: 'none', letterSpacing: '0.05em', textTransform: 'uppercase' }}
+                        >
+                          See Details →
+                        </a>
+                      )}
+                      {project.url && (
+                        <a
+                          href={project.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 999, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', textDecoration: 'none', letterSpacing: '0.05em', textTransform: 'uppercase' }}
+                        >
+                          Visit Live <ArrowUpRight size={12} />
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </CardTag>
             );

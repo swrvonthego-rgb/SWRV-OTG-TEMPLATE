@@ -365,6 +365,7 @@ export interface PortfolioProject {
   status: 'live' | 'in-development' | 'ongoing';
   statusLabel: string;
   url?: string;
+  showcaseUrl?: string;    // dedicated showcase/landing page for this app
   accent: string;          // hex accent color
 }
 
@@ -382,6 +383,19 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     accent: '#c8a84b',
   },
   {
+    id: 'client-portal',
+    name: 'SWRV Client Portal',
+    type: 'Full-Stack Client Dashboard',
+    description: 'A private workspace where every SWRV client manages their projects, invoices, Roadmap results, and delivered files — all in one secure login. No chasing emails. No confusion about what is next.',
+    role: 'Sole creator — design, development, and everything end to end',
+    stack: ['React', 'TypeScript', 'Supabase', 'Cloudflare Pages', 'Google Auth'],
+    status: 'live',
+    statusLabel: 'Live',
+    url: 'https://app.swrvonthego.pro',
+    showcaseUrl: '/apps/client-portal.html',
+    accent: '#6366f1',
+  },
+  {
     id: 'no-bs-bible',
     name: 'The SWRV No BS Bible',
     type: 'Full-Stack Web App',
@@ -391,7 +405,20 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     status: 'live',
     statusLabel: 'Live',
     url: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
-    accent: '#d4a373',
+    showcaseUrl: '/apps/no-bs-bible.html',
+    accent: '#c87941',
+  },
+  {
+    id: 'birdsong-method',
+    name: 'The Birdsong Method',
+    type: 'AI Vocal Analysis Platform',
+    description: 'An AI-powered vocal coaching platform built on 25 years of real experience. Record or upload a performance, get instant scored feedback on pitch, tone, breath control, and style — with actionable next steps, not just a number.',
+    role: 'Sole creator — design, development, and everything end to end',
+    stack: ['React', 'TypeScript', 'AI Integration', 'Web Audio API', 'Cloudflare Workers'],
+    status: 'in-development',
+    statusLabel: 'In Development',
+    showcaseUrl: '/apps/birdsong-method.html',
+    accent: '#9d4edd',
   },
   {
     id: 'trainbyob',
@@ -407,25 +434,27 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   },
   {
     id: 'mypatrol',
-    name: 'MyPatrol',
-    type: 'Single-Page Application',
-    description: 'A SPA currently in active development — a focused application built to streamline patrol, monitoring, and reporting workflows into one clean interface.',
+    name: 'MyPatrol — Patrol Shift Log',
+    type: 'Voice-First Field App',
+    description: 'A voice-driven shift documentation system built for security professionals. Speak your shift — the app fills both patrol forms automatically. Deployed for Southern Protection Agency, Fairfield Plantation.',
     role: 'Sole creator — design, development, and everything end to end',
-    stack: ['React', 'SPA Architecture', 'Cloudflare Workers', 'Real-Time Data'],
+    stack: ['Vanilla JS', 'HTML/CSS', 'Voice API', 'Cloudflare Workers', 'PWA'],
     status: 'live',
     statusLabel: 'Live',
-    url: 'https://spa-patrol.swrvonthego.workers.dev',
+    url: 'https://spa-patrol.swrvonthego.workers.dev/app',
+    showcaseUrl: 'https://spa-patrol.swrvonthego.workers.dev',
     accent: '#3d5a80',
   },
   {
     id: 'byob-timer',
     name: 'BYOB Timer',
     type: 'Web Tool / App',
-    description: 'A custom interval and workout timer built for the BYOB training programs — purpose-built for coaching sessions, rounds, and structured workouts.',
+    description: 'A custom interval and workout timer built for the BYOB training programs — purpose-built for coaching sessions, rounds, and structured workouts. Zero setup, offline-ready, mobile-first.',
     role: 'Sole creator — built completely end to end',
     stack: ['JavaScript', 'Web App', 'UI/UX Design'],
     status: 'live',
     statusLabel: 'Live',
+    showcaseUrl: '/apps/byob-timer.html',
     accent: '#81b29a',
   },
   {
@@ -438,7 +467,7 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     status: 'ongoing',
     statusLabel: 'Active',
     url: 'https://hr205.org',
-    accent: '#9d4edd',
+    accent: '#8b5cf6',
   },
 ];
 

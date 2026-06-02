@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The SWRV No BS Bible — SWRV OTG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:#0d0a06;color:#f0e8d8;line-height:1.6;overflow-x:hidden}
+:root{--accent:#c87941;--accent-light:#e0975a;--accent-glow:rgba(200,121,65,0.16);--accent-soft:rgba(200,121,65,0.10)}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;background:rgba(13,10,6,0.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.05)}
+.nav-brand{font-size:12px;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,0.45);text-decoration:none}
+.nav-brand span{color:var(--accent)}
+.nav-cta{padding:8px 20px;background:var(--accent);color:#0d0a06;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:opacity .2s}
+.nav-cta:hover{opacity:.85}
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;background:radial-gradient(ellipse at 30% 40%,var(--accent-glow),transparent 60%),#0d0a06}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;opacity:.9}
+.hero h1{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(40px,7vw,82px);line-height:1.0;color:#fff;margin-bottom:28px}
+.hero h1 em{color:var(--accent-light)}
+.hero-sub{font-size:18px;color:rgba(255,255,255,.6);line-height:1.75;margin-bottom:40px;max-width:580px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--accent);color:#0d0a06;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 28px rgba(200,121,65,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(200,121,65,.5)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border:1px solid rgba(255,255,255,.15);color:#fff;font-weight:600;font-size:14px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;text-decoration:none;transition:border-color .2s}
+.btn-ghost:hover{border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:32px;margin-top:64px;padding-top:48px;border-top:1px solid rgba(255,255,255,.06)}
+.stat-num{font-family:'Playfair Display',serif;font-style:italic;font-size:44px;color:var(--accent-light);font-weight:600;line-height:1}
+.stat-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.18em;margin-top:8px}
+.mockup-section{padding:100px 0;background:linear-gradient(180deg,#0d0a06,#110d08)}
+.mockup-inner{display:flex;gap:80px;align-items:center;flex-wrap:wrap}
+.mockup-copy{flex:1 1 340px}
+.mockup-copy h2{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(28px,4vw,44px);color:#fff;margin-bottom:20px;line-height:1.2}
+.mockup-copy p{font-size:16px;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:28px}
+.mockup-frame-wrap{flex:0 0 auto;display:flex;justify-content:center}
+.phone-outer{width:300px;background:linear-gradient(145deg,#2a1f14,#1a1208);border-radius:44px;padding:12px;box-shadow:0 40px 80px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.06),inset 0 0 0 2px rgba(255,255,255,.03)}
+.phone-inner{background:#0d0a06;border-radius:34px;overflow:hidden;height:600px;position:relative}
+.phone-notch{width:100px;height:28px;background:#1a1208;border-radius:0 0 20px 20px;margin:0 auto;position:relative;z-index:2}
+.phone-screen{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.phone-screen .app-icon{width:72px;height:72px;background:var(--accent);border-radius:20px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 12px 28px rgba(200,121,65,.4)}
+.phone-screen .app-name{font-weight:800;font-size:16px;color:#fff;margin-bottom:6px}
+.phone-screen .app-tagline{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:28px}
+.phone-screen .mock-verse{background:rgba(255,255,255,.04);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px;text-align:left;margin-bottom:10px;width:100%}
+.phone-screen .mock-ref{font-size:10px;color:var(--accent-light);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px}
+.phone-screen .mock-text{font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;font-style:italic}
+.features{padding:100px 0;background:#0d0a06}
+.section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;opacity:.9}
+.section-title{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:clamp(28px,4vw,44px);color:#fff;margin-bottom:48px;line-height:1.2}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.feature-card{padding:32px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:18px;transition:border-color .2s,transform .2s}
+.feature-card:hover{border-color:rgba(200,121,65,.35);transform:translateY(-4px)}
+.feature-icon{font-size:30px;margin-bottom:16px}
+.feature-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:10px}
+.feature-desc{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7}
+.who{padding:100px 0;background:#110d08}
+.who-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:48px}
+.who-card{padding:28px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:16px}
+.who-icon{font-size:28px;margin-bottom:12px}
+.who-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:6px}
+.who-desc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+footer{padding:56px 24px 36px;text-align:center;border-top:1px solid rgba(255,255,255,.06);background:#080604}
+.footer-brand{font-size:11px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:12px}
+.footer-link{color:var(--accent);text-decoration:none;font-size:13px;font-weight:600}
+.copyright{font-size:11px;color:rgba(255,255,255,.2);margin-top:16px}
+@media(max-width:768px){.mockup-inner{flex-direction:column;gap:48px}.mockup-frame-wrap{order:-1}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="https://swrvonthego.pro" class="nav-brand">SWRV <span>OTG</span></a>
+  <a href="https://swrv-on-bs-bible.swrvonthego.workers.dev/" class="nav-cta">Open Bible →</a>
+</nav>
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow">SWRV OTG Portfolio</div>
+    <h1>THE SWRV<br>NO BS <em>BIBLE</em></h1>
+    <p class="hero-sub">A free, historically accurate Bible web app with original canon translations, the Book of Enoch, and the Dead Sea Scrolls. Built to make the Word accessible without whitewashing — no commentary agenda, no missing books.</p>
+    <div class="cta-row">
+      <a href="https://swrv-on-bs-bible.swrvonthego.workers.dev/" class="btn-primary">📖 Open Free Bible</a>
+      <a href="https://swrvonthego.pro" class="btn-ghost">Back to SWRV →</a>
+    </div>
+    <div class="stats">
+      <div><div class="stat-num">Free</div><div class="stat-label">Always free</div></div>
+      <div><div class="stat-num">66+</div><div class="stat-label">Books included</div></div>
+      <div><div class="stat-num">100%</div><div class="stat-label">No agenda</div></div>
+      <div><div class="stat-num">Live</div><div class="stat-label">Right now</div></div>
+    </div>
+  </div>
+</section>
+<section class="mockup-section">
+  <div class="container">
+    <div class="mockup-inner">
+      <div class="mockup-copy">
+        <div class="section-eyebrow">The Experience</div>
+        <h2>The Word — without the spin.</h2>
+        <p>Most Bibles online are built around a denomination's interpretation. This one isn't. The SWRV No BS Bible presents the original canon alongside the texts that were left out of the mainstream — the Book of Enoch, the Dead Sea Scrolls, and documentation of exactly how the modern canon was assembled.</p>
+        <p>Free, forever. No account, no paywall, no opinion.</p>
+        <a href="https://swrv-on-bs-bible.swrvonthego.workers.dev/" class="btn-primary">Read Now →</a>
+      </div>
+      <div class="mockup-frame-wrap">
+        <div class="phone-outer">
+          <div class="phone-inner">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="app-icon">📖</div>
+              <div class="app-name">No BS Bible</div>
+              <div class="app-tagline">Unfiltered. Unabridged.</div>
+              <div class="mock-verse">
+                <div class="mock-ref">Genesis 1:1</div>
+                <div class="mock-text">"In the beginning God created the heaven and the earth."</div>
+              </div>
+              <div class="mock-verse">
+                <div class="mock-ref">Book of Enoch 1:9</div>
+                <div class="mock-text">"He comes with ten thousands of his saints to execute judgment."</div>
+              </div>
+              <div class="mock-verse">
+                <div class="mock-ref">Dead Sea Scrolls</div>
+                <div class="mock-text">Community Rule — full translation included.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="features">
+  <div class="container">
+    <div class="section-eyebrow">What's Inside</div>
+    <h2 class="section-title">Built different. On purpose.</h2>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">📜</div><div class="feature-name">Original Canon</div><div class="feature-desc">The 66-book Protestant canon, the Deuterocanon, Pseudepigrapha — presented without editorial spin.</div></div>
+      <div class="feature-card"><div class="feature-icon">📚</div><div class="feature-name">Book of Enoch</div><div class="feature-desc">The full Ethiopian canon including 1 Enoch — referenced by Jesus, Paul, and Peter, but excluded from the modern Bible.</div></div>
+      <div class="feature-card"><div class="feature-icon">🗺️</div><div class="feature-name">Dead Sea Scrolls</div><div class="feature-desc">Full translated access to the scrolls discovered in Qumran — unchanged and unabridged.</div></div>
+      <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-name">Assembly History</div><div class="feature-desc">Documentation on how and when the modern canon was assembled — who made the decisions and why.</div></div>
+      <div class="feature-card"><div class="feature-icon">📱</div><div class="feature-name">Mobile Ready</div><div class="feature-desc">Reads clean on any device. No app store, no install. Bookmark it and read anywhere.</div></div>
+      <div class="feature-card"><div class="feature-icon">💛</div><div class="feature-name">Always Free</div><div class="feature-desc">No paywall. No account. No subscription. The Word should be free — full stop.</div></div>
+    </div>
+  </div>
+</section>
+<section class="who">
+  <div class="container">
+    <div class="section-eyebrow">Who It's For</div>
+    <h2 class="section-title">Everyone who wants the full picture.</h2>
+    <div class="who-grid">
+      <div class="who-card"><div class="who-icon">🙏</div><div class="who-name">Faith Seekers</div><div class="who-desc">Those who believe but want to read the Word without a denomination's filter.</div></div>
+      <div class="who-card"><div class="who-icon">📖</div><div class="who-name">Scholars & Students</div><div class="who-desc">Researchers who need access to the full historical canon in one place.</div></div>
+      <div class="who-card"><div class="who-icon">🤔</div><div class="who-name">Skeptics & Curious</div><div class="who-desc">Those who want to see what was left out and make up their own mind.</div></div>
+      <div class="who-card"><div class="who-icon">🌍</div><div class="who-name">Everyone</div><div class="who-desc">Free, accessible, no gatekeeping. If you want to read it — you can.</div></div>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="footer-brand">SWRV On The Go</div>
+  <a href="https://swrvonthego.pro" class="footer-link">swrvonthego.pro →</a>
+  <p class="copyright">© 2025 SWRV On The Go · Villa Rica, GA · Full-Service Branding, Content & App Development</p>
+</footer>
+</body>
+</html>
