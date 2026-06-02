@@ -95,18 +95,16 @@ const App: React.FC = () => {
   const [isByobOpen, setIsByobOpen] = useState(false);
   const [isBirdsongOpen, setIsBirdsongOpen] = useState(false);
   const [intakeService, setIntakeService] = useState<{id:string;name:string}|null>(null);
-  // If URL has a hash, query param, or non-root path — skip the splash
-  // screen so shared links land directly on the right section.
-  const [hasStarted, setHasStarted] = useState(() => {
+  // Deep-link detection: any URL other than bare swrvonthego.pro/ skips
+  // both the splash screen AND the BrandTransmission video. The video
+  // only plays for visitors landing at the root with no hash/path/query.
+  const isDeepLink = (() => {
     if (typeof window === 'undefined') return false;
     const { hash, search, pathname } = window.location;
-    return !!(hash || pathname !== '/' || new URLSearchParams(search).get('section') || new URLSearchParams(search).get('roadmap'));
-  });
-  const [skipIntro, setSkipIntro] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const { hash, search, pathname } = window.location;
-    return !!(hash || pathname !== '/' || new URLSearchParams(search).get('section'));
-  });
+    return !!(hash || search || pathname !== '/');
+  })();
+  const [hasStarted, setHasStarted] = useState(isDeepLink);
+  const [skipIntro, setSkipIntro] = useState(isDeepLink);
 
   // Hero 'Take the Roadmap' button
   // Also sets hasStarted so the main render is mounted before Roadmap opens —
@@ -218,7 +216,7 @@ const App: React.FC = () => {
         <Hero
           onOpenConsultation={() => setIsRoadmapOpen(true)}
         />
-        <BrandTransmission skipIntro={skipIntro} />
+        {!skipIntro && <BrandTransmission skipIntro={false} />}
         <AboutSWRV />
         <Shop />
         <Portfolio />
