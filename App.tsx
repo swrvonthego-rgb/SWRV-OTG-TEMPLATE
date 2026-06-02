@@ -58,11 +58,52 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Deep-link handler: scroll to hash section OR open roadmap on ?roadmap=1
+  useEffect(() => {
+    const { hash, search } = window.location;
+    const params = new URLSearchParams(search);
+
+    // ?roadmap=1 opens the Roadmap overlay directly
+    if (params.get('roadmap') === '1') {
+      setTimeout(() => setIsRoadmapOpen(true), 100);
+      return;
+    }
+
+    // #byob and #meet-zion open their modals instead of scrolling
+    if (hash === '#byob') { setIsByobOpen(true); return; }
+    if (hash === '#meet-zion') { setIsZionOpen(true); return; }
+
+    // All other hashes: scroll to the section after render
+    if (hash) {
+      // Use requestAnimationFrame + timeout to wait for React to paint
+      const target = hash.replace('#', '');
+      const attempt = (tries = 0) => {
+        const el = document.getElementById(target);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (tries < 10) {
+          setTimeout(() => attempt(tries + 1), 150);
+        }
+      };
+      setTimeout(() => attempt(), 200);
+    }
+  }, []);
+
   const [isByobOpen, setIsByobOpen] = useState(false);
   const [isBirdsongOpen, setIsBirdsongOpen] = useState(false);
   const [intakeService, setIntakeService] = useState<{id:string;name:string}|null>(null);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [skipIntro, setSkipIntro] = useState(false);
+  // If URL has a hash, query param, or non-root path — skip the splash
+  // screen so shared links land directly on the right section.
+  const [hasStarted, setHasStarted] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const { hash, search, pathname } = window.location;
+    return !!(hash || pathname !== '/' || new URLSearchParams(search).get('section') || new URLSearchParams(search).get('roadmap'));
+  });
+  const [skipIntro, setSkipIntro] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const { hash, search, pathname } = window.location;
+    return !!(hash || pathname !== '/' || new URLSearchParams(search).get('section'));
+  });
 
   // Hero 'Take the Roadmap' button
   // Also sets hasStarted so the main render is mounted before Roadmap opens —
