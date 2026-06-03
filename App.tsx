@@ -217,11 +217,11 @@ const App: React.FC = () => {
           onOpenConsultation={() => setIsRoadmapOpen(true)}
         />
         {!skipIntro && <BrandTransmission skipIntro={false} />}
-        <AboutSWRV />
-        <Shop />
         <Portfolio />
         <Stats />
         <Marketplace onOpenRoadmap={() => setIsRoadmapOpen(true)} />
+        <AboutSWRV />
+        <Shop />
         <Pipeline />
         <ContactSchedule />
       </main>
