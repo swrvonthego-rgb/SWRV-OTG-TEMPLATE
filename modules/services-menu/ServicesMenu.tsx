@@ -218,7 +218,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
         {/* HEADER */}
         <header className="sm-header">
           <p className="sm-eyebrow">FULL SERVICE MENU</p>
-          <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Services</span></h1>
+          <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
           <p className="sm-intro">
             Everything you need to launch, brand, or scale — from your first logo to your funded launch site. À la carte or bundled.
           </p>
