@@ -1288,6 +1288,7 @@ export const HEADER = {
   ],
   // Main navigation items
   navItems: [
+    { label: 'TAKE THE ROADMAP', href: '/roadmap', external: false },
     { label: 'ABOUT SWRV ON THE GO', href: '#about-swrv', external: false },
     { label: 'THE SWRV ECOSYSTEM', href: '#ecosystem', external: false },
     { label: 'PORTFOLIO', href: '#portfolio', external: false },

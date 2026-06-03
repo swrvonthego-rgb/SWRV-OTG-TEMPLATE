@@ -76,6 +76,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-8">
             {HEADER.navItems.map((item) => {
+              if (item.label === 'TAKE THE ROADMAP') {
+                return (
+                  <button key={item.label} type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}
+                    className="text-[13px] font-bold text-lion-orange hover:opacity-80 transition-opacity tracking-wide bg-transparent border-0 cursor-pointer p-0 font-sans">
+                    {item.label}
+                  </button>
+                );
+              }
               if (item.label === 'TRAIN BYOB' && onOpenByob) {
                 return (
                   <button key={item.label} type="button" onClick={onOpenByob}
@@ -135,6 +144,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
           {mobileMenuOpen && (
             <div className="absolute top-0 left-0 w-full h-screen bg-black flex flex-col items-center justify-center gap-8 lg:hidden z-40">
               {HEADER.navItems.map((item) => {
+                if (item.label === 'TAKE THE ROADMAP') {
+                  return (
+                    <button key={item.label} type="button"
+                      onClick={() => { setMobileMenuOpen(false); window.dispatchEvent(new CustomEvent('swrv:open-roadmap')); }}
+                      className="text-xl font-bold text-lion-orange hover:opacity-80 bg-transparent border-0 cursor-pointer p-0 font-sans">
+                      {item.label}
+                    </button>
+                  );
+                }
                 if (item.label === 'TRAIN BYOB' && onOpenByob) {
                   return (
                     <button key={item.label} type="button"
