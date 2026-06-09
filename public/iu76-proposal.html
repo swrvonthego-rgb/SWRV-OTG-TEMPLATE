@@ -244,7 +244,6 @@
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch(e) { console.warn('Supabase init error:', e); }
 
-  // Check if this is a client token link
   const urlParams = new URLSearchParams(window.location.search);
   const clientToken = urlParams.get('token');
 </script>
@@ -604,7 +603,6 @@ async function submitQuiz() {
   answers.name = name;
   answers.email = email;
 
-  // Move to result step and show loading
   document.getElementById('step4').classList.remove('active');
   document.getElementById('stepResult').classList.add('active');
   document.getElementById('submitStatus').style.display = 'block';
@@ -614,14 +612,13 @@ async function submitQuiz() {
 
   const rec = buildRecommendation();
 
-  // Save to Supabase
   try {
     const { data, error } = await sb
       .from('proposal_leads')
       .insert([{
         client_name: name,
         client_email: email,
-        client_org: org || 'IU \'76 Team Legacy Initiative',
+        client_org: org || "IU '76 Team Legacy Initiative",
         q0_site_status: answers.q0,
         q1_domain: answers.q1,
         q2_goal: answers.q2,
@@ -652,7 +649,6 @@ async function submitQuiz() {
     console.error('Submit error:', err);
     document.getElementById('submitStatus').style.display = 'none';
     document.getElementById('resultBox').style.display = 'block';
-    // Still show result even if save fails
     document.getElementById('resultTitle').textContent = 'Your Plan Is Ready, ' + name.split(' ')[0] + '.';
     const rec2 = buildRecommendation();
     document.getElementById('recTier').textContent = rec2.tier;
@@ -674,7 +670,6 @@ async function confirmReady() {
   `;
 }
 
-// ── Token / Client Access View ──
 async function loadClientView(token) {
   document.getElementById('mainSite').style.display = 'none';
   document.getElementById('accessView').classList.add('active');
@@ -734,7 +729,7 @@ async function loadClientView(token) {
       <div class="access-card" style="text-align:center;">
         <div class="a-label" style="margin-bottom:16px;">Status</div>
         <div style="display:inline-block; padding:8px 24px; border-radius:100px; font-size:13px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
-          background:${data.status === 'confirmed' ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.06)'}; 
+          background:${data.status === 'confirmed' ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.06)'};
           color:${data.status === 'confirmed' ? 'var(--gold)' : 'var(--text-dim)'};
           border:1px solid ${data.status === 'confirmed' ? 'var(--gold)' : 'var(--border)'};">
           ${data.status === 'confirmed' ? '✦ Confirmed — We Are Moving Forward' : '⏳ Awaiting Your Decision'}
@@ -760,7 +755,6 @@ async function confirmFromAccess(token) {
   loadClientView(token);
 }
 
-// ── Init ──
 window.addEventListener('DOMContentLoaded', () => {
   if (clientToken) {
     loadClientView(clientToken);
