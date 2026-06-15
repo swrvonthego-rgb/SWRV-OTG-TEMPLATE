@@ -430,6 +430,7 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     status: 'live',
     statusLabel: 'Live',
     url: 'https://trainbyob.me',
+    showcaseUrl: '/apps/trainbyob.html',
     accent: '#e07a5f',
   },
   {
@@ -467,6 +468,7 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     status: 'ongoing',
     statusLabel: 'Active',
     url: 'https://hr205.org',
+    showcaseUrl: '/apps/hr205.html',
     accent: '#8b5cf6',
   },
 ];
