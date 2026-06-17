@@ -5,6 +5,8 @@ import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
 import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
+import { RoadmapAuth } from './RoadmapAuth';
+import { supabase } from '../../lib/supabase';
 // ── Portal vision sync ────────────────────────────────────────────────
 // Silently saves completed Roadmap results to the SWRV client portal.
 // Only fires if the user is logged into app.swrvonthego.pro (has a
@@ -200,6 +202,10 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [resumeSnapshot, setResumeSnapshot] = useState<Record<string, any> | null>(null);
 
+  // ── Supabase auth ─────────────────────────────────────────
+  const [roadmapUser, setRoadmapUser] = useState<{ email: string } | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   // ── Theme ────────────────────────────────────────────────
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = ls.get('roadmap-skin');
@@ -358,6 +364,26 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  // ── Supabase auth: check for existing session on mount ───
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setRoadmapUser({ email: session.user.email ?? '' });
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session?.user) {
+        setRoadmapUser({ email: session.user.email ?? '' });
+        // Auto-fill email field if user just signed in and it's empty
+        setUserEmail(prev => prev || session.user.email || '');
+      } else {
+        setRoadmapUser(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Persist theme + apply audio track on change ────────
   useEffect(() => {
@@ -1217,6 +1243,60 @@ export const Roadmap: React.FC<RoadmapProps> = ({
             />
           </div>
 
+          {roadmapUser ? (
+            /* ── Logged-in state ── */
+            <div style={{
+              background: 'rgba(200,168,75,0.08)',
+              border: '1px solid rgba(200,168,75,0.25)',
+              borderRadius: '10px',
+              padding: '14px 18px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: '12px', marginBottom: '18px',
+            }}>
+              <div>
+                <div style={{ color: 'var(--accent-1, #c8a84b)', fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '2px' }}>
+                  Signed in
+                </div>
+                <div style={{ color: 'var(--ink-bright, #f5f2ea)', fontSize: '0.88rem', fontWeight: 600 }}>
+                  {roadmapUser.email}
+                </div>
+                <div style={{ color: 'var(--ink-mid, #888)', fontSize: '0.78rem', marginTop: '2px' }}>
+                  Your roadmap saves to your account automatically
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => supabase.auth.signOut()}
+                style={{
+                  background: 'none', border: 'none',
+                  color: 'var(--ink-dim, #666)', fontSize: '0.78rem',
+                  cursor: 'pointer', whiteSpace: 'nowrap', padding: '4px 0',
+                }}
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            /* ── Sign-in prompt ── */
+            <div style={{
+              textAlign: 'center', margin: '0 0 18px',
+              color: 'var(--ink-mid, #888)', fontSize: '0.85rem',
+            }}>
+              Have a SWRV account?{' '}
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                style={{
+                  background: 'none', border: 'none',
+                  color: 'var(--accent-1, #c8a84b)',
+                  fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', padding: 0,
+                }}
+              >
+                Sign in to auto-save →
+              </button>
+            </div>
+          )}
+
           <button type="button" className="btn-primary" onClick={() => goToDisclaimerFromEmail(false)}>
             {config.copy.emailCta}
           </button>
@@ -1560,6 +1640,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 {config.copy.resultsHeadline.plain} <em>{config.copy.resultsHeadline.emphasis}</em>
               </h1>
               <p className="results-meta">{userName} · Mapped on {date}</p>
+              {roadmapUser && (
+                <p style={{ fontSize: '0.78rem', color: 'var(--accent-1, #c8a84b)', opacity: 0.85, marginTop: '4px' }}>
+                  ✓ Saved to your account · {roadmapUser.email}
+                </p>
+              )}
               <div className="action-row">
                 <button type="button" className="btn-save" onClick={handleSave}>
                   <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
@@ -1867,6 +1952,18 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       </section>
 
       {toast && <div id="toast" className="show">{toast}</div>}
+
+      {/* ── Auth modal ──────────────────────────────── */}
+      {showAuthModal && (
+        <RoadmapAuth
+          onSuccess={(email) => {
+            setUserEmail(email);
+            setShowAuthModal(false);
+            showToast('Signed in — your roadmap will be saved ✓');
+          }}
+          onClose={() => setShowAuthModal(false)}
+        />
+      )}
     </div>
   );
 };
