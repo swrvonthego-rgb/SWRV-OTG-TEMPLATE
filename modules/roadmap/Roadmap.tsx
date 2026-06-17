@@ -195,6 +195,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [result, setResult] = useState<RoadmapResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Resume prompt ─────────────────────────────────────────
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [resumeSnapshot, setResumeSnapshot] = useState<Record<string, any> | null>(null);
+
   // ── Theme ────────────────────────────────────────────────
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = ls.get('roadmap-skin');
@@ -332,6 +337,24 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         // (don't wipe a completed session on re-open)
       }
       // If results are already showing, leave them — user is reviewing their output
+
+      // Check for saved progress to offer a resume prompt.
+      // Only surface it when the current in-memory session is fresh (no vision typed yet).
+      if (!vision) {
+        const raw = ls.get('roadmap-progress');
+        if (raw) {
+          try {
+            const snap = JSON.parse(raw);
+            const visionWords = (snap.vision || '').trim().split(/\s+/).filter(Boolean).length;
+            const hasPhase2 = snap.phase2Answers && Object.keys(snap.phase2Answers).length > 0;
+            const isStale = Date.now() - (snap.ts || 0) > 30 * 24 * 60 * 60 * 1000; // 30 days
+            if ((visionWords >= 10 || hasPhase2) && !isStale) {
+              setResumeSnapshot(snap);
+              setShowResumePrompt(true);
+            }
+          } catch { /* ignore malformed data */ }
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -539,6 +562,37 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     goTo("intro");
   }, [goTo, mic]);
 
+  // ── Resume saved session ──────────────────────────────────
+  const handleResume = useCallback(() => {
+    if (!resumeSnapshot) return;
+    const snap = resumeSnapshot;
+    setUserName(snap.userName || '');
+    setUserEmail(snap.userEmail || '');
+    setVision(snap.vision || '');
+    setPhase2Answers(snap.phase2Answers || {});
+    setPhase2Idx(snap.phase2Idx || 0);
+    if (snap.result) setResult(snap.result);
+    // Determine which screen to land on
+    let targetScreen: ScreenId = 'vision';
+    if (snap.screen === 'results' && snap.result) {
+      targetScreen = 'results';
+    } else if (
+      snap.screen &&
+      !['paywall', 'intro', 'processing'].includes(snap.screen as string)
+    ) {
+      targetScreen = snap.screen as ScreenId;
+    }
+    goTo(targetScreen);
+    setShowResumePrompt(false);
+    setResumeSnapshot(null);
+  }, [resumeSnapshot, goTo]);
+
+  const handleStartFresh = useCallback(() => {
+    ls.set('roadmap-progress', '');
+    setShowResumePrompt(false);
+    setResumeSnapshot(null);
+  }, []);
+
   const goToEmail = useCallback(() => {
     if (!userName.trim()) {
       setNameError(true);
@@ -741,6 +795,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       userName,
       userEmail,
       vision,
+      phase2Answers,
+      phase2Idx,
       sessionDuration,
       result,
       ts: Date.now(),
@@ -756,7 +812,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         body: JSON.stringify(snapshot),
       }).catch(() => { /* server-side persistence optional */ });
     }
-  }, [screen, userName, userEmail, vision, sessionDuration, result]);
+  }, [screen, userName, userEmail, vision, phase2Answers, phase2Idx, sessionDuration, result]);
 
   // ── Send results email after AI generation completes ─────
   // Fire-and-forget. If RESEND_API_KEY isn't set on the worker, the worker
@@ -907,6 +963,76 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       aria-label="The Roadmap Experience"
     >
       <div id="progress-bar" style={{ width: `${progress}%` }} />
+
+      {/* ── Resume saved session overlay ─────────────────
+           Appears when a user returns with saved progress.
+           Sits above all screens so it's seen first.
+      ──────────────────────────────────────────────── */}
+      {showResumePrompt && resumeSnapshot && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.88)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '24px',
+          backdropFilter: 'blur(6px)',
+        }}>
+          <div style={{
+            background: 'var(--bg-card, #16162a)',
+            border: '1px solid var(--accent-soft, rgba(255,215,0,0.18))',
+            borderRadius: '18px',
+            padding: '44px 36px 40px',
+            maxWidth: '440px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 32px 96px rgba(0,0,0,0.65)',
+          }}>
+            <div style={{
+              fontSize: '2rem', marginBottom: '20px', opacity: 0.85,
+              color: 'var(--accent-1, #ffd700)',
+            }}>↩</div>
+            <h2 style={{
+              color: 'var(--ink-bright, #f5f2ea)',
+              fontSize: '1.45rem',
+              fontWeight: 700,
+              marginBottom: '12px',
+              lineHeight: 1.3,
+              letterSpacing: '-0.01em',
+            }}>
+              {resumeSnapshot.userName
+                ? `Welcome back, ${resumeSnapshot.userName}.`
+                : 'Your roadmap is waiting.'}
+            </h2>
+            <p style={{
+              color: 'var(--ink-mid, #9e9e9e)',
+              fontSize: '0.95rem',
+              marginBottom: '36px',
+              lineHeight: 1.7,
+            }}>
+              {(() => {
+                const labels: Record<string, string> = {
+                  email: 'entering your email',
+                  disclaimer: 'reading the overview',
+                  duration: 'setting your timer',
+                  vision: 'describing your vision',
+                  phase2: 'answering the guided questions',
+                  processing: 'waiting for your results',
+                  results: 'reviewing your roadmap',
+                };
+                const label = labels[resumeSnapshot.screen] ?? 'in the middle of your roadmap';
+                return `You were ${label} — your work is saved.`;
+              })()}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button type="button" className="btn-primary" onClick={handleResume}>
+                Continue Where I Left Off →
+              </button>
+              <button type="button" className="btn-ghost" onClick={handleStartFresh}>
+                Start Fresh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Background music — single audio element, source swapped per track */}
       <audio ref={audioRef} loop={loop} preload="auto" />

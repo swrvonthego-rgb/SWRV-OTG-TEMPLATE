@@ -57,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 1400,
+        max_tokens: 6000,
         temperature: 0.7,
         messages: [
           { role: 'system', content: systemPrompt },
