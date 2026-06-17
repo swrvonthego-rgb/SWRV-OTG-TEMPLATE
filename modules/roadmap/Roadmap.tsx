@@ -1708,6 +1708,18 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                               <div className="svc-name">{s.name}</div>
                               <div className="svc-why">{s.why}</div>
                               <div className="svc-price">{s.price}</div>
+                              {(s as any).components?.length > 0 && (
+                                <div className="svc-components">
+                                  <p className="svc-components-label">What this is made of:</p>
+                                  {((s as any).components as Array<{name:string;what:string;note?:string}>).map((comp, ci) => (
+                                    <div key={ci} className="svc-component">
+                                      <span className="svc-comp-name">{comp.name}</span>
+                                      <span className="svc-comp-what">{comp.what}</span>
+                                      {comp.note && <span className="svc-comp-note">{comp.note}</span>}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -1811,8 +1823,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
               {(result.qa_reflection || []).length > 0 && (
                 <div className="qa-section">
                   <div className="cta-eyebrow" style={{ marginBottom: 6 }}>YOUR COORDINATES</div>
-                  <h3 className="route-title">Everything You Said — Mapped</h3>
-                  <p className="route-sub">The exact questions we asked and your answers — clarified. This is what built your Roadmap.</p>
+                  <h3 className="route-title">Everything You Said — Elevated</h3>
+                  <p className="route-sub">Your answers, deepened. Not just what you said — but what it actually means about who you are and where you're going.</p>
                   <div className="qa-list">
                     {(result.qa_reflection || []).map((qa, i) => (
                       <div key={i} className="qa-item">
