@@ -50,9 +50,18 @@ if (typeof window !== 'undefined') {
 const App: React.FC = () => {
   // Initialize roadmap open state from URL — ?roadmap=1 opens it immediately
   // with zero delay so the user never sees the underlying page first.
+  // Also opens on OAuth return: if the user initiated social login from the
+  // roadmap, we stored 'swrv-post-oauth'='roadmap' in localStorage and the
+  // OAuth redirect brought back a ?code= param for Supabase to exchange.
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return new URLSearchParams(window.location.search).get('roadmap') === '1';
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('roadmap') === '1') return true;
+    if (params.has('code') && localStorage.getItem('swrv-post-oauth') === 'roadmap') {
+      localStorage.removeItem('swrv-post-oauth');
+      return true;
+    }
+    return false;
   });
   const [isZionOpen, setIsZionOpen] = useState(false);
   const [isServicesMenuOpen, setIsServicesMenuOpen] = useState(false);
@@ -101,6 +110,8 @@ const App: React.FC = () => {
   const isDeepLink = (() => {
     if (typeof window === 'undefined') return false;
     const { hash, search, pathname } = window.location;
+    // OAuth return (?code=...) always skips splash
+    if (new URLSearchParams(search).has('code')) return true;
     return !!(hash || search || pathname !== '/');
   })();
   const [hasStarted, setHasStarted] = useState(isDeepLink);
