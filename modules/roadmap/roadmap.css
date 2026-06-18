@@ -9,6 +9,7 @@
   z-index:9999;
   overflow-y:auto;
   overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
   touch-action:pan-y;
   background:#0a1929;
@@ -991,11 +992,8 @@
   .roadmap-experience .paywall-card-title{font-size:18px;}
   .roadmap-experience .paywall-card-bullets li{font-size:12px;}
   .roadmap-experience .paywall-btn{padding:16px 14px;font-size:13px;}
-  /* Compact the scripture block so CTA button is reachable without excessive scrolling */
-  .roadmap-experience .paywall-scriptures{margin:16px 0 20px;padding:16px;gap:12px;}
-  .roadmap-experience .paywall-vision-line{font-size:16px;}
-  .roadmap-experience .paywall-scripture-text{font-size:13px;line-height:1.6;}
-  .roadmap-experience .paywall-scripture{padding-top:10px;gap:4px;}
+  /* Hide scripture block on mobile — saves ~200px so CTA button is visible without scrolling */
+  .roadmap-experience .paywall-scriptures{display:none;}
   /* All interactive elements: ensure tap targets and instant response on iOS */
   .roadmap-experience button,
   .roadmap-experience [role="button"],
