@@ -947,16 +947,9 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       const isMuted = ls.get('roadmap-music-muted') === '1' ||
         document.querySelector('.roadmap-experience .music-toggle.muted') !== null;
       if (!isMuted) {
-        // TODO: Upload celebration.mp3 to assets.swrvonthego.pro to replace fallback
-        const primary = 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/celebration.mp3';
-        const fallback = 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3';
-        const celebAudio = new Audio(primary);
+        const celebAudio = new Audio('/audio/celebration.mp3');
         celebAudio.volume = 0.4;
-        celebAudio.play().catch(() => {
-          const fb = new Audio(fallback);
-          fb.volume = 0.4;
-          fb.play().catch(() => { /* autoplay blocked */ });
-        });
+        celebAudio.play().catch(() => { /* autoplay blocked */ });
       }
     };
 
