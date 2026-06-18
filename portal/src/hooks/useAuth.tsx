@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/portal/auth/callback` },
     });
     return { error: error?.message ?? null };
   };
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithSocial = async (provider: SocialProvider) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/portal/auth/callback` },
     });
     return { error: error?.message ?? null };
   };

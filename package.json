@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run build:portal",
+    "build:portal": "cd portal && npm install && npm run build",
     "preview": "npm run build && wrangler dev",
     "lint": "tsc --noEmit",
     "deploy": "npm run build && wrangler deploy",

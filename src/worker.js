@@ -82,8 +82,7 @@ export default {
       '/roadmap':     'https://swrvonthego.pro/?roadmap=1',
       '/the-roadmap': 'https://swrvonthego.pro/?roadmap=1',
       '/start':       'https://swrvonthego.pro/?roadmap=1',
-      // External products
-      '/portal':      'https://app.swrvonthego.pro',
+      // External products (portal now served under /portal/ on this domain)
       '/bible':       'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
       '/patrol':      'https://spa-patrol.swrvonthego.workers.dev/',
       '/patrol-app':  'https://spa-patrol.swrvonthego.workers.dev/app',
@@ -150,6 +149,17 @@ export default {
         hasKV: !!env.PROGRESS,
         time: new Date().toISOString(),
       }), { headers: JSON_HEADERS });
+    }
+
+    // Portal — sub-app at /portal/, built into dist/portal/
+    // Static assets (hashed filenames with extensions) pass through.
+    // All other /portal/* paths serve portal/index.html for client-side routing.
+    if (url.pathname === '/portal' || url.pathname.startsWith('/portal/')) {
+      const hasExt = url.pathname.lastIndexOf('.') > url.pathname.lastIndexOf('/');
+      if (!hasExt) {
+        const portalIndex = new Request(new URL('/portal/index.html', url).toString(), request);
+        return env.ASSETS.fetch(portalIndex);
+      }
     }
 
     // Static assets

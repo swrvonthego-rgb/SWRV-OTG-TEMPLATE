@@ -8,7 +8,7 @@ function AppInner() {
 
   // Handle OAuth and password reset callbacks
   const path = window.location.pathname;
-  if (path === '/auth/callback' || path === '/auth/update-password') {
+  if (path === '/portal/auth/callback' || path === '/portal/auth/update-password') {
     return <AuthCallback />;
   }
 

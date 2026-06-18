@@ -79,7 +79,7 @@ export default function AuthPage() {
       if (error) setError('Invalid email or password.');
     } else if (mode === 'reset') {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: `${window.location.origin}/portal/auth/update-password`,
       });
       if (error) setError(error.message);
       else setSuccess('Reset link sent — check your email.');
