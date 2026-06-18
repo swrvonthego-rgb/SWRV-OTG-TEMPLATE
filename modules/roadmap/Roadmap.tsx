@@ -227,6 +227,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [loop, setLoop] = useState<boolean>(() => ls.get('roadmap-music-loop') !== '0');
   const audioRef = useRef<HTMLAudioElement>(null);
   const nowPlayingTimerRef = useRef<number | null>(null);
+  const wasPlayingBeforeVideoRef = useRef(false);
 
   // ── Vision session timer (5 min / 10 min) ─────
   const [sessionDuration, setSessionDuration] = useState<5 | 10 | null>(null);
@@ -364,6 +365,44 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  // ── Video / audio conflict: pause bg music while any video plays ─────
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const onVideoPlay = (e: Event) => {
+      if (!(e.target instanceof HTMLVideoElement)) return;
+      if (!audio.paused) {
+        wasPlayingBeforeVideoRef.current = true;
+        audio.pause();
+      }
+    };
+    const onVideoEnd = (e: Event) => {
+      if (!(e.target instanceof HTMLVideoElement)) return;
+      if (wasPlayingBeforeVideoRef.current) {
+        wasPlayingBeforeVideoRef.current = false;
+        audio.play().catch(() => { /* autoplay gated */ });
+      }
+    };
+
+    // Capture-phase delegation catches all current and future <video> elements
+    document.addEventListener('play', onVideoPlay, true);
+    document.addEventListener('pause', onVideoEnd, true);
+    document.addEventListener('ended', onVideoEnd, true);
+
+    // MutationObserver ensures future dynamically-injected videos are covered
+    // by the already-registered capture listeners above (no extra wiring needed)
+    const observer = new MutationObserver(() => { /* delegation handles it */ });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      document.removeEventListener('play', onVideoPlay, true);
+      document.removeEventListener('pause', onVideoEnd, true);
+      document.removeEventListener('ended', onVideoEnd, true);
+      observer.disconnect();
+    };
+  }, []);
 
   // ── Supabase auth: check for existing session on mount ───
   useEffect(() => {
