@@ -228,6 +228,10 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const nowPlayingTimerRef = useRef<number | null>(null);
   const wasPlayingBeforeVideoRef = useRef(false);
+  const [musicVolume, setMusicVolume] = useState<number>(() => {
+    const stored = parseFloat(ls.get('roadmap-music-vol') || '45');
+    return isNaN(stored) ? 45 : Math.max(0, Math.min(100, stored));
+  });
 
   // ── Vision session timer (5 min / 10 min) ─────
   const [sessionDuration, setSessionDuration] = useState<5 | 10 | null>(null);
@@ -441,7 +445,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     // Swap source if different
     if (audio.src !== effectiveTrack.url) {
       audio.src = effectiveTrack.url;
-      audio.volume = 0.45;
+      audio.volume = musicVolume / 100;
     }
 
     if (firstGestureDone && !musicMuted) {
@@ -1168,6 +1172,21 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           <input type="checkbox" checked={loop} onChange={(e) => setLoop(e.target.checked)} />
           <span>Loop current track</span>
         </label>
+        <div className="music-volume-panel">
+          <span className="music-volume-label">Volume</span>
+          <input
+            type="range"
+            className="music-volume-slider"
+            min="0" max="100"
+            value={musicVolume}
+            onChange={(e) => {
+              const v = parseInt(e.target.value, 10);
+              setMusicVolume(v);
+              ls.set('roadmap-music-vol', String(v));
+              if (audioRef.current) audioRef.current.volume = v / 100;
+            }}
+          />
+        </div>
       </div>
 
       {/* Skin / theme switcher */}
@@ -1543,19 +1562,15 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
                 <div className="phase2-mic-row">
                   <button type="button"
-                    className={"mic-btn" + (mic.isListening && activeMicTarget === "phase2" ? " recording" : "")}
+                    className={"mic-btn" + (mic.isListening && activeMicTarget === "phase2" ? " recording active" : "")}
                     onClick={() => { micTarget.current = "phase2"; phase2QidRef.current = q.id; setActiveMicTarget("phase2"); mic.toggle(); }}
                     disabled={mic.state === "unsupported"} title="Speak your answer">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
-                  <button type="button" className={musicBtnClass}
-                    onClick={() => setMusicMuted(m => !m)} title={musicMuted ? "Unmute" : "Mute music"}>
-                    {musicMuted
-                      ? <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
-                      : <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                    }
-                  </button>
                   {mic.isListening && activeMicTarget === "phase2" && <span className="phase2-recording-label">● Recording…</span>}
+                  {mic.state === "blocked" && activeMicTarget === "phase2" && (
+                    <span className="mic-blocked-msg">Mic access needed — check your browser settings</span>
+                  )}
                   {mic.isListening && activeMicTarget === "phase2" && !musicMuted && (
                     <div className="mic-volume-wrap" title="Music volume while you speak">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
