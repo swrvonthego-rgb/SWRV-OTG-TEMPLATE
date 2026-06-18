@@ -1332,3 +1332,46 @@
 }
 .roadmap-experience .phase2-question{text-shadow:0 1px 4px rgba(0,0,0,0.5);}
 .roadmap-experience .phase2-context{color:#d9ccb4;}
+
+/* ════════════════════════════════════════════════════════
+   RESULTS — Email CTA, bottom block, celebration pulse
+═══════════════════════════════════════════════════════ */
+.roadmap-experience .results-email-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 24px;font-weight:700;letter-spacing:.04em;
+  font-size:.95rem;border-radius:10px;cursor:pointer;
+  background:var(--accent-1);color:#0d0d0d;border:none;
+  transition:opacity .15s,transform .15s;}
+.roadmap-experience .results-email-btn:hover{opacity:.88;transform:translateY(-1px);}
+.roadmap-experience .results-email-hero{
+  font-size:1.1rem;padding:16px 36px;
+  animation:results-pulse 2.5s ease-in-out infinite;
+  box-shadow:0 0 30px rgba(200,168,75,0.35);}
+@keyframes results-pulse{
+  0%,100%{box-shadow:0 0 20px rgba(200,168,75,0.3);}
+  50%{box-shadow:0 0 50px rgba(200,168,75,0.65);}}
+.roadmap-experience .email-cta-confirm{
+  color:var(--accent-1);font-size:.9rem;font-weight:600;
+  display:inline-flex;align-items:center;gap:6px;padding:12px 0;}
+.roadmap-experience .email-cta-input-row{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;}
+.roadmap-experience .email-cta-input{
+  flex:1 1 200px;padding:11px 14px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);
+  border-radius:9px;color:var(--ink-bright);font-size:.9rem;outline:none;
+  font-family:var(--font-body);}
+.roadmap-experience .email-cta-send{padding:11px 20px;font-size:.88rem;border-radius:9px;}
+.roadmap-experience .results-bottom-cta{
+  margin:48px 0 32px;padding:40px 32px;
+  background:linear-gradient(135deg,rgba(200,168,75,0.08),rgba(200,168,75,0.04));
+  border:1px solid rgba(200,168,75,0.22);border-radius:20px;text-align:center;}
+.roadmap-experience .results-bottom-cta-label{
+  font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--accent-2);font-weight:700;margin-bottom:24px;}
+.roadmap-experience .results-bottom-actions{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:12px;align-items:center;}
+.roadmap-experience .results-save-btn,.roadmap-experience .results-print-btn{
+  padding:12px 22px;font-size:.88rem;}
+@media(max-width:500px){
+  .roadmap-experience .results-bottom-actions{flex-direction:column;align-items:stretch;}
+  .roadmap-experience .results-email-hero{font-size:.95rem;padding:14px 24px;}}

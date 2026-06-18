@@ -197,6 +197,13 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [result, setResult] = useState<RoadmapResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Results email CTA ─────────────────────────────────────
+  const [emailCtaVisible, setEmailCtaVisible] = useState(false);
+  const [emailCtaValue, setEmailCtaValue] = useState('');
+  const [emailCtaSent, setEmailCtaSent] = useState(false);
+  const [emailCtaSending, setEmailCtaSending] = useState(false);
+  const confettiFiredRef = useRef(false);
+
   // ── Resume prompt ─────────────────────────────────────────
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -662,6 +669,32 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     setResumeSnapshot(null);
   }, []);
 
+  const handleEmailCta = useCallback(async (emailOverride?: string) => {
+    const target = emailOverride || userEmail;
+    if (!target || !result) return;
+    setEmailCtaSending(true);
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: target,
+          userName,
+          sessionId: sessionIdRef.current,
+          result,
+          brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+        }),
+      });
+      const data = await res.json();
+      if (data?.status === 'sent' || data?.status === 'skipped') {
+        setEmailCtaSent(true);
+        setEmailCtaVisible(false);
+        if (emailOverride) setUserEmail(emailOverride);
+      }
+    } catch { /* silent */ }
+    setEmailCtaSending(false);
+  }, [userEmail, result, userName, config]);
+
   const goToEmail = useCallback(() => {
     if (!userName.trim()) {
       setNameError(true);
@@ -882,6 +915,54 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       }).catch(() => { /* server-side persistence optional */ });
     }
   }, [screen, userName, userEmail, vision, phase2Answers, phase2Idx, sessionDuration, result]);
+
+  // ── Confetti + celebration sound when results first appear ─────────
+  useEffect(() => {
+    if (screen !== 'results' || !result || confettiFiredRef.current) return;
+    confettiFiredRef.current = true;
+
+    const fire = () => {
+      // Confetti — loaded dynamically from CDN, not bundled
+      const loadConfetti = () => new Promise<void>((resolve) => {
+        if ((window as any).confetti) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
+        s.onload = () => resolve();
+        s.onerror = () => resolve(); // silent fail
+        document.head.appendChild(s);
+      });
+
+      loadConfetti().then(() => {
+        if ((window as any).confetti) {
+          (window as any).confetti({
+            particleCount: 180,
+            spread: 100,
+            origin: { y: 0 },
+            colors: ['#C9A84C', '#ffffff', '#1a2744', '#f0c040'],
+          });
+        }
+      });
+
+      // Celebration sound — check mute state first
+      const isMuted = ls.get('roadmap-music-muted') === '1' ||
+        document.querySelector('.roadmap-experience .music-toggle.muted') !== null;
+      if (!isMuted) {
+        // TODO: Upload celebration.mp3 to assets.swrvonthego.pro to replace fallback
+        const primary = 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/celebration.mp3';
+        const fallback = 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3';
+        const celebAudio = new Audio(primary);
+        celebAudio.volume = 0.4;
+        celebAudio.play().catch(() => {
+          const fb = new Audio(fallback);
+          fb.volume = 0.4;
+          fb.play().catch(() => { /* autoplay blocked */ });
+        });
+      }
+    };
+
+    const timer = window.setTimeout(fire, 300);
+    return () => window.clearTimeout(timer);
+  }, [screen, result]);
 
   // ── Send results email after AI generation completes ─────
   // Fire-and-forget. If RESEND_API_KEY isn't set on the worker, the worker
@@ -1700,13 +1781,39 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 </p>
               )}
               <div className="action-row">
-                <button type="button" className="btn-save" onClick={handleSave}>
+                {emailCtaSent ? (
+                  <span className="email-cta-confirm">✓ Sent to {userEmail || emailCtaValue}</span>
+                ) : emailCtaVisible ? (
+                  <div className="email-cta-input-row">
+                    <input
+                      type="email" className="email-cta-input"
+                      placeholder="Enter your email address"
+                      value={emailCtaValue}
+                      onChange={e => setEmailCtaValue(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleEmailCta(emailCtaValue)}
+                      autoFocus
+                    />
+                    <button type="button" className="btn-primary email-cta-send"
+                      disabled={emailCtaSending || !emailCtaValue}
+                      onClick={() => handleEmailCta(emailCtaValue)}>
+                      {emailCtaSending ? '…' : 'SEND'}
+                    </button>
+                    <button type="button" className="btn-ghost"
+                      onClick={() => setEmailCtaVisible(false)}>✕</button>
+                  </div>
+                ) : (
+                  <button type="button" className="btn-primary results-email-btn"
+                    onClick={() => { if (userEmail) { handleEmailCta(); } else { setEmailCtaVisible(true); } }}>
+                    ✉ EMAIL MY ROADMAP
+                  </button>
+                )}
+                <button type="button" className="btn-save" onClick={() => window.print()}>
                   <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                  Save Roadmap
+                  SAVE PDF
                 </button>
                 <button type="button" className="btn-save" onClick={() => window.print()}>
                   <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
-                  Print
+                  PRINT
                 </button>
               </div>
             </div>
@@ -1974,6 +2081,42 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                   </div>
                 </div>
               )}
+              {/* ── BOTTOM CTA — take your roadmap with you ── */}
+              <div className="results-bottom-cta">
+                <p className="results-bottom-cta-label">YOUR ROADMAP IS READY. NOW TAKE IT WITH YOU.</p>
+                <div className="results-bottom-actions">
+                  {emailCtaSent ? (
+                    <span className="email-cta-confirm results-email-confirm">✓ Sent to {userEmail || emailCtaValue}</span>
+                  ) : emailCtaVisible ? (
+                    <div className="email-cta-input-row">
+                      <input
+                        type="email" className="email-cta-input"
+                        placeholder="Enter your email address"
+                        value={emailCtaValue}
+                        onChange={e => setEmailCtaValue(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleEmailCta(emailCtaValue)}
+                      />
+                      <button type="button" className="btn-primary email-cta-send"
+                        disabled={emailCtaSending || !emailCtaValue}
+                        onClick={() => handleEmailCta(emailCtaValue)}>
+                        {emailCtaSending ? '…' : 'SEND'}
+                      </button>
+                    </div>
+                  ) : (
+                    <button type="button" className="btn-primary results-email-btn results-email-hero"
+                      onClick={() => { if (userEmail) { handleEmailCta(); } else { setEmailCtaVisible(true); } }}>
+                      ✉ EMAIL MY ROADMAP
+                    </button>
+                  )}
+                  <button type="button" className="btn-save results-save-btn" onClick={() => window.print()}>
+                    ↓ SAVE PDF
+                  </button>
+                  <button type="button" className="btn-ghost results-print-btn" onClick={() => window.print()}>
+                    ⎙ PRINT
+                  </button>
+                </div>
+              </div>
+
               {/* ── CTA ── */}
               <div className="cta-block">
                 <div className="cta-eyebrow">What's Next</div>
