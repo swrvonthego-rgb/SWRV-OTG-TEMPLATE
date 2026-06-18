@@ -75,6 +75,7 @@ const PROGRESS_PCT: Record<ScreenId, number> = {
   vision: 56,
   phase2: 70,
   processing: 85,
+  'heart-note': 95,
   results: 100,
 
 };
@@ -327,7 +328,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       const paid = checkPaid();
       if (paid && screen === 'paywall') {
         setScreen('intro');
-      } else if (!paid && screen !== 'paywall' && screen !== 'results') {
+      } else if (!paid && screen !== 'paywall' && screen !== 'results' && screen !== 'heart-note') {
         // Only reset to paywall if they haven't reached results yet
         // (don't wipe a completed session on re-open)
       }
@@ -643,7 +644,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         setError(null);
         // Silently sync to portal if user is logged in
         saveVisionToPortal(parsed, visionText, phase2Answers, userName).catch(() => {});
-        goTo('results');
+        goTo('heart-note');
       } catch (err: any) {
         if (err.message === 'TIMEOUT') {
           setError('The response is taking too long. Your vision is saved — tap Try Again.');
@@ -1409,7 +1410,43 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         </div>
       </section>
 
-      {/* ════════ SCREEN 5 — RESULTS ════════ */}
+      {/* ════════ SCREEN 5 — HEART NOTE ════════ */}
+      <section id="screen-heart-note" className={`screen ${screen === 'heart-note' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="disc-box">
+          <div className="disc-ornament">
+            <span />
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
+            <span />
+          </div>
+          <h2 className="disc-title">
+            This Was Always<br />About You.
+          </h2>
+          <p className="disc-text">
+            Whether you're married with kids, a single parent, in a relationship, or doing this alone right now — none of that was left out of this room.
+          </p>
+          <p className="disc-text">
+            The people, places, and things in your life are <strong>not irrelevant</strong>. They are <strong>not dismissed</strong>. We just needed a moment to get to what your heart was given for — before all of that. To get to the depth of who you are, not just the results of the decisions life has positioned you in.
+          </p>
+          <p className="disc-text">
+            In other words — we just wanted to make it about <strong>you</strong> for a second.
+          </p>
+          <p className="disc-text">
+            What would be the positioning of your heart if the only thing you had was you and your dream?
+          </p>
+          <hr className="disc-rule" />
+          <p className="disc-note">
+            That's what we mapped. And regardless of what you already carry — family, love, responsibility — we can plan alongside it. Whoever and whatever is already in your heart is not in the way. It's part of the route.
+          </p>
+          <div className="action-row">
+            <button type="button" className="btn-primary" onClick={() => goTo('results')}>
+              See My Results →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ SCREEN 6 — RESULTS ════════ */}
       <section id="screen-results" className={`screen ${screen === 'results' ? 'active' : ''}`}>
         {error ? (
           <div className="results-content">
