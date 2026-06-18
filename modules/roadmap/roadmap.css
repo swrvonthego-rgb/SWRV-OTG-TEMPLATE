@@ -9,10 +9,12 @@
   z-index:9999;
   overflow-y:auto;
   overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
   background:#0a1929;
   color:#e8dcc8;
   min-height:100vh;
+  min-height:100svh;
   scroll-behavior:smooth;
   /* surfaces */
   --bg-deep:#0a1929;
@@ -217,7 +219,7 @@
   transition:width .6s cubic-bezier(.4,0,.2,1);z-index:200;width:0%;}
 
 /* screens */
-.roadmap-experience .screen{display:none;min-height:100vh;flex-direction:column;isolation:isolate;}
+.roadmap-experience .screen{display:none;min-height:100vh;min-height:100svh;flex-direction:column;isolation:isolate;}
 .roadmap-experience .screen.active{display:flex;}
 
 /* ════════════════════════════════════════════════════════
@@ -418,7 +420,7 @@
   padding:18px 56px;font-family:var(--font-body);font-size:13px;font-weight:600;
   letter-spacing:.22em;text-transform:uppercase;cursor:pointer;
   border-radius:var(--radius-btn);transition:background .3s,transform .2s,box-shadow .3s;
-  position:relative;}
+  position:relative;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:44px;}
 .roadmap-experience .btn-primary:hover{background:var(--accent-2);transform:translateY(-2px);box-shadow:var(--sig-button-shadow);}
 .roadmap-experience .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 .roadmap-experience[data-theme="street"] .btn-primary{font-family:'Bungee',cursive;letter-spacing:.06em;
@@ -981,6 +983,32 @@
   .roadmap-experience .pal-circle{width:48px;height:48px;}
   /* Services grid stacks */
   .roadmap-experience .services-grid{grid-template-columns:1fr;}
+  /* ── Paywall: clear the 3 fixed top buttons (close + music + skin = ~64px) and compact content ── */
+  .roadmap-experience .paywall-wrap{padding:72px 16px 40px;}
+  .roadmap-experience .paywall-title{font-size:clamp(22px,6vw,32px);}
+  .roadmap-experience .paywall-sub{font-size:13px;margin-bottom:20px;}
+  .roadmap-experience .paywall-card{padding:18px 14px;gap:10px;}
+  .roadmap-experience .paywall-card-title{font-size:18px;}
+  .roadmap-experience .paywall-card-bullets li{font-size:12px;}
+  .roadmap-experience .paywall-btn{padding:16px 14px;font-size:13px;}
+  /* Compact the scripture block so CTA button is reachable without excessive scrolling */
+  .roadmap-experience .paywall-scriptures{margin:16px 0 20px;padding:16px;gap:12px;}
+  .roadmap-experience .paywall-vision-line{font-size:16px;}
+  .roadmap-experience .paywall-scripture-text{font-size:13px;line-height:1.6;}
+  .roadmap-experience .paywall-scripture{padding-top:10px;gap:4px;}
+  /* All interactive elements: ensure tap targets and instant response on iOS */
+  .roadmap-experience button,
+  .roadmap-experience [role="button"],
+  .roadmap-experience .paywall-btn,
+  .roadmap-experience .btn-primary,
+  .roadmap-experience .rm-close,
+  .roadmap-experience .skin-toggle,
+  .roadmap-experience .music-toggle,
+  .roadmap-experience .vision-finished-btn{
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+    cursor:pointer;
+  }
 }
 
 /* ── Vision-speaking live controls (volume slider + finished button) ── */
@@ -1033,7 +1061,7 @@
 .roadmap-experience .paywall-card-bullets li{font-size:13px;color:var(--ink-mid);display:flex;align-items:flex-start;gap:8px;line-height:1.5;}
 .roadmap-experience .paywall-check{color:var(--ink-mid);opacity:.5;flex-shrink:0;}
 .roadmap-experience .paywall-check-gold{color:var(--accent-1);opacity:1;}
-.roadmap-experience .paywall-btn{width:100%;padding:14px;border-radius:999px;font-weight:800;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .25s;border:none;margin-top:auto;}
+.roadmap-experience .paywall-btn{width:100%;padding:14px;border-radius:999px;font-weight:800;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .25s;border:none;margin-top:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:44px;}
 .roadmap-experience .paywall-btn-free{background:rgba(255,255,255,.07);color:var(--ink-bright);border:1px solid var(--border);}
 .roadmap-experience .paywall-btn-free:hover{background:rgba(255,255,255,.12);}
 .roadmap-experience .paywall-btn-paid{background:linear-gradient(135deg,#c8a84b,#e8c96a);color:var(--bg-deep);box-shadow:0 8px 24px rgba(200,168,75,.35);}
