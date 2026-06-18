@@ -194,6 +194,11 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   // ── Result ───────────────────────────────────────────────
   const [result, setResult] = useState<RoadmapResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+// ── Email prompt (results screen) ──────────────────────
+const [emailPromptOpen, setEmailPromptOpen] = useState(false);
+const [emailPromptValue, setEmailPromptValue] = useState('');
+const [emailSentMsg, setEmailSentMsg] = useState<string | null>(null);
+const [resultsCelebrated, setResultsCelebrated] = useState(false);
 
   // ── Theme ────────────────────────────────────────────────
   const [theme, setTheme] = useState<Theme>(() => {
@@ -730,6 +735,35 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
   }, [isOpen, screen]);
 
+// ── Audio conflict: pause background music while video plays; resume after ──
+useEffect(() => {
+  const video = videoRef.current;
+  if (!video) return;
+  const handleVideoPlay = () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+    }
+  };
+  const handleVideoEnd = () => {
+    if (audioRef.current && firstGestureDone && !musicMuted) {
+      audioRef.current.play().catch(() => { /* blocked */ });
+    }
+  };
+  const handleVideoPause = () => {
+    if (audioRef.current && firstGestureDone && !musicMuted) {
+      audioRef.current.play().catch(() => { /* blocked */ });
+    }
+  };
+  video.addEventListener('play', handleVideoPlay);
+  video.addEventListener('ended', handleVideoEnd);
+  video.addEventListener('pause', handleVideoPause);
+  return () => {
+    video.removeEventListener('play', handleVideoPlay);
+    video.removeEventListener('ended', handleVideoEnd);
+    video.removeEventListener('pause', handleVideoPause);
+  };
+}, [firstGestureDone, musicMuted]);
+
   // ── Persistence: save progress to localStorage on each major step ──
   // (If KV is configured on the worker, /api/save-progress will also persist
   //  server-side via a fire-and-forget background save.)
@@ -782,7 +816,92 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       })
       .catch(() => { /* silent — already showing on screen */ });
   }, [result, userEmail, userName, config, showToast]);
-  const handleSave = useCallback(() => {
+
+// ── Confetti + celebration sound on first results reveal ─────
+useEffect(() => {
+  if (screen !== 'results' || !result || resultsCelebrated) return;
+  setResultsCelebrated(true);
+  // Confetti burst (canvas-confetti loaded dynamically)
+  const t = window.setTimeout(() => {
+    if (!(window as any).confetti) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
+      script.onload = () => {
+        (window as any).confetti({ particleCount: 180, spread: 100, origin: { y: 0.1 }, colors: ['#c9a84c', '#ffffff', '#1a2a4a', '#f5e6b8'] });
+      };
+      document.head.appendChild(script);
+    } else {
+      (window as any).confetti({ particleCount: 180, spread: 100, origin: { y: 0.1 }, colors: ['#c9a84c', '#ffffff', '#1a2a4a', '#f5e6b8'] });
+    }
+  }, 300);
+  // Celebration sound (only if music not muted)
+  const soundT = window.setTimeout(() => {
+    if (!musicMuted) {
+      // NOTE: Upload celebration.mp3 to assets.swrvonthego.pro to enable this
+      const celebUrl = 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/celebration.mp3';
+      const celebAudio = new Audio(celebUrl);
+      celebAudio.volume = 0.4;
+      celebAudio.play().catch(() => { /* file not uploaded yet — silent */ });
+    }
+  }, 400);
+  return () => { window.clearTimeout(t); window.clearTimeout(soundT); };
+}, [screen, result, resultsCelebrated, musicMuted]);
+  const handleEmailRoadmap = useCallback(() => {
+  if (userEmail) {
+    // Already have email — send immediately
+    fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: userEmail,
+        userName,
+        sessionId: sessionIdRef.current,
+        result,
+        brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+      }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data?.status === 'sent' || data?.status === 'skipped') {
+        setEmailSentMsg(`Sent to ${userEmail} ✓`);
+        setEmailPromptOpen(false);
+      } else {
+        setEmailSentMsg('Could not send — try again');
+      }
+    })
+    .catch(() => setEmailSentMsg('Connection error — try again'));
+  } else {
+    // No email stored — show inline prompt
+    setEmailPromptOpen(true);
+    setEmailPromptValue('');
+    setEmailSentMsg(null);
+  }
+}, [userEmail, userName, result, config]);
+
+const submitEmailPrompt = useCallback(() => {
+  const email = emailPromptValue.trim();
+  if (!email.includes('@')) return;
+  setUserEmail(email);
+  fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: email,
+      userName,
+      sessionId: sessionIdRef.current,
+      result,
+      brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+    }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    setEmailSentMsg(`Sent to ${email} ✓`);
+    setEmailPromptOpen(false);
+  })
+  .catch(() => setEmailSentMsg('Connection error — try again'));
+}, [emailPromptValue, userName, result, config]);
+
+const handleSave = useCallback(() => {
     if (!result) return;
     const date = new Date().toLocaleDateString('en-US', {
       year: 'numeric', month: 'long', day: 'numeric',
@@ -973,6 +1092,21 @@ export const Roadmap: React.FC<RoadmapProps> = ({
           </button>
           <button type="button" className="music-ctrl-btn" onClick={skipNext} aria-label="Next track" title="Next">››</button>
         </div>
+<div className="music-volume-row">
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style={{opacity:0.6}}>
+    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+  </svg>
+  <input
+    type="range" min="0" max="1" step="0.01"
+    className="music-vol-slider"
+    defaultValue="0.45"
+    onChange={(e) => {
+      const v = parseFloat(e.target.value);
+      if (audioRef.current) audioRef.current.volume = v;
+    }}
+    aria-label="Music volume"
+  />
+</div>
         <label className="music-loop">
           <input type="checkbox" checked={loop} onChange={(e) => setLoop(e.target.checked)} />
           <span>Loop current track</span>
@@ -1303,13 +1437,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                     disabled={mic.state === "unsupported"} title="Speak your answer">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                   </button>
-                  <button type="button" className={musicBtnClass}
-                    onClick={() => setMusicMuted(m => !m)} title={musicMuted ? "Unmute" : "Mute music"}>
-                    {musicMuted
-                      ? <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
-                      : <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                    }
-                  </button>
+                 
                   {mic.isListening && activeMicTarget === "phase2" && <span className="phase2-recording-label">● Recording…</span>}
                   {mic.isListening && activeMicTarget === "phase2" && !musicMuted && (
                     <div className="mic-volume-wrap" title="Music volume while you speak">
@@ -1434,16 +1562,35 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 {config.copy.resultsHeadline.plain} <em>{config.copy.resultsHeadline.emphasis}</em>
               </h1>
               <p className="results-meta">{userName} · Mapped on {date}</p>
-              <div className="action-row">
-                <button type="button" className="btn-save" onClick={handleSave}>
-                  <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                  Save Roadmap
-                </button>
-                <button type="button" className="btn-save" onClick={() => window.print()}>
-                  <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
-                  Print
-                </button>
-              </div>
+              <div className="action-row results-action-row">
+              <button type="button" className="btn-primary results-email-btn" onClick={handleEmailRoadmap}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                Email My Roadmap
+              </button>
+              <button type="button" className="btn-save" onClick={handleSave}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                Save PDF
+              </button>
+              <button type="button" className="btn-save" onClick={() => window.print()}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
+                Print
+              </button>
+              {emailPromptOpen && (
+                <div className="email-prompt-inline">
+                  <input
+                    type="email"
+                    className="text-input"
+                    placeholder="Enter your email address"
+                    value={emailPromptValue}
+                    onChange={e => setEmailPromptValue(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') submitEmailPrompt(); }}
+                    autoFocus
+                  />
+                  <button type="button" className="btn-primary" onClick={submitEmailPrompt} style={{marginTop: 8}}>Send →</button>
+                </div>
+              )}
+              {emailSentMsg && <p className="email-sent-msg">✓ {emailSentMsg}</p>}
+            </div>
             </div>
 
             <div className="results-content">
@@ -1698,6 +1845,39 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                 </div>
               )}
               {/* ── CTA ── */}
+              {/* ═══ Bottom action block — big lit-up CTA after reading ═══ */}
+              <div className="results-bottom-cta">
+                <p className="results-bottom-cta-label">YOUR ROADMAP IS READY. NOW TAKE IT WITH YOU.</p>
+                <div className="results-bottom-actions">
+                  <button type="button" className="btn-primary results-email-btn results-email-btn-hero" onClick={handleEmailRoadmap}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    Email My Roadmap
+                  </button>
+                  <button type="button" className="btn-save" onClick={handleSave}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
+                    Save PDF
+                  </button>
+                  <button type="button" className="btn-save" onClick={() => window.print()}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
+                    Print
+                  </button>
+                </div>
+                {emailPromptOpen && (
+                  <div className="email-prompt-inline" style={{marginTop: 16}}>
+                    <input
+                      type="email"
+                      className="text-input"
+                      placeholder="Enter your email address"
+                      value={emailPromptValue}
+                      onChange={e => setEmailPromptValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') submitEmailPrompt(); }}
+                    />
+                    <button type="button" className="btn-primary" onClick={submitEmailPrompt} style={{marginTop: 8}}>Send →</button>
+                  </div>
+                )}
+                {emailSentMsg && <p className="email-sent-msg">✓ {emailSentMsg}</p>}
+              </div>
+
               <div className="cta-block">
                 <div className="cta-eyebrow">What's Next</div>
                 <p className="cta-body">{result.closing_word}</p>
