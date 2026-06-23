@@ -177,6 +177,9 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [userEmail, setUserEmail] = useState('');
   const [nameError, setNameError] = useState(false);
   const [vision, setVision] = useState('');
+  // Results screen email form
+  const [resultsEmailInput, setResultsEmailInput] = useState('');
+  const [resultsEmailStatus, setResultsEmailStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle');
   const [interimVision, setInterimVision] = useState('');
   const [shake, setShake] = useState(false);
 
@@ -783,6 +786,40 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       })
       .catch(() => { /* silent — already showing on screen */ });
   }, [result, userEmail, userName, config, showToast]);
+
+  // Pre-fill results email input with whatever they entered earlier (if any)
+  useEffect(() => {
+    if (screen === 'results' && userEmail && !resultsEmailInput) {
+      setResultsEmailInput(userEmail);
+    }
+  }, [screen, userEmail]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sendResultsEmail = useCallback(async () => {
+    if (!result || !resultsEmailInput.trim()) return;
+    setResultsEmailStatus('sending');
+    try {
+      const r = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: resultsEmailInput.trim(),
+          userName,
+          sessionId: sessionIdRef.current,
+          result,
+          brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+        }),
+      });
+      const data = await r.json();
+      if (data?.status === 'sent') {
+        setResultsEmailStatus('sent');
+      } else {
+        setResultsEmailStatus('error');
+      }
+    } catch {
+      setResultsEmailStatus('error');
+    }
+  }, [result, resultsEmailInput, userName, config]);
+
   const handleSave = useCallback(() => {
     if (!result) return;
     const date = new Date().toLocaleDateString('en-US', {
@@ -1734,6 +1771,40 @@ export const Roadmap: React.FC<RoadmapProps> = ({
                   </div>
                 </div>
               )}
+              {/* ── EMAIL RESULTS ── */}
+              <div className="results-email-block">
+                {resultsEmailStatus === 'sent' ? (
+                  <div className="results-email-label results-email-sent">
+                    ✓ Roadmap sent to {resultsEmailInput}
+                  </div>
+                ) : (
+                  <>
+                    <div className="results-email-label">Email yourself this Roadmap</div>
+                    <div className="results-email-row">
+                      <input
+                        type="email"
+                        className="results-email-input"
+                        placeholder="your@email.com"
+                        value={resultsEmailInput}
+                        onChange={e => { setResultsEmailInput(e.target.value); if (resultsEmailStatus === 'error') setResultsEmailStatus('idle'); }}
+                        onKeyDown={e => { if (e.key === 'Enter') sendResultsEmail(); }}
+                      />
+                      <button
+                        type="button"
+                        className="results-email-btn"
+                        onClick={sendResultsEmail}
+                        disabled={resultsEmailStatus === 'sending' || !resultsEmailInput.trim()}
+                      >
+                        {resultsEmailStatus === 'sending' ? 'Sending…' : resultsEmailStatus === 'error' ? 'Try Again' : 'Send →'}
+                      </button>
+                    </div>
+                    {resultsEmailStatus === 'error' && (
+                      <p className="results-email-error">Couldn't send — check the address and try again.</p>
+                    )}
+                  </>
+                )}
+              </div>
+
               {/* ── CTA ── */}
               <div className="cta-block">
                 <div className="cta-eyebrow">What's Next</div>
