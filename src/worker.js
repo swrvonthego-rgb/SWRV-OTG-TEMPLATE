@@ -135,6 +135,7 @@ export default {
     if (url.pathname === '/api/save-progress')  return handleSaveProgress(request, env);
     if (url.pathname === '/api/load-progress')  return handleLoadProgress(request, env);
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
+    if (url.pathname === '/api/capture-email')  return handleCaptureEmail(request, env);
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
 
     if (url.pathname.startsWith('/r/')) {
@@ -322,8 +323,41 @@ async function handleSendEmail(request, env) {
       return new Response(JSON.stringify({ status: 'error', detail: data }),
         { status: resendRes.status, headers: JSON_HEADERS });
     }
+
+    // Save to email list (fire-and-forget, never fails the response)
+    if (env.EMAIL_DB && to) {
+      env.EMAIL_DB.prepare(
+        'INSERT OR IGNORE INTO email_captures (email, name, source) VALUES (?, ?, ?)'
+      ).bind(to, userName || null, 'email-self').run().catch(() => {});
+    }
+
     return new Response(JSON.stringify({ status: 'sent', id: data.id }),
       { headers: JSON_HEADERS });
+  } catch (err) {
+    return new Response(JSON.stringify({ status: 'error', detail: String(err) }),
+      { status: 500, headers: JSON_HEADERS });
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// CAPTURE EMAIL — saves to D1 email list (no Resend needed)
+// ─────────────────────────────────────────────────────────
+async function handleCaptureEmail(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+  }
+  try {
+    const { email, name, source, vision_preview } = await request.json();
+    if (!email) {
+      return new Response(JSON.stringify({ error: 'email required' }), { status: 400, headers: JSON_HEADERS });
+    }
+    if (env.EMAIL_DB) {
+      await env.EMAIL_DB.prepare(
+        'INSERT OR IGNORE INTO email_captures (email, name, source, vision_preview) VALUES (?, ?, ?, ?)'
+      ).bind(email, name || null, source || 'roadmap', (vision_preview || '').slice(0, 500)).run();
+    }
+    return new Response(JSON.stringify({ status: 'ok' }), { headers: JSON_HEADERS });
   } catch (err) {
     return new Response(JSON.stringify({ status: 'error', detail: String(err) }),
       { status: 500, headers: JSON_HEADERS });

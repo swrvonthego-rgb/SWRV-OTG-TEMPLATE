@@ -140,11 +140,11 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
       "I'm waking up to the sound of... I can smell... Outside my window I see... My work today is... By night, people are celebrating me because...",
     visionCta: 'Reveal My Roadmap →',
 
-    emailTitle: { line1: 'Where should we send', line2: 'your Roadmap?' },
+    emailTitle: { line1: 'Your Roadmap is ready.', line2: "Don't let it disappear." },
     emailSub:
-      "We'll hold this for you — your vision, your brand breakdown, your path forward. Drop your email and we'll make sure it finds its way to you.",
-    emailCta: 'Build My Roadmap →',
-    emailSkip: 'Skip — just show me the roadmap',
+      "Send it to your inbox — and get first access when the SWRV community opens. Real people. Real momentum. No spam, no noise. Just builders moving.",
+    emailCta: 'Send My Roadmap →',
+    emailSkip: "I'll remember it myself",
 
     processingTitle: 'Reading your vision',
     processingSteps: [

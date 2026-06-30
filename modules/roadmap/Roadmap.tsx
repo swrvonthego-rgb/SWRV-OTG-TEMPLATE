@@ -551,16 +551,24 @@ export const Roadmap: React.FC<RoadmapProps> = ({
       return;
     }
     startMusicOnFirstGesture();
-    goTo('email');
+    goTo('disclaimer');
   }, [userName, goTo, startMusicOnFirstGesture]);
 
-  // After email: go to disclaimer (skip allowed too)
+  // After email bait screen: go to heart-note. Capture email in D1 (fire-and-forget).
   const goToDisclaimerFromEmail = useCallback(
     (skipEmail = false) => {
-      if (skipEmail) setUserEmail('');
-      goTo('disclaimer');
+      if (skipEmail) {
+        setUserEmail('');
+      } else if (userEmail) {
+        fetch('/api/capture-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail, name: userName, source: 'roadmap-bait' }),
+        }).catch(() => {});
+      }
+      goTo('heart-note');
     },
-    [goTo],
+    [goTo, userEmail, userName],
   );
 
   // After disclaimer: pick session duration
@@ -647,7 +655,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
         setError(null);
         // Silently sync to portal if user is logged in
         saveVisionToPortal(parsed, visionText, phase2Answers, userName).catch(() => {});
-        goTo('heart-note');
+        goTo('email');
       } catch (err: any) {
         if (err.message === 'TIMEOUT') {
           setError('The response is taking too long. Your vision is saved — tap Try Again.');
