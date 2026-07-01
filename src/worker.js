@@ -137,6 +137,10 @@ export default {
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
     if (url.pathname === '/api/capture-email')  return handleCaptureEmail(request, env);
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
+    if (url.pathname === '/api/admin-login')    return handleAdminLogin(request, env);
+    if (url.pathname === '/api/admin-me')       return handleAdminMe(request, env);
+    if (url.pathname === '/api/admin-logout')   return handleAdminLogout(request, env);
+    if (url.pathname === '/api/admin/emails')   return handleAdminEmails(request, env);
 
     if (url.pathname.startsWith('/r/')) {
       const id = url.pathname.slice(3);
@@ -362,6 +366,111 @@ async function handleCaptureEmail(request, env) {
     return new Response(JSON.stringify({ status: 'error', detail: String(err) }),
       { status: 500, headers: JSON_HEADERS });
   }
+}
+
+// ─────────────────────────────────────────────────────────
+// ADMIN AUTH — single-user email/password gate backed by D1 (EMAIL_DB)
+// Password is stored as a salted SHA-256 hash, never in plaintext.
+// ─────────────────────────────────────────────────────────
+const ADMIN_SESSION_DAYS = 30;
+
+async function sha256Hex(str) {
+  const data = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function randomToken() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function parseCookies(request) {
+  const header = request.headers.get('Cookie') || '';
+  const out = {};
+  header.split(';').forEach((pair) => {
+    const idx = pair.indexOf('=');
+    if (idx === -1) return;
+    out[pair.slice(0, idx).trim()] = decodeURIComponent(pair.slice(idx + 1).trim());
+  });
+  return out;
+}
+
+async function getAdminSession(request, env) {
+  if (!env.EMAIL_DB) return null;
+  const token = parseCookies(request)['admin_session'];
+  if (!token) return null;
+  const row = await env.EMAIL_DB.prepare(
+    'SELECT email, expires_at FROM admin_sessions WHERE token = ?'
+  ).bind(token).first();
+  if (!row || new Date(row.expires_at).getTime() < Date.now()) return null;
+  return row;
+}
+
+async function handleAdminLogin(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+  }
+  if (!env.EMAIL_DB) {
+    return new Response(JSON.stringify({ error: 'Admin auth not configured' }), { status: 500, headers: JSON_HEADERS });
+  }
+  try {
+    const { email, password } = await request.json();
+    if (!email || !password) {
+      return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400, headers: JSON_HEADERS });
+    }
+    const row = await env.EMAIL_DB.prepare(
+      'SELECT email, salt, password_hash FROM admin_users WHERE email = ?'
+    ).bind(email.trim().toLowerCase()).first();
+
+    const invalid = () => new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401, headers: JSON_HEADERS });
+    if (!row) return invalid();
+
+    const hash = await sha256Hex(row.salt + password);
+    if (hash !== row.password_hash) return invalid();
+
+    const token = randomToken();
+    const expiresAt = new Date(Date.now() + ADMIN_SESSION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    await env.EMAIL_DB.prepare(
+      'INSERT INTO admin_sessions (token, email, expires_at) VALUES (?, ?, ?)'
+    ).bind(token, row.email, expiresAt).run();
+
+    const cookie = `admin_session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${ADMIN_SESSION_DAYS * 24 * 60 * 60}`;
+    return new Response(JSON.stringify({ status: 'ok', email: row.email }), {
+      headers: { ...JSON_HEADERS, 'Set-Cookie': cookie },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: JSON_HEADERS });
+  }
+}
+
+async function handleAdminMe(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: JSON_HEADERS });
+  return new Response(JSON.stringify({ email: session.email }), { headers: JSON_HEADERS });
+}
+
+async function handleAdminLogout(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  const token = parseCookies(request)['admin_session'];
+  if (token && env.EMAIL_DB) {
+    await env.EMAIL_DB.prepare('DELETE FROM admin_sessions WHERE token = ?').bind(token).run().catch(() => {});
+  }
+  return new Response(JSON.stringify({ status: 'ok' }), {
+    headers: { ...JSON_HEADERS, 'Set-Cookie': 'admin_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0' },
+  });
+}
+
+async function handleAdminEmails(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: JSON_HEADERS });
+  const { results } = await env.EMAIL_DB.prepare(
+    'SELECT email, name, source, captured_at FROM email_captures ORDER BY captured_at DESC LIMIT 500'
+  ).all();
+  return new Response(JSON.stringify({ emails: results }), { headers: JSON_HEADERS });
 }
 
 // EMAIL TEMPLATE moved to ./email-template.js

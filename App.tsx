@@ -32,6 +32,7 @@ import { Pipeline } from './components/Pipeline';
 import { LaunchBanner } from './components/LaunchBanner';
 import { Portfolio } from './components/Portfolio';
 import { Marketplace } from './components/Marketplace';
+import { AdminPage } from './modules/admin/AdminPage';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
 // Fires once on load — brands the devtools, deters casual copying
@@ -48,6 +49,12 @@ if (typeof window !== 'undefined') {
 
 
 const App: React.FC = () => {
+  // /admin is a standalone login-gated page — served directly, no splash,
+  // no homepage detour. Must come before any hooks (early return).
+  if (typeof window !== 'undefined' && window.location.pathname === '/admin') {
+    return <AdminPage />;
+  }
+
   // Initialize roadmap open state from URL — ?roadmap=1 opens it immediately
   // with zero delay so the user never sees the underlying page first.
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(() => {
