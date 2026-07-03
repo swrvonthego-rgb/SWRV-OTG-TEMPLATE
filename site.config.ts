@@ -345,7 +345,7 @@ export const PIPELINE_PROJECTS: PipelineProject[] = [
 // Set to true to hide pricing and drive inquiries.
 // Flip to false when ready to show prices again.
 export const LAUNCH_MODE = {
-  active: true,
+  active: false,
   badge: 'NOW OPEN',
   headline: 'SWRV On The Go — Grand Opening',
   subline: 'We are officially open for business and now accepting new clients. Reach out to discuss your project and receive custom pricing.',
@@ -959,6 +959,107 @@ export const SERVICES: Service[] = [
     price: '$1,125',
     priceNumeric: 1125,
     blurb: '60-minute one-on-one call to map a specific decision, price a project, unblock the next move, or build a roadmap. 25 years of music business insight in one hour.',
+  },
+];
+
+
+// ── SERVICE SUB-CATEGORIES — premium organized taxonomy ─────
+// Groups the à la carte SERVICES catalog into shopper-friendly buckets
+// (video, audio, web, etc.) for display in the Marketplace and Services Menu.
+export interface SubCategory {
+  id: string;
+  label: string;
+  tagline: string;
+  emoji: string;
+  serviceIds: string[];
+}
+
+export const SERVICE_SUBCATEGORIES: SubCategory[] = [
+  {
+    id: 'videography',
+    label: 'Videography',
+    tagline: 'Moving picture, fully produced.',
+    emoji: '🎬',
+    serviceIds: [
+      'music-video',
+      'video-promo',
+      'on-site-video',
+      'live-streaming',
+      'short-form-content',
+      'ai-motion-30',
+      'ai-motion-60',
+      'ai-motion-120',
+      'video-edit-alacarte',
+    ],
+  },
+  {
+    id: 'audio-production',
+    label: 'Audio Production',
+    tagline: 'Music, voice, and everything between.',
+    emoji: '🎵',
+    serviceIds: [
+      'music-production',
+      'mixing',
+      'mastering',
+      'live-recording',
+      'jingle',
+      'voiceover',
+      'audiobook',
+      'podcast-launch',
+      'podcast-editing',
+      'audio-edit-alacarte',
+    ],
+  },
+  {
+    id: 'web-digital',
+    label: 'Web & Digital',
+    tagline: 'Vision-first. Custom-built. Yours alone.',
+    emoji: '🌐',
+    serviceIds: [
+      'website-presence',
+      'website-platform',
+      'website-ecosystem',
+      'enterprise-ecosystem',
+      'website-management',
+      'website-maintenance',
+      'fundraising-site',
+    ],
+  },
+  {
+    id: 'brand-identity',
+    label: 'Brand Identity',
+    tagline: 'Define who you are before you put it anywhere.',
+    emoji: '✨',
+    serviceIds: [
+      'brand-planning',
+      'logo-design',
+      'photography',
+      'content-system',
+    ],
+  },
+  {
+    id: 'coaching',
+    label: 'Coaching & Mentorship',
+    tagline: 'One-on-one development to level up.',
+    emoji: '🎯',
+    serviceIds: [
+      'vocal-training',
+      'recording-booth',
+      'artist-development',
+      'consulting-call',
+    ],
+  },
+  {
+    id: 'content-business',
+    label: 'Content & Business',
+    tagline: 'Books, decks, LLCs — everything to operate.',
+    emoji: '📚',
+    serviceIds: [
+      'book-format',
+      'pitch-deck',
+      'keynote-slides',
+      'llc-formation',
+    ],
   },
 ];
 

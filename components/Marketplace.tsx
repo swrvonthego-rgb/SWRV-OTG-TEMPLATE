@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { ArrowRight, Check, Cpu, Settings, Shield } from 'lucide-react';
-import { SERVICES, WEB_PACKAGE_TIERS, ROADMAP_PRICING, LAUNCH_MODE } from '../site.config';
+import { SERVICES, WEB_PACKAGE_TIERS, ROADMAP_PRICING, LAUNCH_MODE, SERVICE_SUBCATEGORIES } from '../site.config';
 
 interface Props {
   onOpenRoadmap?: () => void;
 }
 
+const SERVICE_MAP: Record<string, typeof SERVICES[0]> = {};
+SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
+
 export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
   const [added, setAdded] = useState<Set<string>>(new Set());
+  const [activeCategory, setActiveCategory] = useState(SERVICE_SUBCATEGORIES[0].id);
 
   const handleAdd = (id: string) => {
     window.dispatchEvent(new CustomEvent('swrv:add-to-cart', { detail: { serviceId: id } }));
@@ -225,6 +229,97 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
           })}
         </div>
 
+        {/* ── FULL CATALOG — browse by category ── */}
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#c8a84b', opacity: 0.8, marginBottom: 12 }}>
+              THE FULL MENU
+            </p>
+            <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(24px,3.5vw,36px)', fontWeight: 400, margin: '0 0 10px', color: '#0a0804' }}>
+              Every route, one place.
+            </h3>
+            <p style={{ fontSize: 14, color: 'rgba(10,8,4,0.55)', lineHeight: 1.7, maxWidth: 520, margin: '0 auto' }}>
+              Browse by category — video, audio, brand, and beyond. Every price shown is the real price. No surprises, nothing hidden.
+            </p>
+          </div>
+
+          {/* Category tabs */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginBottom: 32 }} className="mkt-cat-tabs">
+            {SERVICE_SUBCATEGORIES.map(cat => {
+              const isActive = cat.id === activeCategory;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setActiveCategory(cat.id)}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    padding: '11px 20px',
+                    background: isActive ? 'linear-gradient(135deg,#c8a84b,#e8c96a)' : '#fff',
+                    color: isActive ? '#0a0804' : 'rgba(10,8,4,0.65)',
+                    border: isActive ? 'none' : '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: 999, fontSize: 13, fontWeight: 700, letterSpacing: '0.02em',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                    boxShadow: isActive ? '0 6px 20px rgba(200,168,75,0.3)' : 'none',
+                  }}
+                >
+                  <span style={{ fontSize: 15 }}>{cat.emoji}</span>
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active category cards */}
+          {SERVICE_SUBCATEGORIES.filter(cat => cat.id === activeCategory).map(cat => {
+            const items = cat.serviceIds.map(id => SERVICE_MAP[id]).filter(Boolean);
+            return (
+              <div key={cat.id}>
+                <p style={{ textAlign: 'center', fontSize: 13, color: 'rgba(10,8,4,0.45)', fontStyle: 'italic', marginBottom: 24 }}>
+                  {cat.tagline}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 16 }}>
+                  {items.map(svc => {
+                    const isAdded = added.has(svc.id);
+                    return (
+                      <div key={svc.id} style={{
+                        background: '#fff', border: svc.featured ? '2px solid #c8a84b' : '1px solid rgba(0,0,0,0.08)',
+                        borderRadius: 16, padding: 22, display: 'flex', flexDirection: 'column',
+                        boxShadow: svc.featured ? '0 6px 24px rgba(200,168,75,0.12)' : '0 2px 10px rgba(0,0,0,0.04)',
+                        position: 'relative',
+                      }}>
+                        {svc.featured && (
+                          <span style={{ position: 'absolute', top: -9, left: 18, padding: '3px 12px', background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', fontSize: 9, fontWeight: 800, letterSpacing: '0.15em', borderRadius: 4 }}>★ FEATURED</span>
+                        )}
+                        <h4 style={{ fontSize: 16, fontWeight: 700, margin: '6px 0 6px', color: '#0a0804' }}>{svc.name}</h4>
+                        {LAUNCH_MODE.active ? (
+                          <p style={{ fontSize: 13, fontWeight: 700, margin: '0 0 10px', color: '#c8a84b', letterSpacing: '0.03em', textTransform: 'uppercase' }}>Pricing on Request</p>
+                        ) : (
+                          <p style={{ fontSize: 22, fontWeight: 800, margin: '0 0 10px', color: '#0a0804', letterSpacing: '-0.01em' }}>{svc.price}</p>
+                        )}
+                        <p style={{ fontSize: 12.5, color: 'rgba(10,8,4,0.55)', lineHeight: 1.6, margin: '0 0 18px', flex: 1 }}>{svc.blurb}</p>
+                        <button
+                          type="button"
+                          onClick={() => LAUNCH_MODE.active ? document.getElementById('contact')?.scrollIntoView({behavior:'smooth'}) : handleAdd(svc.id)}
+                          style={{
+                            width: '100%', padding: '11px',
+                            background: isAdded ? 'linear-gradient(135deg,#c8a84b,#e8c96a)' : 'rgba(0,0,0,0.04)',
+                            color: '#0a0804',
+                            border: '1px solid rgba(0,0,0,0.1)',
+                            borderRadius: 9, fontSize: 12, fontWeight: 800, letterSpacing: '0.05em',
+                            cursor: 'pointer', transition: 'all 0.2s', textTransform: 'uppercase',
+                          }}
+                        >
+                          {LAUNCH_MODE.active ? 'Get a Quote →' : (isAdded ? '✓ Added to Cart' : 'Add to Cart →')}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
         {/* ── PAYMENT OPTIONS PROMO BANNER ── */}
         <div style={{

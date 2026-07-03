@@ -1,112 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './services-menu.css';
-import { SERVICES, SERVICE_PACKAGES } from '../../site.config';
+import { SERVICES, SERVICE_PACKAGES, SERVICE_SUBCATEGORIES as SUB_CATEGORIES } from '../../site.config';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onBookStrategyCall?: () => void;
 }
-
-// ────────────────────────────────────────────────────────────
-// SUB-CATEGORY DEFINITIONS — premium organized taxonomy
-// ────────────────────────────────────────────────────────────
-interface SubCategory {
-  id: string;
-  label: string;
-  tagline: string;
-  emoji: string;
-  serviceIds: string[];
-}
-
-const SUB_CATEGORIES: SubCategory[] = [
-  {
-    id: 'videography',
-    label: 'Videography',
-    tagline: 'Moving picture, fully produced.',
-    emoji: '🎬',
-    serviceIds: [
-      'music-video',
-      'video-promo',
-      'on-site-video',
-      'live-streaming',
-      'short-form-content',
-      'ai-motion-30',
-      'ai-motion-60',
-      'ai-motion-120',
-      'video-edit-alacarte',
-    ],
-  },
-  {
-    id: 'audio-production',
-    label: 'Audio Production',
-    tagline: 'Music, voice, and everything between.',
-    emoji: '🎵',
-    serviceIds: [
-      'music-production',
-      'mixing',
-      'mastering',
-      'live-recording',
-      'jingle',
-      'voiceover',
-      'audiobook',
-      'podcast-launch',
-      'podcast-editing',
-      'audio-edit-alacarte',
-    ],
-  },
-  {
-    id: 'web-digital',
-    label: 'Web & Digital',
-    tagline: 'Vision-first. Custom-built. Yours alone.',
-    emoji: '🌐',
-    serviceIds: [
-      'website-presence',
-      'website-platform',
-      'website-ecosystem',
-      'enterprise-ecosystem',
-      'website-management',
-      'website-maintenance',
-      'fundraising-site',
-    ],
-  },
-  {
-    id: 'brand-identity',
-    label: 'Brand Identity',
-    tagline: 'Define who you are before you put it anywhere.',
-    emoji: '✨',
-    serviceIds: [
-      'brand-planning',
-      'logo-design',
-      'photography',
-      'content-system',
-    ],
-  },
-  {
-    id: 'coaching',
-    label: 'Coaching & Mentorship',
-    tagline: 'One-on-one development to level up.',
-    emoji: '🎯',
-    serviceIds: [
-      'vocal-training',
-      'recording-booth',
-      'artist-development',
-      'consulting-call',
-    ],
-  },
-  {
-    id: 'content-business',
-    label: 'Content & Business',
-    tagline: 'Books, decks, LLCs — everything to operate.',
-    emoji: '📚',
-    serviceIds: [
-      'book-format',
-      'pitch-deck',
-      'keynote-slides',
-      'llc-formation',
-    ],
-  },
-];
 
 // Build lookup map: serviceId → service
 const SERVICE_MAP: Record<string, typeof SERVICES[0]> = {};
