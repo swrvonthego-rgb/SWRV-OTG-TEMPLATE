@@ -124,11 +124,27 @@ export const NeedAWebsite: React.FC = () => {
         {/* ── VIDEO / CTA BANNER ── */}
         <div style={{ borderRadius: 24, overflow: 'hidden', marginBottom: 56, position: 'relative', border: `1.5px solid ${GOLD}`, boxShadow: '0 16px 48px rgba(0,0,0,0.25)' }}>
           {NEED_A_WEBSITE.videoUrl ? (
-            <video
-              src={NEED_A_WEBSITE.videoUrl}
-              autoPlay muted loop playsInline
-              style={{ width: '100%', display: 'block', maxHeight: 480, objectFit: 'cover' }}
-            />
+            <div style={{ position: 'relative' }}>
+              <video
+                src={NEED_A_WEBSITE.videoUrl}
+                autoPlay muted loop playsInline
+                style={{ width: '100%', display: 'block', maxHeight: 560, objectFit: 'cover' }}
+              />
+              {/* Scrim + overlaid CTA */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,8,4,0.15) 0%, rgba(10,8,4,0.05) 40%, rgba(10,8,4,0.82) 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 'clamp(20px,4vw,44px)' }}>
+                <h2 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(26px,4.5vw,46px)', fontWeight: 400, color: '#fff', margin: '0 0 8px', lineHeight: 1.1, textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}>
+                  Need a website? <span style={{ color: GOLD_LIGHT }}>{NEED_A_WEBSITE.price} flat.</span>
+                </h2>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)', margin: '0 0 18px', maxWidth: 520, lineHeight: 1.6, textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>
+                  Ten styles. Your brand. Live in days.
+                </p>
+                <div>
+                  <a href="#website-templates" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '14px 28px', background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: BG, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', borderRadius: 999, textDecoration: 'none', textTransform: 'uppercase', boxShadow: '0 8px 24px rgba(0,0,0,0.45)' }}>
+                    Browse the 10 Styles <ArrowRight size={15} />
+                  </a>
+                </div>
+              </div>
+            </div>
           ) : (
             <div style={{ background: `linear-gradient(135deg, ${BG} 0%, #1a1005 60%, #241503 100%)`, padding: 'clamp(40px,7vw,80px) clamp(24px,5vw,64px)', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: '-30%', right: '-5%', width: 420, height: 420, background: 'radial-gradient(circle, rgba(200,168,75,0.18), transparent 70%)', pointerEvents: 'none' }} />
