@@ -115,6 +115,8 @@ export default {
       '/byob':        'https://swrvonthego.pro/#byob',
       '/revving-up':  'https://swrvonthego.pro/#revving-up',
       '/shop':        'https://swrvonthego.pro/#shop',
+      '/websites':    'https://swrvonthego.pro/#need-a-website',
+      '/templates':   'https://swrvonthego.pro/#website-templates',
       // Roadmap — open the overlay directly via query param
       '/roadmap':     'https://swrvonthego.pro/?roadmap=1',
       '/the-roadmap': 'https://swrvonthego.pro/?roadmap=1',

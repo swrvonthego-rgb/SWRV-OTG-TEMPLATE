@@ -32,6 +32,7 @@ import { Pipeline } from './components/Pipeline';
 import { LaunchBanner } from './components/LaunchBanner';
 import { Portfolio } from './components/Portfolio';
 import { Marketplace } from './components/Marketplace';
+import { NeedAWebsite } from './components/NeedAWebsite';
 import { AdminPage } from './modules/admin/AdminPage';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
@@ -225,6 +226,7 @@ const App: React.FC = () => {
         />
         {!skipIntro && <BrandTransmission skipIntro={false} />}
         <Portfolio />
+        <NeedAWebsite />
         <Stats />
         <Marketplace onOpenRoadmap={() => setIsRoadmapOpen(true)} />
         <AboutSWRV />

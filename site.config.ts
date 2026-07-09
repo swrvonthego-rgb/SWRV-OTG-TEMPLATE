@@ -960,6 +960,58 @@ export const SERVICES: Service[] = [
     priceNumeric: 1125,
     blurb: '60-minute one-on-one call to map a specific decision, price a project, unblock the next move, or build a roadmap. 25 years of music business insight in one hour.',
   },
+  {
+    id: 'template-site',
+    name: 'Template Website — Pick Your Style',
+    category: 'execution',
+    price: '$300',
+    priceNumeric: 300,
+    blurb: 'Choose from 10 professionally designed template styles. We customize it with your brand, your content, and your colors — live in days, not weeks. The fastest, most affordable way to get online looking right.',
+    deliveryDays: 5,
+    revisions: 1,
+    includes: ["Your choice of 10 template styles", "Your brand colors, logo & content", "Mobile responsive", "Contact form", "1 round of revisions", "Live in 5 days"],
+    notIncludes: ["Custom design from scratch (see The Presence)", "E-commerce (can be added)", "Copywriting"],
+    assetsNeeded: ["Logo (any format)", "Written copy / text for your pages", "2-3 photos or images", "Which template style you picked"],
+  },
+];
+
+
+// ── NEED A WEBSITE? — template storefront section ───────────
+// videoUrl: set to your promo video URL (Cloudinary / R2 / CDN) to show
+// the video banner. Leave '' to show the styled CTA banner instead.
+export const NEED_A_WEBSITE = {
+  videoUrl: '',
+  eyebrow: 'NEED A WEBSITE?',
+  headline: 'Pick a style. We make it yours.',
+  subline:
+    "Ten professionally built templates — every style of business covered. We swap in your brand, your words, your photos, and hand you a live website in days. One price, no surprises: $300 flat.",
+  price: '$300',
+} as const;
+
+export interface WebsiteTemplate {
+  id: string;
+  name: string;
+  style: string;        // one-line style descriptor
+  bestFor: string;      // who it's for
+  // Mini-mockup design tokens (CSS-generated preview card)
+  bg: string;           // preview background
+  ink: string;          // preview text color
+  accent: string;       // preview accent color
+  font: 'serif' | 'sans' | 'mono';
+  layout: 'hero' | 'grid' | 'split' | 'centered' | 'list';
+}
+
+export const WEBSITE_TEMPLATES: WebsiteTemplate[] = [
+  { id: 'tpl-clean-slate', name: 'The Clean Slate', style: 'Minimal, editorial, lots of air', bestFor: 'Consultants, writers, professionals', bg: '#faf9f6', ink: '#1a1a1a', accent: '#1a1a1a', font: 'serif', layout: 'centered' },
+  { id: 'tpl-bold-drop',   name: 'The Bold Drop', style: 'Dark, loud, streetwear energy', bestFor: 'Brands, apparel, culture drops', bg: '#0d0d0d', ink: '#ffffff', accent: '#ff4d00', font: 'sans', layout: 'hero' },
+  { id: 'tpl-gallery',     name: 'The Gallery', style: 'Image-first grid, zero clutter', bestFor: 'Photographers, artists, models', bg: '#111111', ink: '#eeeeee', accent: '#c8a84b', font: 'sans', layout: 'grid' },
+  { id: 'tpl-storefront',  name: 'The Storefront', style: 'Product cards, clean checkout flow', bestFor: 'Shops, merch, small product lines', bg: '#ffffff', ink: '#222222', accent: '#2f7d5c', font: 'sans', layout: 'grid' },
+  { id: 'tpl-booking-pro', name: 'The Booking Pro', style: 'Services up top, calendar built in', bestFor: 'Barbers, coaches, trainers, studios', bg: '#f4f2ee', ink: '#20242c', accent: '#3d5a80', font: 'sans', layout: 'split' },
+  { id: 'tpl-stage',       name: 'The Stage', style: 'Full-bleed hero, music player ready', bestFor: 'Artists, bands, performers', bg: '#08060c', ink: '#f5f0ff', accent: '#9d4edd', font: 'sans', layout: 'hero' },
+  { id: 'tpl-table',       name: 'The Table', style: 'Warm tones, menu-forward', bestFor: 'Restaurants, food trucks, caterers', bg: '#fdf6ec', ink: '#3a2a1a', accent: '#c87941', font: 'serif', layout: 'list' },
+  { id: 'tpl-pulpit',      name: 'The Pulpit', style: 'Welcoming, community-centered', bestFor: 'Churches, ministries, nonprofits', bg: '#fffdf7', ink: '#2c2418', accent: '#8b6f3e', font: 'serif', layout: 'centered' },
+  { id: 'tpl-launchpad',   name: 'The Launchpad', style: 'One page, countdown, email capture', bestFor: 'Launches, events, pre-orders', bg: '#0a1128', ink: '#e8ecf4', accent: '#00d1b2', font: 'mono', layout: 'centered' },
+  { id: 'tpl-boss-card',   name: 'The Boss Card', style: 'One-page personal brand hub', bestFor: 'Creators, speakers, link-in-bio upgrade', bg: '#16121c', ink: '#f2eef8', accent: '#e8c96a', font: 'sans', layout: 'list' },
 ];
 
 
@@ -1016,6 +1068,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     tagline: 'Vision-first. Custom-built. Yours alone.',
     emoji: '🌐',
     serviceIds: [
+      'template-site',
       'website-presence',
       'website-platform',
       'website-ecosystem',
