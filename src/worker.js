@@ -66,6 +66,43 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    // ── SUPPORT PAGE ────────────────────────────────────────────
+    // Dedicated, publicly available support URL (App Store requirement:
+    // must be a real 200 page, not a redirect).
+    if (url.pathname === '/support') {
+      return new Response(
+        `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Support — SWRV On The Go</title>
+        <meta name="description" content="Get help with SWRV On The Go apps and services. Contact our team — we respond within 1 business day.">
+        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dzqxce5hv/image/upload/v1772222265/Swerve_Badge_eow6m0.png">
+        <style>
+          body{margin:0;background:#0a0804;color:#ede8dc;font-family:'Helvetica Neue',Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box;}
+          .card{max-width:560px;width:100%;background:#13100a;border:1px solid rgba(200,168,75,0.25);border-radius:20px;padding:48px 40px;text-align:center;}
+          img.logo{width:64px;height:64px;object-fit:contain;margin-bottom:20px;}
+          h1{font-family:Georgia,serif;font-style:italic;font-weight:400;font-size:32px;margin:0 0 8px;color:#fff;}
+          p.sub{color:rgba(237,232,220,0.6);font-size:15px;line-height:1.7;margin:0 0 32px;}
+          a.email{display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#c8a84b,#e8c96a);color:#0a0804;font-weight:800;font-size:14px;letter-spacing:0.08em;border-radius:999px;text-decoration:none;margin-bottom:24px;}
+          .row{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:8px;}
+          .row a{color:#c8a84b;font-size:13px;text-decoration:none;}
+          .note{margin-top:28px;font-size:12px;color:rgba(237,232,220,0.35);}
+        </style></head><body>
+        <div class="card">
+          <img class="logo" src="https://res.cloudinary.com/dzqxce5hv/image/upload/v1772222265/Swerve_Badge_eow6m0.png" alt="SWRV On The Go">
+          <h1>How can we help?</h1>
+          <p class="sub">Support for SWRV On The Go apps, services, and orders.<br>Email us and a real person will get back to you within 1 business day.</p>
+          <a class="email" href="mailto:info@swrvonthego.pro">info@swrvonthego.pro</a>
+          <div class="row">
+            <a href="https://swrvonthego.pro">← Back to swrvonthego.pro</a>
+            <a href="https://swrvonthego.pro/#contact">Booking &amp; scheduling</a>
+          </div>
+          <p class="note">SWRV On The Go · © ${new Date().getFullYear()} Swerve (Robert Birdsong). All rights reserved.</p>
+        </div>
+        </body></html>`,
+        { headers: { 'Content-Type': 'text/html; charset=utf-8', ...SECURITY_HEADERS } }
+      );
+    }
+
     // ── Deep-link shortcuts ─────────────────────────────────────
     // Clean shareable paths that redirect to the right section/app.
     // Lives in the Worker (not _redirects) so it actually runs.
