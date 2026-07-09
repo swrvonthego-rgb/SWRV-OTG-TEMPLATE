@@ -117,6 +117,16 @@ export default {
       '/shop':        'https://swrvonthego.pro/#shop',
       '/websites':    'https://swrvonthego.pro/#need-a-website',
       '/templates':   'https://swrvonthego.pro/#website-templates',
+      // Full Menu category tabs — each tab is directly linkable
+      '/menu':        'https://swrvonthego.pro/?catalog=videography#full-menu',
+      '/videography': 'https://swrvonthego.pro/?catalog=videography#full-menu',
+      '/video':       'https://swrvonthego.pro/?catalog=videography#full-menu',
+      '/audio':       'https://swrvonthego.pro/?catalog=audio-production#full-menu',
+      '/music':       'https://swrvonthego.pro/?catalog=audio-production#full-menu',
+      '/web':         'https://swrvonthego.pro/?catalog=web-digital#full-menu',
+      '/brand':       'https://swrvonthego.pro/?catalog=brand-identity#full-menu',
+      '/coaching':    'https://swrvonthego.pro/?catalog=coaching#full-menu',
+      '/business':    'https://swrvonthego.pro/?catalog=content-business#full-menu',
       // Roadmap — open the overlay directly via query param
       '/roadmap':     'https://swrvonthego.pro/?roadmap=1',
       '/the-roadmap': 'https://swrvonthego.pro/?roadmap=1',

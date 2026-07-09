@@ -11,7 +11,23 @@ SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 
 export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
   const [added, setAdded] = useState<Set<string>>(new Set());
-  const [activeCategory, setActiveCategory] = useState(SERVICE_SUBCATEGORIES[0].id);
+  // Deep-linkable tabs: ?catalog=<category-id> selects a tab on load,
+  // and clicking a tab writes it back to the URL so the link is shareable.
+  const [activeCategory, setActiveCategory] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const fromUrl = new URLSearchParams(window.location.search).get('catalog');
+      if (fromUrl && SERVICE_SUBCATEGORIES.some(c => c.id === fromUrl)) return fromUrl;
+    }
+    return SERVICE_SUBCATEGORIES[0].id;
+  });
+
+  const selectCategory = (id: string) => {
+    setActiveCategory(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set('catalog', id);
+    url.hash = 'full-menu';
+    window.history.replaceState({}, '', url.toString());
+  };
 
   const handleAdd = (id: string) => {
     window.dispatchEvent(new CustomEvent('swrv:add-to-cart', { detail: { serviceId: id } }));
@@ -230,7 +246,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
         </div>
 
         {/* ── FULL CATALOG — browse by category ── */}
-        <div style={{ marginBottom: 48 }}>
+        <div id="full-menu" style={{ marginBottom: 48, scrollMarginTop: 120 }}>
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#c8a84b', opacity: 0.8, marginBottom: 12 }}>
               THE FULL MENU
@@ -251,7 +267,7 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => setActiveCategory(cat.id)}
+                  onClick={() => selectCategory(cat.id)}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
                     padding: '11px 20px',
