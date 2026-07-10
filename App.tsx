@@ -84,19 +84,29 @@ const App: React.FC = () => {
     if (hash === '#byob') { setIsByobOpen(true); return; }
     if (hash === '#meet-zion') { setIsZionOpen(true); return; }
 
-    // All other hashes: scroll to the section after render
+    // All other hashes: scroll to the section after render.
+    // Slow devices can take several seconds to mount + paint, and images/
+    // videos loading above the target keep shifting the layout — so retry
+    // for up to ~15s and re-pin the section for ~3s after first landing.
+    // The moment the visitor scrolls on their own, stop interfering.
     if (hash) {
-      // Use requestAnimationFrame + timeout to wait for React to paint
       const target = hash.replace('#', '');
-      const attempt = (tries = 0) => {
+      let userTookOver = false;
+      const cancel = () => { userTookOver = true; };
+      window.addEventListener('wheel', cancel, { once: true, passive: true });
+      window.addEventListener('touchstart', cancel, { once: true, passive: true });
+
+      const attempt = (tries = 0, pins = 0) => {
+        if (userTookOver) return;
         const el = document.getElementById(target);
         if (el) {
-          el.scrollIntoView({ behavior: 'instant', block: 'start' });
-        } else if (tries < 10) {
-          setTimeout(() => attempt(tries + 1), 150);
+          el.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'start' });
+          if (pins < 6) setTimeout(() => attempt(tries, pins + 1), 500);
+        } else if (tries < 60) {
+          setTimeout(() => attempt(tries + 1, pins), 250);
         }
       };
-      setTimeout(() => attempt(), 200);
+      setTimeout(() => attempt(), 100);
     }
   }, []);
 
