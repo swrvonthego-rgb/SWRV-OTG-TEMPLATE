@@ -1354,3 +1354,99 @@
 }
 .roadmap-experience .phase2-question{text-shadow:0 1px 4px rgba(0,0,0,0.5);}
 .roadmap-experience .phase2-context{color:#d9ccb4;}
+
+
+/* ════════════════════════════════════════════════════════
+MUSIC PANEL — Volume Slider
+═══════════════════════════════════════════════════════ */
+.roadmap-experience .music-volume-row{
+display:flex;align-items:center;gap:10px;
+padding:10px 4px 6px;
+border-top:1px solid var(--border);
+margin-top:2px;
+}
+.roadmap-experience .music-vol-slider{
+flex:1;-webkit-appearance:none;appearance:none;
+height:4px;border-radius:4px;outline:none;cursor:pointer;
+background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+}
+.roadmap-experience .music-vol-slider::-webkit-slider-thumb{
+-webkit-appearance:none;appearance:none;
+width:16px;height:16px;border-radius:50%;
+background:var(--accent-2);border:2px solid var(--bg-mid);
+cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5);
+}
+.roadmap-experience .music-vol-slider::-moz-range-thumb{
+width:16px;height:16px;border-radius:50%;
+background:var(--accent-2);border:2px solid var(--bg-mid);cursor:pointer;
+}
+
+/* ════════════════════════════════════════════════════════
+RESULTS — Email / Save / Print action row
+═══════════════════════════════════════════════════════ */
+.roadmap-experience .results-action-row{flex-wrap:wrap;gap:10px;margin-top:24px;}
+.roadmap-experience .results-email-btn{
+background:var(--accent-1)!important;color:var(--bg-deep)!important;
+border:none;padding:12px 28px;font-weight:700;
+display:inline-flex;align-items:center;gap:8px;
+transition:background .3s,transform .2s,box-shadow .3s;
+}
+.roadmap-experience .results-email-btn:hover{
+background:var(--accent-2)!important;transform:translateY(-2px);
+box-shadow:var(--sig-button-shadow);
+}
+.roadmap-experience .email-prompt-inline{
+display:flex;flex-direction:column;gap:8px;
+width:100%;padding:16px;
+background:var(--accent-soft);
+border:1px solid var(--accent-mid);
+border-radius:var(--radius-card);
+margin-top:10px;
+}
+.roadmap-experience .email-prompt-inline .text-input{max-width:100%;text-align:left;}
+.roadmap-experience .email-sent-msg{
+font-size:13px;color:var(--accent-2);font-weight:600;
+letter-spacing:.04em;margin-top:8px;
+width:100%;text-align:center;
+}
+
+/* ════════════════════════════════════════════════════════
+RESULTS — Bottom CTA Block
+═══════════════════════════════════════════════════════ */
+.roadmap-experience .results-bottom-cta{
+margin:48px 0;padding:40px 32px;
+border:1px solid var(--accent-mid);
+border-radius:var(--radius-card);
+background:var(--sig-card-bg);
+text-align:center;position:relative;overflow:hidden;
+}
+.roadmap-experience .results-bottom-cta::before{
+content:'';position:absolute;inset:0;
+background:radial-gradient(ellipse at 50% 0%,var(--accent-soft),transparent 70%);
+pointer-events:none;
+}
+.roadmap-experience .results-bottom-cta-label{
+font-size:11px;letter-spacing:.3em;text-transform:uppercase;
+color:var(--accent-1);opacity:.8;
+margin-bottom:20px;font-family:var(--font-body);font-weight:700;
+position:relative;
+}
+.roadmap-experience .results-bottom-actions{
+display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+position:relative;
+}
+.roadmap-experience .results-email-btn-hero{
+padding:18px 40px!important;font-size:14px!important;
+animation:resultsPulse 2.5s ease-in-out infinite;
+}
+@keyframes resultsPulse{
+0%,100%{box-shadow:0 0 0 0 rgba(196,146,58,.4);}
+50%{box-shadow:0 0 0 12px rgba(196,146,58,0);}
+}
+
+/* ════════════════════════════════════════════════════════
+PRINT — hide new bottom CTA to keep printout clean
+═══════════════════════════════════════════════════════ */
+@media print{
+.roadmap-experience .results-bottom-cta{display:none!important;}
+}
