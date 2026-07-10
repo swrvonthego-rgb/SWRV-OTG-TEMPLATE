@@ -127,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}
-              className="hidden sm:inline-block text-[11px] md:text-[12px] font-black tracking-widest uppercase text-lion-orange hover:text-white transition-colors bg-transparent border-0 cursor-pointer px-2 md:px-3"
+              className="hidden sm:inline-block text-[12px] font-bold tracking-[0.2em] uppercase text-lion-orange hover:text-white transition-colors bg-transparent border-0 cursor-pointer px-2 md:px-3"
             >
               Take the Roadmap
             </button>
@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
                 const el = document.getElementById('contact');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="hidden md:inline-block px-4 py-2 rounded-full text-[11px] font-black tracking-widest uppercase transition-all"
+              className="hidden md:inline-block px-4 py-2 rounded-full text-[11px] font-bold tracking-[0.2em] uppercase transition-all"
               style={{ background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: '#0a0804' }}
             >
               Get In Touch
@@ -147,9 +147,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={menuOpen}
-              className="flex items-center gap-2 text-white bg-transparent border border-gray-700 hover:border-gray-500 rounded-full pl-4 pr-3 py-2 transition-colors"
+              className="flex items-center gap-2 text-white bg-transparent border border-gray-700 hover:border-lion-orange rounded-full pl-4 pr-3 py-2 transition-colors"
             >
-              <span className="hidden md:inline text-[11px] font-black tracking-widest uppercase">Menu</span>
+              <span className="hidden md:inline text-[11px] font-bold tracking-[0.2em] uppercase">Menu</span>
               <Menu size={22} />
             </button>
           </div>
@@ -183,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
                 aria-label="Close menu"
                 className="flex items-center gap-2 text-white bg-transparent border border-gray-700 hover:border-white rounded-full pl-4 pr-3 py-2 transition-colors"
               >
-                <span className="hidden md:inline text-[11px] font-black tracking-widest uppercase">Close</span>
+                <span className="hidden md:inline text-[11px] font-bold tracking-[0.2em] uppercase">Close</span>
                 <X size={22} />
               </button>
             </div>
@@ -195,22 +195,26 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
                 <button
                   type="button"
                   onClick={() => handleAction({ kind: 'roadmap' })}
-                  className="text-left rounded-2xl p-5 md:p-6 transition-all hover:scale-[1.01]"
+                  className="text-left rounded-2xl p-6 md:p-7 transition-all hover:scale-[1.01]"
                   style={{ background: 'linear-gradient(135deg,#ff4d00 0%,#ff6a2a 100%)', boxShadow: '0 8px 24px rgba(255,77,0,0.25)' }}
                 >
-                  <div className="text-[10px] font-black tracking-[0.3em] uppercase mb-2 text-white/80">Start here</div>
-                  <div className="text-xl md:text-2xl font-black text-white leading-tight">Take the Roadmap</div>
-                  <div className="text-sm text-white/85 mt-1.5">Map your gift to a real route.</div>
+                  <div className="text-[11px] font-bold tracking-[0.4em] uppercase mb-3 text-white/85">Start here</div>
+                  <div className="text-2xl md:text-3xl text-white leading-[1.05]" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 400 }}>
+                    Take the Roadmap
+                  </div>
+                  <div className="text-sm text-white/85 mt-2">Map your gift to a real route.</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAction({ kind: 'scroll', target: 'contact' })}
-                  className="text-left rounded-2xl p-5 md:p-6 transition-all hover:scale-[1.01]"
+                  className="text-left rounded-2xl p-6 md:p-7 transition-all hover:scale-[1.01]"
                   style={{ background: `linear-gradient(135deg,${GOLD} 0%,${GOLD_LIGHT} 100%)`, color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.25)' }}
                 >
-                  <div className="text-[10px] font-black tracking-[0.3em] uppercase mb-2 opacity-70">Ready?</div>
-                  <div className="text-xl md:text-2xl font-black leading-tight">Get In Touch</div>
-                  <div className="text-sm opacity-80 mt-1.5">Book a session or a strategy call.</div>
+                  <div className="text-[11px] font-bold tracking-[0.4em] uppercase mb-3 opacity-75">Ready?</div>
+                  <div className="text-2xl md:text-3xl leading-[1.05]" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 400 }}>
+                    Get In Touch
+                  </div>
+                  <div className="text-sm opacity-80 mt-2">Book a session or a strategy call.</div>
                 </button>
               </div>
 
@@ -218,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
               <div className="grid gap-10 md:gap-16 md:grid-cols-2">
                 {MENU_GROUPS.map(group => (
                   <div key={group.heading}>
-                    <div className="text-[10px] font-black tracking-[0.35em] uppercase mb-4" style={{ color: GOLD }}>
+                    <div className="text-[11px] font-bold tracking-[0.4em] uppercase mb-5" style={{ color: GOLD }}>
                       {group.heading}
                     </div>
                     <ul className="space-y-3">

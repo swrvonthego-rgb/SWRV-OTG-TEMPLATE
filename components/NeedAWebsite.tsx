@@ -143,7 +143,7 @@ export const NeedAWebsite: React.FC = () => {
           <div className="naw-hero-grid">
             {/* Left — pitch + CTA */}
             <div>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: GOLD, opacity: 0.9, marginBottom: 14 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: GOLD, marginBottom: 14 }}>
                 NEED A WEBSITE?
               </p>
               <h2 style={{
@@ -234,7 +234,7 @@ export const NeedAWebsite: React.FC = () => {
         {/* ── WHAT'S INCLUDED — clarity panel ── */}
         <div id="whats-included" style={{ scrollMarginTop: 100, marginBottom: 64 }}>
           <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.35em', textTransform: 'uppercase', color: GOLD, marginBottom: 10 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: GOLD, marginBottom: 10 }}>
               WHAT YOU GET FOR $300
             </p>
             <h3 style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(26px,4vw,40px)', fontWeight: 400, margin: '0 0 12px', color: BG }}>
@@ -291,7 +291,7 @@ export const NeedAWebsite: React.FC = () => {
               <div style={{
                 position: 'absolute', top: -12, left: 24,
                 background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`,
-                color: BG, fontSize: 10, fontWeight: 800, letterSpacing: '0.2em',
+                color: BG, fontSize: 10, fontWeight: 700, letterSpacing: '0.25em',
                 textTransform: 'uppercase', padding: '5px 12px', borderRadius: 999,
               }}>Included</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -319,7 +319,7 @@ export const NeedAWebsite: React.FC = () => {
               <div style={{
                 position: 'absolute', top: -12, left: 24,
                 background: 'rgba(10,8,4,0.7)',
-                color: '#fff', fontSize: 10, fontWeight: 800, letterSpacing: '0.2em',
+                color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: '0.25em',
                 textTransform: 'uppercase', padding: '5px 12px', borderRadius: 999,
               }}>Optional Add-Ons</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -350,7 +350,7 @@ export const NeedAWebsite: React.FC = () => {
             borderRadius: 18, padding: 'clamp(24px,3vw,36px)',
             marginBottom: 28,
           }}>
-            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', color: GOLD, marginBottom: 6, textAlign: 'center' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: GOLD, marginBottom: 6, textAlign: 'center' }}>
               HOW IT WORKS
             </p>
             <h4 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 'clamp(22px,3vw,32px)', fontWeight: 400, margin: '0 0 28px', color: BG }}>
@@ -400,7 +400,7 @@ export const NeedAWebsite: React.FC = () => {
 
         {/* ── PROOF — sites we've built ── */}
         <div style={{ marginBottom: 64 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', color: GOLD, opacity: 0.8, marginBottom: 10, textAlign: 'center' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: GOLD, marginBottom: 10, textAlign: 'center' }}>
             REAL SITES. REAL CLIENTS. BUILT BY SWRV.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10 }}>
