@@ -6,16 +6,19 @@
 <title>Tactical Dossier — SWRV Intro Template</title>
 <!--
   ══════════════════════════════════════════════════════════════
-  SWRV INTRO TEMPLATE · "TACTICAL DOSSIER"  (premium, 11s, scored)
-  Cinematic movie-trailer style: distressed title card + military
-  HUD "agent file" reveal, with a synthesized cinematic score
+  SWRV INTRO TEMPLATE · "TACTICAL DOSSIER"  (premium, ~14.5s, scored)
+  Cinematic movie-trailer style: distressed title card → a camera
+  DOLLY THROUGH a wall of case-file stills (the "camera flies past
+  framed photos" move from bar-scene montages) → tactical HUD "agent
+  file" reveal — all scored with a synthesized cinematic soundtrack
   (no licensed audio — all sound is generated code, royalty-free).
   ══════════════════════════════════════════════════════════════
   HOW TO EDIT:
     1. TITLE CARD    → search "EDIT: TITLE" (name + tagline)
-    2. DOSSIER FIELDS→ search "EDIT: DOSSIER" (codename, rank, specialty, photo)
-    3. COLORS        → change --accent (HUD cyan) and --rust (title metal) in :root
-    4. SCORE         → search "EDIT: SCORE" — tweak the CUES array timing/volume
+    2. DOLLY CARDS   → search "EDIT: DOLLY" (the 4 case-file labels)
+    3. DOSSIER FIELDS→ search "EDIT: DOSSIER" (codename, rank, specialty, photo)
+    4. COLORS        → change --accent (HUD cyan) and --rust (title metal) in :root
+    5. SCORE         → search "EDIT: SCORE" — tweak the CUES array timing/volume
   Self-contained, single file. No plugins, no external audio files.
   Browsers require a tap/click before audio can play — that's why
   there's an "Enter" gate; it also reads as intentional ceremony on
@@ -63,10 +66,10 @@
     background:radial-gradient(ellipse at 50% 50%,transparent 40%,rgba(0,0,0,.75) 100%)}
   .grain{position:absolute;inset:-10%;z-index:7;pointer-events:none;opacity:.14;mix-blend-mode:overlay}
 
-  /* ── PHASE 1 : title card (0.2s – 4.8s) ── */
+  /* ── PHASE 1 : title card (0.2s – 4.4s) ── */
   .titlecard{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;
     opacity:0}
-  .playing .titlecard{animation:tc-in .5s ease .2s forwards, tc-hold 1.2s linear 3.6s forwards}
+  .playing .titlecard{animation:tc-in .5s ease .2s forwards, tc-hold 1s linear 3.4s forwards}
   .flare{position:absolute;top:0;left:-40%;width:35%;height:100%;
     background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);filter:blur(6px);opacity:0}
   .playing .flare{animation:flare .9s ease .6s forwards}
@@ -88,25 +91,56 @@
   @keyframes up{to{opacity:1}}
   @keyframes bar{to{width:min(320px,55vw)}}
 
-  /* ── transition glitch bars (4.2s – 4.8s) ── */
+  /* ── DOLLY THROUGH STILLS (4.5s – 8.2s) ──
+     Camera flies through a wall of case-file cards positioned in 3D
+     depth — the "bar-scene photo wall" move. Each card starts small
+     and far (translateZ deep negative), rushes toward camera (near
+     0), snaps sharp at its peak, then blurs past as the next begins. */
+  .dollyscene{position:absolute;inset:0;z-index:5;perspective:700px;perspective-origin:50% 46%;pointer-events:none}
+  .dcard{position:absolute;top:50%;left:50%;width:clamp(150px,22vw,210px);aspect-ratio:3/4;margin-left:calc(-1 * clamp(75px,11vw,105px));
+    margin-top:calc(-1 * clamp(100px,14.7vw,140px));
+    background:linear-gradient(160deg,#0c1a1c,#040a0b);border:1px solid rgba(58,214,217,.4);
+    box-shadow:0 0 30px rgba(58,214,217,.15);opacity:0;transform-style:preserve-3d;
+    display:flex;flex-direction:column;justify-content:flex-end;padding:14px}
+  .dcard .corner{position:absolute;width:14px;height:14px;border:2px solid var(--accent)}
+  .dcard .dc1{top:-1px;left:-1px;border-right:0;border-bottom:0}
+  .dcard .dc2{top:-1px;right:-1px;border-left:0;border-bottom:0}
+  .dcard .dc3{bottom:-1px;left:-1px;border-right:0;border-top:0}
+  .dcard .dc4{bottom:-1px;right:-1px;border-left:0;border-top:0}
+  .dcard .dlabel{font-family:'Courier New',monospace;font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase}
+  .dcard .dsub{font-size:9px;color:rgba(220,232,234,.4);margin-top:3px;letter-spacing:.08em}
+  .dcard .dglyph{position:absolute;top:14px;left:14px;color:rgba(58,214,217,.3)}
+  @keyframes dollypass{
+    0%{opacity:0;transform:translate(-50%,-50%) translateZ(-2500px) translateX(var(--driftX,0px)) rotateY(var(--rotY,0deg));filter:blur(7px)}
+    16%{opacity:1;filter:blur(0)}
+    66%{opacity:1;transform:translate(-50%,-50%) translateZ(-60px) translateX(calc(var(--driftX,0px) * .25)) rotateY(calc(var(--rotY,0deg) * .2));filter:blur(0)}
+    100%{opacity:0;transform:translate(-50%,-50%) translateZ(450px) translateX(calc(var(--driftX,0px) * -.6)) rotateY(calc(var(--rotY,0deg) * -1));filter:blur(11px)}
+  }
+  .playing .dcard{animation-name:dollypass;animation-timing-function:cubic-bezier(.35,.05,.4,1);animation-fill-mode:both;animation-duration:1.2s}
+  .playing .dcard1{--driftX:-75px;--rotY:9deg;animation-delay:4.5s}
+  .playing .dcard2{--driftX:65px;--rotY:-8deg;animation-delay:5.35s}
+  .playing .dcard3{--driftX:-55px;--rotY:7deg;animation-delay:6.2s}
+  .playing .dcard4{--driftX:85px;--rotY:-10deg;animation-delay:7.05s}
+
+  /* ── transition glitch bars — arrival flash (8.3s – 8.7s) ── */
   .glitch{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0}
   .glitch span{position:absolute;left:0;width:100%;background:var(--accent);mix-blend-mode:screen;opacity:0}
-  .playing .glitch{animation:glitchflash .4s steps(2) 4.2s forwards}
-  .playing .glitch span:nth-child(1){top:22%;height:6px;animation:gbar .4s steps(2) 4.2s forwards}
-  .playing .glitch span:nth-child(2){top:51%;height:3px;animation:gbar .4s steps(2) 4.28s forwards}
-  .playing .glitch span:nth-child(3){top:74%;height:9px;animation:gbar .4s steps(2) 4.36s forwards}
+  .playing .glitch{animation:glitchflash .4s steps(2) 8.3s forwards}
+  .playing .glitch span:nth-child(1){top:22%;height:6px;animation:gbar .4s steps(2) 8.3s forwards}
+  .playing .glitch span:nth-child(2){top:51%;height:3px;animation:gbar .4s steps(2) 8.38s forwards}
+  .playing .glitch span:nth-child(3){top:74%;height:9px;animation:gbar .4s steps(2) 8.46s forwards}
   @keyframes glitchflash{0%,100%{opacity:0}50%{opacity:1}}
   @keyframes gbar{0%,100%{opacity:0;transform:translateX(0)}50%{opacity:.8;transform:translateX(2%)}}
 
-  /* ── PHASE 2 : tactical dossier (4.8s – 9.3s) ── */
+  /* ── PHASE 2 : tactical dossier (8.6s – 13.1s) ── */
   .dossier{position:absolute;inset:0;z-index:4;opacity:0}
-  .playing .dossier{animation:dos-in .6s ease 4.8s forwards}
+  .playing .dossier{animation:dos-in .6s ease 8.6s forwards}
   .dossier::before{content:'';position:absolute;inset:0;
     background-image:linear-gradient(rgba(58,214,217,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(58,214,217,.06) 1px,transparent 1px);
     background-size:46px 46px;opacity:.5}
   .scanline{position:absolute;left:0;right:0;top:-10%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);
     box-shadow:0 0 12px var(--accent);opacity:0}
-  .playing .scanline{opacity:1;animation:scan 1.8s ease 5s forwards}
+  .playing .scanline{opacity:1;animation:scan 1.8s ease 8.8s forwards}
   @keyframes scan{to{top:110%}}
   @keyframes dos-in{to{opacity:1}}
 
@@ -118,7 +152,7 @@
     background:linear-gradient(160deg,#0c1a1c,#040a0b);border:1px solid rgba(58,214,217,.4);
     opacity:0;transform:translateX(-24px);
     box-shadow:0 0 24px rgba(58,214,217,.15)}
-  .playing .photocard{animation:slidein .6s ease 5.3s forwards}
+  .playing .photocard{animation:slidein .6s ease 9.1s forwards}
   .photocard img{width:100%;height:100%;object-fit:cover;filter:grayscale(.25) contrast(1.1) brightness(.9);mix-blend-mode:luminosity;opacity:.85}
   .photocard .silhouette{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(58,214,217,.35)}
   .corner{position:absolute;width:16px;height:16px;border:2px solid var(--accent)}
@@ -133,24 +167,24 @@
   /* data column */
   .datacol{max-width:420px;text-align:left}
   .badge{display:flex;align-items:center;gap:12px;margin-bottom:14px;opacity:0}
-  .playing .badge{animation:up .6s ease 5.6s forwards}
+  .playing .badge{animation:up .6s ease 9.4s forwards}
   .badge svg{width:34px;height:34px;flex-shrink:0}
   .badge .bt{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.25em;color:rgba(220,232,234,.5);text-transform:uppercase}
   .codename{font-family:'Arial Narrow',Arial,sans-serif;font-weight:900;text-transform:uppercase;color:#fff;
     font-size:clamp(28px,6vw,54px);letter-spacing:.03em;line-height:1;
     white-space:nowrap;overflow:hidden;width:0;border-right:2px solid var(--accent)}
-  .playing .codename{animation:type .6s steps(12) 5.9s forwards, blink .8s step-end 5.9s 5}
+  .playing .codename{animation:type .6s steps(12) 9.7s forwards, blink .8s step-end 9.7s 5}
   @keyframes type{to{width:100%}}
   @keyframes blink{50%{border-color:transparent}}
 
   .field{margin-top:14px;opacity:0}
-  .playing .field:nth-of-type(1){animation:up .5s ease 6.8s forwards}
-  .playing .field:nth-of-type(2){animation:up .5s ease 7.15s forwards}
+  .playing .field:nth-of-type(1){animation:up .5s ease 10.6s forwards}
+  .playing .field:nth-of-type(2){animation:up .5s ease 10.95s forwards}
   .field .k{font-family:'Courier New',monospace;font-size:10px;color:var(--accent);letter-spacing:.25em;text-transform:uppercase;margin-bottom:3px}
   .field .v{font-size:14px;color:rgba(220,232,234,.85);letter-spacing:.03em}
   .field .rule{width:0;height:1px;background:rgba(58,214,217,.4);margin-top:8px}
-  .playing .field:nth-of-type(1) .rule{animation:bar2 .5s ease 7s forwards}
-  .playing .field:nth-of-type(2) .rule{animation:bar2 .5s ease 7.35s forwards}
+  .playing .field:nth-of-type(1) .rule{animation:bar2 .5s ease 10.8s forwards}
+  .playing .field:nth-of-type(2) .rule{animation:bar2 .5s ease 11.15s forwards}
   @keyframes bar2{to{width:100%}}
 
   /* floating decorative data chips */
@@ -159,24 +193,24 @@
   .chip2{bottom:14%;left:6%;width:56px;height:56px}
   .chip3{top:16%;left:10%;width:44px;height:60px}
   .chip4{bottom:10%;right:12%;width:80px;height:40px}
-  .playing .chip1{animation:chipin .6s ease 5.9s forwards}
-  .playing .chip2{animation:chipin .6s ease 6.3s forwards}
-  .playing .chip3{animation:chipin .6s ease 6.7s forwards}
-  .playing .chip4{animation:chipin .6s ease 7.1s forwards}
+  .playing .chip1{animation:chipin .6s ease 9.7s forwards}
+  .playing .chip2{animation:chipin .6s ease 10.1s forwards}
+  .playing .chip3{animation:chipin .6s ease 10.5s forwards}
+  .playing .chip4{animation:chipin .6s ease 10.9s forwards}
   @keyframes chipin{to{opacity:.5}}
 
   .ping{position:absolute;bottom:8%;right:6%;width:64px;height:64px;opacity:0}
-  .playing .ping{animation:up .6s ease 7.5s forwards}
+  .playing .ping{animation:up .6s ease 11.3s forwards}
   .ping .ring{position:absolute;inset:0;border:1px solid var(--accent);border-radius:50%;animation:pulse 2s ease infinite}
   .ping .dot{position:absolute;top:50%;left:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--accent);
     box-shadow:0 0 8px var(--accent)}
   @keyframes pulse{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.4);opacity:0}}
 
-  /* ── final wipe (9.5s – 10.3s) ── */
+  /* ── final wipe (13.3s – 14.1s) ── */
   .wipe{position:absolute;inset:0;z-index:9;background:#000;transform:scaleY(0);transform-origin:bottom}
-  .playing .wipe{animation:wipeup .8s cubic-bezier(.7,0,.3,1) 9.5s forwards}
+  .playing .wipe{animation:wipeup .8s cubic-bezier(.7,0,.3,1) 13.3s forwards}
   @keyframes wipeup{to{transform:scaleY(1)}}
-  .playing .intro{animation:hide 0s linear 10.6s forwards}
+  .playing .intro{animation:hide 0s linear 14.4s forwards}
   @keyframes hide{to{visibility:hidden}}
 
   .controls{position:fixed;bottom:22px;right:22px;z-index:20;display:flex;gap:10px}
@@ -225,6 +259,31 @@
       <div class="titleunderline"></div>
       <!-- EDIT: TITLE — tagline -->
       <div class="tagline">A SWRV Production</div>
+    </div>
+
+    <!-- DOLLY THROUGH STILLS — camera flies past 4 case files -->
+    <!-- EDIT: DOLLY — swap these 4 labels for whatever fits your story -->
+    <div class="dollyscene">
+      <div class="dcard dcard1">
+        <div class="corner dc1"></div><div class="corner dc2"></div><div class="corner dc3"></div><div class="corner dc4"></div>
+        <svg class="dglyph" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg>
+        <div class="dlabel">Surveillance 01</div><div class="dsub">Origin — Unknown</div>
+      </div>
+      <div class="dcard dcard2">
+        <div class="corner dc1"></div><div class="corner dc2"></div><div class="corner dc3"></div><div class="corner dc4"></div>
+        <svg class="dglyph" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <div class="dlabel">Field Notes</div><div class="dsub">Classified — Level 3</div>
+      </div>
+      <div class="dcard dcard3">
+        <div class="corner dc1"></div><div class="corner dc2"></div><div class="corner dc3"></div><div class="corner dc4"></div>
+        <svg class="dglyph" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <div class="dlabel">Intercept 03</div><div class="dsub">Timestamp Logged</div>
+      </div>
+      <div class="dcard dcard4">
+        <div class="corner dc1"></div><div class="corner dc2"></div><div class="corner dc3"></div><div class="corner dc4"></div>
+        <svg class="dglyph" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        <div class="dlabel">Case File 04</div><div class="dsub">Cross-Reference</div>
+      </div>
     </div>
 
     <div class="glitch"><span></span><span></span><span></span></div>
@@ -343,24 +402,34 @@
 
   // EDIT: SCORE — cue sheet. t = seconds after playback starts.
   const CUES = [
-    { t: 0.2,  fn:'pad',    a:[0.2, 10.4, 55, 0.045] },
-    { t: 0.6,  fn:'whoosh', a:[0.6, 0.9, 0.18] },
-    { t: 0.7,  fn:'hit',    a:[0.7, 0.42] },
-    { t: 4.2,  fn:'whoosh', a:[4.2, 0.4, 0.28] },
-    { t: 4.22, fn:'hit',    a:[4.22, 0.3] },
-    { t: 4.28, fn:'tick',   a:[4.28, 2400, 0.09] },
-    { t: 4.36, fn:'tick',   a:[4.36, 1900, 0.09] },
-    { t: 5.0,  fn:'whoosh', a:[5.0, 0.6, 0.1] },
-    { t: 5.3,  fn:'tick',   a:[5.3, 1200, 0.08] },
-    { t: 5.6,  fn:'tick',   a:[5.6, 1500, 0.06] },
-    { t: 5.9,  fn:'tick',   a:[5.9, 1800, 0.05] },
-    { t: 6.8,  fn:'tick',   a:[6.8, 1000, 0.05] },
-    { t: 7.15, fn:'tick',   a:[7.15, 1000, 0.05] },
-    { t: 7.5,  fn:'tick',   a:[7.5, 2200, 0.04] },
-    { t: 8.3,  fn:'tick',   a:[8.3, 2200, 0.03] },
-    { t: 9.5,  fn:'riser',  a:[9.5, 0.85, 60, 280, 0.22] },
-    { t: 10.05,fn:'hit',    a:[10.05, 0.38] },
-    { t: 10.35,fn:'chime',  a:[10.35, 660, 0.12] },
+    { t: 0.2,   fn:'pad',    a:[0.2, 14.2, 55, 0.045] },
+    { t: 0.6,   fn:'whoosh', a:[0.6, 0.9, 0.18] },
+    { t: 0.7,   fn:'hit',    a:[0.7, 0.42] },
+    // dolly-through-stills: a sustained low camera-move whoosh, plus a
+    // sharp tick each time a case file snaps into focus at its peak
+    { t: 4.5,   fn:'whoosh', a:[4.5, 3.6, 0.13] },
+    { t: 5.28,  fn:'tick',   a:[5.28, 2200, 0.07] },
+    { t: 6.13,  fn:'tick',   a:[6.13, 1900, 0.07] },
+    { t: 6.98,  fn:'tick',   a:[6.98, 2200, 0.07] },
+    { t: 7.83,  fn:'tick',   a:[7.83, 1900, 0.07] },
+    // arrival glitch — impact as the camera lands on the dossier
+    { t: 8.3,   fn:'whoosh', a:[8.3, 0.4, 0.28] },
+    { t: 8.32,  fn:'hit',    a:[8.32, 0.3] },
+    { t: 8.38,  fn:'tick',   a:[8.38, 2400, 0.09] },
+    { t: 8.46,  fn:'tick',   a:[8.46, 1900, 0.09] },
+    // dossier reveal
+    { t: 8.8,   fn:'whoosh', a:[8.8, 0.6, 0.1] },
+    { t: 9.1,   fn:'tick',   a:[9.1, 1200, 0.08] },
+    { t: 9.4,   fn:'tick',   a:[9.4, 1500, 0.06] },
+    { t: 9.7,   fn:'tick',   a:[9.7, 1800, 0.05] },
+    { t: 10.6,  fn:'tick',   a:[10.6, 1000, 0.05] },
+    { t: 10.95, fn:'tick',   a:[10.95, 1000, 0.05] },
+    { t: 11.3,  fn:'tick',   a:[11.3, 2200, 0.04] },
+    { t: 12.1,  fn:'tick',   a:[12.1, 2200, 0.03] },
+    // final resolve
+    { t: 13.3,  fn:'riser',  a:[13.3, 0.85, 60, 280, 0.22] },
+    { t: 13.85, fn:'hit',    a:[13.85, 0.38] },
+    { t: 14.15, fn:'chime',  a:[14.15, 660, 0.12] },
   ];
 
   function playScore(){
@@ -376,7 +445,7 @@
     gate.classList.add('hidden');
     intro.classList.add('playing');
     if (withSound) playScore();
-    fallbackSkip = setTimeout(skip, 11200);
+    fallbackSkip = setTimeout(skip, 14700);
   }
 
   document.getElementById('enterBtn').addEventListener('click', () => startIntro(true));
@@ -414,7 +483,7 @@
     raf = requestAnimationFrame(tick);
   }
   tick();
-  setTimeout(()=>cancelAnimationFrame(raf), 11400);
+  setTimeout(()=>cancelAnimationFrame(raf), 14900);
 </script>
 </body>
 </html>
