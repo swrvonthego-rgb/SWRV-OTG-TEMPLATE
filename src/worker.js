@@ -134,7 +134,6 @@ export default {
       '/the-roadmap': 'https://swrvonthego.pro/?roadmap=1',
       '/start':       'https://swrvonthego.pro/?roadmap=1',
       // External products
-      '/portal':      'https://app.swrvonthego.pro',
       '/bible':       'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
       '/patrol':      'https://spa-patrol.swrvonthego.workers.dev/',
       '/patrol-app':  'https://spa-patrol.swrvonthego.workers.dev/app',

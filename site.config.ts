@@ -383,19 +383,6 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     accent: '#c8a84b',
   },
   {
-    id: 'client-portal',
-    name: 'SWRV Client Portal',
-    type: 'Full-Stack Client Dashboard',
-    description: 'A private workspace where every SWRV client manages their projects, invoices, Roadmap results, and delivered files — all in one secure login. No chasing emails. No confusion about what is next.',
-    role: 'Sole creator — design, development, and everything end to end',
-    stack: ['React', 'TypeScript', 'Supabase', 'Cloudflare Pages', 'Google Auth'],
-    status: 'live',
-    statusLabel: 'Live',
-    url: 'https://app.swrvonthego.pro',
-    showcaseUrl: '/apps/client-portal.html',
-    accent: '#6366f1',
-  },
-  {
     id: 'no-bs-bible',
     name: 'The SWRV No BS Bible',
     type: 'Full-Stack Web App',
@@ -1014,7 +1001,7 @@ export const WEBSITE_TEMPLATES: WebsiteTemplate[] = [
   { id: 'tpl-launchpad',   name: 'The Launchpad', style: 'One page, countdown, email capture', bestFor: 'Launches, events, pre-orders', bg: '#0a1128', ink: '#e8ecf4', accent: '#00d1b2', font: 'mono', layout: 'centered',
     previewUrl: '/apps/byob-timer.html', previewLabel: 'BYOB Timer — Focused single-purpose page' },
   { id: 'tpl-boss-card',   name: 'The Boss Card', style: 'One-page personal brand hub', bestFor: 'Creators, speakers, link-in-bio upgrade', bg: '#16121c', ink: '#f2eef8', accent: '#e8c96a', font: 'sans', layout: 'list',
-    previewUrl: '/apps/client-portal.html', previewLabel: 'SWRV Client Portal — Personal branded hub' },
+    previewUrl: 'https://spa-patrol.swrvonthego.workers.dev', previewLabel: 'MyPatrol — Personal branded hub' },
 ];
 
 
