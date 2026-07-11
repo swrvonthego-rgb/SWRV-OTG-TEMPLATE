@@ -191,6 +191,33 @@ export function Birdsong({ isOpen, onClose }: BirdsongProps) {
         </div>
       </section>
 
+      {/* INSTRUCTORS */}
+      <section className="birdsong-section birdsong-instructors">
+        <div className="birdsong-container">
+          <p className="birdsong-section-eyebrow">{B.instructors.eyebrow}</p>
+          <h2 className="birdsong-section-title">{B.instructors.title}</h2>
+          <p className="birdsong-section-body">{B.instructors.body}</p>
+          <div className="birdsong-instructors-grid">
+            {B.instructors.coaches.map((c, i) => (
+              <figure key={i} className="birdsong-instructor-card">
+                <div className="birdsong-instructor-photo">
+                  <img
+                    src={c.src}
+                    alt={c.alt}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <figcaption>
+                  <div className="birdsong-instructor-name">{c.name}</div>
+                  <div className="birdsong-instructor-role">{c.role}</div>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* PILLARS */}
       <section className="birdsong-section birdsong-pillars">
         <div className="birdsong-container">

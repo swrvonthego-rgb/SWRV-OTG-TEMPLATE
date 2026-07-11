@@ -58,6 +58,18 @@ export const BIRDSONG_CONFIG = {
     quoteAuthor: 'SWRV BIRDSONG',
   },
 
+  // ── INSTRUCTORS (the people teaching) ───────────────────
+  instructors: {
+    eyebrow: 'THE COACHES',
+    title: 'Trained by people who\'ve done it.',
+    body: 'Every session runs through a real vocalist. The Method is proven, personal, and taught by working artists — not automated.',
+    coaches: [
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Guy.png', name: 'Vocal Coach', role: 'Breath · Projection · Range', alt: 'The Birdsong Method vocal coach' },
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Instructor%202.png', name: 'Performance Instructor', role: 'Stage · Presence · Dynamics', alt: 'The Birdsong Method performance instructor' },
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Women%20Vocal%20Trainers.jpeg', name: 'Vocal Trainers', role: 'Tone · Pitch · Resonance', alt: 'The Birdsong Method women vocal trainers' },
+    ],
+  },
+
   // ── PILLARS (what they'll master) ───────────────────────
   pillars: [
     {

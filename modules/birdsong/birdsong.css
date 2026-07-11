@@ -386,6 +386,75 @@
   color: var(--bs-gold);
 }
 
+/* ─── INSTRUCTORS ─── */
+.birdsong-page .birdsong-instructors {
+  background: linear-gradient(180deg, var(--bs-ink) 0%, rgba(20,16,10,0.98) 100%);
+}
+.birdsong-page .birdsong-instructors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 44px;
+}
+.birdsong-page .birdsong-instructor-card {
+  margin: 0;
+  background: var(--bs-panel);
+  border: 1px solid var(--bs-border);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: all 0.35s ease;
+  display: flex;
+  flex-direction: column;
+}
+.birdsong-page .birdsong-instructor-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(201, 168, 76, 0.4);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5);
+}
+.birdsong-page .birdsong-instructor-photo {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #0a0804;
+  position: relative;
+}
+.birdsong-page .birdsong-instructor-photo::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(10,8,4,0.55));
+  pointer-events: none;
+}
+.birdsong-page .birdsong-instructor-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+.birdsong-page .birdsong-instructor-card:hover .birdsong-instructor-photo img {
+  transform: scale(1.04);
+}
+.birdsong-page .birdsong-instructor-card figcaption {
+  padding: 18px 20px 22px;
+}
+.birdsong-page .birdsong-instructor-name {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.birdsong-page .birdsong-instructor-role {
+  font-size: 12px;
+  color: var(--bs-gold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
 /* ─── PILLARS ─── */
 .birdsong-page .birdsong-pillars {
   background: var(--bs-ink);
