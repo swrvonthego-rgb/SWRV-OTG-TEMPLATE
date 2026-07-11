@@ -118,6 +118,8 @@ export default {
       '/websites':    'https://swrvonthego.pro/#need-a-website',
       '/intros':      'https://swrvonthego.pro/intros/',
       '/intro-studio':'https://swrvonthego.pro/intros/',
+      '/swf':         'https://swrvonthego.pro/intros/swf-converter.html',
+      '/swf-converter':'https://swrvonthego.pro/intros/swf-converter.html',
       '/templates':   'https://swrvonthego.pro/#website-templates',
       // Full Menu category tabs — each tab is directly linkable
       '/menu':        'https://swrvonthego.pro/?catalog=videography#full-menu',
