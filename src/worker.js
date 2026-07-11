@@ -116,6 +116,8 @@ export default {
       '/revving-up':  'https://swrvonthego.pro/#revving-up',
       '/shop':        'https://swrvonthego.pro/#shop',
       '/websites':    'https://swrvonthego.pro/#need-a-website',
+      '/intros':      'https://swrvonthego.pro/intros/',
+      '/intro-studio':'https://swrvonthego.pro/intros/',
       '/templates':   'https://swrvonthego.pro/#website-templates',
       // Full Menu category tabs — each tab is directly linkable
       '/menu':        'https://swrvonthego.pro/?catalog=videography#full-menu',

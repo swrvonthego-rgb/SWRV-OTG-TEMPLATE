@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinetic Type — SWRV Intro Template</title>
+<!--
+  ══════════════════════════════════════════════════════════════
+  SWRV INTRO TEMPLATE · "KINETIC TYPE"  (bold / streetwear energy)
+  ══════════════════════════════════════════════════════════════
+  EDIT: change the punch-in words + final title in the HTML below
+        (search "EDIT:"). Change --accent + --bg for a new vibe.
+  ══════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{ --accent:#ff4d00; --bg:#0d0d0d; --ink:#ffffff; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);font-family:'Arial Black',Arial,sans-serif;overflow:hidden}
+
+  .page{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--bg);color:var(--ink);text-align:center;padding:24px}
+  .page h1{font-size:clamp(40px,10vw,110px);font-weight:900;letter-spacing:-.02em;text-transform:uppercase;line-height:.9}
+  .page h1 span{color:var(--accent)}
+  .page p{color:rgba(255,255,255,.55);font-size:16px;margin:18px 0 26px;max-width:420px;line-height:1.6;font-family:Arial}
+  .page a{padding:15px 36px;background:var(--accent);color:#fff;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
+    font-size:13px;text-decoration:none;font-family:Arial}
+
+  .intro{position:fixed;inset:0;z-index:10;background:var(--bg);overflow:hidden;
+    display:flex;align-items:center;justify-content:center;animation:out .5s ease 4.2s forwards}
+  .intro.gone{display:none}
+
+  /* punch-in words, each shown then hidden */
+  .word{position:absolute;font-size:clamp(48px,13vw,150px);font-weight:900;text-transform:uppercase;color:var(--ink);
+    letter-spacing:-.02em;opacity:0}
+  .w1{animation:punch .55s ease 0.2s both}
+  .w2{animation:punch .55s ease 0.85s both}
+  .w3{animation:punch .55s ease 1.5s both}
+  .w1,.w2{color:#fff}
+  .w3{color:var(--accent)}
+
+  /* final lockup */
+  .final{position:absolute;text-align:center;opacity:0;animation:finalin .7s cubic-bezier(.2,.8,.2,1) 2.35s forwards}
+  .final .t{font-size:clamp(44px,11vw,130px);font-weight:900;text-transform:uppercase;color:#fff;line-height:.9;letter-spacing:-.02em}
+  .final .t em{color:var(--accent);font-style:normal}
+  .final .s{font-family:Arial;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.4em;text-transform:uppercase;
+    font-size:clamp(11px,2vw,15px);margin-top:16px}
+  .slash{position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;
+    animation:slash .5s ease 2.05s forwards, slashout .5s ease 2.35s forwards}
+
+  @keyframes punch{0%{opacity:0;transform:scale(1.6)}15%{opacity:1;transform:scale(1)}85%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9)}}
+  @keyframes slash{to{transform:scaleX(1)}}
+  @keyframes slashout{to{transform:scaleX(1) translateX(101%)}}
+  @keyframes finalin{to{opacity:1}}
+  @keyframes out{to{transform:translateY(-100%)}}
+
+  .controls{position:fixed;bottom:22px;right:22px;z-index:20;display:flex;gap:10px;font-family:Arial}
+  .controls button{background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;
+    padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+  .controls button:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+  <div class="page">
+    <h1>Bold. Loud.<br><span>Yours.</span></h1>
+    <p>The opener hit hard, then dropped the visitor right into your world.</p>
+    <a href="#">Shop Now</a>
+  </div>
+
+  <div class="intro" id="intro">
+    <!-- EDIT: the three punch words -->
+    <div class="word w1">BUILT</div>
+    <div class="word w2">DIFFERENT</div>
+    <div class="word w3">LOUD</div>
+    <div class="slash"></div>
+    <div class="final">
+      <!-- EDIT: final title (use <em> for the accent-colored part) -->
+      <div class="t">YOUR<em>BRAND</em></div>
+      <!-- EDIT: subtitle -->
+      <div class="s">The Drop Starts Here</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="location.reload()">↻ Replay</button>
+    <button onclick="document.getElementById('intro').classList.add('gone')">Skip →</button>
+  </div>
+
+<script>
+  setTimeout(()=>document.getElementById('intro').classList.add('gone'), 4700);
+</script>
+</body>
+</html>
