@@ -446,19 +446,6 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     showcaseUrl: '/apps/byob-timer/',
     accent: '#81b29a',
   },
-  {
-    id: 'hr205',
-    name: 'HR205.org',
-    type: 'Template System / Website',
-    description: 'A modular website template system serving as the foundation for client builds. I run the backend, keep the systems operating, and handle website maintenance — the infrastructure and ongoing operations that keep the platform running reliably.',
-    role: 'Backend, systems operation & website maintenance',
-    stack: ['React', 'Modular Architecture', 'Reusable Components', 'Template Engine'],
-    status: 'ongoing',
-    statusLabel: 'Active',
-    url: 'https://hr205.org',
-    showcaseUrl: '/apps/hr205.html',
-    accent: '#8b5cf6',
-  },
 ];
 
 
@@ -996,7 +983,7 @@ export const WEBSITE_TEMPLATES: WebsiteTemplate[] = [
   { id: 'tpl-stage',       name: 'The Stage', style: 'Full-bleed hero, music player ready', bestFor: 'Artists, bands, performers', bg: '#08060c', ink: '#f5f0ff', accent: '#9d4edd', font: 'sans', layout: 'hero',
     previewUrl: '/apps/birdsong-method.html', previewLabel: 'The Birdsong Method — Artist platform' },
   { id: 'tpl-table',       name: 'The Table', style: 'Warm tones, menu-forward', bestFor: 'Restaurants, food trucks, caterers', bg: '#fdf6ec', ink: '#3a2a1a', accent: '#c87941', font: 'serif', layout: 'list',
-    previewUrl: 'https://hr205.org', previewLabel: 'HR205.org — Warm, list-driven layout' },
+    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC — Warm, list-driven layout' },
   { id: 'tpl-pulpit',      name: 'The Pulpit', style: 'Welcoming, community-centered', bestFor: 'Churches, ministries, nonprofits', bg: '#fffdf7', ink: '#2c2418', accent: '#8b6f3e', font: 'serif', layout: 'centered',
     previewUrl: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/', previewLabel: 'The SWRV No BS Bible — Community-centered' },
   { id: 'tpl-launchpad',   name: 'The Launchpad', style: 'One page, countdown, email capture', bestFor: 'Launches, events, pre-orders', bg: '#0a1128', ink: '#e8ecf4', accent: '#00d1b2', font: 'mono', layout: 'centered',
