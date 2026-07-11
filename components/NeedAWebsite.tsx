@@ -111,7 +111,7 @@ export const NeedAWebsite: React.FC = () => {
   const startTemplate = (tpl: WebsiteTemplate) => {
     setPicked(tpl.id);
     window.dispatchEvent(new CustomEvent('swrv:open-intake', {
-      detail: { id: 'template-site', name: `Template Website — ${tpl.name} ($300)` },
+      detail: { id: 'website-presence', name: `The Presence — ${tpl.name} ($300 special)` },
     }));
   };
 
@@ -324,12 +324,12 @@ export const NeedAWebsite: React.FC = () => {
               }}>Optional Add-Ons</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
-                  { it: 'Custom design from scratch',        note: 'See The Presence →' },
-                  { it: 'E-commerce / online store',          note: '+$500' },
-                  { it: 'Copywriting (we write for you)',     note: '+$250' },
-                  { it: 'Custom domain purchase & setup',     note: '+$50' },
-                  { it: 'Monthly maintenance & updates',      note: 'See Web Care' },
-                  { it: 'Booking / calendar integration',     note: '+$150' },
+                  { it: 'More pages — upgrade to The Platform', note: '$500' },
+                  { it: 'Full site — upgrade to The Ecosystem', note: '$1,000' },
+                  { it: 'E-commerce / online store',            note: '+$200' },
+                  { it: 'Copywriting (we write for you)',       note: '+$100' },
+                  { it: 'Custom domain purchase & setup',       note: '+$30' },
+                  { it: 'Monthly management (full service)',    note: '$125/mo' },
                 ].map((row, i) => (
                   <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14, color: 'rgba(10,8,4,0.7)', lineHeight: 1.5 }}>
                     <span>{row.it}</span>
