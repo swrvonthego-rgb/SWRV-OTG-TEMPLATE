@@ -442,7 +442,8 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     stack: ['JavaScript', 'Web App', 'UI/UX Design'],
     status: 'live',
     statusLabel: 'Live',
-    showcaseUrl: '/apps/byob-timer.html',
+    url: '/apps/byob-timer/',
+    showcaseUrl: '/apps/byob-timer/',
     accent: '#81b29a',
   },
   {
