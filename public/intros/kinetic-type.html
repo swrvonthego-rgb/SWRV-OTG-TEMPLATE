@@ -54,6 +54,7 @@
   @keyframes out{to{transform:translateY(-100%)}}
 
   .controls{position:fixed;bottom:22px;right:22px;z-index:20;display:flex;gap:10px;font-family:Arial}
+  body.is-preview .controls{display:none}
   .controls button{background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;
     padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
   .controls button:hover{border-color:var(--accent);color:var(--accent)}
@@ -86,6 +87,7 @@
   </div>
 
 <script>
+  if (new URLSearchParams(location.search).get('preview') === '1') { document.body.classList.add('is-preview'); }
   setTimeout(()=>document.getElementById('intro').classList.add('gone'), 4700);
 </script>
 </body>

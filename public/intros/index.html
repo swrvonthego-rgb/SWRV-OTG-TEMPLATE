@@ -20,6 +20,10 @@
   .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
   .frame .tag{position:absolute;top:12px;left:12px;z-index:2;background:rgba(0,0,0,.6);color:var(--gold);font-size:10px;
     font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:5px 10px;border-radius:999px;backdrop-filter:blur(4px)}
+  .frame .replay{position:absolute;bottom:10px;right:10px;z-index:3;background:rgba(0,0,0,.55);color:var(--gold);
+    border:1px solid rgba(200,168,75,.4);border-radius:999px;padding:6px 13px;font-size:10px;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(4px)}
+  .frame .replay:hover{background:rgba(200,168,75,.15);border-color:var(--gold)}
   .meta{padding:20px}
   .meta h2{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
   .meta p{color:rgba(237,232,220,.55);font-size:13px;line-height:1.6;margin-bottom:16px}
@@ -45,7 +49,11 @@
     <div class="grid">
 
       <div class="card">
-        <div class="frame"><span class="tag">Luxury</span><iframe src="cinematic-gold.html" title="Cinematic Gold preview"></iframe></div>
+        <div class="frame">
+          <span class="tag">Luxury</span>
+          <iframe class="pv" data-base="cinematic-gold.html" data-dur="7200" src="cinematic-gold.html?preview=1" title="Cinematic Gold preview"></iframe>
+          <button class="replay" data-target="cinematic-gold.html">↻ Replay</button>
+        </div>
         <div class="meta">
           <h2>Cinematic Gold</h2>
           <p>Black screen, gold light sweep, serif title reveals with a curtain wipe into the page. Premium, editorial.</p>
@@ -57,7 +65,11 @@
       </div>
 
       <div class="card">
-        <div class="frame"><span class="tag">Bold / Street</span><iframe src="kinetic-type.html" title="Kinetic Type preview"></iframe></div>
+        <div class="frame">
+          <span class="tag">Bold / Street</span>
+          <iframe class="pv" data-base="kinetic-type.html" data-dur="6200" src="kinetic-type.html?preview=1" title="Kinetic Type preview"></iframe>
+          <button class="replay" data-target="kinetic-type.html">↻ Replay</button>
+        </div>
         <div class="meta">
           <h2>Kinetic Type</h2>
           <p>Words punch in hard, an accent slash wipes across, the final lockup lands. Streetwear energy, drops and brands.</p>
@@ -69,7 +81,11 @@
       </div>
 
       <div class="card">
-        <div class="frame"><span class="tag">Synthwave</span><iframe src="neon-grid.html" title="Neon Grid preview"></iframe></div>
+        <div class="frame">
+          <span class="tag">Synthwave</span>
+          <iframe class="pv" data-base="neon-grid.html" data-dur="6700" src="neon-grid.html?preview=1" title="Neon Grid preview"></iframe>
+          <button class="replay" data-target="neon-grid.html">↻ Replay</button>
+        </div>
         <div class="meta">
           <h2>Neon Grid</h2>
           <p>Perspective grid floor, glowing sun, glitch-in title with neon pulse and scanlines. Tech, nightlife, music.</p>
@@ -81,7 +97,11 @@
       </div>
 
       <div class="card">
-        <div class="frame"><span class="tag">Cinematic / Movie Trailer</span><iframe src="tactical-dossier.html" title="Tactical Dossier preview"></iframe></div>
+        <div class="frame">
+          <span class="tag">Cinematic / Movie Trailer</span>
+          <iframe class="pv" data-base="tactical-dossier.html" data-dur="7600" src="tactical-dossier.html?preview=1" title="Tactical Dossier preview"></iframe>
+          <button class="replay" data-target="tactical-dossier.html">↻ Replay</button>
+        </div>
         <div class="meta">
           <h2>Tactical Dossier</h2>
           <p>Distressed metal title card with drifting dust, glitch-cuts into a tactical HUD "agent file" reveal — photo card, crest, typed codename, data fields. Movie-trailer grade.</p>
@@ -104,5 +124,25 @@
       </ol>
     </div>
   </div>
+
+  <script>
+    // Every preview iframe auto-loops: reload it just after its intro
+    // finishes so the gallery is always showing the animation playing,
+    // never a frozen end-state. The corner Replay button (added by
+    // each intro file itself) is hidden in preview mode via ?preview=1 —
+    // this card-level "Replay" button restarts it on demand instead.
+    document.querySelectorAll('.pv').forEach(iframe => {
+      const base = iframe.dataset.base;
+      const dur = parseInt(iframe.dataset.dur, 10);
+      const reload = () => { iframe.src = base + '?preview=1&t=' + Date.now(); };
+      setInterval(reload, dur);
+    });
+    document.querySelectorAll('.replay').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const iframe = btn.parentElement.querySelector('.pv');
+        iframe.src = btn.dataset.target + '?preview=1&t=' + Date.now();
+      });
+    });
+  </script>
 </body>
 </html>
