@@ -58,15 +58,15 @@ export const BIRDSONG_CONFIG = {
     quoteAuthor: 'SWRV BIRDSONG',
   },
 
-  // ── INSTRUCTORS (the people teaching) ───────────────────
+  // ── INSIDE THE STUDIO (what training actually looks like) ─
   instructors: {
-    eyebrow: 'THE COACHES',
-    title: 'Trained by people who\'ve done it.',
-    body: 'Every session runs through a real vocalist. The Method is proven, personal, and taught by working artists — not automated.',
+    eyebrow: 'INSIDE THE STUDIO',
+    title: 'Studio vocal training that zooms in on you.',
+    body: "Every session runs in a real studio — targeted, focused, and captured. We zoom in on the exact technique your voice needs next, then hand you the recordings so you can hear your own progress week over week.",
     coaches: [
-      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Guy.png', name: 'Vocal Coach', role: 'Breath · Projection · Range', alt: 'The Birdsong Method vocal coach' },
-      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Instructor%202.png', name: 'Performance Instructor', role: 'Stage · Presence · Dynamics', alt: 'The Birdsong Method performance instructor' },
-      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Women%20Vocal%20Trainers.jpeg', name: 'Vocal Trainers', role: 'Tone · Pitch · Resonance', alt: 'The Birdsong Method women vocal trainers' },
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Guy.png', name: 'Studio-Based Training', role: 'Real mic. Real room. Real time.', alt: 'One-on-one studio vocal training in progress' },
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Instructor%202.png', name: 'Focused Deep-Dives', role: 'One skill at a time. No filler.', alt: 'Focused vocal technique training' },
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Women%20Vocal%20Trainers.jpeg', name: 'Recordings You Keep', role: 'Every session captured. Track your growth.', alt: 'Students reviewing their recorded vocal training' },
     ],
   },
 
