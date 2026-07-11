@@ -459,6 +459,31 @@ export const NeedAWebsite: React.FC = () => {
                   <p style={{ fontSize: 12.5, color: 'rgba(10,8,4,0.6)', margin: '0 0 4px', lineHeight: 1.5 }}>{tpl.style}</p>
                   <p style={{ fontSize: 11.5, color: 'rgba(10,8,4,0.4)', margin: 0, lineHeight: 1.5 }}>Best for: {tpl.bestFor}</p>
                 </div>
+                {/* Live preview link — real site that matches this style */}
+                <a
+                  href={tpl.previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: 8, padding: '10px 12px',
+                    background: 'rgba(200,168,75,0.08)',
+                    border: '1px solid rgba(200,168,75,0.28)',
+                    borderRadius: 10, textDecoration: 'none',
+                    fontSize: 11.5, color: '#0a0804', lineHeight: 1.35,
+                  }}
+                  title={`Live example: ${tpl.previewLabel}`}
+                >
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: 'block', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: 9.5, color: GOLD, marginBottom: 2 }}>
+                      See a Live Example →
+                    </span>
+                    <span style={{ display: 'block', color: 'rgba(10,8,4,0.7)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {tpl.previewLabel}
+                    </span>
+                  </span>
+                  <ExternalLink size={13} style={{ color: GOLD, flexShrink: 0 }} />
+                </a>
                 <button
                   type="button"
                   onClick={() => startTemplate(tpl)}
