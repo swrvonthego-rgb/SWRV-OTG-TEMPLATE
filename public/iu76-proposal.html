@@ -238,6 +238,9 @@
 <!-- ══ SUPABASE CONFIG ══ -->
 <script>
   const SUPABASE_URL = 'https://jbnwpgvzyykqyqagzcjt.supabase.co';
+  // Publishable anon key (role: "anon") — designed to ship in client pages;
+  // access is enforced by Row Level Security on the database. Secret
+  // scanners may flag this as a JWT: it is NOT a private credential.
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibndwZ3Z6eXlrcXlxYWd6Y2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMTE0NzcsImV4cCI6MjA5NTY4NzQ3N30.NUNwgH8BNJQXFlBlg0Zaeh4vzvhmnHQEc7LUWhNcjAk';
   let sb;
   try {
