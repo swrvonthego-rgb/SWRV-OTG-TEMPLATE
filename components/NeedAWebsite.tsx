@@ -6,114 +6,59 @@ const GOLD = '#c8a84b';
 const GOLD_LIGHT = '#e8c96a';
 const BG = '#0a0804';
 
-// ── CSS mini-mockup preview — a stylized "browser window" per template ──
-const TemplatePreview: React.FC<{ tpl: WebsiteTemplate }> = ({ tpl }) => {
-  const fontFamily =
-    tpl.font === 'serif' ? 'Georgia, serif' :
-    tpl.font === 'mono' ? '"Share Tech Mono", monospace' :
-    '"Inter", sans-serif';
-
-  const block = (w: string, h: number, color: string, radius = 3): React.CSSProperties => ({
-    width: w, height: h, background: color, borderRadius: radius,
-  });
-
-  return (
-    <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}>
-      {/* Browser chrome */}
-      <div style={{ background: '#e8e6e1', padding: '6px 10px', display: 'flex', gap: 5, alignItems: 'center' }}>
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#e0655a' }} />
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#e0b25a' }} />
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#6fbf73' }} />
-      </div>
-      {/* Page body */}
-      <div style={{ background: tpl.bg, padding: 14, height: 150, fontFamily, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' }}>
-        {/* Nav bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={block('26%', 7, tpl.accent, 2)} />
-          <div style={{ display: 'flex', gap: 5 }}>
-            <div style={block('18px', 5, `${tpl.ink}44`)} />
-            <div style={block('18px', 5, `${tpl.ink}44`)} />
-            <div style={block('18px', 5, `${tpl.ink}44`)} />
-          </div>
-        </div>
-
-        {tpl.layout === 'hero' && (
-          <>
-            <div style={{ ...block('100%', 54, `${tpl.accent}33`, 6), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: tpl.ink, letterSpacing: '0.06em' }}>YOUR NAME HERE</div>
-            </div>
-            <div style={block('70%', 6, `${tpl.ink}55`)} />
-            <div style={block('50%', 6, `${tpl.ink}33`)} />
-            <div style={{ ...block('34%', 16, tpl.accent, 999), marginTop: 2 }} />
-          </>
-        )}
-
-        {tpl.layout === 'grid' && (
-          <>
-            <div style={{ fontSize: 12, fontWeight: 700, color: tpl.ink }}>Your Work</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, flex: 1 }}>
-              {[0.5, 0.3, 0.4, 0.35, 0.55, 0.3].map((op, i) => (
-                <div key={i} style={{ background: i === 0 ? tpl.accent : `${tpl.ink}${Math.round(op * 100).toString(16).padStart(2, '0')}`, borderRadius: 4, opacity: i === 0 ? 0.85 : 1 }} />
-              ))}
-            </div>
-          </>
-        )}
-
-        {tpl.layout === 'split' && (
-          <div style={{ display: 'flex', gap: 10, flex: 1 }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center' }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: tpl.ink }}>Book a Session</div>
-              <div style={block('90%', 5, `${tpl.ink}55`)} />
-              <div style={block('75%', 5, `${tpl.ink}33`)} />
-              <div style={{ ...block('60%', 15, tpl.accent, 999), marginTop: 3 }} />
-            </div>
-            <div style={{ flex: 1, background: `${tpl.accent}26`, borderRadius: 6, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 3, padding: 6 }}>
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} style={{ background: i === 5 ? tpl.accent : `${tpl.ink}22`, borderRadius: 2 }} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {tpl.layout === 'centered' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
-            <div style={{ width: 26, height: 26, borderRadius: '50%', background: tpl.accent }} />
-            <div style={{ fontSize: 13, fontWeight: tpl.font === 'serif' ? 500 : 800, color: tpl.ink, fontStyle: tpl.font === 'serif' ? 'italic' : 'normal' }}>
-              Your Vision Here
-            </div>
-            <div style={block('55%', 5, `${tpl.ink}44`)} />
-            <div style={block('40%', 5, `${tpl.ink}2b`)} />
-            <div style={{ ...block('32%', 15, tpl.accent, 999), marginTop: 2 }} />
-          </div>
-        )}
-
-        {tpl.layout === 'list' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center' }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, background: `${tpl.ink}11`, borderRadius: 6, padding: '7px 10px' }}>
-                <div style={{ width: 14, height: 14, borderRadius: 4, background: i === 0 ? tpl.accent : `${tpl.ink}44`, flexShrink: 0 }} />
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <div style={block(`${70 - i * 12}%`, 5, `${tpl.ink}66`)} />
-                </div>
-                <div style={block('22px', 5, tpl.accent)} />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+// ── Live scaled preview — the actual page rendered small in the card
+// (AI-Studio-gallery style). The iframe renders at 4x the card width
+// and is scaled to 25%, so the card shows a real desktop-width page.
+const LivePreview: React.FC<{ tpl: WebsiteTemplate; onExpand: () => void }> = ({ tpl, onExpand }) => (
+  <div
+    onClick={onExpand}
+    style={{
+      position: 'relative', borderRadius: 10, overflow: 'hidden', cursor: 'zoom-in',
+      border: '1px solid rgba(0,0,0,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+      aspectRatio: '16 / 10', background: tpl.bg,
+    }}
+  >
+    <iframe
+      src={tpl.previewUrl}
+      title={`${tpl.name} live preview`}
+      loading="lazy"
+      scrolling="no"
+      style={{
+        width: '400%', height: '400%',
+        transform: 'scale(0.25)', transformOrigin: '0 0',
+        border: 0, pointerEvents: 'none', display: 'block',
+      }}
+    />
+    <div style={{
+      position: 'absolute', top: 8, right: 8,
+      background: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)',
+      fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+      padding: '5px 10px', borderRadius: 999, pointerEvents: 'none',
+    }}>⤢ Expand</div>
+  </div>
+);
 
 export const NeedAWebsite: React.FC = () => {
   const [picked, setPicked] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<WebsiteTemplate | null>(null);
 
   const startTemplate = (tpl: WebsiteTemplate) => {
     setPicked(tpl.id);
+    setExpanded(null);
     window.dispatchEvent(new CustomEvent('swrv:open-intake', {
       detail: { id: 'website-presence', name: `The Presence — ${tpl.name} ($300 special)` },
     }));
   };
+
+  // ESC closes the expanded preview
+  React.useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setExpanded(null); };
+    window.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [expanded]);
 
   const livePortfolio = PORTFOLIO_PROJECTS.filter(p => p.url || p.showcaseUrl);
 
@@ -450,7 +395,7 @@ export const NeedAWebsite: React.FC = () => {
                 boxShadow: picked === tpl.id ? '0 8px 32px rgba(200,168,75,0.2)' : '0 2px 12px rgba(0,0,0,0.06)',
                 transition: 'all 0.2s',
               }}>
-                <TemplatePreview tpl={tpl} />
+                <LivePreview tpl={tpl} onExpand={() => setExpanded(tpl)} />
                 <div style={{ padding: '0 4px', flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
                     <h4 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#0a0804' }}>{tpl.name}</h4>
@@ -507,6 +452,65 @@ export const NeedAWebsite: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* ── EXPANDED LIVE PREVIEW — full interactive page in a modal ── */}
+      {expanded && (
+        <div
+          onClick={() => setExpanded(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(6,4,2,0.88)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(8px,2vw,32px)',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: 'min(1200px, 96vw)', height: 'min(820px, 92vh)',
+              background: '#0a0804', borderRadius: 18, overflow: 'hidden',
+              border: `1.5px solid ${GOLD}`, boxShadow: '0 32px 90px rgba(0,0,0,0.7)',
+              display: 'flex', flexDirection: 'column',
+            }}
+          >
+            {/* modal header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(200,168,75,0.25)', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 150 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{expanded.name} <span style={{ color: GOLD }}>· {NEED_A_WEBSITE.price}</span></div>
+                <div style={{ fontSize: 11, color: 'rgba(237,232,220,0.5)' }}>{expanded.style} — this is a live page, scroll and click around</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => startTemplate(expanded)}
+                style={{ padding: '10px 20px', background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: BG, border: 'none', borderRadius: 999, fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                Start With This One →
+              </button>
+              <a
+                href={expanded.previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ padding: '10px 16px', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', textDecoration: 'none', whiteSpace: 'nowrap' }}
+              >
+                Open Full ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => setExpanded(null)}
+                aria-label="Close preview"
+                style={{ width: 36, height: 36, borderRadius: 999, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: 16, cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+            {/* full interactive live page */}
+            <iframe
+              src={expanded.previewUrl}
+              title={`${expanded.name} full preview`}
+              style={{ flex: 1, width: '100%', border: 0, background: '#fff' }}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 };
