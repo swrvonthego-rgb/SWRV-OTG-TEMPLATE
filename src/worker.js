@@ -129,10 +129,14 @@ export default {
       '/brand':       'https://swrvonthego.pro/?catalog=brand-identity#full-menu',
       '/coaching':    'https://swrvonthego.pro/?catalog=coaching#full-menu',
       '/business':    'https://swrvonthego.pro/?catalog=content-business#full-menu',
-      // Roadmap — open the overlay directly via query param
-      '/roadmap':     'https://swrvonthego.pro/?roadmap=1',
-      '/the-roadmap': 'https://swrvonthego.pro/?roadmap=1',
-      '/start':       'https://swrvonthego.pro/?roadmap=1',
+      // Roadmap — client-facing links drop straight into the test
+      // (?roadmap=start skips the "Before You Begin" gate). The plain
+      // ?roadmap=1 (used by on-page CTAs) still shows the intro gate.
+      '/roadmap':     'https://swrvonthego.pro/?roadmap=start',
+      '/the-roadmap': 'https://swrvonthego.pro/?roadmap=start',
+      '/start':       'https://swrvonthego.pro/?roadmap=start',
+      '/test':        'https://swrvonthego.pro/?roadmap=start',
+      '/roadmap-test':'https://swrvonthego.pro/?roadmap=start',
       // External products
       '/bible':       'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
       '/patrol':      'https://spa-patrol.swrvonthego.workers.dev/',

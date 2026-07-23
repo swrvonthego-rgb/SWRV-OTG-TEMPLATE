@@ -56,11 +56,15 @@ const App: React.FC = () => {
     return <AdminPage />;
   }
 
-  // Initialize roadmap open state from URL — ?roadmap=1 opens it immediately
-  // with zero delay so the user never sees the underlying page first.
+  // Initialize roadmap open state from URL. Two entry points:
+  //   ?roadmap=1     → opens the overlay on the intro/paywall (homepage CTA)
+  //   ?roadmap=start → opens it AND skips straight into the test (the link
+  //                    Robert sends clients — Roadmap.tsx reads the same
+  //                    param to start on the first question screen).
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return new URLSearchParams(window.location.search).get('roadmap') === '1';
+    const rm = new URLSearchParams(window.location.search).get('roadmap');
+    return rm === '1' || rm === 'start';
   });
   const [isZionOpen, setIsZionOpen] = useState(false);
   const [isServicesMenuOpen, setIsServicesMenuOpen] = useState(false);
@@ -76,9 +80,10 @@ const App: React.FC = () => {
     const { hash, search } = window.location;
     const params = new URLSearchParams(search);
 
-    // ?roadmap=1 — already handled by useState initializer above;
-    // just make sure hasStarted is true so the Roadmap renders
-    if (params.get('roadmap') === '1') return;
+    // ?roadmap=1 / ?roadmap=start — already handled by the useState
+    // initializer above; nothing else to scroll/open here.
+    const rm = params.get('roadmap');
+    if (rm === '1' || rm === 'start') return;
 
     // #byob and #meet-zion open their modals instead of scrolling
     if (hash === '#byob') { setIsByobOpen(true); return; }

@@ -150,6 +150,12 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
   const [screen, setScreen] = useState<ScreenId>(() => {
     if (typeof window === 'undefined') return 'paywall';
+    // Direct client link (?roadmap=start) drops them straight into the
+    // experience, skipping the "Before You Begin" gate.
+    if (new URLSearchParams(window.location.search).get('roadmap') === 'start') {
+      sessionStorage.setItem('swrv_rm_paid', '1');
+      return 'intro';
+    }
     return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'intro' : 'paywall';
   });
   const QV_QUESTIONS = [
