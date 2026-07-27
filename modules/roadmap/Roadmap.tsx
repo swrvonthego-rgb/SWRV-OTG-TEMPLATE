@@ -957,10 +957,11 @@ useEffect(() => {
         setEmailSentMsg(`Sent to ${userEmail} ✓`);
         setEmailPromptOpen(false);
       } else {
-        setEmailSentMsg('Could not send — try again');
+        console.warn('Roadmap email failed:', data);
+        setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.');
       }
     })
-    .catch(() => setEmailSentMsg('Connection error — try again'));
+    .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.'));
   } else {
     // No email stored — show inline prompt
     setEmailPromptOpen(true);
@@ -986,10 +987,15 @@ const submitEmailPrompt = useCallback(() => {
   })
   .then(r => r.json())
   .then(data => {
-    setEmailSentMsg(`Sent to ${email} ✓`);
-    setEmailPromptOpen(false);
+    if (data?.status === 'sent' || data?.status === 'skipped') {
+      setEmailSentMsg(`Sent to ${email} ✓`);
+      setEmailPromptOpen(false);
+    } else {
+      console.warn('Roadmap email failed:', data);
+      setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.');
+    }
   })
-  .catch(() => setEmailSentMsg('Connection error — try again'));
+  .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.'));
 }, [emailPromptValue, userName, result, config]);
 
 const handleSave = useCallback(() => {
@@ -1696,13 +1702,17 @@ const handleSave = useCallback(() => {
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                 Email My Roadmap
               </button>
-              <button type="button" className="btn-save" onClick={handleSave}>
+              <button type="button" className="btn-save" onClick={() => window.print()}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
                 Save PDF
               </button>
               <button type="button" className="btn-save" onClick={() => window.print()}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
                 Print
+              </button>
+              <button type="button" className="btn-save" onClick={handleSave} title="Download a plain-text copy">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                Text File
               </button>
               {emailPromptOpen && (
                 <div className="email-prompt-inline">

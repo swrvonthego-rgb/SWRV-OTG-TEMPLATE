@@ -810,13 +810,39 @@
 }
 
 @media print{
-  .roadmap-experience #progress-bar, .roadmap-experience #toast, .roadmap-experience .action-row, .roadmap-experience .cta-block, .roadmap-experience .vision-nav, .roadmap-experience #screen-intro, .roadmap-experience #screen-disclaimer, .roadmap-experience #screen-vision, .roadmap-experience #screen-email, .roadmap-experience #screen-processing, .roadmap-experience .skin-toggle, .roadmap-experience .skin-panel, .roadmap-experience .music-toggle, .roadmap-experience #now-playing{display:none!important;}
-  .roadmap-experience #screen-results{display:block!important;}
+  /* Isolate the printout to the Roadmap RESULTS only. The roadmap is an
+     overlay on the main site, so the homepage behind it is still in the
+     DOM — hide everything, then re-show just the results subtree. This
+     is what makes "Save PDF" / Print produce a clean one-document PDF. */
+  html, body{background:white!important;}
+  body *{visibility:hidden!important;}
+  .roadmap-experience #screen-results,
+  .roadmap-experience #screen-results *{visibility:visible!important;}
+  .roadmap-experience #screen-results{
+    position:absolute!important;left:0;top:0;width:100%;
+    display:block!important;padding:24px 28px!important;
+  }
+  /* Hide interactive chrome that shouldn't print even within results */
+  .roadmap-experience .results-action-row,
+  .roadmap-experience .action-row,
+  .roadmap-experience .cta-block,
+  .roadmap-experience .email-prompt-inline,
+  .roadmap-experience .rm-close,
+  .roadmap-experience .skin-toggle, .roadmap-experience .skin-panel,
+  .roadmap-experience .music-toggle, .roadmap-experience .music-panel,
+  .roadmap-experience #now-playing, .roadmap-experience #progress-bar,
+  .roadmap-experience #toast{display:none!important;}
   .roadmap-experience{background:white!important;color:black!important;}
-  .roadmap-experience::after{display:none!important;}
-  .roadmap-experience .r-card{border-color:#ddd;break-inside:avoid;page-break-inside:avoid;background:white;box-shadow:none!important;}
-  .roadmap-experience .r-label{color:#8b6914;}
-  .roadmap-experience .r-title, .roadmap-experience .r-body{color:#1a1a1a;}
+  .roadmap-experience::after,.roadmap-experience::before{display:none!important;}
+  .roadmap-experience #screen-results::before,
+  .roadmap-experience #screen-results::after{display:none!important;}
+  /* Readable ink on white paper + keep cards from splitting across pages */
+  .roadmap-experience #screen-results :where(h1,h2,h3,h4,h5,p,span,li,div,em,strong){
+    color:#1a1a1a!important;text-shadow:none!important;}
+  .roadmap-experience .r-label{color:#8b6914!important;}
+  .roadmap-experience .r-card{border:1px solid #ddd!important;break-inside:avoid;page-break-inside:avoid;background:white!important;box-shadow:none!important;}
+  /* Force backgrounds/colors to actually render in the PDF */
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
 }
 
 /* ════════════════════════════════════════════════════════
