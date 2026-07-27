@@ -5,6 +5,46 @@ import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
 import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
+
+// ── Mic guide + live status ───────────────────────────────────────────
+// A small legend that shows the visitor how the voice button works — tap
+// to talk, the music automatically lowers so it can hear you, and the
+// slider sets how loud the music stays. It also surfaces the mic's live
+// state so a blocked/unsupported mic is never silently dead.
+const MIC_STATUS: Record<string, { text: string; tone: 'info' | 'warn' }> = {
+  requesting:      { text: 'Allow microphone access when your browser asks…', tone: 'info' },
+  blocked:         { text: 'Mic is blocked. Tap the 🔒 (or "aA") in your address bar → allow Microphone → tap the mic again.', tone: 'warn' },
+  'network-error': { text: 'Voice service hiccup — tap the mic to try again.', tone: 'warn' },
+  unsupported:     { text: 'Voice input works in Chrome, Edge, or Safari. You can still type your answer below.', tone: 'warn' },
+};
+const MicGuide: React.FC<{ state: string }> = ({ state }) => {
+  const status = MIC_STATUS[state];
+  return (
+    <div className="mic-guide" aria-live="polite">
+      <div className="mic-guide-fig" aria-hidden="true">
+        {/* speaker + sound waves + a music note dipping down = "music lowers while you talk" */}
+        <svg viewBox="0 0 72 48" width="72" height="48" fill="none">
+          {/* head + shoulders */}
+          <circle cx="20" cy="16" r="7" fill="rgba(200,168,75,0.9)"/>
+          <path d="M8 40c0-7 5.4-12 12-12s12 5 12 12" fill="rgba(200,168,75,0.9)"/>
+          {/* speech waves */}
+          <path d="M34 14c2 3 2 8 0 11" stroke="#e8c96a" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M39 10c3.5 5 3.5 14 0 19" stroke="#e8c96a" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
+          {/* music note with down arrow (ducking) */}
+          <circle cx="56" cy="30" r="4" fill="#e8c96a"/>
+          <rect x="59" y="14" width="2.4" height="16" rx="1.2" fill="#e8c96a"/>
+          <path d="M61 12l6 3-6 3" fill="#e8c96a"/>
+          <path d="M52 40l4 4 4-4" stroke="#e8c96a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      <div className="mic-guide-text">
+        <strong>Tap the mic and just talk.</strong>
+        <span>The music lowers so it can hear you — use the slider to set how loud it stays.</span>
+        {status && <span className={`mic-guide-status mic-guide-status-${status.tone}`}>{status.text}</span>}
+      </div>
+    </div>
+  );
+};
 // ── Portal vision sync ────────────────────────────────────────────────
 // Silently saves completed Roadmap results to the SWRV client portal.
 // Only fires if the user is logged into app.swrvonthego.pro (has a
@@ -1353,6 +1393,7 @@ const handleSave = useCallback(() => {
             </p>
           </div>
 
+          <MicGuide state={mic.state} />
           <div className="phase2-mic-row">
             <button
               type="button"
@@ -1481,6 +1522,7 @@ const handleSave = useCallback(() => {
                 <h2 className="phase2-question">{q.question}</h2>
                 {q.context && <p className="phase2-context">{q.context}</p>}
 
+                <MicGuide state={mic.state} />
                 <div className="phase2-mic-row">
                   <button type="button"
                     className={"mic-btn" + (mic.isListening && activeMicTarget === "phase2" ? " recording" : "")}
