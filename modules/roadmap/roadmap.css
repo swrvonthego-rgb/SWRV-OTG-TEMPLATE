@@ -1322,6 +1322,30 @@
   padding:16px 24px;
 }
 
+/* ════════════════════════════════════════════════════════
+   BLUEPRINT LEGIBILITY RULE (catch-all)
+   Standing rule: any text placed on a blueprint-map screen must
+   carry shading so the busy background never overshadows it.
+   This baseline shadow auto-covers ANYTHING added to these
+   screens later, so new copy is legible by default without
+   needing its own rule. Elements that live inside a frosted
+   panel already look fine with this subtle shadow layered in.
+═══════════════════════════════════════════════════════ */
+.roadmap-experience #screen-intro :where(h1,h2,h3,h4,h5,p,span,li,label,strong,em,a,div),
+.roadmap-experience #screen-vision :where(h1,h2,h3,h4,h5,p,span,li,label,strong,em,a),
+.roadmap-experience #screen-phase2 :where(h1,h2,h3,h4,h5,p,span,li,label,strong,em,a),
+.roadmap-experience #screen-disclaimer :where(h1,h2,h3,h4,h5,p,span,li,label,strong,em,a),
+.roadmap-experience #screen-email :where(h1,h2,h3,h4,h5,p,span,li,label,strong,em,a){
+  text-shadow:0 1px 3px rgba(0,0,0,0.75), 0 0 12px rgba(0,0,0,0.45);
+}
+/* Inputs/textareas keep crisp edges (they sit on solid fields) */
+.roadmap-experience #screen-intro :where(input,textarea),
+.roadmap-experience #screen-vision :where(input,textarea),
+.roadmap-experience #screen-phase2 :where(input,textarea),
+.roadmap-experience #screen-email :where(input,textarea){
+  text-shadow:none;
+}
+
 /* ── Mic music-ducking volume slider (shows while recording) ── */
 .roadmap-experience .mic-volume-wrap{
   display:inline-flex;align-items:center;gap:8px;
