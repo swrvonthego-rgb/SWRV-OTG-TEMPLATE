@@ -170,6 +170,19 @@ const App: React.FC = () => {
     return () => window.removeEventListener('swrv:open-services', handler);
   }, []);
 
+  // LiveChat "Book SWRV Birdsong" → open Zion page and scroll to the booking section
+  useEffect(() => {
+    const handler = () => {
+      setIsZionOpen(true);
+      // Let the overlay mount, then jump to #booking via Zion's section listener
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: 'booking' }));
+      }, 350);
+    };
+    window.addEventListener('swrv:open-zion-booking', handler);
+    return () => window.removeEventListener('swrv:open-zion-booking', handler);
+  }, []);
+
   // Services menu / cards can open intake for a specific service
   useEffect(() => {
     const handler = (e: Event) => {

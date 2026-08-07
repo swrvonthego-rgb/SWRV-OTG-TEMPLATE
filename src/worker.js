@@ -543,13 +543,13 @@ async function handleZionBooking(request, env) {
     return new Response(JSON.stringify({ error: 'Email service not configured' }), { status: 500, headers: JSON_HEADERS });
   }
   try {
-    const { firstName, lastName, email, inquiryType, message } = await request.json();
+    const { firstName, lastName, email, inquiryType, eventDate, location, message } = await request.json();
     if (!firstName || !email || !message) {
       return new Response(JSON.stringify({ error: 'firstName, email, message required' }), { status: 400, headers: JSON_HEADERS });
     }
 
     const fullName = [firstName, lastName].filter(Boolean).join(' ');
-    const subject = `Zion Booking Inquiry — ${fullName} (${inquiryType || 'General'})`;
+    const subject = `🎤 Booking Request — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
     const notifyTo = env.ZION_NOTIFY_EMAIL || env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
 
@@ -569,9 +569,17 @@ async function handleZionBooking(request, env) {
           <div style="flex:1;"><a href="mailto:${safe(email)}" style="color:#c8a84b;text-decoration:none;">${safe(email)}</a></div>
         </div>
         <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
-          <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Inquiry Type</div>
-          <div style="flex:1;color:#d4572a;font-weight:600;">${safe(inquiryType || 'General')}</div>
+          <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Event Type</div>
+          <div style="flex:1;color:#d4572a;font-weight:600;">${safe(inquiryType || 'Event')}</div>
         </div>
+        ${eventDate ? `<div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
+          <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Event Date</div>
+          <div style="flex:1;color:#c8a84b;font-weight:600;">${safe(eventDate)}</div>
+        </div>` : ''}
+        ${location ? `<div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
+          <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Location</div>
+          <div style="flex:1;color:#ede8dc;">${safe(location)}</div>
+        </div>` : ''}
         <div style="margin-top:24px;">
           <div style="color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Message</div>
           <div style="background:#110e07;border-left:3px solid #c8a84b;padding:16px;border-radius:4px;font-size:14px;line-height:1.6;white-space:pre-wrap;">${safe(message)}</div>

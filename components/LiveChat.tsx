@@ -11,7 +11,7 @@ const STEPS = [
   {
     key: 'category',
     bot: "Hey! Welcome to SWRV On The Go 👋\nI'm here to help you find the right creative services — no pressure, just clarity.\n\nWhat are you looking to create or build?",
-    quickReplies: ['🎵 Music / Audio', '🎬 Music Video', '✨ Brand Identity', '🌐 Website', '🎙️ Podcast', '📋 Something Else'],
+    quickReplies: ['🎤 Book SWRV Birdsong', '🎵 Music / Audio', '🎬 Music Video', '✨ Brand Identity', '🌐 Website', '🎙️ Podcast', '📋 Something Else'],
   },
   {
     key: 'stage',
@@ -203,6 +203,11 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
   };
 
   const handleCta = (action: string) => {
+    if (action === 'book-birdsong') {
+      setOpen(false);
+      window.dispatchEvent(new Event('swrv:open-zion-booking'));
+      return;
+    }
     if (action === 'book') {
       setOpen(false);
       if (onOpenBooking) onOpenBooking();
@@ -211,6 +216,15 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
   };
 
   const handleQuickReply = (qr: string) => {
+    if (qr === '🎤 Book SWRV Birdsong') {
+      addUser(qr);
+      setTimeout(() => addBot(
+        "🎤 Let's book Zion 'SWRV' Birdsong for your event — live performances, weddings, festivals, private parties, and more.\n\nA $50 deposit secures your date, and the rest is negotiated based on your event. Opening the booking page now — pick your date and tell him the vision.",
+        undefined,
+        { label: 'Open Booking Page →', action: 'book-birdsong' }
+      ), 400);
+      return;
+    }
     if (qr === 'Show me all services') {
       window.dispatchEvent(new Event('swrv:open-services'));
       setOpen(false);
