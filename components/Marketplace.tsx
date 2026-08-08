@@ -103,17 +103,12 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
               <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, margin: '0 0 16px', maxWidth: 580 }}>
                 You've seen what we do. Now let's figure out exactly what you need. The Roadmap is a guided vision experience — it names your gift, maps your path, and shows you which services build your specific business. No guesswork. Just your route.
               </p>
-              {/* Pricing options — hidden in launch mode */}
-              {!LAUNCH_MODE.active && (
-                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: `1px solid ${GOLD}`, borderRadius: 999, fontSize: 12, fontWeight: 700, color: GOLD }}>
-                    Full Roadmap — {ROADMAP_PRICING.full.price}
-                  </span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 999, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>
-                    Quick Vision — {ROADMAP_PRICING.quick.price}
-                  </span>
-                </div>
-              )}
+              {/* The Roadmap is free — no price tag, no tiers. */}
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', border: `1px solid ${GOLD}`, borderRadius: 999, fontSize: 12, fontWeight: 700, color: GOLD }}>
+                  Free — takes about 10 minutes
+                </span>
+              </div>
             </div>
             <div style={{ flexShrink: 0 }}>
               <button

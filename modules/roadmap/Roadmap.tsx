@@ -248,22 +248,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     ls.set(TOUR_KEY, '1');
   }, []);
 
-  const QV_QUESTIONS = [
-    { id: "problem",    q: "What's the problem you couldn't ignore that made you want to find — or BE — the solution?",     ph: "The thing that kept showing up in your life until you stopped pretending you didn't see it." },
-    { id: "easy",       q: "What do you do most easily that others can't seem to do?",                                      ph: "The thing people always come to you for. The thing that feels like breathing to you and like math to everyone else." },
-    { id: "younger",    q: "What would you do for the younger or past version of you — in your hardest times?",            ph: "If you could go back and be there for yourself, what would you show up with?" },
-    { id: "allmoods",   q: "What do you unconsciously commit to doing in all moods — happy, mad, sad, bored?",             ph: "What do you keep coming back to no matter how you feel?" },
-    { id: "loved",      q: "What do your family and friends love most about you?",                                          ph: "What do the people closest to you say when they brag about you to someone else?" },
-    { id: "afraid",     q: "What makes you afraid or intimidates you when you think about actually doing it?",             ph: "The thing that excites and terrifies you at the same time." },
-    { id: "pride",      q: "What do you have a sense of pride in — and what conversations do you feel uncomfortable being left out of?", ph: "What can you talk about for hours and feel like an expert?" },
-    { id: "yearn",      q: "What do you yearn to do for others?",                                                          ph: "If you could fix one thing in someone else's life, what would it be?" },
-    { id: "seeself",    q: "Who do you very badly want to see yourself as?",                                               ph: "The version of you that you are always reaching for." },
-    { id: "undeniable", q: "What is that special something — even people who don't like you can't deny about you?",       ph: "The thing your critics can't take away from you." },
-  ];
-  const [qvIdx, setQvIdx] = useState(0);
-  const [qvAnswers, setQvAnswers] = useState<Record<string, string>>({});
-  const [qvResult, setQvResult] = useState<{ gift: string; direction: string; services: Array<{name:string;price:string;why:string}> } | null>(null);
-  const [paymentPending, setPaymentPending] = useState(false);
+  // (The "Quick Vision" short-form tier was removed — the Roadmap is now a
+  // single free experience, so its questions/state no longer exist.)
   const [phase2Answers, setPhase2Answers] = useState<Record<string, string>>({});
   const [phase2Idx, setPhase2Idx] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -1543,11 +1529,11 @@ const handleSave = useCallback(() => {
       <section id="screen-paywall" className={`screen ${screen === 'paywall' ? 'active' : ''}`}>
         <div className="grain" />
         <div className="paywall-wrap">
-          <p className="paywall-eyebrow">CHOOSE YOUR EXPERIENCE</p>
+          <p className="paywall-eyebrow">FREE · ABOUT 10 MINUTES</p>
           <h2 className="paywall-title">Before You Begin</h2>
           <p className="paywall-sub">
             The Roadmap maps your vision to your path — and to the exact services that build it.<br/>
-            Choose how deep you want to go.
+            Answer honestly and take your time. There are no wrong answers.
           </p>
 
           {/* Vision scriptures */}

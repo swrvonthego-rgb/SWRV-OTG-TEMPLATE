@@ -42,35 +42,20 @@ export const PAYMENT_CONFIG = {
 } as const;
 
 
-// ── ROADMAP PRICING ────────────────────────────────────────────────────
-// $1 to start — Swerve will raise this over time.
-// Full Roadmap: set stripeLink once your Stripe product is created.
-// PayPal works immediately once paypalLink is set.
+// ── ROADMAP ────────────────────────────────────────────────────────────
+// The Roadmap is FREE — it's the top of the funnel, not a product.
+// There is one experience (no tiers) and nothing is charged for it.
 export const ROADMAP_PRICING = {
   full: {
-    price: '$3',
-    priceNumeric: 3,
-    label: 'The Full Roadmap',
+    price: 'Free',
+    priceNumeric: 0,
+    label: 'The Roadmap',
     tagline: 'Your complete blueprint — vision mapped to services.',
     bulletPoints: [
       'Deep evidence-based analysis of your vision',
       '7-part life blueprint (mindset, diet, fitness, community)',
       'Every service you need, mapped to what you said',
       'Yours to download, email, and bring to the booking',
-    ],
-    // Update these once your payment accounts are configured
-    stripeLink: 'https://book.stripe.com/9B66oGdAOduw7SIfhJaEE00',
-    paypalLink: 'https://paypal.me/swrvonthego?amount=1',
-  },
-  quick: {
-    price: 'Free',
-    priceNumeric: 0,
-    label: 'Quick Vision',
-    tagline: '10 questions. 3 minutes. Your gift, named.',
-    bulletPoints: [
-      '10 gift-locating questions, one at a time',
-      'Your gift named in one specific sentence',
-      '2–3 services to get you moving',
     ],
   },
 } as const;
