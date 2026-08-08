@@ -1233,10 +1233,17 @@ async function handleSaveVision(request, env) {
   }
   const jwt = authHeader.slice(7);
 
-  // Supabase project config
-  const SUPABASE_URL     = 'https://jbnwpgvzyykqyqagzcjt.supabase.co';
-  const SUPABASE_ANON    = env.SUPABASE_ANON_KEY ||
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibndwZ3Z6eXlrcXlxYWd6Y2p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMTE0NzcsImV4cCI6MjA5NTY4NzQ3N30.NUNwgH8BNJQXFlBlg0Zaeh4vzvhmnHQEc7LUWhNcjAk';
+  // Supabase project config. The anon key is publishable (it ships in
+  // client code by design), but there's no reason to hardcode it in the
+  // Worker — read it from the environment so this file stays key-free.
+  const SUPABASE_URL  = env.SUPABASE_URL || 'https://jbnwpgvzyykqyqagzcjt.supabase.co';
+  const SUPABASE_ANON = env.SUPABASE_ANON_KEY;
+  if (!SUPABASE_ANON) {
+    // Portal sync is an optional enhancement — degrade quietly rather
+    // than failing the caller's request.
+    return new Response(JSON.stringify({ status: 'skipped', reason: 'SUPABASE_ANON_KEY not configured' }),
+      { headers: JSON_HEADERS });
+  }
 
   try {
     const { title, quickAnswers, roadmapAnswers, route, coordinates } = await request.json();

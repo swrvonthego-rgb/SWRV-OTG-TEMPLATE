@@ -248,6 +248,53 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     ls.set(TOUR_KEY, '1');
   }, []);
 
+  // ── Resume unfinished session ───────────────────────────────────────
+  // The walkthrough promises "your progress is saved — pick right back up
+  // where you left off." We write a snapshot on every step; this is the
+  // other half of that promise. Only screens that make sense to return to
+  // are offered (never mid-'processing', which was an in-flight API call).
+  const RESUME_KEY = 'roadmap-progress';
+  const RESUME_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+  const RESUMABLE: ScreenId[] = ['disclaimer', 'vision', 'phase2', 'results', 'heart-note', 'email'];
+  const [resumeSnap, setResumeSnap] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const raw = ls.get(RESUME_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (!snap?.screen || !RESUMABLE.includes(snap.screen)) return;
+      if (!snap.ts || Date.now() - snap.ts > RESUME_MAX_AGE) return;
+      // Nothing worth restoring if they never actually wrote anything.
+      const hasWork = (snap.vision || '').trim().length > 0
+        || Object.keys(snap.phase2Answers || {}).length > 0
+        || !!snap.result;
+      if (!hasWork) return;
+      setResumeSnap(snap);
+    } catch { /* corrupt snapshot — ignore */ }
+  }, [isOpen]);
+
+  const applyResume = useCallback(() => {
+    const snap = resumeSnap;
+    if (!snap) return;
+    if (snap.userName) setUserName(snap.userName);
+    if (snap.userEmail) setUserEmail(snap.userEmail);
+    if (snap.vision) setVision(snap.vision);
+    if (snap.phase2Answers) setPhase2Answers(snap.phase2Answers);
+    if (typeof snap.phase2Idx === 'number') setPhase2Idx(snap.phase2Idx);
+    if (snap.result) setResult(snap.result);
+    if (snap.sessionId) sessionIdRef.current = snap.sessionId;
+    setResumeSnap(null);
+    setTourOpen(false);
+    goTo(snap.screen as ScreenId);
+  }, [resumeSnap]);
+
+  const discardResume = useCallback(() => {
+    setResumeSnap(null);
+    try { localStorage.removeItem(RESUME_KEY); } catch { /* noop */ }
+  }, []);
+
   // (The "Quick Vision" short-form tier was removed — the Roadmap is now a
   // single free experience, so its questions/state no longer exist.)
   const [phase2Answers, setPhase2Answers] = useState<Record<string, string>>({});
@@ -877,6 +924,10 @@ useEffect(() => {
       userName,
       userEmail,
       vision,
+      // Without these, "resume" would drop them back at question 1 with
+      // every answer gone — the 16 guided answers ARE the progress.
+      phase2Answers,
+      phase2Idx,
       sessionDuration,
       result,
       ts: Date.now(),
@@ -892,7 +943,7 @@ useEffect(() => {
         body: JSON.stringify(snapshot),
       }).catch(() => { /* server-side persistence optional */ });
     }
-  }, [screen, userName, userEmail, vision, sessionDuration, result]);
+  }, [screen, userName, userEmail, vision, phase2Answers, phase2Idx, sessionDuration, result]);
 
   // ── Send results email after AI generation completes ─────
   // Fire-and-forget. If RESEND_API_KEY isn't set on the worker, the worker
@@ -1179,8 +1230,33 @@ const handleSave = useCallback(() => {
     >
       <div id="progress-bar" style={{ width: `${progress}%` }} />
 
+      {/* Resume prompt — makes good on "your progress is saved" */}
+      {resumeSnap && (
+        <div className="rm-resume" role="dialog" aria-label="Resume your Roadmap">
+          <div className="rm-resume-card">
+            <div className="rm-resume-emoji" aria-hidden="true">🔖</div>
+            <div className="rm-resume-title">
+              {resumeSnap.userName ? `Welcome back, ${resumeSnap.userName}.` : 'Welcome back.'}
+            </div>
+            <div className="rm-resume-body">
+              {resumeSnap.result
+                ? 'Your finished Roadmap is still here. Want to pick it back up?'
+                : 'You have a Roadmap in progress. Want to pick up where you left off?'}
+            </div>
+            <div className="rm-resume-btns">
+              <button type="button" className="rm-resume-primary" onClick={applyResume}>
+                Continue →
+              </button>
+              <button type="button" className="rm-resume-ghost" onClick={discardResume}>
+                Start fresh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* First-run walkthrough + replay button */}
-      <RoadmapTour open={tourOpen} steps={TOUR_STEPS} onClose={closeTour} />
+      <RoadmapTour open={tourOpen && !resumeSnap} steps={TOUR_STEPS} onClose={closeTour} />
       {screen !== 'paywall' && !tourOpen && (
         <button
           type="button"

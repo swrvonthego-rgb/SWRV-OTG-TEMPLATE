@@ -1578,3 +1578,27 @@ PRINT — hide new bottom CTA to keep printout clean
 .roadmap-experience .email-consent-note{
   font-family:var(--font-body);font-size:11px;line-height:1.5;
   color:var(--ink-mute);opacity:.75;margin:8px 0 0;max-width:340px;}
+
+/* ── Resume-session prompt ── */
+.rm-resume{position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;
+  background:rgba(6,10,18,0.78);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:20px;}
+.rm-resume-card{width:100%;max-width:360px;text-align:center;
+  background:linear-gradient(160deg,#141a26,#0d1119);
+  border:1px solid var(--accent-mid,rgba(200,168,75,0.4));border-radius:18px;
+  padding:28px 24px 22px;box-shadow:0 20px 70px rgba(0,0,0,0.6);
+  font-family:var(--font-body,system-ui,sans-serif);color:#ede8dc;
+  animation:rmResumeIn .3s cubic-bezier(.2,.8,.2,1);}
+@keyframes rmResumeIn{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:none;}}
+.rm-resume-emoji{font-size:30px;line-height:1;margin-bottom:10px;}
+.rm-resume-title{font-family:var(--font-display,Georgia,serif);font-size:20px;font-weight:700;
+  color:var(--accent-1,#c8a84b);margin-bottom:8px;}
+.rm-resume-body{font-size:13.5px;line-height:1.6;color:rgba(237,232,220,0.8);margin-bottom:20px;}
+.rm-resume-btns{display:flex;flex-direction:column;gap:10px;align-items:stretch;}
+.rm-resume-primary{background:var(--accent-1,#c8a84b);color:#0a0e16;border:none;font-weight:700;
+  font-size:14px;letter-spacing:.03em;cursor:pointer;padding:12px 20px;
+  border-radius:var(--radius-pill,999px);transition:transform .2s,filter .2s;}
+.rm-resume-primary:hover{transform:translateY(-1px);filter:brightness(1.08);}
+.rm-resume-ghost{background:none;border:none;color:rgba(237,232,220,0.55);font-size:12.5px;
+  cursor:pointer;padding:6px;text-decoration:underline;}
+.rm-resume-ghost:hover{color:rgba(237,232,220,0.85);}
+@media print{ .rm-resume{display:none!important;} }
