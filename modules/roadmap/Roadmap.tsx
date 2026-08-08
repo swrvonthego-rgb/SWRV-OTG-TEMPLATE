@@ -6,6 +6,7 @@ import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
 import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
 import { isRoadmapStartIntent } from '../../deepLink';
+import { RoadmapTour, TourStep } from './RoadmapTour';
 
 // ── Mic guide + live status ───────────────────────────────────────────
 // A small legend that shows the visitor how the voice button works — tap
@@ -199,6 +200,50 @@ export const Roadmap: React.FC<RoadmapProps> = ({
     }
     return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'intro' : 'paywall';
   });
+
+  // ── First-run walkthrough (coach-marks) ─────────────────────────────
+  const TOUR_KEY = 'swrv_rm_tour_v1';
+  const [tourOpen, setTourOpen] = useState(false);
+  const TOUR_STEPS: TourStep[] = [
+    {
+      selector: '.music-toggle',
+      emoji: '🔊',
+      title: 'You control the music',
+      body: 'Tap the speaker to open the player — mute it, switch tracks, or set the volume. When you speak your answers out loud, the music automatically lowers so the mic can hear you, then comes back up.',
+    },
+    {
+      selector: '.mic-btn',
+      emoji: '🎤',
+      title: 'Answer by voice or type',
+      body: 'On each question you can tap the mic and just talk — your words fill in automatically — or type it out. While recording, a small slider lets you set how loud the music stays.',
+    },
+    {
+      selector: '.skin-toggle',
+      emoji: '🎨',
+      title: 'Pick your vibe',
+      body: 'Change the whole look and soundtrack of the experience. Choose the world that fits your mood.',
+    },
+    {
+      selector: '.rm-close',
+      emoji: '✕',
+      title: 'Leave anytime',
+      body: 'Close whenever you want — your progress is saved, so you can pick right back up where you left off.',
+    },
+  ];
+
+  // Fire the tour once, the first time someone reaches the experience.
+  useEffect(() => {
+    if (screen === 'paywall') return;
+    if (ls.get(TOUR_KEY) === '1') return;
+    const t = window.setTimeout(() => setTourOpen(true), 650);
+    return () => window.clearTimeout(t);
+  }, [screen]);
+
+  const closeTour = useCallback(() => {
+    setTourOpen(false);
+    ls.set(TOUR_KEY, '1');
+  }, []);
+
   const QV_QUESTIONS = [
     { id: "problem",    q: "What's the problem you couldn't ignore that made you want to find — or BE — the solution?",     ph: "The thing that kept showing up in your life until you stopped pretending you didn't see it." },
     { id: "easy",       q: "What do you do most easily that others can't seem to do?",                                      ph: "The thing people always come to you for. The thing that feels like breathing to you and like math to everyone else." },
@@ -954,7 +999,9 @@ useEffect(() => {
     })
     .then(r => r.json())
     .then(data => {
-      if (data?.status === 'sent' || data?.status === 'skipped') {
+      // Only 'sent' means it actually left Resend. 'skipped' (no API key)
+      // and 'error' both mean the email did NOT arrive — never claim success.
+      if (data?.status === 'sent') {
         setEmailSentMsg(`Sent to ${userEmail} ✓`);
         setEmailPromptOpen(false);
       } else {
@@ -988,7 +1035,8 @@ const submitEmailPrompt = useCallback(() => {
   })
   .then(r => r.json())
   .then(data => {
-    if (data?.status === 'sent' || data?.status === 'skipped') {
+    // Only 'sent' means it actually left Resend. 'skipped'/'error' did not.
+    if (data?.status === 'sent') {
       setEmailSentMsg(`Sent to ${email} ✓`);
       setEmailPromptOpen(false);
     } else {
@@ -1124,6 +1172,18 @@ const handleSave = useCallback(() => {
       aria-label="The Roadmap Experience"
     >
       <div id="progress-bar" style={{ width: `${progress}%` }} />
+
+      {/* First-run walkthrough + replay button */}
+      <RoadmapTour open={tourOpen} steps={TOUR_STEPS} onClose={closeTour} />
+      {screen !== 'paywall' && !tourOpen && (
+        <button
+          type="button"
+          className="rm-tour-help"
+          onClick={() => setTourOpen(true)}
+          aria-label="Replay walkthrough"
+          title="How this works"
+        >?</button>
+      )}
 
       {/* Background music — single audio element, source swapped per track */}
       <audio ref={audioRef} loop={loop} preload="auto" />
