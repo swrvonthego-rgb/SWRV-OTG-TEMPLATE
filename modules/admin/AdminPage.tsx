@@ -64,6 +64,24 @@ export const AdminPage: React.FC = () => {
     setRows([]);
   };
 
+  const exportCsv = () => {
+    const escape = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = ['email', 'name', 'source', 'captured_at'];
+    const lines = [
+      header.join(','),
+      ...rows.map((r) => [r.email, r.name || '', r.source || '', r.captured_at].map(escape).join(',')),
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `swrv-email-list-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   if (checking) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white/50 text-sm">
@@ -128,9 +146,19 @@ export const AdminPage: React.FC = () => {
         </button>
       </div>
 
-      <h2 className="text-sm uppercase tracking-widest text-white/40 mb-3">
-        Email list {rows.length ? `(${rows.length})` : ''}
-      </h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm uppercase tracking-widest text-white/40">
+          Email list {rows.length ? `(${rows.length})` : ''}
+        </h2>
+        {rows.length > 0 && (
+          <button
+            onClick={exportCsv}
+            className="px-3 py-1.5 rounded-lg border border-white/15 text-xs font-medium hover:border-lion-orange hover:text-lion-orange transition-all"
+          >
+            Export CSV ↓
+          </button>
+        )}
+      </div>
       {loadingRows ? (
         <p className="text-white/40 text-sm">Loading…</p>
       ) : rows.length === 0 ? (
