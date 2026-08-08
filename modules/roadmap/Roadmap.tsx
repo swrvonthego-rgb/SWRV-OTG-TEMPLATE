@@ -6,6 +6,7 @@ import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
 import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
 import { isRoadmapStartIntent } from '../../deepLink';
+import { attributionSummary } from '../../attribution';
 import { RoadmapTour, TourStep } from './RoadmapTour';
 
 // ── Mic guide + live status ───────────────────────────────────────────
@@ -111,12 +112,15 @@ export interface RoadmapProps {
 const PROGRESS_PCT: Record<ScreenId, number> = {
   paywall: -1,
   intro: 0,
-  email: 14,
   disclaimer: 28,
   duration: 42,
   vision: 56,
   phase2: 70,
   processing: 85,
+  // 'email' is shown AFTER processing ("your roadmap is ready — where do we
+  // send it?"), so it must sit between processing and heart-note. An early
+  // value here made the bar visibly rewind at the moment of highest intent.
+  email: 90,
   'heart-note': 95,
   results: 100,
 
@@ -660,7 +664,15 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
         fetch('/api/capture-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: userEmail, name: userName, source: 'roadmap-bait' }),
+          body: JSON.stringify({
+            email: userEmail,
+            name: userName,
+            source: 'roadmap-bait',
+            // Their own words + where they came from — the qualifying
+            // signal the sales/marketing side actually needs.
+            vision_preview: vision,
+            attribution: attributionSummary(),
+          }),
         }).catch(() => {});
       }
       goTo('heart-note');
@@ -909,6 +921,8 @@ useEffect(() => {
         userName,
         sessionId: sessionIdRef.current,
         result,
+        rawVision: vision,
+        attribution: attributionSummary(),
         brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
       }),
     })
@@ -940,6 +954,8 @@ useEffect(() => {
           userName,
           sessionId: sessionIdRef.current,
           result,
+          rawVision: vision,
+          attribution: attributionSummary(),
           brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
         }),
       });
@@ -994,6 +1010,8 @@ useEffect(() => {
         userName,
         sessionId: sessionIdRef.current,
         result,
+        rawVision: vision,
+        attribution: attributionSummary(),
         brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
       }),
     })
@@ -1006,10 +1024,10 @@ useEffect(() => {
         setEmailPromptOpen(false);
       } else {
         console.warn('Roadmap email failed:', data);
-        setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.');
+        setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.');
       }
     })
-    .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.'));
+    .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.'));
   } else {
     // No email stored — show inline prompt
     setEmailPromptOpen(true);
@@ -1030,6 +1048,8 @@ const submitEmailPrompt = useCallback(() => {
       userName,
       sessionId: sessionIdRef.current,
       result,
+      rawVision: vision,
+      attribution: attributionSummary(),
       brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
     }),
   })
@@ -1041,10 +1061,10 @@ const submitEmailPrompt = useCallback(() => {
       setEmailPromptOpen(false);
     } else {
       console.warn('Roadmap email failed:', data);
-      setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.');
+      setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.');
     }
   })
-  .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Save PDF” to keep your Roadmap.'));
+  .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.'));
 }, [emailPromptValue, userName, result, config]);
 
 const handleSave = useCallback(() => {
@@ -1499,6 +1519,14 @@ const handleSave = useCallback(() => {
             placeholder={config.copy.visionPlaceholder}
           />
 
+          {/* Live word count — tells them the bar up front instead of
+              rejecting them after they hit submit. */}
+          <div className={`vision-wordcount ${words >= 30 ? 'ready' : ''}`} aria-live="polite">
+            {words >= 30
+              ? `✓ ${words} words — you're good to go`
+              : `${words} / 30 words${words > 0 ? ' — keep going' : ''}`}
+          </div>
+
           <div className="vision-footer">
             <button type="button" className="btn-primary" onClick={submitVision}>
               {config.copy.visionCta}
@@ -1744,7 +1772,7 @@ const handleSave = useCallback(() => {
                 type="button"
                 className="btn-primary"
                 style={{ marginTop: 32 }}
-                onClick={() => { setError(null); goTo('vision'); }}
+                onClick={() => { setError(null); proceedToProcess(!userEmail); }}
               >
                 ← Try Again
               </button>
@@ -1764,12 +1792,9 @@ const handleSave = useCallback(() => {
                 Email My Roadmap
               </button>
               <button type="button" className="btn-save" onClick={() => window.print()}>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                Save PDF
-              </button>
-              <button type="button" className="btn-save" onClick={() => window.print()}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
-                Print
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
+                Print / Save as PDF
               </button>
               <button type="button" className="btn-save" onClick={handleSave} title="Download a plain-text copy">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
@@ -1787,6 +1812,7 @@ const handleSave = useCallback(() => {
                     autoFocus
                   />
                   <button type="button" className="btn-primary" onClick={submitEmailPrompt} style={{marginTop: 8}}>Send →</button>
+                  <p className="email-consent-note">We'll send your Roadmap and occasional SWRV updates. Unsubscribe anytime.</p>
                 </div>
               )}
               {emailSentMsg && <p className="email-sent-msg">✓ {emailSentMsg}</p>}
@@ -2087,13 +2113,13 @@ const handleSave = useCallback(() => {
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                     Email My Roadmap
                   </button>
-                  <button type="button" className="btn-save" onClick={handleSave}>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                    Save PDF
+                  <button type="button" className="btn-save" onClick={handleSave} title="Download a plain-text copy">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    Text File
                   </button>
                   <button type="button" className="btn-save" onClick={() => window.print()}>
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
-                    Print
+                    Print / Save as PDF
                   </button>
                 </div>
                 {emailPromptOpen && (

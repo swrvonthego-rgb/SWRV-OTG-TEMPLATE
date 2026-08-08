@@ -80,22 +80,33 @@ async function ensureEmailTable(env) {
         name TEXT,
         source TEXT,
         vision_preview TEXT,
+        attribution TEXT,
         captured_at TEXT DEFAULT (datetime('now'))
       )`
     ).run();
+    // Existing deployments predate the attribution column — add it if missing.
+    try {
+      await env.EMAIL_DB.prepare('ALTER TABLE email_captures ADD COLUMN attribution TEXT').run();
+    } catch (_) { /* already exists */ }
     __emailTableReady = true;
   } catch (_) { /* table may already exist with a compatible schema */ }
 }
 
-async function captureEmail(env, { email, name, source, vision_preview } = {}) {
+async function captureEmail(env, { email, name, source, vision_preview, attribution } = {}) {
   if (!env || !env.EMAIL_DB || !email) return;
   const clean = String(email).trim().toLowerCase();
   if (!clean.includes('@')) return;
   try {
     await ensureEmailTable(env);
     await env.EMAIL_DB.prepare(
-      'INSERT OR IGNORE INTO email_captures (email, name, source, vision_preview) VALUES (?, ?, ?, ?)'
-    ).bind(clean, name || null, source || 'site', (vision_preview || '').slice(0, 500)).run();
+      'INSERT OR IGNORE INTO email_captures (email, name, source, vision_preview, attribution) VALUES (?, ?, ?, ?, ?)'
+    ).bind(
+      clean,
+      name || null,
+      source || 'site',
+      (vision_preview || '').slice(0, 2000),
+      (attribution || '').slice(0, 300) || null,
+    ).run();
   } catch (_) { /* never block the request on list capture */ }
 }
 
@@ -381,7 +392,7 @@ async function handleSendEmail(request, env) {
   }
   try {
     const body = await request.json();
-    const { to, userName, sessionId, result, brand } = body;
+    const { to, userName, sessionId, result, brand, rawVision, attribution } = body;
     if (!to || !result) {
       return new Response(JSON.stringify({ error: 'to + result required' }), { status: 400, headers: JSON_HEADERS });
     }
@@ -393,7 +404,9 @@ async function handleSendEmail(request, env) {
       email: to,
       name: userName,
       source: 'roadmap-email',
-      vision_preview: result?.vision_summary || '',
+      // Prefer the visitor's OWN words over the AI paraphrase.
+      vision_preview: rawVision || result?.vision_summary || '',
+      attribution,
     });
 
     // No sending key yet? The email is already saved to the list — just
@@ -449,11 +462,11 @@ async function handleCaptureEmail(request, env) {
     return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
   }
   try {
-    const { email, name, source, vision_preview } = await request.json();
+    const { email, name, source, vision_preview, attribution } = await request.json();
     if (!email) {
       return new Response(JSON.stringify({ error: 'email required' }), { status: 400, headers: JSON_HEADERS });
     }
-    await captureEmail(env, { email, name, source: source || 'roadmap', vision_preview });
+    await captureEmail(env, { email, name, source: source || 'roadmap', vision_preview, attribution });
     return new Response(JSON.stringify({ status: 'ok' }), { headers: JSON_HEADERS });
   } catch (err) {
     return new Response(JSON.stringify({ status: 'error', detail: String(err) }),
@@ -561,7 +574,7 @@ async function handleAdminEmails(request, env) {
   const session = await getAdminSession(request, env);
   if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: JSON_HEADERS });
   const { results } = await env.EMAIL_DB.prepare(
-    'SELECT email, name, source, captured_at FROM email_captures ORDER BY captured_at DESC LIMIT 500'
+    'SELECT email, name, source, attribution, captured_at FROM email_captures ORDER BY captured_at DESC LIMIT 500'
   ).all();
   return new Response(JSON.stringify({ emails: results }), { headers: JSON_HEADERS });
 }

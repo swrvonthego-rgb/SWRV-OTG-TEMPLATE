@@ -1567,3 +1567,14 @@ PRINT — hide new bottom CTA to keep printout clean
   .roadmap-experience .rm-tour-help{top:auto;bottom:16px;right:14px;}
 }
 @media print{ .rm-tour, .roadmap-experience .rm-tour-help{display:none!important;} }
+
+/* ── Vision live word count ── */
+.roadmap-experience .vision-wordcount{
+  font-family:var(--font-body);font-size:12px;letter-spacing:.08em;
+  color:var(--ink-mute);text-align:center;margin:10px 0 2px;transition:color .3s;}
+.roadmap-experience .vision-wordcount.ready{color:var(--accent-1);}
+
+/* ── Email consent / privacy note ── */
+.roadmap-experience .email-consent-note{
+  font-family:var(--font-body);font-size:11px;line-height:1.5;
+  color:var(--ink-mute);opacity:.75;margin:8px 0 0;max-width:340px;}

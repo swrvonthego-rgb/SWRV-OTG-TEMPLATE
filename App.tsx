@@ -35,6 +35,11 @@ import { Marketplace } from './components/Marketplace';
 import { NeedAWebsite } from './components/NeedAWebsite';
 import { AdminPage } from './modules/admin/AdminPage';
 import { isRoadmapOpenIntent, isRoadmapStartIntent, sectionTarget, isDeepLinkEntry } from './deepLink';
+import { initAttribution } from './attribution';
+
+// Record first-touch marketing attribution (UTM + referrer) before React
+// mounts, so a lead captured later can be traced to the channel that sent it.
+initAttribution();
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
 // Fires once on load — brands the devtools, deters casual copying
