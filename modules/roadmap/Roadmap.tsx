@@ -5,6 +5,7 @@ import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
 import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
+import { isRoadmapStartIntent } from '../../deepLink';
 
 // ── Mic guide + live status ───────────────────────────────────────────
 // A small legend that shows the visitor how the voice button works — tap
@@ -190,9 +191,9 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
   const [screen, setScreen] = useState<ScreenId>(() => {
     if (typeof window === 'undefined') return 'paywall';
-    // Direct client link (?roadmap=start) drops them straight into the
-    // experience, skipping the "Before You Begin" gate.
-    if (new URLSearchParams(window.location.search).get('roadmap') === 'start') {
+    // Direct client link (?roadmap=start OR a clean /roadmap|/test path)
+    // drops them straight into the experience, skipping the gate.
+    if (isRoadmapStartIntent()) {
       sessionStorage.setItem('swrv_rm_paid', '1');
       return 'intro';
     }

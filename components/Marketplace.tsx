@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Check, Cpu, Settings, Shield } from 'lucide-react';
 import { SERVICES, WEB_PACKAGE_TIERS, ROADMAP_PRICING, LAUNCH_MODE, SERVICE_SUBCATEGORIES } from '../site.config';
+import { catalogTab } from '../deepLink';
 
 interface Props {
   onOpenRoadmap?: () => void;
@@ -14,10 +15,9 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
   // Deep-linkable tabs: ?catalog=<category-id> selects a tab on load,
   // and clicking a tab writes it back to the URL so the link is shareable.
   const [activeCategory, setActiveCategory] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const fromUrl = new URLSearchParams(window.location.search).get('catalog');
-      if (fromUrl && SERVICE_SUBCATEGORIES.some(c => c.id === fromUrl)) return fromUrl;
-    }
+    // Accepts ?catalog=<id> OR a clean path like /audio, /menu, /web
+    const fromUrl = catalogTab();
+    if (fromUrl && SERVICE_SUBCATEGORIES.some(c => c.id === fromUrl)) return fromUrl;
     return SERVICE_SUBCATEGORIES[0].id;
   });
 

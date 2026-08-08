@@ -34,6 +34,7 @@ import { Portfolio } from './components/Portfolio';
 import { Marketplace } from './components/Marketplace';
 import { NeedAWebsite } from './components/NeedAWebsite';
 import { AdminPage } from './modules/admin/AdminPage';
+import { isRoadmapOpenIntent, isRoadmapStartIntent, sectionTarget, isDeepLinkEntry } from './deepLink';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
 // Fires once on load — brands the devtools, deters casual copying
@@ -45,49 +46,6 @@ if (typeof window !== 'undefined') {
   console.log('%c© 2025 Swerve (Robert Birdsong). All rights reserved.', s2);
   console.log('%cThis site is proprietary. Unauthorized copying is prohibited.', s3);
   console.log('%cswrvonthego.pro', s3);
-}
-
-// ── CLEAN-PATH DEEP LINKS (SPA fallback safety net) ─────────────────
-// Cloudflare's `not_found_handling: single-page-application` serves
-// index.html for unknown paths WITHOUT running the Worker, so the
-// Worker's SHORTCUTS redirects (e.g. /roadmap → ?roadmap=start) never
-// fire for direct navigations. We normalize those clean paths here —
-// before React reads window.location — so shared links land correctly.
-// Runs once at module load (client only), guarded to a no-op afterward.
-if (typeof window !== 'undefined') {
-  const p = window.location.pathname.replace(/\/+$/, '') || '/';
-  // Paths that should drop the visitor straight into the Roadmap test.
-  const ROADMAP_PATHS = ['/roadmap', '/the-roadmap', '/start', '/test', '/roadmap-test'];
-  // Clean paths → homepage section anchors.
-  const SECTION_HASH: Record<string, string> = {
-    '/portfolio': 'portfolio',
-    '/about': 'about-swrv',
-    '/contact': 'contact',
-    '/byob': 'byob',
-    '/shop': 'shop',
-    '/websites': 'need-a-website',
-    '/templates': 'website-templates',
-    '/revving-up': 'revving-up',
-  };
-  // Clean paths → Full Menu catalog tabs.
-  const CATALOG_TAB: Record<string, string> = {
-    '/menu': 'videography',
-    '/videography': 'videography',
-    '/video': 'videography',
-    '/audio': 'audio-production',
-    '/music': 'audio-production',
-    '/web': 'web-digital',
-    '/brand': 'brand-identity',
-    '/coaching': 'coaching',
-    '/business': 'content-business',
-  };
-  if (ROADMAP_PATHS.includes(p) && !window.location.search.includes('roadmap=')) {
-    window.history.replaceState({}, '', '/?roadmap=start');
-  } else if (SECTION_HASH[p] && !window.location.hash) {
-    window.history.replaceState({}, '', '/#' + SECTION_HASH[p]);
-  } else if (CATALOG_TAB[p]) {
-    window.history.replaceState({}, '', '/?catalog=' + CATALOG_TAB[p] + '#full-menu');
-  }
 }
 
 
@@ -104,11 +62,7 @@ const App: React.FC = () => {
   //   ?roadmap=start → opens it AND skips straight into the test (the link
   //                    Robert sends clients — Roadmap.tsx reads the same
   //                    param to start on the first question screen).
-  const [isRoadmapOpen, setIsRoadmapOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const rm = new URLSearchParams(window.location.search).get('roadmap');
-    return rm === '1' || rm === 'start';
-  });
+  const [isRoadmapOpen, setIsRoadmapOpen] = useState(() => isRoadmapOpenIntent());
   const [isZionOpen, setIsZionOpen] = useState(false);
   const [isServicesMenuOpen, setIsServicesMenuOpen] = useState(false);
   // Open services menu if URL is /services (deep linking)
@@ -118,27 +72,27 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Deep-link handler: scroll to hash section OR open roadmap on ?roadmap=1
+  // Deep-link handler: scroll to a section (from a #hash OR a clean path
+  // like /portfolio, /menu) OR open the right modal. Roadmap intent is
+  // handled by the isRoadmapOpen initializer above — nothing to do here.
   useEffect(() => {
-    const { hash, search } = window.location;
-    const params = new URLSearchParams(search);
+    // ?roadmap=1 / ?roadmap=start / a roadmap path — overlay opens via state.
+    if (isRoadmapOpenIntent()) return;
 
-    // ?roadmap=1 / ?roadmap=start — already handled by the useState
-    // initializer above; nothing else to scroll/open here.
-    const rm = params.get('roadmap');
-    if (rm === '1' || rm === 'start') return;
+    // Resolve the section target from either the clean path or the #hash.
+    const target = sectionTarget();
+    if (!target) return;
 
-    // #byob and #meet-zion open their modals instead of scrolling
-    if (hash === '#byob') { setIsByobOpen(true); return; }
-    if (hash === '#meet-zion') { setIsZionOpen(true); return; }
+    // 'byob' and 'meet-zion' open their modals instead of scrolling
+    if (target === 'byob') { setIsByobOpen(true); return; }
+    if (target === 'meet-zion') { setIsZionOpen(true); return; }
 
-    // All other hashes: scroll to the section after render.
+    // All other targets: scroll to the section after render.
     // Slow devices can take several seconds to mount + paint, and images/
     // videos loading above the target keep shifting the layout — so retry
     // for up to ~15s and re-pin the section for ~3s after first landing.
     // The moment the visitor scrolls on their own, stop interfering.
-    if (hash) {
-      const target = hash.replace('#', '');
+    {
       let userTookOver = false;
       const cancel = () => { userTookOver = true; };
       window.addEventListener('wheel', cancel, { once: true, passive: true });
@@ -164,11 +118,7 @@ const App: React.FC = () => {
   // Deep-link detection: any URL other than bare swrvonthego.pro/ skips
   // both the splash screen AND the BrandTransmission video. The video
   // only plays for visitors landing at the root with no hash/path/query.
-  const isDeepLink = (() => {
-    if (typeof window === 'undefined') return false;
-    const { hash, search, pathname } = window.location;
-    return !!(hash || search || pathname !== '/');
-  })();
+  const isDeepLink = isDeepLinkEntry();
   const [hasStarted, setHasStarted] = useState(isDeepLink);
   const [skipIntro, setSkipIntro] = useState(isDeepLink);
 
