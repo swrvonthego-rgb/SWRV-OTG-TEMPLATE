@@ -62,6 +62,43 @@ const JSON_HEADERS = {
   'Content-Type': 'application/json',
 };
 
+// ─────────────────────────────────────────────────────────
+// MAILING LIST — one capture path for EVERY email on the site.
+// Never throws (email capture must never break a request), auto-creates
+// the table on first use, and dedupes on the email column. Call it from
+// every handler that receives an email so the list is always complete —
+// even when the outbound email (Resend) is unconfigured or fails.
+// ─────────────────────────────────────────────────────────
+let __emailTableReady = false;
+async function ensureEmailTable(env) {
+  if (__emailTableReady || !env.EMAIL_DB) return;
+  try {
+    await env.EMAIL_DB.prepare(
+      `CREATE TABLE IF NOT EXISTS email_captures (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        name TEXT,
+        source TEXT,
+        vision_preview TEXT,
+        captured_at TEXT DEFAULT (datetime('now'))
+      )`
+    ).run();
+    __emailTableReady = true;
+  } catch (_) { /* table may already exist with a compatible schema */ }
+}
+
+async function captureEmail(env, { email, name, source, vision_preview } = {}) {
+  if (!env || !env.EMAIL_DB || !email) return;
+  const clean = String(email).trim().toLowerCase();
+  if (!clean.includes('@')) return;
+  try {
+    await ensureEmailTable(env);
+    await env.EMAIL_DB.prepare(
+      'INSERT OR IGNORE INTO email_captures (email, name, source, vision_preview) VALUES (?, ?, ?, ?)'
+    ).bind(clean, name || null, source || 'site', (vision_preview || '').slice(0, 500)).run();
+  } catch (_) { /* never block the request on list capture */ }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -342,15 +379,28 @@ async function handleSendEmail(request, env) {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
   }
-  if (!env.RESEND_API_KEY) {
-    return new Response(JSON.stringify({ status: 'skipped', reason: 'RESEND_API_KEY not configured' }),
-      { headers: JSON_HEADERS });
-  }
   try {
     const body = await request.json();
     const { to, userName, sessionId, result, brand } = body;
     if (!to || !result) {
       return new Response(JSON.stringify({ error: 'to + result required' }), { status: 400, headers: JSON_HEADERS });
+    }
+
+    // ALWAYS capture the email to the mailing list first — before we even
+    // attempt to send. This guarantees no address is lost if Resend is
+    // unconfigured or the send fails.
+    await captureEmail(env, {
+      email: to,
+      name: userName,
+      source: 'roadmap-email',
+      vision_preview: result?.vision_summary || '',
+    });
+
+    // No sending key yet? The email is already saved to the list — just
+    // report that the outbound send was skipped.
+    if (!env.RESEND_API_KEY) {
+      return new Response(JSON.stringify({ status: 'skipped', reason: 'RESEND_API_KEY not configured', captured: true }),
+        { headers: JSON_HEADERS });
     }
 
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
@@ -382,13 +432,6 @@ async function handleSendEmail(request, env) {
         { status: resendRes.status, headers: JSON_HEADERS });
     }
 
-    // Save to email list (fire-and-forget, never fails the response)
-    if (env.EMAIL_DB && to) {
-      env.EMAIL_DB.prepare(
-        'INSERT OR IGNORE INTO email_captures (email, name, source) VALUES (?, ?, ?)'
-      ).bind(to, userName || null, 'email-self').run().catch(() => {});
-    }
-
     return new Response(JSON.stringify({ status: 'sent', id: data.id }),
       { headers: JSON_HEADERS });
   } catch (err) {
@@ -410,11 +453,7 @@ async function handleCaptureEmail(request, env) {
     if (!email) {
       return new Response(JSON.stringify({ error: 'email required' }), { status: 400, headers: JSON_HEADERS });
     }
-    if (env.EMAIL_DB) {
-      await env.EMAIL_DB.prepare(
-        'INSERT OR IGNORE INTO email_captures (email, name, source, vision_preview) VALUES (?, ?, ?, ?)'
-      ).bind(email, name || null, source || 'roadmap', (vision_preview || '').slice(0, 500)).run();
-    }
+    await captureEmail(env, { email, name, source: source || 'roadmap', vision_preview });
     return new Response(JSON.stringify({ status: 'ok' }), { headers: JSON_HEADERS });
   } catch (err) {
     return new Response(JSON.stringify({ status: 'error', detail: String(err) }),
@@ -539,9 +578,6 @@ async function handleZionBooking(request, env) {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
   }
-  if (!env.RESEND_API_KEY) {
-    return new Response(JSON.stringify({ error: 'Email service not configured' }), { status: 500, headers: JSON_HEADERS });
-  }
   try {
     const { firstName, lastName, email, inquiryType, eventDate, location, message } = await request.json();
     if (!firstName || !email || !message) {
@@ -549,6 +585,15 @@ async function handleZionBooking(request, env) {
     }
 
     const fullName = [firstName, lastName].filter(Boolean).join(' ');
+    // Add the booker to the mailing list FIRST — before anything can bail —
+    // so the lead is never lost even if outbound email isn't configured.
+    await captureEmail(env, { email, name: fullName, source: 'zion-booking' });
+
+    // No sending key yet? The booker + their request are already captured;
+    // return success so the visitor still proceeds to the deposit step.
+    if (!env.RESEND_API_KEY) {
+      return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: JSON_HEADERS });
+    }
     const subject = `🎤 Booking Request — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
     const notifyTo = env.ZION_NOTIFY_EMAIL || env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
@@ -747,11 +792,14 @@ async function handleBooking(request, env) {
     const body = await request.json();
     const { service, serviceName, servicePrice, kickoffDate, kickoffTime,
             deliveryDate, name, email, phone, message, payMethod,
-            assetLink, uploadedFileNames } = body;
+            assetLink, uploadedFileNames, referralCode } = body;
 
     if (!serviceName || !name || !email) {
       return new Response(JSON.stringify({ error: 'serviceName, name, email required' }), { status: 400, headers: JSON_HEADERS });
     }
+
+    // Capture the customer's email to the mailing list (never blocks booking).
+    await captureEmail(env, { email, name, source: 'booking' });
 
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
     const notifyTo = env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
@@ -975,6 +1023,8 @@ async function handleIntakeSubmit(request, env) {
 
   try {
     const { path, pathLabel, answers, name, email, phone, brief, serviceName } = await request.json();
+    // Capture the lead's email to the mailing list (never blocks intake).
+    await captureEmail(env, { email, name, source: `intake:${path || 'project'}` });
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
     const notifyTo = env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
     const safe = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
