@@ -47,6 +47,49 @@ if (typeof window !== 'undefined') {
   console.log('%cswrvonthego.pro', s3);
 }
 
+// ── CLEAN-PATH DEEP LINKS (SPA fallback safety net) ─────────────────
+// Cloudflare's `not_found_handling: single-page-application` serves
+// index.html for unknown paths WITHOUT running the Worker, so the
+// Worker's SHORTCUTS redirects (e.g. /roadmap → ?roadmap=start) never
+// fire for direct navigations. We normalize those clean paths here —
+// before React reads window.location — so shared links land correctly.
+// Runs once at module load (client only), guarded to a no-op afterward.
+if (typeof window !== 'undefined') {
+  const p = window.location.pathname.replace(/\/+$/, '') || '/';
+  // Paths that should drop the visitor straight into the Roadmap test.
+  const ROADMAP_PATHS = ['/roadmap', '/the-roadmap', '/start', '/test', '/roadmap-test'];
+  // Clean paths → homepage section anchors.
+  const SECTION_HASH: Record<string, string> = {
+    '/portfolio': 'portfolio',
+    '/about': 'about-swrv',
+    '/contact': 'contact',
+    '/byob': 'byob',
+    '/shop': 'shop',
+    '/websites': 'need-a-website',
+    '/templates': 'website-templates',
+    '/revving-up': 'revving-up',
+  };
+  // Clean paths → Full Menu catalog tabs.
+  const CATALOG_TAB: Record<string, string> = {
+    '/menu': 'videography',
+    '/videography': 'videography',
+    '/video': 'videography',
+    '/audio': 'audio-production',
+    '/music': 'audio-production',
+    '/web': 'web-digital',
+    '/brand': 'brand-identity',
+    '/coaching': 'coaching',
+    '/business': 'content-business',
+  };
+  if (ROADMAP_PATHS.includes(p) && !window.location.search.includes('roadmap=')) {
+    window.history.replaceState({}, '', '/?roadmap=start');
+  } else if (SECTION_HASH[p] && !window.location.hash) {
+    window.history.replaceState({}, '', '/#' + SECTION_HASH[p]);
+  } else if (CATALOG_TAB[p]) {
+    window.history.replaceState({}, '', '/?catalog=' + CATALOG_TAB[p] + '#full-menu');
+  }
+}
+
 
 
 const App: React.FC = () => {
