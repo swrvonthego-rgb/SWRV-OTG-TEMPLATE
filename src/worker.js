@@ -92,6 +92,31 @@ async function ensureEmailTable(env) {
   } catch (_) { /* table may already exist with a compatible schema */ }
 }
 
+// ─────────────────────────────────────────────────────────
+// RESEND KEY RESOLUTION
+// Prefer a real Worker secret (env.RESEND_API_KEY). If none is set,
+// fall back to the value stored in D1 (app_config). This repo is
+// PUBLIC, so the key must never live in wrangler.jsonc or any tracked
+// file — D1 keeps it inside the Cloudflare account instead.
+// Cached per isolate so it costs one query, not one per email.
+// ─────────────────────────────────────────────────────────
+let __resendKeyCache;
+async function getResendKey(env) {
+  const fromEnv = (env.RESEND_API_KEY || '').trim();
+  if (fromEnv) return fromEnv;
+  if (__resendKeyCache !== undefined) return __resendKeyCache;
+  if (!env.EMAIL_DB) return '';
+  try {
+    const row = await env.EMAIL_DB
+      .prepare("SELECT value FROM app_config WHERE key = 'RESEND_API_KEY'")
+      .first();
+    __resendKeyCache = (row && row.value ? String(row.value) : '').trim();
+  } catch (_) {
+    __resendKeyCache = '';
+  }
+  return __resendKeyCache;
+}
+
 async function captureEmail(env, { email, name, source, vision_preview, attribution } = {}) {
   if (!env || !env.EMAIL_DB || !email) return;
   const clean = String(email).trim().toLowerCase();
@@ -256,8 +281,7 @@ export default {
       // Report the SHAPE of the Resend key (never the key itself) so a bad
       // paste — truncation, stray whitespace, wrong prefix — is diagnosable
       // without anyone having to reveal the secret.
-      const rawKey = env.RESEND_API_KEY || '';
-      const key = rawKey.trim();
+      const key = await getResendKey(env);
       return new Response(JSON.stringify({
         status: 'ok',
         hasGroq: !!env.GROQ_API_KEY,
@@ -265,8 +289,10 @@ export default {
         resendKey: {
           length: key.length,
           startsWithRe: key.startsWith('re_'),
-          hadWhitespace: rawKey !== key,
           looksComplete: key.startsWith('re_') && key.length >= 30,
+          // Where the key came from — 'secret' (Worker env) or 'database'
+          // (D1 app_config fallback), so config drift is visible at a glance.
+          source: (env.RESEND_API_KEY || '').trim() ? 'secret' : (key ? 'database' : 'none'),
         },
         hasKV: !!env.PROGRESS,
         time: new Date().toISOString(),
@@ -425,7 +451,8 @@ async function handleSendEmail(request, env) {
 
     // No sending key yet? The email is already saved to the list — just
     // report that the outbound send was skipped.
-    if (!(env.RESEND_API_KEY || "").trim()) {
+    const resendKey = await getResendKey(env);
+    if (!resendKey) {
       return new Response(JSON.stringify({ status: 'skipped', reason: 'RESEND_API_KEY not configured', captured: true }),
         { headers: JSON_HEADERS });
     }
@@ -442,7 +469,7 @@ async function handleSendEmail(request, env) {
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${(env.RESEND_API_KEY || "").trim()}`,
+        'Authorization': `Bearer ${resendKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -453,7 +480,13 @@ async function handleSendEmail(request, env) {
       }),
     });
 
-    const data = await resendRes.json();
+    // Resend normally returns JSON, but an outage/proxy can return HTML.
+    // Parse defensively so the caller gets a readable reason, not a
+    // SyntaxError from JSON.parse.
+    const rawBody = await resendRes.text();
+    let data;
+    try { data = JSON.parse(rawBody); }
+    catch { data = { message: rawBody.slice(0, 200) || 'Email service returned an unreadable response' }; }
     if (!resendRes.ok) {
       return new Response(JSON.stringify({ status: 'error', detail: data }),
         { status: resendRes.status, headers: JSON_HEADERS });
@@ -618,7 +651,8 @@ async function handleZionBooking(request, env) {
 
     // No sending key yet? The booker + their request are already captured;
     // return success so the visitor still proceeds to the deposit step.
-    if (!(env.RESEND_API_KEY || "").trim()) {
+    const resendKey = await getResendKey(env);
+    if (!resendKey) {
       return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: JSON_HEADERS });
     }
     const subject = `🎤 Booking Request — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
@@ -663,7 +697,7 @@ async function handleZionBooking(request, env) {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${(env.RESEND_API_KEY || "").trim()}`,
+        'Authorization': `Bearer ${resendKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -902,7 +936,8 @@ async function handleBooking(request, env) {
         <p style="margin-top:28px;font-size:11px;color:#555;text-align:center;text-transform:uppercase;letter-spacing:.1em">SWRV On The Go · swrvonthego.pro</p>
       </div>`;
 
-    if (!(env.RESEND_API_KEY || "").trim()) {
+    const resendKey = await getResendKey(env);
+    if (!resendKey) {
       // No email service — still return success so booking is tracked
       return new Response(JSON.stringify({ ok: true, note: 'Email service not configured — booking logged' }), { headers: JSON_HEADERS });
     }
@@ -915,7 +950,7 @@ async function handleBooking(request, env) {
     // Send to team
     const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
         subject: `🔥 New Booking: ${serviceName} — ${name}${referralCode ? ` (ref: ${referralCode})` : ''}`,
         html: teamHtml,
@@ -925,7 +960,7 @@ async function handleBooking(request, env) {
     // Send confirmation to client
     const r2 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [email],
         subject: `Booking Confirmed: ${serviceName} — SWRV On The Go`, html: clientHtml }),
     });
@@ -1082,17 +1117,18 @@ async function handleIntakeSubmit(request, env) {
         <p style="margin-top:20px;font-size:12px;color:#8a8070">Questions? <a href="mailto:info@swrvonthego.pro" style="color:#c8a84b">info@swrvonthego.pro</a></p>
       </div>`;
 
-    if ((env.RESEND_API_KEY || "").trim()) {
+    const resendKey = await getResendKey(env);
+    if (resendKey) {
       await Promise.all([
         fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
             subject: `📋 New Project Intake: ${pathLabel || path} — ${name}`, html: teamHtml }),
         }),
         fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ from: fromAddr, to: [email],
             subject: `Your ${pathLabel || path} Brief — SWRV On The Go`, html: clientHtml }),
         }),
