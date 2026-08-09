@@ -93,28 +93,87 @@ async function ensureEmailTable(env) {
 }
 
 // ─────────────────────────────────────────────────────────
-// RESEND KEY RESOLUTION
-// Prefer a real Worker secret (env.RESEND_API_KEY). If none is set,
-// fall back to the value stored in D1 (app_config). This repo is
-// PUBLIC, so the key must never live in wrangler.jsonc or any tracked
-// file — D1 keeps it inside the Cloudflare account instead.
-// Cached per isolate so it costs one query, not one per email.
+// RESEND KEY RESOLUTION + SEND
+// Two possible sources for the key: a Worker secret (env.RESEND_API_KEY)
+// and a row in D1 (app_config). Either can be stale — a mistyped secret
+// in the dashboard silently shadowed a perfectly good D1 key and every
+// send failed with "API key is invalid", with nothing reaching Resend at
+// all. So we don't pick one and hope: we try each candidate in turn and
+// fall through on an auth rejection. Whichever key is actually valid wins.
+//
+// This repo is PUBLIC, so the key must never live in wrangler.jsonc or
+// any tracked file — D1 keeps it inside the Cloudflare account instead.
 // ─────────────────────────────────────────────────────────
-let __resendKeyCache;
-async function getResendKey(env) {
-  const fromEnv = (env.RESEND_API_KEY || '').trim();
-  if (fromEnv) return fromEnv;
-  if (__resendKeyCache !== undefined) return __resendKeyCache;
-  if (!env.EMAIL_DB) return '';
+const RESEND_KEY_SHAPE = /^re_[A-Za-z0-9_-]{15,}$/;
+
+let __d1KeyCache;
+async function getD1ResendKey(env) {
+  if (__d1KeyCache !== undefined) return __d1KeyCache;
+  if (!env.EMAIL_DB) return (__d1KeyCache = '');
   try {
     const row = await env.EMAIL_DB
       .prepare("SELECT value FROM app_config WHERE key = 'RESEND_API_KEY'")
       .first();
-    __resendKeyCache = (row && row.value ? String(row.value) : '').trim();
+    __d1KeyCache = (row && row.value ? String(row.value) : '').trim();
   } catch (_) {
-    __resendKeyCache = '';
+    __d1KeyCache = '';
   }
-  return __resendKeyCache;
+  return __d1KeyCache;
+}
+
+// Ordered, de-duplicated list of keys worth trying. Malformed values are
+// dropped up front so an obviously-broken paste never costs a round trip.
+async function getResendKeyCandidates(env) {
+  const fromEnv = (env.RESEND_API_KEY || '').trim();
+  const fromD1 = await getD1ResendKey(env);
+  const seen = new Set();
+  return [fromEnv, fromD1].filter((k) => {
+    if (!k || seen.has(k) || !RESEND_KEY_SHAPE.test(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+// Back-compat helper: is ANY usable key configured? (guards + /api/health)
+async function getResendKey(env) {
+  const candidates = await getResendKeyCandidates(env);
+  return candidates[0] || '';
+}
+
+/**
+ * POST to the Resend API, trying each configured key until one is not
+ * rejected for authentication. Returns { res, data, keyUsed }.
+ * `data` is parsed defensively — an outage can return HTML, not JSON.
+ */
+async function resendPost(env, payload) {
+  const candidates = await getResendKeyCandidates(env);
+  if (!candidates.length) return { res: null, data: null, keyUsed: null };
+
+  let last = null;
+  for (const key of candidates) {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { data = { message: raw.slice(0, 200) || 'Email service returned an unreadable response' }; }
+
+    // 401/403 means THIS key is bad — try the next one rather than
+    // failing the whole send.
+    if (res.status === 401 || res.status === 403) {
+      console.error('Resend rejected a key (trying next candidate if any)');
+      last = { res, data, keyUsed: key };
+      continue;
+    }
+    return { res, data, keyUsed: key };
+  }
+  return last || { res: null, data: null, keyUsed: null };
 }
 
 async function captureEmail(env, { email, name, source, vision_preview, attribution } = {}) {
@@ -479,27 +538,18 @@ async function handleSendEmail(request, env) {
       origin: new URL(request.url).origin,
     });
 
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: fromAddr,
-        to: [to],
-        subject: `Your Roadmap is ready — ${userName || 'welcome'}`,
-        html,
-      }),
+    // Tries every configured key (Worker secret, then D1) and falls
+    // through on an auth rejection, so one stale key can't block the send.
+    const { res: resendRes, data } = await resendPost(env, {
+      from: fromAddr,
+      to: [to],
+      subject: `Your Roadmap is ready — ${userName || 'welcome'}`,
+      html,
     });
-
-    // Resend normally returns JSON, but an outage/proxy can return HTML.
-    // Parse defensively so the caller gets a readable reason, not a
-    // SyntaxError from JSON.parse.
-    const rawBody = await resendRes.text();
-    let data;
-    try { data = JSON.parse(rawBody); }
-    catch { data = { message: rawBody.slice(0, 200) || 'Email service returned an unreadable response' }; }
+    if (!resendRes) {
+      return new Response(JSON.stringify({ status: 'skipped', reason: 'No usable Resend key configured', captured: true }),
+        { headers: JSON_HEADERS });
+    }
     if (!resendRes.ok) {
       return new Response(JSON.stringify({ status: 'error', detail: data }),
         { status: resendRes.status, headers: JSON_HEADERS });
