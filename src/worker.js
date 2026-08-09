@@ -250,10 +250,21 @@ export default {
     }
 
     if (url.pathname === '/api/health') {
+      // Report the SHAPE of the Resend key (never the key itself) so a bad
+      // paste — truncation, stray whitespace, wrong prefix — is diagnosable
+      // without anyone having to reveal the secret.
+      const rawKey = env.RESEND_API_KEY || '';
+      const key = rawKey.trim();
       return new Response(JSON.stringify({
         status: 'ok',
         hasGroq: !!env.GROQ_API_KEY,
-        hasResend: !!env.RESEND_API_KEY,
+        hasResend: !!key,
+        resendKey: {
+          length: key.length,
+          startsWithRe: key.startsWith('re_'),
+          hadWhitespace: rawKey !== key,
+          looksComplete: key.startsWith('re_') && key.length >= 30,
+        },
         hasKV: !!env.PROGRESS,
         time: new Date().toISOString(),
       }), { headers: JSON_HEADERS });
@@ -411,7 +422,7 @@ async function handleSendEmail(request, env) {
 
     // No sending key yet? The email is already saved to the list — just
     // report that the outbound send was skipped.
-    if (!env.RESEND_API_KEY) {
+    if (!(env.RESEND_API_KEY || "").trim()) {
       return new Response(JSON.stringify({ status: 'skipped', reason: 'RESEND_API_KEY not configured', captured: true }),
         { headers: JSON_HEADERS });
     }
@@ -428,7 +439,7 @@ async function handleSendEmail(request, env) {
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${(env.RESEND_API_KEY || "").trim()}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -604,7 +615,7 @@ async function handleZionBooking(request, env) {
 
     // No sending key yet? The booker + their request are already captured;
     // return success so the visitor still proceeds to the deposit step.
-    if (!env.RESEND_API_KEY) {
+    if (!(env.RESEND_API_KEY || "").trim()) {
       return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: JSON_HEADERS });
     }
     const subject = `🎤 Booking Request — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
@@ -649,7 +660,7 @@ async function handleZionBooking(request, env) {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${(env.RESEND_API_KEY || "").trim()}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -888,7 +899,7 @@ async function handleBooking(request, env) {
         <p style="margin-top:28px;font-size:11px;color:#555;text-align:center;text-transform:uppercase;letter-spacing:.1em">SWRV On The Go · swrvonthego.pro</p>
       </div>`;
 
-    if (!env.RESEND_API_KEY) {
+    if (!(env.RESEND_API_KEY || "").trim()) {
       // No email service — still return success so booking is tracked
       return new Response(JSON.stringify({ ok: true, note: 'Email service not configured — booking logged' }), { headers: JSON_HEADERS });
     }
@@ -901,7 +912,7 @@ async function handleBooking(request, env) {
     // Send to team
     const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
         subject: `🔥 New Booking: ${serviceName} — ${name}${referralCode ? ` (ref: ${referralCode})` : ''}`,
         html: teamHtml,
@@ -911,7 +922,7 @@ async function handleBooking(request, env) {
     // Send confirmation to client
     const r2 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [email],
         subject: `Booking Confirmed: ${serviceName} — SWRV On The Go`, html: clientHtml }),
     });
@@ -1068,17 +1079,17 @@ async function handleIntakeSubmit(request, env) {
         <p style="margin-top:20px;font-size:12px;color:#8a8070">Questions? <a href="mailto:info@swrvonthego.pro" style="color:#c8a84b">info@swrvonthego.pro</a></p>
       </div>`;
 
-    if (env.RESEND_API_KEY) {
+    if ((env.RESEND_API_KEY || "").trim()) {
       await Promise.all([
         fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
             subject: `📋 New Project Intake: ${pathLabel || path} — ${name}`, html: teamHtml }),
         }),
         fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${(env.RESEND_API_KEY || "").trim()}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ from: fromAddr, to: [email],
             subject: `Your ${pathLabel || path} Brief — SWRV On The Go`, html: clientHtml }),
         }),
