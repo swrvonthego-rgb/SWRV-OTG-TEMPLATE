@@ -275,7 +275,7 @@ closing_word — 2-3 sentences. One specific detail. Nothing generic. Make it pe
 
 roadmap_timeline — THE ROUTE (Apple Maps for their life). 4 phases. Each: phase name (Foundation/Building/Momentum/Arrival), timeframe, title (evocative, specific to their vision), description (3-4 sentences — their specific life in this phase, not generic), milestones (3-4 concrete markers), challenges (2-3 specific to their situation), character_needed (1-2 sentences on who they need to become).
 
-qa_reflection — For each Phase 2 question answered: question (exact text), answer (ELEVATED — not just grammatically corrected but expanded with depth and insight. Take what they said and show them what it actually means. Make them feel understood beyond their own words).
+qa_reflection — Pick the 6 MOST REVEALING Phase 2 answers (not all of them — choose the ones that expose the most about who they are and what they're building). For each: question (exact text), answer (ELEVATED — not just grammatically corrected but expanded with depth and insight. Take what they said and show them what it actually means. Make them feel understood beyond their own words). Depth on six beats a shallow pass on sixteen.
 
 CRITICAL RULE 8 — COMPLETENESS IS NON-NEGOTIABLE
 Every key in the schema must be present and substantive. If you are unsure about something, reason from what they told you and commit to a specific, useful answer — never leave a field blank, never emit a placeholder, and never drop a key to save space. A missing section is a broken product: the page silently hides empty fields, so an omission reads to the visitor as though that analysis was never done.
@@ -294,9 +294,20 @@ OUTPUT: Single JSON object. No preamble. No markdown. First char { last char }
  * Called by the API route at request time.
  */
 export function renderSystemPrompt(config: RoadmapConfig): string {
-  // Include full blurb (what's included) so AI can explain sub-services in vision map
+  // Every token spent describing the catalog is a token the model can't
+  // spend writing the visitor's actual roadmap — and Groq counts prompt +
+  // reserved output against one per-minute cap. Full blurbs for 60+
+  // services ate ~2.4k tokens of that budget, so blurbs are clipped to a
+  // usable summary. The model still learns what each service includes;
+  // it just doesn't get the full marketing copy.
+  const MAX_BLURB = 90;
+  const clip = (t: string) =>
+    t.length <= MAX_BLURB ? t : t.slice(0, MAX_BLURB).replace(/[\s,;.]+\S*$/, '') + '…';
   const servicesList = config.services
-    .map((s) => `- ${s.name} — ${s.price}${(s as any).blurb ? ` | INCLUDES: ${(s as any).blurb}` : ''}`)
+    .map((s) => {
+      const blurb = (s as any).blurb as string | undefined;
+      return `- ${s.name} — ${s.price}${blurb ? ` | ${clip(blurb)}` : ''}`;
+    })
     .join('\n');
   return config.systemPrompt.replace('{{services}}', servicesList);
 }

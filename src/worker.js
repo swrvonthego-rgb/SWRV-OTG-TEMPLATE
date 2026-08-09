@@ -399,13 +399,13 @@ async function handleRoadmap(request, env) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        // The schema asks for a LOT: a 7-part blueprint, 5-8 services each
-        // broken into components, a 4-phase timeline, vision elevation, and
-        // a reflection per Phase-2 answer. At 1800 the response was being
-        // truncated mid-JSON, so late sections (reverse_engineering,
-        // timeline, qa_reflection) arrived empty and the UI silently hid
-        // them. This model supports far more headroom than that.
-        max_tokens: 16000,
+        // Groq bills prompt + reserved output against a 12,000 tokens-per-
+        // minute cap on this tier. The prompt runs ~6k, so anything much
+        // above 5k here gets the whole request rejected ("Request too large")
+        // rather than truncated — which is how 16000 took generation down
+        // entirely. 5000 is the most output we can reserve and still fit,
+        // and it is still ~3x the old 1800 that was cutting JSON in half.
+        max_tokens: 5000,
         temperature: 0.7,
         response_format: { type: 'json_object' },
         messages: [
@@ -418,7 +418,15 @@ async function handleRoadmap(request, env) {
     const data = await groqResponse.json();
     if (!groqResponse.ok) {
       console.error('Groq API error:', data);
-      return new Response(JSON.stringify({ error: data.error?.message || 'Groq API error' }),
+      const raw = data.error?.message || '';
+      // Rate limits and size rejections are operational, not something a
+      // visitor can act on — never show them raw API/billing text.
+      const isRate = groqResponse.status === 429
+        || /rate.?limit|tokens per minute|TPM|too large|reduce your message/i.test(raw);
+      const friendly = isRate
+        ? 'Our AI is at capacity for the moment. Give it about a minute, then tap Try Again — your answers are saved.'
+        : (raw || 'The AI had trouble responding. Tap Try Again.');
+      return new Response(JSON.stringify({ error: friendly, retryable: isRate }),
         { status: groqResponse.status, headers: JSON_HEADERS });
     }
     // Surface truncation explicitly. A 'length' finish_reason means the
