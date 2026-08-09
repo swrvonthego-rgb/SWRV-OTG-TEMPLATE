@@ -95,7 +95,10 @@ async function ensureEmailTable(env) {
 async function captureEmail(env, { email, name, source, vision_preview, attribution } = {}) {
   if (!env || !env.EMAIL_DB || !email) return;
   const clean = String(email).trim().toLowerCase();
-  if (!clean.includes('@')) return;
+  // Require a real domain with a dot after the @ — a bare "@" let partial,
+  // still-being-typed addresses (autofill firing per keystroke on some
+  // mobile browsers) into the list as junk rows.
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) return;
   try {
     await ensureEmailTable(env);
     await env.EMAIL_DB.prepare(
