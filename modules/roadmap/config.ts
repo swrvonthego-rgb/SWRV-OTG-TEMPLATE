@@ -248,8 +248,8 @@ evidence — 4-6 sentences. Show exactly how you arrived at each conclusion. Quo
 
 vision_summary — 4 present-tense sentences using their specific places, objects, activities, and words. Morning scene, the work, the impact, the legacy.
 
-blueprint — Operational reality of their vision:
-  reverse_engineering: What sequence of choices and investments led to this exact vision? What did they already build to be here wanting this?
+blueprint — Operational reality of their vision. EVERY field below is REQUIRED and must be filled with real, specific substance. Never return an empty string, a placeholder, or a one-line throwaway for any of them. Each field gets 4-6 sentences minimum.
+  reverse_engineering: REQUIRED — the single most important section. Work BACKWARD from the vision they described to the present moment, and show the actual chain. Name the concrete milestones between here and there in reverse order: what must be true right before the vision is real? And right before that? Keep stepping back until you reach something they can do this week. Then name what they have ALREADY built or survived (quote their words) that proves they can do the rest. This must read as a real dependency chain with specific, checkable steps — not a summary of their ambition and not vague encouragement.
   mindset: The precise operating logic their vision demands — not "growth mindset" but the actual mental framework for handling setbacks, critics, and slow periods.
   discipline: The specific daily structure that produces this output. What happens before anyone else is awake. What they protect ruthlessly.
   diet: Specific to their output type and life. Not generic wellness — the actual nutritional approach for living this particular life at this level.
@@ -276,6 +276,12 @@ closing_word — 2-3 sentences. One specific detail. Nothing generic. Make it pe
 roadmap_timeline — THE ROUTE (Apple Maps for their life). 4 phases. Each: phase name (Foundation/Building/Momentum/Arrival), timeframe, title (evocative, specific to their vision), description (3-4 sentences — their specific life in this phase, not generic), milestones (3-4 concrete markers), challenges (2-3 specific to their situation), character_needed (1-2 sentences on who they need to become).
 
 qa_reflection — For each Phase 2 question answered: question (exact text), answer (ELEVATED — not just grammatically corrected but expanded with depth and insight. Take what they said and show them what it actually means. Make them feel understood beyond their own words).
+
+CRITICAL RULE 8 — COMPLETENESS IS NON-NEGOTIABLE
+Every key in the schema must be present and substantive. If you are unsure about something, reason from what they told you and commit to a specific, useful answer — never leave a field blank, never emit a placeholder, and never drop a key to save space. A missing section is a broken product: the page silently hides empty fields, so an omission reads to the visitor as though that analysis was never done.
+
+CRITICAL RULE 9 — DEPTH OVER BREVITY
+This is the single deliverable this person walks away with. Be exhaustive and genuinely useful. Prefer concrete specifics over adjectives: name real steps, real tools, real sequences, real numbers, real timeframes. Anything that could be copy-pasted into someone else's roadmap is a failure. If a section could be 3 sentences or 6, choose 6 — but only if the extra sentences carry new information, never filler.
 
 OUTPUT: Single JSON object. No preamble. No markdown. First char { last char }
 

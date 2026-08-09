@@ -340,7 +340,13 @@ async function handleRoadmap(request, env) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 1800,
+        // The schema asks for a LOT: a 7-part blueprint, 5-8 services each
+        // broken into components, a 4-phase timeline, vision elevation, and
+        // a reflection per Phase-2 answer. At 1800 the response was being
+        // truncated mid-JSON, so late sections (reverse_engineering,
+        // timeline, qa_reflection) arrived empty and the UI silently hid
+        // them. This model supports far more headroom than that.
+        max_tokens: 16000,
         temperature: 0.7,
         response_format: { type: 'json_object' },
         messages: [
@@ -355,6 +361,13 @@ async function handleRoadmap(request, env) {
       console.error('Groq API error:', data);
       return new Response(JSON.stringify({ error: data.error?.message || 'Groq API error' }),
         { status: groqResponse.status, headers: JSON_HEADERS });
+    }
+    // Surface truncation explicitly. A 'length' finish_reason means the
+    // model ran out of room mid-JSON — previously this failed silently and
+    // showed up as missing blueprint/timeline sections in the UI.
+    const finishReason = data.choices?.[0]?.finish_reason;
+    if (finishReason === 'length') {
+      console.error('Roadmap generation truncated: hit max_tokens. Raise the limit.');
     }
     const text = data.choices?.[0]?.message?.content || '';
     if (!text.trim()) {
