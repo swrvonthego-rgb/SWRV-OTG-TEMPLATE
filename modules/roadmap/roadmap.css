@@ -1602,3 +1602,25 @@ PRINT — hide new bottom CTA to keep printout clean
   cursor:pointer;padding:6px;text-decoration:underline;}
 .rm-resume-ghost:hover{color:rgba(237,232,220,0.85);}
 @media print{ .rm-resume{display:none!important;} }
+
+/* ── Music OFF by default: read as "available", not disabled ──
+   The track no longer autoplays (it competed with the intro video's
+   own audio), so the speaker must actively invite a tap rather than
+   look switched-off-and-forgotten. Gold border + a soft breathing
+   glow says "this is a control you can use". Distinct from .no-track,
+   which is genuinely unavailable and stays dimmed. */
+.roadmap-experience .music-toggle.muted:not(.no-track){
+  border-color:var(--accent-mid,rgba(200,168,75,0.45));
+  animation:musicAvailable 3.2s ease-in-out infinite;}
+.roadmap-experience .music-toggle.muted:not(.no-track) svg{
+  fill:var(--accent-1,#c8a84b);opacity:.75;}
+.roadmap-experience .music-toggle.muted:not(.no-track):hover{
+  border-color:var(--accent-1,#c8a84b);animation:none;}
+.roadmap-experience .music-toggle.muted:not(.no-track):hover svg{opacity:1;}
+@keyframes musicAvailable{
+  0%,100%{box-shadow:0 0 0 0 rgba(200,168,75,0.30);}
+  50%    {box-shadow:0 0 0 7px rgba(200,168,75,0);}}
+/* Respect reduced-motion — keep the affordance, drop the pulse. */
+@media (prefers-reduced-motion:reduce){
+  .roadmap-experience .music-toggle.muted:not(.no-track){animation:none;}
+}
