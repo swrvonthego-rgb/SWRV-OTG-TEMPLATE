@@ -104,7 +104,12 @@ async function ensureEmailTable(env) {
 // This repo is PUBLIC, so the key must never live in wrangler.jsonc or
 // any tracked file — D1 keeps it inside the Cloudflare account instead.
 // ─────────────────────────────────────────────────────────
-const RESEND_KEY_SHAPE = /^re_[A-Za-z0-9_-]{15,}$/;
+// Resend keys are exactly 36 chars: "re_" + 33. Pinning the length (rather
+// than a loose minimum) catches off-by-one corruption — a key copied out of
+// a message that runs straight into the next word picks up a stray trailing
+// character, which Resend rejects as "API key is invalid" while logging
+// nothing, making it near-invisible to debug.
+const RESEND_KEY_SHAPE = /^re_[A-Za-z0-9_-]{33}$/;
 
 let __d1KeyCache;
 async function getD1ResendKey(env) {
