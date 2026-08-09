@@ -309,6 +309,7 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   // Results screen email form
   const [resultsEmailInput, setResultsEmailInput] = useState('');
   const [resultsEmailStatus, setResultsEmailStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle');
+  const [resultsEmailReason, setResultsEmailReason] = useState<string | null>(null);
   const [interimVision, setInterimVision] = useState('');
   const [shake, setShake] = useState(false);
 
@@ -979,6 +980,24 @@ useEffect(() => {
     }
   }, [screen, userEmail]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Turns a /api/send-email response into a specific, human-readable reason.
+  // A generic "didn't go through" tells us nothing when debugging live, so each
+  // distinct failure mode gets its own short code.
+  const emailFailureReason = async (r: Response): Promise<string | null> => {
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('json')) {
+      // The API route didn't reach the server (we got HTML back).
+      return 'the email route isn\u2019t reachable [NO-JSON]';
+    }
+    let data: any = null;
+    try { data = await r.json(); } catch { return 'unreadable reply from the server [BAD-JSON]'; }
+    if (data?.status === 'sent') return null; // success
+    if (data?.status === 'skipped') return 'email sending isn\u2019t switched on yet [NO-KEY]';
+    const d = data?.detail;
+    const detail = typeof d === 'string' ? d : (d?.message || d?.name || JSON.stringify(d ?? data ?? {}));
+    return `the email service rejected it \u2014 ${String(detail).slice(0, 140)} [SEND-FAIL]`;
+  };
+
   const sendResultsEmail = useCallback(async () => {
     if (!result || !resultsEmailInput.trim()) return;
     setResultsEmailStatus('sending');
@@ -996,10 +1015,12 @@ useEffect(() => {
           brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
         }),
       });
-      const data = await r.json();
-      if (data?.status === 'sent') {
+      const reason = await emailFailureReason(r);
+      if (!reason) {
         setResultsEmailStatus('sent');
       } else {
+        console.warn('Roadmap email failed:', reason);
+        setResultsEmailReason(reason);
         setResultsEmailStatus('error');
       }
     } catch {
@@ -1052,19 +1073,17 @@ useEffect(() => {
         brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
       }),
     })
-    .then(r => r.json())
-    .then(data => {
-      // Only 'sent' means it actually left Resend. 'skipped' (no API key)
-      // and 'error' both mean the email did NOT arrive — never claim success.
-      if (data?.status === 'sent') {
+    .then(async r => {
+      const reason = await emailFailureReason(r);
+      if (!reason) {
         setEmailSentMsg(`Sent to ${userEmail} ✓`);
         setEmailPromptOpen(false);
       } else {
-        console.warn('Roadmap email failed:', data);
-        setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.');
+        console.warn('Roadmap email failed:', reason);
+        setEmailSentMsg(`Couldn't send — ${reason}. Tap “Print / Save as PDF” to keep your Roadmap.`);
       }
     })
-    .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.'));
+    .catch(() => setEmailSentMsg('Couldn\'t send — no connection [OFFLINE]. Tap “Print / Save as PDF” to keep your Roadmap.'));
   } else {
     // No email stored — show inline prompt
     setEmailPromptOpen(true);
@@ -1090,15 +1109,14 @@ const submitEmailPrompt = useCallback(() => {
       brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
     }),
   })
-  .then(r => r.json())
-  .then(data => {
-    // Only 'sent' means it actually left Resend. 'skipped'/'error' did not.
-    if (data?.status === 'sent') {
+  .then(async r => {
+    const reason = await emailFailureReason(r);
+    if (!reason) {
       setEmailSentMsg(`Sent to ${email} ✓`);
       setEmailPromptOpen(false);
     } else {
-      console.warn('Roadmap email failed:', data);
-      setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.');
+      console.warn('Roadmap email failed:', reason);
+      setEmailSentMsg(`Couldn't send — ${reason}. Tap “Print / Save as PDF” to keep your Roadmap.`);
     }
   })
   .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.'));
