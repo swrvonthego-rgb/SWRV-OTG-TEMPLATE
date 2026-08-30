@@ -16,6 +16,17 @@
 // Clean paths that drop the visitor straight into the Roadmap test.
 export const ROADMAP_PATHS = ['/roadmap', '/the-roadmap', '/start', '/test', '/roadmap-test'];
 
+// Vision Portal — /vision/:slug drops a client business's own customers
+// straight into a tenant-branded Roadmap (see modules/roadmap/Roadmap.tsx's
+// `tenantSlug` prop). Plain /roadmap above is unaffected and stays the
+// default SWRV experience.
+const VISION_PATH_RE = /^\/vision\/([a-z0-9-]+)$/;
+
+export function visionTenantSlug(): string | null {
+  const match = path().match(VISION_PATH_RE);
+  return match ? match[1] : null;
+}
+
 // Clean paths → homepage section anchors.
 export const SECTION_HASH: Record<string, string> = {
   '/portfolio': 'portfolio',
@@ -52,15 +63,16 @@ export function roadmapParam(): string | null {
   return new URLSearchParams(window.location.search).get('roadmap');
 }
 
-// Should the roadmap overlay be open at all? (?roadmap=1|start OR a roadmap path)
+// Should the roadmap overlay be open at all? (?roadmap=1|start OR a roadmap
+// path OR a /vision/:slug tenant link)
 export function isRoadmapOpenIntent(): boolean {
   const rm = roadmapParam();
-  return rm === '1' || rm === 'start' || ROADMAP_PATHS.includes(path());
+  return rm === '1' || rm === 'start' || ROADMAP_PATHS.includes(path()) || !!visionTenantSlug();
 }
 
 // Should we skip the "Before You Begin" gate and drop straight into the test?
 export function isRoadmapStartIntent(): boolean {
-  return roadmapParam() === 'start' || ROADMAP_PATHS.includes(path());
+  return roadmapParam() === 'start' || ROADMAP_PATHS.includes(path()) || !!visionTenantSlug();
 }
 
 // Resolve a homepage section id from a clean path or a #hash.

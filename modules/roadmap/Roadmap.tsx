@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './roadmap.css';
-import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme, renderSystemPrompt } from './config';
+import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme } from './config';
 import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
-import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
+import { PHASE_2_QUESTIONS } from './phase2-questions';
 import { isRoadmapStartIntent } from '../../deepLink';
 import { attributionSummary } from '../../attribution';
 import { RoadmapTour, TourStep } from './RoadmapTour';
@@ -103,6 +103,13 @@ export interface RoadmapProps {
   config?: RoadmapConfig;
   /** API endpoint for the AI. Defaults to /api/roadmap. */
   apiEndpoint?: string;
+  /**
+   * Vision Portal tenant slug (e.g. "coastal"). When set, branding and the
+   * service catalog are fetched from /api/tenant/:slug on mount and merged
+   * over `config`. Omit for the default SWRV experience at /roadmap —
+   * behavior there is unchanged (no extra network call).
+   */
+  tenantSlug?: string | null;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -174,9 +181,37 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   isOpen,
   onClose,
   onOpenServices,
-  config = SWRV_ROADMAP_CONFIG,
+  config: configProp = SWRV_ROADMAP_CONFIG,
   apiEndpoint = '/api/roadmap',
+  tenantSlug = null,
 }) => {
+  // ── Tenant resolution (Vision Portal) ─────────────────────
+  // Plain /roadmap (tenantSlug unset) uses configProp (SWRV_ROADMAP_CONFIG)
+  // exactly as before — zero behavior change, zero extra network call.
+  // A tenant slug fetches branding/services from the server (never the
+  // proprietary prompt — that stays server-only) and merges it in.
+  const [config, setConfig] = useState<RoadmapConfig>(configProp);
+  useEffect(() => {
+    if (!tenantSlug) { setConfig(configProp); return; }
+    let cancelled = false;
+    fetch(`/api/tenant/${encodeURIComponent(tenantSlug)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((tenant) => {
+        if (cancelled || !tenant) return;
+        setConfig({
+          ...configProp,
+          brandName: tenant.displayName || configProp.brandName,
+          services: Array.isArray(tenant.services) && tenant.services.length
+            ? tenant.services
+            : configProp.services,
+          copy: { ...configProp.copy, ...(tenant.copyOverrides || {}) },
+        });
+      })
+      .catch(() => { /* keep default config on failure */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantSlug]);
+
   // ── Screen / progress ─────────────────────────────────────
   // Check for paid session (Stripe redirect or PayPal manual confirm)
   const checkPaid = () => {
@@ -711,12 +746,13 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
             // signal the sales/marketing side actually needs.
             vision_preview: vision,
             attribution: attributionSummary(),
+            tenantSlug: tenantSlug || 'swrv',
           }),
         }).catch(() => {});
       }
       goTo('heart-note');
     },
-    [goTo, userEmail, userName],
+    [goTo, userEmail, userName, tenantSlug],
   );
 
   // After disclaimer: pick session duration
@@ -762,17 +798,17 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
           .filter(Boolean)
           .join('\n\n');
 
+        // The prompt is built server-side from tenantSlug — this request
+        // never sends or exposes the proprietary question-bank/prompt logic.
         const fetchPromise = fetch(apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: renderSystemPrompt(config) + '\n\n' + BOOK_WISDOM_PROMPT,
-            messages: [
-              {
-                role: 'user',
-                content: `Name: ${userName}\nEmail: ${userEmail || 'not provided'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 1 — THEIR VISION (told in their own words)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${visionText}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 2 — THE 16 GUIDED QUESTIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${phase2Block || '(no Phase 2 answers provided)'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNow combine both phases into the final assessment. Phase 1 shows you what they see. Phase 2 shows you who they are. Weave them into one complete blueprint.`,
-              },
-            ],
+            tenantSlug: tenantSlug || 'swrv',
+            name: userName,
+            email: userEmail || undefined,
+            rawVision: visionText,
+            userMessage: `Name: ${userName}\nEmail: ${userEmail || 'not provided'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 1 — THEIR VISION (told in their own words)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${visionText}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 2 — THE 16 GUIDED QUESTIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${phase2Block || '(no Phase 2 answers provided)'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNow combine both phases into the final assessment. Phase 1 shows you what they see. Phase 2 shows you who they are. Weave them into one complete blueprint.`,
           }),
         });
 
@@ -815,7 +851,7 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
         goTo('results');
       }
     },
-    [apiEndpoint, userName, userEmail, goTo, phase2Answers],
+    [apiEndpoint, userName, userEmail, goTo, phase2Answers, tenantSlug],
   );
 
   const proceedToProcess = useCallback(
@@ -967,6 +1003,7 @@ useEffect(() => {
         rawVision: vision,
         attribution: attributionSummary(),
         brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+        tenantSlug: tenantSlug || 'swrv',
       }),
     })
       .then((r) => r.json())
@@ -976,7 +1013,7 @@ useEffect(() => {
         }
       })
       .catch(() => { /* silent — already showing on screen */ });
-  }, [result, userEmail, userName, config, showToast]);
+  }, [result, userEmail, userName, config, showToast, tenantSlug]);
 
   // Pre-fill results email input with whatever they entered earlier (if any)
   useEffect(() => {
@@ -1018,6 +1055,7 @@ useEffect(() => {
           rawVision: vision,
           attribution: attributionSummary(),
           brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+          tenantSlug: tenantSlug || 'swrv',
         }),
       });
       const reason = await emailFailureReason(r);
@@ -1076,6 +1114,7 @@ useEffect(() => {
         rawVision: vision,
         attribution: attributionSummary(),
         brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+        tenantSlug: tenantSlug || 'swrv',
       }),
     })
     .then(async r => {
@@ -1095,7 +1134,7 @@ useEffect(() => {
     setEmailPromptValue('');
     setEmailSentMsg(null);
   }
-}, [userEmail, userName, result, config]);
+}, [userEmail, userName, result, config, tenantSlug]);
 
 const submitEmailPrompt = useCallback(() => {
   const email = emailPromptValue.trim();
@@ -1112,6 +1151,7 @@ const submitEmailPrompt = useCallback(() => {
       rawVision: vision,
       attribution: attributionSummary(),
       brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+      tenantSlug: tenantSlug || 'swrv',
     }),
   })
   .then(async r => {
@@ -1125,7 +1165,7 @@ const submitEmailPrompt = useCallback(() => {
     }
   })
   .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.'));
-}, [emailPromptValue, userName, result, config]);
+}, [emailPromptValue, userName, result, config, tenantSlug]);
 
 const handleSave = useCallback(() => {
     if (!result) return;

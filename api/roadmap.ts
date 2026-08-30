@@ -15,7 +15,20 @@
 // scripts/dev-api-plugin.ts Vite middleware serves /api/roadmap
 // instead so it works out of the box with `npm run dev`.
 
-import { SWRV_ROADMAP_CONFIG, renderSystemPrompt } from '../modules/roadmap/config';
+import { SWRV_ROADMAP_CONFIG } from '../modules/roadmap/config';
+
+// The real, proprietary prompt (CRITICAL RULES + JSON schema) lives
+// server-side only in src/worker.js (the Cloudflare Worker that actually
+// serves this app's /api/roadmap in production) so it's never sent to or
+// built by the browser. This Vercel-era handler is not part of that
+// deploy path; it gets an equivalent minimal prompt so it type-checks and
+// degrades safely rather than importing removed client-side prompt logic.
+function buildSystemPrompt(): string {
+  const servicesList = SWRV_ROADMAP_CONFIG.services
+    .map((s: any) => `- ${s.name}${s.price ? ` — ${s.price}` : ''}`)
+    .join('\n');
+  return `You are The Roadmap for ${SWRV_ROADMAP_CONFIG.brandName}. Analyze the user's vision and return ONLY a JSON object with these exact fields: gift, work, purpose, evidence, vision_summary, blueprint (reverse_engineering, mindset, discipline, diet, fitness, community, work_ethic), brand_colors (array of {hex,name,meaning}), business_name_idea, website_blueprint, vision_services_map, recommended_services, vision_elevation, closing_word, roadmap_timeline, qa_reflection, confidence_score (integer 0-100).\n\nSERVICE CATALOG:\n${servicesList}\n\nNo markdown. No prose outside JSON. First character { last character }.`;
+}
 
 interface VercelRequest {
   method?: string;
@@ -47,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userMessage = messages?.[0]?.content || '';
 
     // Render the system prompt (with services list baked in)
-    const systemPrompt = renderSystemPrompt(SWRV_ROADMAP_CONFIG);
+    const systemPrompt = buildSystemPrompt();
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',

@@ -34,7 +34,7 @@ import { Portfolio } from './components/Portfolio';
 import { Marketplace } from './components/Marketplace';
 import { NeedAWebsite } from './components/NeedAWebsite';
 import { AdminPage } from './modules/admin/AdminPage';
-import { isRoadmapOpenIntent, isRoadmapStartIntent, sectionTarget, isDeepLinkEntry } from './deepLink';
+import { isRoadmapOpenIntent, isRoadmapStartIntent, sectionTarget, isDeepLinkEntry, visionTenantSlug } from './deepLink';
 import { initAttribution } from './attribution';
 
 // Record first-touch marketing attribution (UTM + referrer) before React
@@ -263,7 +263,9 @@ const App: React.FC = () => {
 
       <Footer />
 
-      {/* The Roadmap — full-screen takeover overlay */}
+      {/* The Roadmap — full-screen takeover overlay. tenantSlug is only set
+          for a /vision/:slug link (Vision Portal); plain /roadmap leaves it
+          null and gets the default SWRV experience, unchanged. */}
       <Roadmap
         isOpen={isRoadmapOpen}
         onClose={() => setIsRoadmapOpen(false)}
@@ -271,6 +273,7 @@ const App: React.FC = () => {
           setIsRoadmapOpen(false);
           setIsServicesMenuOpen(true);
         }}
+        tenantSlug={visionTenantSlug()}
       />
 
       {/* Full services menu overlay */}
