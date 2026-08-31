@@ -212,6 +212,39 @@ async function captureEmail(env, { email, name, source, vision_preview, attribut
 }
 
 // ─────────────────────────────────────────────────────────
+// FAILURE ALERTS — a booking/inquiry that breaks server-side is a lead
+// that silently vanished unless someone notices. This fires from inside
+// a catch block (or a failed-send branch) that's already handling one
+// failure, so it must never itself throw or block the response back to
+// the visitor. The customer's contact info is usually already in
+// email_captures by this point (captureEmail runs before any send), but
+// nothing previously pushed that fact to the owner — they'd only find it
+// by checking /admin.
+// ─────────────────────────────────────────────────────────
+async function notifyOwnerOfFailure(env, { source, body, err }) {
+  try {
+    const notifyTo = env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro';
+    const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
+    const safe = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const bodyDump = body ? safe(JSON.stringify(body, null, 2)).slice(0, 3000) : '(request body unavailable)';
+    const html = `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <h2 style="color:#e5484d;margin:0 0 8px">🚨 ${safe(source)} failed on the site</h2>
+        <p style="color:#8a8070;font-size:13px;margin:0 0 16px">Someone tried to reach you and it didn't go through cleanly. If they left contact info, it's saved in the email list either way — reach out to them directly.</p>
+        <p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:16px 0 4px">Error</p>
+        <p style="font-family:monospace;font-size:13px;color:#e5484d;margin:0 0 16px">${safe(err?.message || String(err))}</p>
+        <p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:16px 0 4px">What they submitted</p>
+        <pre style="white-space:pre-wrap;background:#110e07;border:1px solid rgba(200,168,75,.15);border-radius:6px;padding:16px;font-size:12px;">${bodyDump}</pre>
+      </div>`;
+    await resendPost(env, {
+      from: fromAddr,
+      to: [notifyTo],
+      subject: `🚨 ${source} failed — check the site`,
+      html,
+    });
+  } catch (_) { /* the alert itself must never throw or block anything */ }
+}
+
+// ─────────────────────────────────────────────────────────
 // VISION PORTAL — multi-tenant Roadmap
 //
 // The proprietary question-bank / prompt-engineering logic lives ONLY
@@ -1143,8 +1176,10 @@ async function handleZionBooking(request, env) {
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
   }
+  let body = null;
   try {
-    const { firstName, lastName, email, inquiryType, eventDate, location, message } = await request.json();
+    body = await request.json();
+    const { firstName, lastName, email, inquiryType, eventDate, location, message } = body;
     if (!firstName || !email || !message) {
       return new Response(JSON.stringify({ error: 'firstName, email, message required' }), { status: 400, headers: JSON_HEADERS });
     }
@@ -1217,12 +1252,14 @@ async function handleZionBooking(request, env) {
     if (!r.ok) {
       const errText = await r.text();
       console.error('Resend error:', errText);
+      await notifyOwnerOfFailure(env, { source: 'Zion booking notification email', body, err: new Error(errText) });
       return new Response(JSON.stringify({ error: 'Email send failed' }), { status: 502, headers: JSON_HEADERS });
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
   } catch (err) {
     console.error('Zion booking error:', err);
+    await notifyOwnerOfFailure(env, { source: 'Zion booking', body, err });
     return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
   }
 }
@@ -1354,8 +1391,11 @@ async function handleBooking(request, env) {
     return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
   }
 
+  // Declared outside the try so a failure alert can still include whatever
+  // the customer submitted, even if something after parsing throws.
+  let body = null;
   try {
-    const body = await request.json();
+    body = await request.json();
     const { service, serviceName, servicePrice, kickoffDate, kickoffTime,
             deliveryDate, name, email, phone, message, payMethod,
             assetLink, uploadedFileNames, referralCode, fileAttachments } = body;
@@ -1471,8 +1511,12 @@ async function handleBooking(request, env) {
     });
 
     if (!r1.ok) {
-      const err = await r1.text();
-      console.error('Resend team email failed:', err);
+      const errText = await r1.text();
+      console.error('Resend team email failed:', errText);
+      // The lead is already in email_captures either way — but the team
+      // notification just failed, so send a separate alert through the
+      // hardened multi-key path rather than leaving the owner unaware.
+      await notifyOwnerOfFailure(env, { source: 'Service booking notification email', body, err: new Error(errText) });
       return new Response(JSON.stringify({ error: 'Booking received but email delivery failed. Team has been notified.' }), { status: 502, headers: JSON_HEADERS });
     }
 
@@ -1480,6 +1524,7 @@ async function handleBooking(request, env) {
 
   } catch (err) {
     console.error('Booking error:', err);
+    await notifyOwnerOfFailure(env, { source: 'Service booking', body, err });
     return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
   }
 }
@@ -1588,8 +1633,10 @@ function formatBasicBrief({ path, answers, name, email, phone, serviceName }) {
 async function handleIntakeSubmit(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
 
+  let body = null;
   try {
-    const { path, pathLabel, answers, name, email, phone, brief, serviceName } = await request.json();
+    body = await request.json();
+    const { path, pathLabel, answers, name, email, phone, brief, serviceName } = body;
     // Capture the lead's email to the mailing list (never blocks intake).
     await captureEmail(env, { email, name, source: `intake:${path || 'project'}` });
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
@@ -1643,6 +1690,9 @@ async function handleIntakeSubmit(request, env) {
     return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
   } catch (err) {
     console.error('Intake submit error:', err);
+    // The client still sees success here (see comment below), so the
+    // owner alert is the ONLY way this failure surfaces to anyone.
+    await notifyOwnerOfFailure(env, { source: 'Project intake submission', body, err });
     return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS }); // still succeed for client
   }
 }
