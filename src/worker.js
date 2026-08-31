@@ -1358,7 +1358,7 @@ async function handleBooking(request, env) {
     const body = await request.json();
     const { service, serviceName, servicePrice, kickoffDate, kickoffTime,
             deliveryDate, name, email, phone, message, payMethod,
-            assetLink, uploadedFileNames, referralCode } = body;
+            assetLink, uploadedFileNames, referralCode, fileAttachments } = body;
 
     if (!serviceName || !name || !email) {
       return new Response(JSON.stringify({ error: 'serviceName, name, email required' }), { status: 400, headers: JSON_HEADERS });
