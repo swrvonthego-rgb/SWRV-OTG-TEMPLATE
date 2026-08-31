@@ -1195,7 +1195,7 @@ async function handleZionBooking(request, env) {
     if (!resendKey) {
       return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: JSON_HEADERS });
     }
-    const subject = `🎤 Booking Request — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
+    const subject = `💰 $50 Deposit Incoming — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
     const notifyTo = env.ZION_NOTIFY_EMAIL || env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
 
@@ -1205,6 +1205,10 @@ async function handleZionBooking(request, env) {
         <div style="border-bottom:2px solid #c8a84b;padding-bottom:16px;margin-bottom:24px;">
           <h2 style="color:#c8a84b;margin:0;font-size:22px;letter-spacing:0.05em;">🎤 NEW BOOKING INQUIRY</h2>
           <p style="margin:6px 0 0;font-size:12px;color:#8a8070;">Zion Birdsong · Let's Create Together</p>
+        </div>
+        <div style="background:#1a1610;border:1px solid #c8a84b;border-radius:6px;padding:14px 16px;margin-bottom:20px;">
+          <p style="margin:0;color:#e8c96a;font-size:14px;font-weight:700;">💰 They're being shown the $50 deposit link right now.</p>
+          <p style="margin:4px 0 0;color:#8a8070;font-size:12px;">This confirms the inquiry was submitted — it does not confirm they've actually paid. There's no payment webhook wired up yet, so watch for the PayPal notification separately to know it landed.</p>
         </div>
         <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
           <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Name</div>
@@ -1497,7 +1501,7 @@ async function handleBooking(request, env) {
       method: 'POST',
       headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
-        subject: `🔥 New Booking: ${serviceName} — ${name}${referralCode ? ` (ref: ${referralCode})` : ''}`,
+        subject: `💰 New Booking (${servicePrice}): ${serviceName} — ${name}${referralCode ? ` (ref: ${referralCode})` : ''}`,
         html: teamHtml,
         attachments: attachments.length ? attachments : undefined }),
     });
