@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { BRAND, HEADER } from '../site.config';
 import { MEDIA } from '../media.config';
-
-interface HeaderProps { onOpenByob?: () => void; onOpenZion?: () => void; onOpenBirdsong?: () => void; }
 
 const GOLD = '#c8a84b';
 const GOLD_LIGHT = '#e8c96a';
 
 // ── Organized menu structure ────────────────────────────────
-// Everything that used to be crammed into the horizontal nav bar
-// is now grouped into named sections for the hamburger panel.
+// Reflects the 6 real suites now (each a real route) instead of the old
+// scroll-anchors/overlay-toggles from the one-page-does-everything era.
 type MenuAction =
-  | { kind: 'scroll'; target: string }
+  | { kind: 'link'; to: string }
   | { kind: 'roadmap' }
-  | { kind: 'overlay'; which: 'byob' | 'zion' | 'birdsong' }
   | { kind: 'zionSection'; section: string }
   | { kind: 'external'; href: string };
 
@@ -23,30 +21,27 @@ interface MenuGroup { heading: string; items: MenuItem[]; }
 
 const MENU_GROUPS: MenuGroup[] = [
   {
-    heading: 'The Site',
+    heading: 'The Suites',
     items: [
-      { label: 'Portfolio',       sub: 'Live client work',        action: { kind: 'scroll', target: 'portfolio' } },
-      { label: 'The Ecosystem',   sub: 'Services + pricing',      action: { kind: 'scroll', target: 'ecosystem' } },
-      { label: 'Need a Website?', sub: '$300 templates',          action: { kind: 'scroll', target: 'need-a-website' } },
-      { label: 'The Full Menu',   sub: 'Browse every service',    action: { kind: 'scroll', target: 'full-menu' } },
-      { label: 'About',           sub: 'The story behind SWRV',   action: { kind: 'scroll', target: 'about-swrv' } },
-      { label: 'Shop',            sub: 'Products + apparel',      action: { kind: 'scroll', target: 'shop' } },
-      { label: 'Contact',         sub: 'Book a session',          action: { kind: 'scroll', target: 'contact' } },
+      { label: 'The Roadmap',              sub: 'Start here — free AI quiz',   action: { kind: 'link', to: '/roadmap' } },
+      { label: 'Creative Services',        sub: 'Video, audio, content',       action: { kind: 'link', to: '/creative-services' } },
+      { label: 'Website Design',           sub: '$300 templates + custom',     action: { kind: 'link', to: '/website-design' } },
+      { label: 'Zion & Artist Development',sub: 'Book Zion + mentorship',      action: { kind: 'link', to: '/zion' } },
+      { label: 'The SWRV Family',          sub: 'Bible, BYOB, Birdsong Method',action: { kind: 'link', to: '/family' } },
+      { label: 'About, Shop & Contact',    sub: 'Our story, merch, booking',   action: { kind: 'link', to: '/about' } },
     ],
   },
   {
-    heading: 'The Family',
+    heading: 'Zion Birdsong',
     items: [
-      { label: 'Zion Birdsong',       sub: 'Artist & recording',    action: { kind: 'overlay', which: 'zion' } },
-      { label: 'The Birdsong Method', sub: 'Vocal training',        action: { kind: 'overlay', which: 'birdsong' } },
-      { label: 'Train BYOB',          sub: 'Bilingual coaching',    action: { kind: 'overlay', which: 'byob' } },
-      { label: 'Books',               sub: "Zion's published work", action: { kind: 'zionSection', section: 'books' } },
-      { label: 'Podcast',             sub: 'Latest episodes',       action: { kind: 'zionSection', section: 'podcast' } },
+      { label: 'Books',   sub: "Zion's published work", action: { kind: 'zionSection', section: 'books' } },
+      { label: 'Podcast', sub: 'Latest episodes',        action: { kind: 'zionSection', section: 'podcast' } },
     ],
   },
 ];
 
-export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBirdsong }) => {
+export const Header: React.FC = () => {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -77,22 +72,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
     setMenuOpen(false);
     setTimeout(() => {
       switch (action.kind) {
-        case 'scroll': {
-          const el = document.getElementById(action.target);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        case 'link':
+          navigate(action.to);
           break;
-        }
         case 'roadmap':
-          window.dispatchEvent(new CustomEvent('swrv:open-roadmap'));
-          break;
-        case 'overlay':
-          if (action.which === 'byob') onOpenByob?.();
-          if (action.which === 'zion') onOpenZion?.();
-          if (action.which === 'birdsong') onOpenBirdsong?.();
+          navigate('/roadmap');
           break;
         case 'zionSection':
-          window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: action.section }));
-          onOpenZion?.();
+          navigate('/zion');
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: action.section }));
+          }, 350);
           break;
         case 'external':
           window.open(action.href, '_blank', 'noopener,noreferrer');
@@ -110,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
           {/* Logo */}
           <button
             type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => navigate('/')}
             className="flex items-center cursor-pointer hover:opacity-80 transition-opacity bg-transparent border-0 p-0"
             aria-label={`${BRAND.name} — home`}
           >
@@ -134,8 +124,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
             <button
               type="button"
               onClick={() => {
-                const el = document.getElementById('contact');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                navigate('/about');
+                setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 200);
               }}
               className="hidden md:inline-block px-4 py-2 rounded-full text-[11px] font-bold tracking-[0.2em] uppercase transition-all"
               style={{ background: `linear-gradient(135deg,${GOLD},${GOLD_LIGHT})`, color: '#0a0804' }}
@@ -206,7 +196,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenByob, onOpenZion, onOpenBi
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAction({ kind: 'scroll', target: 'contact' })}
+                  onClick={() => handleAction({ kind: 'link', to: '/about' })}
                   className="text-left rounded-2xl p-6 md:p-7 transition-all hover:scale-[1.01]"
                   style={{ background: `linear-gradient(135deg,${GOLD} 0%,${GOLD_LIGHT} 100%)`, color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.25)' }}
                 >

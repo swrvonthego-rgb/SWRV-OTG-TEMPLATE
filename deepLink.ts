@@ -100,3 +100,42 @@ export function isDeepLinkEntry(): boolean {
   const { hash, search } = window.location;
   return !!(hash || search || path() !== '/');
 }
+
+// ════════════════════════════════════════════════════════════
+// LEGACY REDIRECTS — the site used to be one long homepage scroll with
+// these as clean scroll-anchor/overlay-open paths (see SECTION_HASH /
+// CATALOG_TAB above). Now that each suite is a real route, these old
+// paths — possibly bookmarked, shared, or indexed — redirect to their
+// new home instead of 404ing. Paths that became real routes outright
+// (e.g. /about, /admin, /roadmap) aren't listed here; the router matches
+// them directly and this map is only consulted on the catch-all route.
+// ════════════════════════════════════════════════════════════
+export const LEGACY_REDIRECTS: Record<string, string> = {
+  '/the-roadmap': '/roadmap',
+  '/start': '/roadmap',
+  '/test': '/roadmap',
+  '/roadmap-test': '/roadmap',
+  '/services': '/creative-services',
+  '/menu': '/creative-services',
+  '/videography': '/creative-services',
+  '/video': '/creative-services',
+  '/audio': '/creative-services',
+  '/music': '/creative-services',
+  '/web': '/creative-services',
+  '/brand': '/creative-services',
+  '/coaching': '/creative-services',
+  '/business': '/creative-services',
+  '/portfolio': '/creative-services',
+  '/websites': '/website-design',
+  '/templates': '/website-design',
+  '/byob': '/family/byob',
+  '/contact': '/about#contact',
+  '/shop': '/about#shop',
+  '/revving-up': '/about#revving-up',
+};
+
+// Resolve a pathname to its new route, or null if there's no legacy
+// mapping for it (the caller should fall back to '/').
+export function resolveLegacyRedirect(pathname: string): string | null {
+  return LEGACY_REDIRECTS[pathname] ?? null;
+}
