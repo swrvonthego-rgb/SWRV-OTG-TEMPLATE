@@ -1,0 +1,32 @@
+name: Deploy IU76 Proposal to Cloudflare Pages
+
+on:
+  push:
+    branches: [main, claude/deploy-cloudflare-pages-xirf0j]
+    paths:
+      - 'public/iu76-proposal.html'
+      - '.github/workflows/deploy-iu76-proposal.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare deployment directory
+        run: |
+          mkdir -p /tmp/iu76-deploy
+          cp public/iu76-proposal.html /tmp/iu76-deploy/index.html
+          echo "File ready: $(wc -c < /tmp/iu76-deploy/index.html) bytes"
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy /tmp/iu76-deploy --project-name=iu76-proposal --commit-dirty=true
+
+      - name: Print live URL
+        run: echo "Live at https://iu76-proposal.pages.dev"

@@ -234,6 +234,7 @@ export const ContactSchedule: React.FC = () => {
           name, email, phone, message, payMethod,
           assetLink,
           uploadedFileNames: uploadedFiles.map(f => `${f.name} (${(f.size / 1024).toFixed(0)}KB)`).join(', '),
+          referralCode,
         }),
       });
       const data = await res.json();

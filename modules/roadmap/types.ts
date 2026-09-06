@@ -93,6 +93,7 @@ export type ScreenId =
   | 'vision'
   | 'phase2'
   | 'processing'
+  | 'heart-note'
   | 'results';
 
 export type Theme = 'luxe' | 'cyberpunk' | 'earth' | 'street' | 'sonic';

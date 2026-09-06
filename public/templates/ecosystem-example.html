@@ -32,6 +32,8 @@ nav{position:fixed;top:33px;left:0;right:0;padding:20px 48px;display:flex;align-
 /* Hero */
 .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 48px 80px;position:relative;overflow:hidden;padding-top:120px}
 .hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a0608 0%,#120a02 50%,#060608 100%)}
+.hero-bg::after{content:'';position:absolute;inset:0;background:url('/templates/vanta/hero-bg.jpg') center/cover no-repeat;opacity:.28;mix-blend-mode:screen}
+.hero-bg::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,6,8,0.7) 0%,rgba(18,10,2,0.55) 50%,rgba(6,6,8,0.85) 100%);z-index:1}
 .hero-accent{position:absolute;top:20%;right:0;width:40%;height:100%;background:radial-gradient(ellipse at right,rgba(217,119,6,0.12),transparent 60%)}
 .hero-grid{max-width:1400px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:flex-end;position:relative}
 .hero-kicker{font-size:11px;font-weight:700;letter-spacing:.35em;text-transform:uppercase;color:#d97706;margin-bottom:20px}
@@ -64,7 +66,7 @@ h2.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,5vw,72
 .about-body p{margin-bottom:20px}
 .about-body strong{color:#d97706}
 .about-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.about-photo{border-radius:8px;aspect-ratio:1;background:linear-gradient(135deg,#1a1208,#0a0810);display:flex;align-items:center;justify-content:center;color:rgba(217,119,6,0.2);font-size:11px;letter-spacing:.2em;border:1px solid rgba(255,255,255,0.05)}
+.about-photo{border-radius:8px;aspect-ratio:1;background:#0a0810 center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:rgba(217,119,6,0.2);font-size:11px;letter-spacing:.2em;border:1px solid rgba(255,255,255,0.05)}
 .about-photo.tall{grid-row:span 2;aspect-ratio:unset}
 
 /* Services */
@@ -82,16 +84,21 @@ h2.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,5vw,72
 .roster-section{padding:120px 48px}
 .roster-inner{max-width:1400px;margin:0 auto}
 .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:56px}
-.roster-card{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:3/4;background:linear-gradient(135deg,#1a1010,#0d0808);border:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;justify-content:flex-end;padding:24px;transition:transform .3s}
+.roster-card{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:3/4;background-color:#0d0808;background-size:cover;background-position:center top;background-repeat:no-repeat;border:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;justify-content:flex-end;padding:24px;transition:transform .3s}
 .roster-card:hover{transform:scale(1.02)}
-.rc-1{background:linear-gradient(160deg,#0d1520,#060a10)}
-.rc-2{background:linear-gradient(160deg,#150d20,#0a060e)}
-.rc-3{background:linear-gradient(160deg,#1a1008,#100a04)}
-.rc-4{background:linear-gradient(160deg,#08150d,#040a06)}
-.rc-label{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#d97706;margin-bottom:6px}
-.rc-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.08em;color:#fff}
-.rc-genre{font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px}
-.rc-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:.05;font-family:'Bebas Neue',sans-serif;letter-spacing:.1em}
+.rc-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,10,0.05) 0%,rgba(6,8,10,0.15) 45%,rgba(6,8,10,0.88) 100%);pointer-events:none}
+/* Per-artist accent — each card's label + top edge tinted to its own studio light so the four read as distinct */
+.rc-1{border-top:3px solid #5b8fc7}   /* Aria — cool blue */
+.rc-2{border-top:3px solid #d98a3a}   /* Mason — warm amber (recording) */
+.rc-3{border-top:3px solid #009b3a;box-shadow:inset 0 -3px 0 #ffb300}   /* Stella — Jamaica green + gold */
+.rc-4{border-top:3px solid #5f9e7a}   /* Deon — green */
+.rc-1 .rc-label{color:#7aa9d8}
+.rc-2 .rc-label{color:#e39a4c}
+.rc-3 .rc-label{color:#e8b866}
+.rc-4 .rc-label{color:#78b493}
+.rc-label{position:relative;z-index:1;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#d97706;margin-bottom:6px}
+.rc-name{position:relative;z-index:1;font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.08em;color:#fff}
+.rc-genre{position:relative;z-index:1;font-size:12px;color:rgba(255,255,255,0.55);margin-top:4px}
 
 /* Contact */
 .contact-section{padding:120px 48px;background:#040406}
@@ -197,9 +204,9 @@ footer{padding:48px;border-top:1px solid rgba(255,255,255,0.05)}
       </div>
     </div>
     <div class="about-photo-grid">
-      <div class="about-photo tall" style="font-size:14px">[ STUDIO PHOTO ]</div>
-      <div class="about-photo" style="font-size:14px">[ TEAM ]</div>
-      <div class="about-photo" style="font-size:14px">[ SESSION ]</div>
+      <div class="about-photo tall" style="background-image:url('/templates/vanta/studio.jpg')"></div>
+      <div class="about-photo" style="background-image:url('/templates/vanta/team.jpg')"></div>
+      <div class="about-photo" style="background-image:url('/templates/vanta/session.jpg')"></div>
     </div>
   </div>
 </section>
@@ -256,10 +263,10 @@ footer{padding:48px;border-top:1px solid rgba(255,255,255,0.05)}
     <div class="eyebrow">The Roster</div>
     <h2 class="section-title">Artists We've<br/>Worked With</h2>
     <div class="roster-grid">
-      <div class="roster-card rc-1"><div class="rc-placeholder">A</div><div class="rc-label">R&B / Soul</div><div class="rc-name">ARIA COLE</div><div class="rc-genre">Atlanta, GA · 2 EP Releases</div></div>
-      <div class="roster-card rc-2"><div class="rc-placeholder">M</div><div class="rc-label">Hip-Hop</div><div class="rc-name">MASON GREY</div><div class="rc-genre">Chicago, IL · Active</div></div>
-      <div class="roster-card rc-3"><div class="rc-placeholder">S</div><div class="rc-label">Afrobeats</div><div class="rc-name">STELLA K</div><div class="rc-genre">Houston, TX · Album In Progress</div></div>
-      <div class="roster-card rc-4"><div class="rc-placeholder">D</div><div class="rc-label">Gospel / CCM</div><div class="rc-name">DEON RIVERS</div><div class="rc-genre">Charlotte, NC · Active</div></div>
+      <div class="roster-card rc-1" style="background-image:url('/templates/vanta/aria-cole.jpg')"><div class="rc-scrim"></div><div class="rc-label">R&B / Soul</div><div class="rc-name">ARIA COLE</div><div class="rc-genre">Atlanta, GA · 2 EP Releases</div></div>
+      <div class="roster-card rc-2" style="background-image:url('/templates/vanta/mason-grey.jpg')"><div class="rc-scrim"></div><div class="rc-label">Hip-Hop</div><div class="rc-name">MASON GREY</div><div class="rc-genre">Chicago, IL · Active</div></div>
+      <div class="roster-card rc-3" style="background-image:url('/templates/vanta/stella-k.jpg')"><div class="rc-scrim"></div><div class="rc-label">Dancehall / Afrobeats</div><div class="rc-name">STELLA K</div><div class="rc-genre">Kingston, Jamaica · Album In Progress</div></div>
+      <div class="roster-card rc-4" style="background-image:url('/templates/vanta/deon-rivers.jpg')"><div class="rc-scrim"></div><div class="rc-label">Gospel / CCM</div><div class="rc-name">DEON RIVERS</div><div class="rc-genre">Charlotte, NC · Active</div></div>
     </div>
   </div>
 </section>

@@ -58,6 +58,18 @@ export const BIRDSONG_CONFIG = {
     quoteAuthor: 'SWRV BIRDSONG',
   },
 
+  // ── INSIDE THE STUDIO (what training actually looks like) ─
+  instructors: {
+    eyebrow: 'INSIDE THE STUDIO',
+    title: 'Studio vocal training that zooms in on you.',
+    body: "Every session runs in a real studio — targeted, focused, and captured. We zoom in on the exact technique your voice needs next, then hand you the recordings so you can hear your own progress week over week.",
+    coaches: [
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Guy.png', name: 'Studio-Based Training', role: 'Real mic. Real room. Real time.', alt: 'One-on-one studio vocal training in progress' },
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Birdsong%20Method%20Instructor%202.png', name: 'Focused Deep-Dives', role: 'One skill at a time. No filler.', alt: 'Focused vocal technique training' },
+      { src: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/Women%20Vocal%20Trainers.jpeg', name: 'Recordings You Keep', role: 'Every session captured. Track your growth.', alt: 'Students reviewing their recorded vocal training' },
+    ],
+  },
+
   // ── PILLARS (what they'll master) ───────────────────────
   pillars: [
     {

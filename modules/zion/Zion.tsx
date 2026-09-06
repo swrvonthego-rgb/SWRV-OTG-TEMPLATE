@@ -12,8 +12,15 @@ export function Zion({ isOpen, onClose }: ZionProps) {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [inquiryType, setInquiryType] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [location, setLocation] = useState('');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  // After a booking inquiry is sent, reveal the $50 deposit step
+  const [depositReady, setDepositReady] = useState(false);
+
+  // Today (YYYY-MM-DD) so the date picker can't select past dates
+  const todayStr = new Date().toISOString().split('T')[0];
 
   // Scroll reveal refs
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
@@ -80,12 +87,20 @@ export function Zion({ isOpen, onClose }: ZionProps) {
 
   const handleSubmit = async () => {
     if (!firstName || !email || !message) {
-      showToast('Please fill in name, email, and message.');
+      showToast('Please fill in name, email, and event details.');
       return;
     }
     showToast('Sending...');
     setIsSending(true);
     try {
+      // Fold event date + location into the message so booking notifications
+      // carry the full context even though the API only requires the basics.
+      const details = [
+        eventDate ? `Event date: ${eventDate}` : '',
+        location ? `Location: ${location.trim()}` : '',
+      ].filter(Boolean).join('\n');
+      const fullMessage = details ? `${details}\n\n${message.trim()}` : message.trim();
+
       const res = await fetch('/api/zion-booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -93,14 +108,16 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           email: email.trim(),
-          inquiryType: inquiryType || 'General',
-          message: message.trim(),
+          inquiryType: inquiryType || 'Live Performance / Event',
+          eventDate: eventDate || '',
+          location: location.trim(),
+          message: fullMessage,
         }),
       });
       if (!res.ok) throw new Error('Server error');
       setIsSending(false);
-      showToast('Message sent. Zion will be in touch soon.');
-      setFirstName(''); setLastName(''); setEmail(''); setInquiryType(''); setMessage('');
+      setDepositReady(true);
+      showToast('Request received! Secure your date with the $50 deposit below.');
     } catch (err) {
       setIsSending(false);
       showToast('Something went wrong. Try again or email info@swrvonthego.pro directly.');
@@ -448,13 +465,27 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       <section className="booking" id="booking">
         <div className="booking-inner">
           <div className="reveal" ref={addToRefs}>
-            <p className="section-label">Join The Movement</p>
-            <h2 className="section-title">Let's Create Together</h2>
-            <p className="section-body">I'm not just performing—I'm leading a cultural shift. Whether you want to amplify the message through live experience, collaborate on something revolutionary, or tap into a new perspective, let's connect and make an impact.</p>
+            <p className="section-label">{Z.booking.eyebrow}</p>
+            <h2 className="section-title">{Z.booking.title}</h2>
+            <p className="section-body">{Z.booking.blurb}</p>
+
+            {/* Deposit callout — how booking works */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(200,168,75,0.12), rgba(200,168,75,0.04))',
+              border: '1px solid rgba(200,168,75,0.35)',
+              borderRadius: '14px',
+              padding: '1.4rem 1.6rem',
+              margin: '1.75rem 0',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', marginBottom: '0.6rem' }}>
+                <span style={{ fontSize: '1.9rem', fontWeight: 800, color: 'var(--color-gold)', fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1 }}>${Z.booking.depositAmount}</span>
+                <span style={{ fontSize: '0.72rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--color-gold)' }}>Deposit To Secure Your Date</span>
+              </div>
+              <p style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'rgba(237,232,220,0.78)', margin: 0 }}>{Z.booking.depositNote}</p>
+            </div>
+
             <div className="booking-note">
-              <strong>Performances & Experiences</strong> — Live music that moves people. Bookstore takeovers, community events, and cultural spaces where we can shift the narrative together.<br/><br/>
-              <strong>Creative Collaborations</strong> — Songwriting, production, features, or visionary projects. I collaborate with artists and creators who are ready to push boundaries.<br/><br/>
-              <strong>Strategic Consulting</strong> — Artist development, brand consulting, and cultural strategy. If you're building something meaningful, let's talk.
+              <strong>How it works</strong> — 1) Pick your date and tell me the vision below. 2) Leave the ${Z.booking.depositAmount} deposit to lock your spot on the calendar. 3) We finalize the rest of the fee together based on your event.
             </div>
           </div>
           <div className="reveal reveal-delay-1" ref={addToRefs}>
@@ -473,23 +504,51 @@ export function Zion({ isOpen, onClose }: ZionProps) {
                 <label>Email</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" />
               </div>
-              <div className="form-group">
-                <label>Inquiry Type</label>
-                <select value={inquiryType} onChange={(e) => setInquiryType(e.target.value)}>
-                  <option value="">Select one...</option>
-                  <option>Live Performance / Booking</option>
-                  <option>Songwriting / Production</option>
-                  <option>Voice Acting</option>
-                  <option>Music Consulting</option>
-                  <option>Book Signing Event</option>
-                  <option>Other</option>
-                </select>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Event Date</label>
+                  <input type="date" min={todayStr} value={eventDate} onChange={(e) => setEventDate(e.target.value)} style={{ colorScheme: 'dark' }} />
+                </div>
+                <div className="form-group">
+                  <label>Event Type</label>
+                  <select value={inquiryType} onChange={(e) => setInquiryType(e.target.value)}>
+                    <option value="">Select one...</option>
+                    {Z.booking.inquiryTypes.map((t) => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
               </div>
               <div className="form-group">
-                <label>Tell Me About It</label>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="What are you looking for? Dates, venue, vision — share what you've got."></textarea>
+                <label>Location / Venue</label>
+                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, venue, or 'virtual'" />
               </div>
-              <button className="btn btn-primary" onClick={handleSubmit} disabled={isSending} style={{ alignSelf: 'flex-start', opacity: isSending ? 0.6 : 1, cursor: isSending ? 'not-allowed' : 'pointer' }}>{isSending ? 'Sending…' : 'Send It →'}</button>
+              <div className="form-group">
+                <label>Tell Me About Your Event</label>
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Set length, vibe, audience size, budget range — share what you've got."></textarea>
+              </div>
+              {!depositReady ? (
+                <button className="btn btn-primary" onClick={handleSubmit} disabled={isSending} style={{ alignSelf: 'flex-start', opacity: isSending ? 0.6 : 1, cursor: isSending ? 'not-allowed' : 'pointer' }}>{isSending ? 'Sending…' : 'Request This Date →'}</button>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', alignItems: 'flex-start', width: '100%' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'rgba(237,232,220,0.85)', lineHeight: 1.55 }}>
+                    ✅ Request received{eventDate ? ` for ${eventDate}` : ''}! Lock your spot with the ${Z.booking.depositAmount} deposit — I'll be in touch to finalize everything.
+                  </div>
+                  <a
+                    href={Z.booking.depositUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-primary"
+                    style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    💳 Pay ${Z.booking.depositAmount} Deposit &amp; Secure Date →
+                  </a>
+                  <button
+                    onClick={() => { setDepositReady(false); setFirstName(''); setLastName(''); setEmail(''); setInquiryType(''); setEventDate(''); setLocation(''); setMessage(''); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-muted)', fontSize: '0.75rem', letterSpacing: '0.05em', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                  >
+                    Book another date
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

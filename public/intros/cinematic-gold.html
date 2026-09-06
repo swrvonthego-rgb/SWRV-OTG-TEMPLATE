@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinematic Gold — SWRV Intro Template</title>
+<!--
+  ══════════════════════════════════════════════════════════════
+  SWRV INTRO TEMPLATE · "CINEMATIC GOLD"
+  ══════════════════════════════════════════════════════════════
+  HOW TO EDIT (this is your SWF-style editable intro):
+    1. TITLE / SUBTITLE  → search for "EDIT:" below and change the text
+    2. COLORS            → change --gold and --bg in :root
+    3. The intro plays, then reveals the page behind it.
+  Self-contained. No plugins. Works on every browser + phone.
+  ══════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --gold:#c8a84b;         /* EDIT: accent color */
+    --gold-lt:#e8c96a;
+    --bg:#0a0804;           /* EDIT: background color */
+    --ink:#ede8dc;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);font-family:'Helvetica Neue',Arial,sans-serif;overflow:hidden}
+
+  /* ── the revealed page behind the intro ── */
+  .page{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 30%,#1a1206,var(--bg) 70%);color:var(--ink);text-align:center;padding:24px}
+  .page h1{font-family:Georgia,serif;font-style:italic;font-weight:400;font-size:clamp(32px,6vw,64px);color:#fff;margin-bottom:14px}
+  .page p{color:rgba(237,232,220,.6);font-size:16px;max-width:440px;line-height:1.7;margin-bottom:28px}
+  .page a{display:inline-block;padding:14px 34px;background:linear-gradient(135deg,var(--gold),var(--gold-lt));
+    color:var(--bg);font-weight:800;letter-spacing:.1em;text-transform:uppercase;font-size:13px;border-radius:999px;text-decoration:none}
+
+  /* ── the intro overlay ── */
+  .intro{position:fixed;inset:0;z-index:10;background:var(--bg);display:flex;align-items:center;justify-content:center;
+    overflow:hidden;animation:curtain 1s ease 4.4s forwards}
+  .intro.gone{display:none}
+
+  /* light sweep */
+  .sweep{position:absolute;top:0;left:-60%;width:60%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(200,168,75,.22),transparent);
+    filter:blur(8px);animation:sweep 2.6s ease 0.2s}
+  /* glow behind title */
+  .glow{position:absolute;width:60vw;height:60vw;max-width:640px;max-height:640px;border-radius:50%;
+    background:radial-gradient(circle,rgba(200,168,75,.18),transparent 65%);opacity:0;animation:glowin 1.4s ease 0.5s forwards}
+
+  .lockup{position:relative;text-align:center;z-index:2}
+  .eyebrow{color:var(--gold);font-size:clamp(10px,1.6vw,13px);font-weight:700;letter-spacing:1em;text-transform:uppercase;
+    opacity:0;transform:translateY(10px);animation:up .9s ease 0.4s forwards;padding-left:1em}
+  .title{font-family:Georgia,serif;font-style:italic;font-weight:400;color:#fff;font-size:clamp(44px,9vw,120px);line-height:1;
+    letter-spacing:.02em;margin:14px 0;opacity:0;transform:scale(1.25);filter:blur(12px);animation:reveal 1.3s cubic-bezier(.2,.8,.2,1) 0.9s forwards}
+  .bar{width:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:8px auto;
+    animation:bar 1s ease 1.9s forwards}
+  .sub{color:rgba(237,232,220,.75);font-size:clamp(13px,2vw,18px);letter-spacing:.35em;text-transform:uppercase;
+    opacity:0;animation:up .9s ease 2.2s forwards}
+
+  @keyframes sweep{to{left:120%}}
+  @keyframes glowin{to{opacity:1}}
+  @keyframes up{to{opacity:1;transform:translateY(0)}}
+  @keyframes reveal{to{opacity:1;transform:scale(1);filter:blur(0)}}
+  @keyframes bar{to{width:min(280px,60vw)}}
+  @keyframes curtain{to{clip-path:inset(0 0 100% 0);opacity:0}}
+
+  .controls{position:fixed;bottom:22px;right:22px;z-index:20;display:flex;gap:10px}
+  body.is-preview .controls{display:none}
+  .controls button{background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;
+    padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(6px)}
+  .controls button:hover{border-color:var(--gold);color:var(--gold)}
+</style>
+</head>
+<body>
+
+  <!-- ── PAGE (revealed after intro) ── -->
+  <div class="page">
+    <h1>Welcome to your brand.</h1>
+    <p>This is where your site begins. The intro above played once, then handed the visitor straight to you.</p>
+    <a href="#">Enter Site</a>
+  </div>
+
+  <!-- ── INTRO OVERLAY ── -->
+  <div class="intro" id="intro">
+    <div class="sweep"></div>
+    <div class="glow"></div>
+    <div class="lockup">
+      <!-- EDIT: eyebrow text -->
+      <div class="eyebrow">SWRV ON THE GO</div>
+      <!-- EDIT: main title -->
+      <div class="title">Your Name</div>
+      <div class="bar"></div>
+      <!-- EDIT: subtitle -->
+      <div class="sub">Presents</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="replay()">↻ Replay</button>
+    <button onclick="skip()">Skip →</button>
+  </div>
+
+<script>
+  if (new URLSearchParams(location.search).get('preview') === '1') { document.body.classList.add('is-preview'); }
+  const intro = document.getElementById('intro');
+  let t = setTimeout(()=>intro.classList.add('gone'), 5600);
+  function skip(){ clearTimeout(t); intro.classList.add('gone'); }
+  function replay(){
+    clearTimeout(t);
+    intro.classList.remove('gone');
+    // restart CSS animations by reflowing
+    const clone = intro.cloneNode(true);
+    intro.parentNode.replaceChild(clone, intro);
+    location.reload();
+  }
+</script>
+</body>
+</html>

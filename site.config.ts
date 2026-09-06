@@ -42,35 +42,20 @@ export const PAYMENT_CONFIG = {
 } as const;
 
 
-// ── ROADMAP PRICING ────────────────────────────────────────────────────
-// $1 to start — Swerve will raise this over time.
-// Full Roadmap: set stripeLink once your Stripe product is created.
-// PayPal works immediately once paypalLink is set.
+// ── ROADMAP ────────────────────────────────────────────────────────────
+// The Roadmap is FREE — it's the top of the funnel, not a product.
+// There is one experience (no tiers) and nothing is charged for it.
 export const ROADMAP_PRICING = {
   full: {
-    price: '$3',
-    priceNumeric: 3,
-    label: 'The Full Roadmap',
+    price: 'Free',
+    priceNumeric: 0,
+    label: 'The Roadmap',
     tagline: 'Your complete blueprint — vision mapped to services.',
     bulletPoints: [
       'Deep evidence-based analysis of your vision',
       '7-part life blueprint (mindset, diet, fitness, community)',
       'Every service you need, mapped to what you said',
       'Yours to download, email, and bring to the booking',
-    ],
-    // Update these once your payment accounts are configured
-    stripeLink: 'https://book.stripe.com/9B66oGdAOduw7SIfhJaEE00',
-    paypalLink: 'https://paypal.me/swrvonthego?amount=1',
-  },
-  quick: {
-    price: 'Free',
-    priceNumeric: 0,
-    label: 'Quick Vision',
-    tagline: '10 questions. 3 minutes. Your gift, named.',
-    bulletPoints: [
-      '10 gift-locating questions, one at a time',
-      'Your gift named in one specific sentence',
-      '2–3 services to get you moving',
     ],
   },
 } as const;
@@ -345,7 +330,7 @@ export const PIPELINE_PROJECTS: PipelineProject[] = [
 // Set to true to hide pricing and drive inquiries.
 // Flip to false when ready to show prices again.
 export const LAUNCH_MODE = {
-  active: true,
+  active: false,
   badge: 'NOW OPEN',
   headline: 'SWRV On The Go — Grand Opening',
   subline: 'We are officially open for business and now accepting new clients. Reach out to discuss your project and receive custom pricing.',
@@ -383,19 +368,6 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     accent: '#c8a84b',
   },
   {
-    id: 'client-portal',
-    name: 'SWRV Client Portal',
-    type: 'Full-Stack Client Dashboard',
-    description: 'A private workspace where every SWRV client manages their projects, invoices, Roadmap results, and delivered files — all in one secure login. No chasing emails. No confusion about what is next.',
-    role: 'Sole creator — design, development, and everything end to end',
-    stack: ['React', 'TypeScript', 'Supabase', 'Cloudflare Pages', 'Google Auth'],
-    status: 'live',
-    statusLabel: 'Live',
-    url: 'https://app.swrvonthego.pro',
-    showcaseUrl: '/apps/client-portal.html',
-    accent: '#6366f1',
-  },
-  {
     id: 'no-bs-bible',
     name: 'The SWRV No BS Bible',
     type: 'Full-Stack Web App',
@@ -430,6 +402,7 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     status: 'live',
     statusLabel: 'Live',
     url: 'https://trainbyob.me',
+    showcaseUrl: '/apps/trainbyob.html',
     accent: '#e07a5f',
   },
   {
@@ -454,20 +427,9 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     stack: ['JavaScript', 'Web App', 'UI/UX Design'],
     status: 'live',
     statusLabel: 'Live',
-    showcaseUrl: '/apps/byob-timer.html',
+    url: '/apps/byob-timer/',
+    showcaseUrl: '/apps/byob-timer/',
     accent: '#81b29a',
-  },
-  {
-    id: 'hr205',
-    name: 'HR205.org',
-    type: 'Template System / Website',
-    description: 'A modular website template system serving as the foundation for client builds. I run the backend, keep the systems operating, and handle website maintenance — the infrastructure and ongoing operations that keep the platform running reliably.',
-    role: 'Backend, systems operation & website maintenance',
-    stack: ['React', 'Modular Architecture', 'Reusable Components', 'Template Engine'],
-    status: 'ongoing',
-    statusLabel: 'Active',
-    url: 'https://hr205.org',
-    accent: '#8b5cf6',
   },
 ];
 
@@ -599,8 +561,8 @@ export const SERVICES: Service[] = [
     id: 'brand-planning',
     name: 'Brand Planning',
     category: 'identity',
-    price: '$750',
-    priceNumeric: 750,
+    price: '$250',
+    priceNumeric: 250,
     blurb: 'Live, AI-powered Roadmap experience that maps your gift, purpose, and brand identity. Includes vision + mission writing, color palette, and full brand direction — custom-built for you, not recycled.',
     featured: true,
     deliveryDays: 2,
@@ -613,8 +575,8 @@ export const SERVICES: Service[] = [
     id: 'logo-design',
     name: 'Logo & Brand Identity Design',
     category: 'identity',
-    price: '$750',
-    priceNumeric: 750,
+    price: '$250',
+    priceNumeric: 250,
     blurb: 'Custom logo system with primary, secondary, and submark variations. 2 rounds of revisions. Proprietary — not templated.',
     deliveryDays: 10,
     revisions: 2,
@@ -626,8 +588,8 @@ export const SERVICES: Service[] = [
     id: 'photography',
     name: 'Photography Package',
     category: 'identity',
-    price: '$2,400',
-    priceNumeric: 2400,
+    price: '$800',
+    priceNumeric: 800,
     blurb: 'Half-day brand + lifestyle photoshoot. Full day of shooting, 3-5 hours of professional editing. Color grading included. Deliverables ready for web, press, and social.',
     deliveryDays: 7,
     revisions: 0,
@@ -639,22 +601,23 @@ export const SERVICES: Service[] = [
     id: 'content-system',
     name: 'Content Strategy & Social Media Kit',
     category: 'identity',
-    price: '$1,500',
-    priceNumeric: 1500,
+    price: '$500',
+    priceNumeric: 500,
     blurb: 'Custom content calendar, brand voice guide, social media templates, hashtag strategy, engagement framework, and post scheduling system. Bespoke — built around your audience.',
   },
 
   // ── WEB & DIGITAL ────────────────────────────────────────────────────────
   {
     id: 'website-presence',
-    name: 'Website — The Presence',
+    name: 'Website — The Presence ($300 Special)',
     category: 'execution',
-    price: '$750',
-    priceNumeric: 750,
-    blurb: '3-page essential site. Mobile-friendly. Brand-aligned. Domain + email setup included. Live in 7 days. SEO audit at 3-6 months included.',
-    deliveryDays: 7,
+    featured: true,
+    price: '$300',
+    priceNumeric: 300,
+    blurb: 'The $300 special. Pick from 10 professionally designed template styles or go custom — we swap in your brand, your words, and your photos. Mobile-friendly. Domain + email setup included. Live in 5 days.',
+    deliveryDays: 5,
     revisions: 1,
-    includes: ["Up to 3 pages", "Mobile responsive design", "Contact form", "SEO foundations", "1 round of revisions", "Launch-ready in 7 days"],
+    includes: ["Your choice of 10 template styles (or custom 3-page)", "Your brand colors, logo & content", "Mobile responsive design", "Contact form", "Basic SEO setup", "1 round of revisions", "Live in 5 days"],
     notIncludes: ["E-commerce", "Booking system", "Custom animations"],
     assetsNeeded: ["Logo (any format)", "Written copy for each page", "1-3 high quality photos or images", "Color preferences (if no branding exists yet)"],
   },
@@ -662,16 +625,16 @@ export const SERVICES: Service[] = [
     id: 'website-platform',
     name: 'Website — The Platform',
     category: 'execution',
-    price: '$1,500',
-    priceNumeric: 1500,
+    price: '$500',
+    priceNumeric: 500,
     blurb: '5-page custom site with booking integration, email capture, and content sections. Domain + email included. SEO audit at 3-6 months included. Live in 14 days.',
   },
   {
     id: 'website-ecosystem',
     name: 'Website — The Ecosystem',
     category: 'execution',
-    price: '$3,000',
-    priceNumeric: 3000,
+    price: '$1,000',
+    priceNumeric: 1000,
     blurb: 'A multifaceted digital home for solopreneurs who operate as a whole company. Custom-built — you won\'t find this anywhere else because we designed this concept. Vision-first: we get what\'s in your head out and into a digital space you can grow into over time. Your Roadmap drives every design decision. Includes domain, email, SEO audit at 3-6 months. Live in 21 days.',
     deliveryDays: 21,
     revisions: 3,
@@ -683,33 +646,33 @@ export const SERVICES: Service[] = [
     id: 'enterprise-ecosystem',
     name: 'Enterprise Ecosystem',
     category: 'execution',
-    price: 'From $15,000',
-    priceNumeric: 15000,
-    blurb: 'For those building something the size of Apple, Microsoft, or a full digital record label — with multiple divisions, offices, and operations under one digital roof. Multi-brand architecture, team portals, artist rosters, revenue streams, and expansive infrastructure. Vision-first, built to scale. Starts at $5,000, custom-quoted based on scope.',
+    price: 'From $5,000',
+    priceNumeric: 5000,
+    blurb: 'For those building something the size of Apple, Microsoft, or a full digital record label — with multiple divisions, offices, and operations under one digital roof. Multi-brand architecture, team portals, artist rosters, revenue streams, and expansive infrastructure. Vision-first, built to scale. Starts at $5,000, custom-quoted by scope.',
     featured: true,
   },
   {
     id: 'website-maintenance',
     name: 'Website Maintenance — Self-Service',
     category: 'execution',
-    price: '$90/month',
-    priceNumeric: 90,
+    price: '$30/month',
+    priceNumeric: 30,
     blurb: 'Security updates, broken link fixes, and content updates monthly. You run the site — we keep it clean and current.',
   },
   {
     id: 'website-management',
     name: 'Website Management — Full Service',
     category: 'execution',
-    price: '$375/month',
-    priceNumeric: 375,
+    price: '$125/month',
+    priceNumeric: 125,
     blurb: 'We manage everything — security, updates, content, SEO monitoring, and performance optimization. No separate audit needed. Proactive, not reactive.',
   },
   {
     id: 'fundraising-site',
     name: 'Crowdfunding / Fundraising Site',
     category: 'execution',
-    price: '$3,000',
-    priceNumeric: 3000,
+    price: '$1,000',
+    priceNumeric: 1000,
     blurb: 'Campaign page, donation/payment flow, progress tracker, and supporter recognition — built to raise money. A GoFundMe alternative you actually own.',
   },
 
@@ -718,9 +681,9 @@ export const SERVICES: Service[] = [
     id: 'music-production',
     name: 'Full Song Production',
     category: 'execution',
-    price: '$9,000',
-    priceNumeric: 9000,
-    blurb: 'Complete song from concept to master — beat/instrumental creation, vocal recording, arranging, vocal production, vocal coaching, mixing, mastering, and final delivery. 5-day turnaround. Industry standard: $4,000-$8,000.',
+    price: '$3,000',
+    priceNumeric: 3000,
+    blurb: 'Complete song from concept to master — beat/instrumental creation, vocal recording, arranging, vocal production, vocal coaching, mixing, mastering, and final delivery. 5-day turnaround. Half the industry rate — same broadcast-ready quality.',
     featured: true,
     deliveryDays: 5,
     revisions: 2,
@@ -732,8 +695,8 @@ export const SERVICES: Service[] = [
     id: 'mixing',
     name: 'Mixing',
     category: 'execution',
-    price: '$1,500',
-    priceNumeric: 1500,
+    price: '$500',
+    priceNumeric: 500,
     blurb: 'Professional mixing for your finished recordings. Balances every element — levels, panning, EQ, compression, effects. Broadcast-ready output.',
     deliveryDays: 3,
     revisions: 2,
@@ -745,56 +708,56 @@ export const SERVICES: Service[] = [
     id: 'mastering',
     name: 'Mastering',
     category: 'execution',
-    price: '$1,500',
-    priceNumeric: 1500,
+    price: '$500',
+    priceNumeric: 500,
     blurb: 'Final mastering to streaming and broadcast standards. Loudness normalization, stereo enhancement, and platform-optimized delivery.',
   },
   {
     id: 'jingle',
     name: 'Jingle / Brand Audio',
     category: 'execution',
-    price: '$750',
-    priceNumeric: 750,
+    price: '$250',
+    priceNumeric: 250,
     blurb: 'Original brand jingle, sonic logo, or audio bumper. Custom-written and produced to live in your audience\'s head.',
   },
   {
     id: 'voiceover',
     name: 'Voiceover Recording & Production',
     category: 'execution',
-    price: '$375/hr',
-    priceNumeric: 375,
+    price: '$125/hr',
+    priceNumeric: 125,
     blurb: 'Professional voiceover for ads, brand intros, audiobooks, or content. Over 25 years in the music business — you\'re paying for the mic, the ear, and the experience.',
   },
   {
     id: 'audiobook',
     name: 'Audiobook Production',
     category: 'execution',
-    price: '$375/hr',
-    priceNumeric: 375,
+    price: '$125/hr',
+    priceNumeric: 125,
     blurb: 'Studio narration, noise cleanup, mastering, and ACX/Findaway-ready deliverables. Broadcast-ready. Every session managed with 25 years of production experience.',
   },
   {
     id: 'live-recording',
     name: 'Live Recording Session',
     category: 'execution',
-    price: '$375/hr',
-    priceNumeric: 375,
+    price: '$125/hr',
+    priceNumeric: 125,
     blurb: 'Capture a live performance, rehearsal, or jam session in broadcast-ready quality. Setup in 20 minutes. Includes recording and basic editing.',
   },
   {
     id: 'audio-edit-alacarte',
     name: 'Audio Editing',
     category: 'execution',
-    price: '$375/hr',
-    priceNumeric: 375,
+    price: '$125/hr',
+    priceNumeric: 125,
     blurb: 'Scrubbing, noise cancellation, reverb, compression, effects, and mastering. You\'re not just paying for editing — you\'re paying for someone who\'s been in the music business for over 25 years, delivering broadcast-ready quality with meticulous attention to detail.',
   },
   {
     id: 'podcast-launch',
     name: 'Podcast Launch Kit',
     category: 'execution',
-    price: '$250 + $125/hr',
-    priceNumeric: 750,
+    price: '$100 + $50/hr',
+    priceNumeric: 250,
     blurb: '$250 covers full strategy, branding, and tech setup — hosting, RSS, distribution on Spotify + Apple Podcasts. Recording sessions at $125/hr. Everything built around your voice and audience.',
     deliveryDays: 7,
     revisions: 1,
@@ -806,8 +769,8 @@ export const SERVICES: Service[] = [
     id: 'podcast-editing',
     name: 'Podcast Episode Production',
     category: 'execution',
-    price: '$375/hr',
-    priceNumeric: 375,
+    price: '$125/hr',
+    priceNumeric: 125,
     blurb: 'Per-hour recording + editing, leveling, intro/outro integration, and delivery. Broadcast-ready every episode. Bulk sessions available.',
   },
 
@@ -816,9 +779,9 @@ export const SERVICES: Service[] = [
     id: 'music-video',
     name: 'Music Video (2:30–4 min)',
     category: 'execution',
-    price: '$15,000',
-    priceNumeric: 15000,
-    blurb: 'Full music video production — concept, 1-day shoot, 5-day post-production, unlimited premium effects and transitions, color grading, and 2 rounds of revisions. Industry standard: $7,000-$15,000.',
+    price: '$5,000',
+    priceNumeric: 5000,
+    blurb: 'Full music video production — concept, 1-day shoot, 5-day post-production, unlimited premium effects and transitions, color grading, and 2 rounds of revisions. A third of what studios charge for the same finish.',
     featured: true,
     deliveryDays: 7,
     revisions: 2,
@@ -830,64 +793,64 @@ export const SERVICES: Service[] = [
     id: 'video-promo',
     name: 'Promo Video (under 1 min)',
     category: 'execution',
-    price: '$3,750',
-    priceNumeric: 3750,
+    price: '$1,250',
+    priceNumeric: 1250,
     blurb: 'Complete 1-minute promo — concept to delivery in 1 day. Includes shoot, edit, color grading, and 2 revision rounds. Everything included, nothing recycled.',
   },
   {
     id: 'on-site-video',
     name: 'On-Site Filmography & Event Coverage',
     category: 'execution',
-    price: '$1,500/hr',
-    priceNumeric: 1500,
+    price: '$500/hr',
+    priceNumeric: 500,
     blurb: 'On-location brand content, event coverage, behind-the-scenes, or multi-cam event capture. 20-minute setup. Equipment travels with us. Includes footage delivery and basic edit.',
   },
   {
     id: 'live-streaming',
     name: 'Live Streaming Setup & Production',
     category: 'execution',
-    price: '$936/hr',
-    priceNumeric: 936,
+    price: '$300/hr',
+    priceNumeric: 300,
     blurb: 'Real-time multi-platform streaming to YouTube, Instagram, Facebook, or Twitch. Includes setup, camera switching, audio management, live chat monitoring, and audience engagement throughout the broadcast.',
   },
   {
     id: 'short-form-content',
     name: 'Reels / Short-Form Content',
     category: 'execution',
-    price: '$300/batch',
-    priceNumeric: 900,
+    price: '$100/batch',
+    priceNumeric: 300,
     blurb: 'Batch of 5-10 short-form videos (TikTok, Instagram Reels, YouTube Shorts). Edited, captioned, and optimized for each platform.',
   },
   {
     id: 'ai-motion-30',
     name: 'AI Motion Graphics — 30 Seconds',
     category: 'execution',
-    price: '$1,800',
-    priceNumeric: 1800,
+    price: '$600',
+    priceNumeric: 600,
     blurb: '30-second AI-generated video — intro, animated collage, or branded content. 5 premium effects, 5 premium transitions, 2 revision rounds. 3-hour production time at $200/hr.',
   },
   {
     id: 'ai-motion-60',
     name: 'AI Motion Graphics — 60 Seconds',
     category: 'execution',
-    price: '$2,400',
-    priceNumeric: 2400,
+    price: '$800',
+    priceNumeric: 800,
     blurb: '60-second AI-generated video with 8-10 premium effects and transitions. 2 revision rounds. Built with cutting-edge AI tools and edited to broadcast standards.',
   },
   {
     id: 'ai-motion-120',
     name: 'AI Motion Graphics — Up to 2 Minutes',
     category: 'execution',
-    price: '$3,600',
-    priceNumeric: 3600,
+    price: '$1,200',
+    priceNumeric: 1200,
     blurb: 'Up to 2-minute AI-generated video with 8-10 premium effects and transitions. 2 revision rounds. Cinematic quality at a fraction of traditional animation costs.',
   },
   {
     id: 'video-edit-alacarte',
     name: 'Video Editing',
     category: 'execution',
-    price: '$750/hr',
-    priceNumeric: 750,
+    price: '$250/hr',
+    priceNumeric: 250,
     blurb: 'Professional video editing for existing footage — cuts, transitions, graphics, color, and delivery. Bring the footage, leave with finished cuts.',
   },
 
@@ -896,32 +859,32 @@ export const SERVICES: Service[] = [
     id: 'pitch-deck',
     name: 'Pitch Deck + Business Plan',
     category: 'execution',
-    price: '$750',
-    priceNumeric: 750,
+    price: '$250',
+    priceNumeric: 250,
     blurb: 'Investor-ready pitch deck (up to 12 slides) plus a full business plan document. Narrative arc, design, financial overview, and ask slide — everything you need to walk into the room ready.',
   },
   {
     id: 'keynote-slides',
     name: 'Keynote / Speaking Slides',
     category: 'execution',
-    price: '$750',
-    priceNumeric: 750,
+    price: '$250',
+    priceNumeric: 250,
     blurb: 'Custom slide deck for talks, workshops, or presentations. Visual storytelling that amplifies your message — not generic templates.',
   },
   {
     id: 'book-format',
     name: 'Book Formatting + Marketing Launch',
     category: 'execution',
-    price: '$2,250',
-    priceNumeric: 2250,
+    price: '$750',
+    priceNumeric: 750,
     blurb: 'Professional interior formatting + cover layout for KDP, IngramSpark, or print — plus a full marketing launch strategy and social media rollout plan. Built for artists who need their book to sell, not just exist.',
   },
   {
     id: 'llc-formation',
     name: 'LLC Formation + Business Banking',
     category: 'execution',
-    price: '$750',
-    priceNumeric: 750,
+    price: '$250',
+    priceNumeric: 250,
     blurb: 'Done-for-you LLC paperwork, EIN setup, business banking connection, and account guidance — everything to make your brand legally operational. All-inclusive.',
   },
 
@@ -930,33 +893,188 @@ export const SERVICES: Service[] = [
     id: 'vocal-training',
     name: 'Vocal Training (Birdsong Method)',
     category: 'experience',
-    price: '$2,100',
-    priceNumeric: 2100,
+    price: '$700',
+    priceNumeric: 700,
     blurb: '4-session vocal coaching — projection, breath control, performance presence, and voice preservation. The Birdsong Method: developed from 25+ years in the music business.',
   },
   {
     id: 'recording-booth',
     name: 'Recording Booth Training',
     category: 'experience',
-    price: '$2,625',
-    priceNumeric: 2625,
+    price: '$875',
+    priceNumeric: 875,
     blurb: 'Studio etiquette, mic technique, producer language, and how to get the best out of every session. For artists who want to walk into any studio ready.',
   },
   {
     id: 'artist-development',
     name: 'Artist Development',
     category: 'experience',
-    price: 'From $3,000',
-    priceNumeric: 3000,
+    price: 'From $1,000',
+    priceNumeric: 1000,
     blurb: 'Multi-week mentorship for artists at the inflection point. Sound, image, business, stage presence — built around your vision, not a formula. Proprietary. Personal. Results-driven.',
   },
   {
     id: 'consulting-call',
     name: 'Strategy Call',
     category: 'experience',
-    price: '$1,125',
-    priceNumeric: 1125,
+    price: '$375',
+    priceNumeric: 375,
     blurb: '60-minute one-on-one call to map a specific decision, price a project, unblock the next move, or build a roadmap. 25 years of music business insight in one hour.',
+  },
+];
+
+
+// ── NEED A WEBSITE? — template storefront section ───────────
+// videoUrl: set to your promo video URL (Cloudinary / R2 / CDN) to show
+// the video banner. Leave '' to show the styled CTA banner instead.
+export const NEED_A_WEBSITE = {
+  videoUrl: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/v15044gf0000d8gahu7og65l6v48v87g.mp4',
+  eyebrow: 'NEED A WEBSITE?',
+  headline: 'Pick a style. We make it yours.',
+  subline:
+    "Ten professionally built templates — every style of business covered. We swap in your brand, your words, your photos, and hand you a live website in days. One price, no surprises: $300 flat.",
+  price: '$300',
+} as const;
+
+export interface WebsiteTemplate {
+  id: string;
+  name: string;
+  style: string;        // one-line style descriptor
+  bestFor: string;      // who it's for
+  // Mini-mockup design tokens (CSS-generated preview card)
+  bg: string;           // preview background
+  ink: string;          // preview text color
+  accent: string;       // preview accent color
+  font: 'serif' | 'sans' | 'mono';
+  layout: 'hero' | 'grid' | 'split' | 'centered' | 'list';
+  // Real live-preview link — a portfolio site or /templates example
+  // that matches this style, so buyers can see a finished version
+  // instead of only the CSS thumbnail.
+  previewUrl: string;
+  previewLabel: string; // short caption for the "See Live Preview" link
+}
+
+export const WEBSITE_TEMPLATES: WebsiteTemplate[] = [
+  { id: 'tpl-clean-slate', name: 'The Clean Slate', style: 'Minimal, editorial, lots of air', bestFor: 'Consultants, writers, professionals', bg: '#faf9f6', ink: '#1a1a1a', accent: '#1a1a1a', font: 'serif', layout: 'centered',
+    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC — Tax & Financial Services' },
+  { id: 'tpl-bold-drop',   name: 'The Bold Drop', style: 'Dark, loud, streetwear energy', bestFor: 'Brands, apparel, culture drops', bg: '#0d0d0d', ink: '#ffffff', accent: '#ff4d00', font: 'sans', layout: 'hero',
+    previewUrl: 'https://swrvonthego.pro', previewLabel: 'SWRV On The Go — Full brand experience' },
+  { id: 'tpl-gallery',     name: 'The Gallery', style: 'Image-first grid, zero clutter', bestFor: 'Photographers, artists, models', bg: '#111111', ink: '#eeeeee', accent: '#c8a84b', font: 'sans', layout: 'grid',
+    previewUrl: '/templates/ecosystem-example.html', previewLabel: 'VANTA Creative — Roster + portfolio grid' },
+  { id: 'tpl-storefront',  name: 'The Storefront', style: 'Product cards, clean checkout flow', bestFor: 'Shops, merch, small product lines', bg: '#ffffff', ink: '#222222', accent: '#2f7d5c', font: 'sans', layout: 'grid',
+    previewUrl: '/templates/platform-example.html', previewLabel: 'Kofi Ware Music — Beats & booking commerce' },
+  { id: 'tpl-booking-pro', name: 'The Booking Pro', style: 'Services up top, calendar built in', bestFor: 'Barbers, coaches, trainers, studios', bg: '#f4f2ee', ink: '#20242c', accent: '#3d5a80', font: 'sans', layout: 'split',
+    previewUrl: 'https://trainbyob.me', previewLabel: 'TrainBYOB — Coaching site with booking' },
+  { id: 'tpl-stage',       name: 'The Stage', style: 'Full-bleed hero, music player ready', bestFor: 'Artists, bands, performers', bg: '#08060c', ink: '#f5f0ff', accent: '#9d4edd', font: 'sans', layout: 'hero',
+    previewUrl: '/apps/birdsong-method.html', previewLabel: 'The Birdsong Method — Artist platform' },
+  { id: 'tpl-table',       name: 'The Table', style: 'Warm tones, menu-forward', bestFor: 'Restaurants, food trucks, caterers', bg: '#fdf6ec', ink: '#3a2a1a', accent: '#c87941', font: 'serif', layout: 'list',
+    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC — Warm, list-driven layout' },
+  { id: 'tpl-pulpit',      name: 'The Pulpit', style: 'Welcoming, community-centered', bestFor: 'Churches, ministries, nonprofits', bg: '#fffdf7', ink: '#2c2418', accent: '#8b6f3e', font: 'serif', layout: 'centered',
+    previewUrl: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/', previewLabel: 'The SWRV No BS Bible — Community-centered' },
+  { id: 'tpl-launchpad',   name: 'The Launchpad', style: 'One page, countdown, email capture', bestFor: 'Launches, events, pre-orders', bg: '#0a1128', ink: '#e8ecf4', accent: '#00d1b2', font: 'mono', layout: 'centered',
+    previewUrl: '/apps/byob-timer.html', previewLabel: 'BYOB Timer — Focused single-purpose page' },
+  { id: 'tpl-boss-card',   name: 'The Boss Card', style: 'One-page personal brand hub', bestFor: 'Creators, speakers, link-in-bio upgrade', bg: '#16121c', ink: '#f2eef8', accent: '#e8c96a', font: 'sans', layout: 'list',
+    previewUrl: 'https://spa-patrol.swrvonthego.workers.dev', previewLabel: 'MyPatrol — Personal branded hub' },
+];
+
+
+// ── SERVICE SUB-CATEGORIES — premium organized taxonomy ─────
+// Groups the à la carte SERVICES catalog into shopper-friendly buckets
+// (video, audio, web, etc.) for display in the Marketplace and Services Menu.
+export interface SubCategory {
+  id: string;
+  label: string;
+  tagline: string;
+  emoji: string;
+  serviceIds: string[];
+}
+
+export const SERVICE_SUBCATEGORIES: SubCategory[] = [
+  {
+    id: 'videography',
+    label: 'Videography',
+    tagline: 'Moving picture, fully produced.',
+    emoji: '🎬',
+    serviceIds: [
+      'music-video',
+      'video-promo',
+      'on-site-video',
+      'live-streaming',
+      'short-form-content',
+      'ai-motion-30',
+      'ai-motion-60',
+      'ai-motion-120',
+      'video-edit-alacarte',
+    ],
+  },
+  {
+    id: 'audio-production',
+    label: 'Audio Production',
+    tagline: 'Music, voice, and everything between.',
+    emoji: '🎵',
+    serviceIds: [
+      'music-production',
+      'mixing',
+      'mastering',
+      'live-recording',
+      'jingle',
+      'voiceover',
+      'audiobook',
+      'podcast-launch',
+      'podcast-editing',
+      'audio-edit-alacarte',
+    ],
+  },
+  {
+    id: 'web-digital',
+    label: 'Web & Digital',
+    tagline: 'Vision-first. Custom-built. Yours alone.',
+    emoji: '🌐',
+    serviceIds: [
+      'website-presence',
+      'website-platform',
+      'website-ecosystem',
+      'enterprise-ecosystem',
+      'website-management',
+      'website-maintenance',
+      'fundraising-site',
+    ],
+  },
+  {
+    id: 'brand-identity',
+    label: 'Brand Identity',
+    tagline: 'Define who you are before you put it anywhere.',
+    emoji: '✨',
+    serviceIds: [
+      'brand-planning',
+      'logo-design',
+      'photography',
+      'content-system',
+    ],
+  },
+  {
+    id: 'coaching',
+    label: 'Coaching & Mentorship',
+    tagline: 'One-on-one development to level up.',
+    emoji: '🎯',
+    serviceIds: [
+      'vocal-training',
+      'recording-booth',
+      'artist-development',
+      'consulting-call',
+    ],
+  },
+  {
+    id: 'content-business',
+    label: 'Content & Business',
+    tagline: 'Books, decks, LLCs — everything to operate.',
+    emoji: '📚',
+    serviceIds: [
+      'book-format',
+      'pitch-deck',
+      'keynote-slides',
+      'llc-formation',
+    ],
   },
 ];
 
@@ -967,7 +1085,7 @@ export const WEB_PACKAGES = {
     {
       id: 'presence',
       name: 'THE PRESENCE',
-      price: 750,
+      price: 300,
       tagline: 'Get found. Look right.',
       features: [
         '3-page essential site',
@@ -980,7 +1098,7 @@ export const WEB_PACKAGES = {
     {
       id: 'platform',
       name: 'THE PLATFORM',
-      price: 1500,
+      price: 500,
       tagline: 'Convert. Capture. Connect.',
       features: [
         '5-page custom site',
@@ -995,7 +1113,7 @@ export const WEB_PACKAGES = {
     {
       id: 'ecosystem',
       name: 'THE ECOSYSTEM',
-      price: 3000,
+      price: 1000,
       tagline: 'The full SWRV treatment.',
       features: [
         'Modular site (unlimited sections)',
@@ -1168,10 +1286,10 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
   {
     id: 'presence',
     name: 'THE PRESENCE',
-    price: 750,
+    price: 300,
     iconName: 'Globe',
-    tagline: 'Show up. Stand out. Get seen.',
-    badge: null,
+    tagline: 'The $300 website special. Live in 5 days.',
+    badge: 'THE $300 SPECIAL',
     bestFor: 'Artists, LLC holders, coaches, and creatives who need a clean, professional page for funding apps, investor decks, portfolio showcases, or proving you exist online.',
     deliveryDays: '48-hour turnaround',
     revisions: '1 round',
@@ -1200,7 +1318,7 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
   {
     id: 'platform',
     name: 'THE PLATFORM',
-    price: 1500,
+    price: 500,
     iconName: 'Zap',
     tagline: 'Sell. Book. Tell your story.',
     badge: 'MOST POPULAR',
@@ -1221,7 +1339,7 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
       'Video embedded and optimized on your page',
     ],
     addOns: null,
-    note: 'The brand video alone runs $500–$1,500 on the open market. You get it bundled here.',
+    note: 'The brand video alone runs $500+ on the open market. Bundled here at half that.',
     color: 'border-lion-orange',
     accentColor: 'text-lion-orange',
     badgeBg: 'bg-lion-orange',
@@ -1235,7 +1353,7 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
   {
     id: 'ecosystem',
     name: 'THE ECOSYSTEM',
-    price: 3000,
+    price: 1000,
     iconName: 'Rocket',
     tagline: 'Your full world. One destination.',
     badge: null,
@@ -1256,12 +1374,12 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
       'Priority response time',
     ],
     addOns: [
-      { label: 'Extra pages (beyond 5)', price: '+$100 each' },
+      { label: 'Extra pages (beyond 5)', price: '+$50 each' },
       { label: 'Monthly management (full service)', price: '$125/mo' },
-      { label: 'Additional brand video', price: '$150–$300' },
+      { label: 'Additional brand video', price: '+$100' },
       { label: '3-6 month SEO audit', price: 'Included' },
     ],
-    note: 'Multi-page sites run $3,000–$15,000+ in the open market. This is intentional.',
+    note: 'Multi-page sites run $3,000–$15,000+ everywhere else. This is intentional.',
     color: 'border-white/20',
     accentColor: 'text-white',
     badgeBg: '',
