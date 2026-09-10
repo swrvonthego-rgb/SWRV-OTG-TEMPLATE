@@ -214,6 +214,64 @@ async function captureEmail(env, { email, name, source, vision_preview, attribut
 }
 
 // ─────────────────────────────────────────────────────────
+// BOOKINGS — the persistent record of every booking inquiry, from Zion's
+// artist page and the general service booking flow alike. This is the
+// system of record for the $50-deposit flow: the client is redirected
+// straight to a Stripe Payment Link with no webhook wired up, so this
+// table (visible via /admin) is the only place a booking is guaranteed
+// to be found, independent of whether the owner-notification email or
+// the Stripe payment itself ever went through.
+// ─────────────────────────────────────────────────────────
+let __bookingsTableReady = false;
+async function ensureBookingsTable(env) {
+  if (__bookingsTableReady || !env.EMAIL_DB) return;
+  try {
+    await env.EMAIL_DB.prepare(
+      `CREATE TABLE IF NOT EXISTS bookings (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        source        TEXT NOT NULL,
+        first_name    TEXT,
+        last_name     TEXT,
+        email         TEXT,
+        phone         TEXT,
+        event_type    TEXT,
+        event_date    TEXT,
+        location      TEXT,
+        details       TEXT,
+        service_price TEXT,
+        referral_code TEXT,
+        created_at    TEXT DEFAULT (datetime('now'))
+      )`
+    ).run();
+    __bookingsTableReady = true;
+  } catch (_) { /* table may already exist with a compatible schema */ }
+}
+
+// Saves one booking inquiry. Throws on failure (unlike captureEmail) —
+// callers decide whether that should block the response, since this
+// table is the primary record, not a best-effort mailing list.
+async function saveBooking(env, { source, firstName, lastName, email, phone, eventType, eventDate, location, details, servicePrice, referralCode }) {
+  await ensureBookingsTable(env);
+  const result = await env.EMAIL_DB.prepare(
+    `INSERT INTO bookings (source, first_name, last_name, email, phone, event_type, event_date, location, details, service_price, referral_code)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    source,
+    firstName || null,
+    lastName || null,
+    email || null,
+    phone || null,
+    eventType || null,
+    eventDate || null,
+    location || null,
+    details || null,
+    servicePrice || null,
+    referralCode || null,
+  ).run();
+  return result.meta?.last_row_id ?? null;
+}
+
+// ─────────────────────────────────────────────────────────
 // FAILURE ALERTS — a booking/inquiry that breaks server-side is a lead
 // that silently vanished unless someone notices. This fires from inside
 // a catch block (or a failed-send branch) that's already handling one
@@ -685,6 +743,7 @@ export default {
     if (url.pathname === '/api/admin-me')       return handleAdminMe(request, env);
     if (url.pathname === '/api/admin-logout')   return handleAdminLogout(request, env);
     if (url.pathname === '/api/admin/emails')   return handleAdminEmails(request, env);
+    if (url.pathname === '/api/admin/bookings') return handleAdminBookings(request, env);
     if (url.pathname === '/api/admin/submissions') return handleAdminSubmissions(request, env);
     if (url.pathname === '/api/admin/tenants')  return handleAdminTenants(request, env);
 
@@ -1089,6 +1148,21 @@ async function handleAdminEmails(request, env) {
   return new Response(JSON.stringify({ emails: results }), { headers: jsonHeaders(request) });
 }
 
+// Booking inquiries — Zion + general service bookings, most recent first.
+// This is the system of record for the $50-deposit flow (see saveBooking):
+// there's no Stripe webhook, so payment status isn't tracked here — the
+// owner checks the Stripe dashboard directly to confirm a deposit landed.
+async function handleAdminBookings(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+  await ensureBookingsTable(env);
+  const { results } = await env.EMAIL_DB.prepare(
+    'SELECT id, source, first_name, last_name, email, phone, event_type, event_date, location, details, service_price, referral_code, created_at FROM bookings ORDER BY created_at DESC LIMIT 500'
+  ).all();
+  return new Response(JSON.stringify({ bookings: results }), { headers: jsonHeaders(request) });
+}
+
 // Vision Portal submissions — tenant-filterable, most recent first.
 async function handleAdminSubmissions(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
@@ -1190,6 +1264,21 @@ async function handleZionBooking(request, env) {
     // Add the booker to the mailing list FIRST — before anything can bail —
     // so the lead is never lost even if outbound email isn't configured.
     await captureEmail(env, { email, name: fullName, source: 'zion-booking' });
+
+    // Save the full inquiry as the system of record. There is no Stripe
+    // webhook wired up, so this row — visible in /admin — is the only
+    // guaranteed trace of the booking once the visitor is redirected to
+    // pay. A save failure alerts the owner but never blocks the redirect;
+    // losing a $50 deposit over a DB hiccup is worse than a missing row.
+    try {
+      await saveBooking(env, {
+        source: 'zion', firstName, lastName, email,
+        eventType: inquiryType, eventDate, location, details: message,
+      });
+    } catch (err) {
+      console.error('Failed to save Zion booking:', err);
+      await notifyOwnerOfFailure(env, { source: 'Zion booking record (D1 save)', body, err });
+    }
 
     // No sending key yet? The booker + their request are already captured;
     // return success so the visitor still proceeds to the deposit step.
@@ -1416,12 +1505,26 @@ async function handleBooking(request, env) {
     // Capture the customer's email to the mailing list (never blocks booking).
     await captureEmail(env, { email, name, source: 'booking' });
 
+    // Save the full inquiry as the system of record — see saveBooking's
+    // comment for why this can't be skipped now that Zion-style bookings
+    // redirect straight to a Stripe Payment Link with no webhook.
+    try {
+      await saveBooking(env, {
+        source: 'service', firstName: name, email, phone,
+        eventType: serviceName, eventDate: kickoffDate, details: message,
+        servicePrice, referralCode,
+      });
+    } catch (err) {
+      console.error('Failed to save service booking:', err);
+      await notifyOwnerOfFailure(env, { source: 'Service booking record (D1 save)', body, err });
+    }
+
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
     const notifyTo = env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
     const safe = (x) => String(x ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
     const PAY_LABELS = {
-      stripe: '💳 Stripe — client sent to secure checkout (card / Klarna / Afterpay / Affirm)',
+      stripe: '💳 Stripe — client redirected to pay the $50 deposit',
     };
     const payLabel = PAY_LABELS[payMethod] || '📋 Payment to be arranged';
 

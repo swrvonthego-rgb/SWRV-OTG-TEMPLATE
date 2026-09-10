@@ -70,3 +70,26 @@ CREATE TABLE IF NOT EXISTS vision_submissions (
   created_at       TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_vision_submissions_tenant ON vision_submissions (tenant_slug, created_at);
+
+-- Booking inquiries — Zion's artist page and the general service booking
+-- flow both write here (see saveBooking / ensureBookingsTable in
+-- src/worker.js). Both flows redirect the client straight to a fixed $50
+-- Stripe Payment Link with no webhook wired up, so this table is the only
+-- guaranteed record of a booking; payment status is checked in the Stripe
+-- dashboard directly, not tracked here.
+CREATE TABLE IF NOT EXISTS bookings (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  source        TEXT NOT NULL,   -- 'zion' | 'service'
+  first_name    TEXT,
+  last_name     TEXT,
+  email         TEXT,
+  phone         TEXT,
+  event_type    TEXT,            -- inquiryType (Zion) or serviceName (service)
+  event_date    TEXT,
+  location      TEXT,
+  details       TEXT,            -- free-text message/notes
+  service_price TEXT,            -- service bookings only
+  referral_code TEXT,
+  created_at    TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings (created_at);

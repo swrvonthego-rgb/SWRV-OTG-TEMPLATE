@@ -236,10 +236,15 @@ export const ContactSchedule: React.FC = () => {
       });
       const data = await res.json();
       if (data.ok) {
-        setStep('success');
-        if (showPricing && PAYMENT_CONFIG.stripe.serviceUrl) {
-          setTimeout(() => window.open(PAYMENT_CONFIG.stripe.serviceUrl, '_blank', 'noopener'), 800);
+        // The booking is already saved server-side (system of record), so
+        // it's safe to leave this page immediately — no email step, no
+        // waiting. Full-page redirect (not a new tab) since we're sending
+        // the visitor to actually pay, not just peek at a link.
+        if (showPricing && PAYMENT_CONFIG.stripe.depositUrl) {
+          window.location.href = PAYMENT_CONFIG.stripe.depositUrl;
+          return;
         }
+        setStep('success');
       } else {
         setSubmitError('Something went wrong. Try again or email info@swrvonthego.pro');
       }
@@ -253,7 +258,7 @@ export const ContactSchedule: React.FC = () => {
   const STEP_KEYS: Step[] = ['service', 'calendar', 'details', 'payment', 'success'];
 
   if (step === 'success') {
-    const stripeUrl = PAYMENT_CONFIG.stripe.serviceUrl;
+    const stripeUrl = PAYMENT_CONFIG.stripe.depositUrl;
     const shopUrl = 'https://swrv.printful.me/';
 
     return (
@@ -266,15 +271,17 @@ export const ContactSchedule: React.FC = () => {
           <h2 className="text-3xl font-black mb-3">You're Booked 🎉</h2>
           <p className="text-white/60 mb-2">Confirmation email on the way. SWRV will confirm within 24 hours.</p>
 
-          {/* Payment next step */}
+          {/* Payment next step — normally unreachable: a successful submit
+              redirects straight to Stripe before this step ever renders.
+              Kept as a fallback in case depositUrl is ever unset. */}
           {showPricing && (stripeUrl ? (
             <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(99,91,255,0.08)', border: '1px solid rgba(99,91,255,0.25)' }}>
-              <p className="font-bold text-white mb-1">Complete your payment</p>
-              <p className="text-white/40 text-xs mb-3">Opening secure Stripe checkout now. If it didn't open automatically:</p>
+              <p className="font-bold text-white mb-1">Secure your booking</p>
+              <p className="text-white/40 text-xs mb-3">Opening the $50 deposit checkout now. If it didn't open automatically:</p>
               <a href={stripeUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold"
                 style={{ background: 'rgba(99,91,255,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,91,255,0.35)' }}>
-                Pay with Stripe →
+                Pay $50 Deposit →
               </a>
             </div>
           ) : (
@@ -875,18 +882,18 @@ export const ContactSchedule: React.FC = () => {
             {showPricing && (
               <>
             <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>PAYMENT</p>
-            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>One secure checkout, handled by Stripe.</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>A $50 deposit secures your booking — handled by Stripe.</p>
             <div className="p-4 rounded-2xl mb-6" style={{ background: 'rgba(99,91,255,0.08)', border: '1.5px solid rgba(99,91,255,0.35)' }}>
               <div className="flex items-center justify-between mb-2">
-                <p className="font-bold text-sm" style={{ color: '#a5b4fc' }}>💳 Pay with Stripe</p>
+                <p className="font-bold text-sm" style={{ color: '#a5b4fc' }}>💳 $50 Deposit via Stripe</p>
                 <p className="text-sm font-black" style={{ color: '#a5b4fc' }}>
-                  {cartTotal > 0 ? '$' + cartTotal.toLocaleString() : selectedService.price}
+                  {cartTotal > 0 ? '$' + cartTotal.toLocaleString() : selectedService.price} total
                 </p>
               </div>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
-                Visa, Mastercard, Amex, Apple Pay and Google Pay. Klarna, Afterpay and Affirm
-                show up at checkout when your total qualifies — you split it into 4 payments,
-                SWRV still gets paid in full upfront.
+                You'll pay a $50 deposit now via Visa, Mastercard, Amex, Apple Pay or Google Pay
+                to lock in your date. The remaining balance is invoiced separately once the
+                scope of your project is finalized.
               </p>
             </div>
               </>
@@ -909,7 +916,7 @@ export const ContactSchedule: React.FC = () => {
                 className="flex-1 py-3 rounded-full font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100"
                 style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>
                 {submitting ? 'Submitting…' : !showPricing ? 'Send Booking Request →'
-                  : `Book + Pay ${cartTotal > 0 ? '$' + cartTotal.toLocaleString() : selectedService.price} with Stripe →`}
+                  : 'Book + Pay $50 Deposit →'}
               </button>
             </div>
           </div>

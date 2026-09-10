@@ -19,6 +19,22 @@ interface SubmissionRow {
   created_at: string;
 }
 
+interface BookingRow {
+  id: number;
+  source: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  event_type: string | null;
+  event_date: string | null;
+  location: string | null;
+  details: string | null;
+  service_price: string | null;
+  referral_code: string | null;
+  created_at: string;
+}
+
 interface TenantRow {
   slug: string;
   display_name: string;
@@ -30,7 +46,7 @@ interface TenantRow {
   created_at: string;
 }
 
-type Tab = 'emails' | 'submissions' | 'tenants';
+type Tab = 'emails' | 'bookings' | 'submissions' | 'tenants';
 
 export const AdminPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -43,6 +59,11 @@ export const AdminPage: React.FC = () => {
   const [loadingRows, setLoadingRows] = useState(false);
 
   const [tab, setTab] = useState<Tab>('emails');
+
+  // ── Bookings ──────────────────────────────────────────────────
+  const [bookings, setBookings] = useState<BookingRow[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [expandedBookingId, setExpandedBookingId] = useState<number | null>(null);
 
   // ── Vision Portal: submissions ──────────────────────────────
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
@@ -90,6 +111,15 @@ export const AdminPage: React.FC = () => {
     fetchTenants();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authedEmail]);
+
+  useEffect(() => {
+    if (!authedEmail || tab !== 'bookings') return;
+    setLoadingBookings(true);
+    fetch('/api/admin/bookings', { credentials: 'same-origin' })
+      .then((res) => (res.ok ? res.json() : { bookings: [] }))
+      .then((data) => setBookings(data.bookings || []))
+      .finally(() => setLoadingBookings(false));
+  }, [authedEmail, tab]);
 
   useEffect(() => {
     if (!authedEmail || tab !== 'submissions') return;
@@ -264,7 +294,7 @@ export const AdminPage: React.FC = () => {
       </div>
 
       <div className="flex gap-2 mb-8 border-b border-white/10">
-        {(['emails', 'submissions', 'tenants'] as Tab[]).map((t) => (
+        {(['emails', 'bookings', 'submissions', 'tenants'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -272,7 +302,7 @@ export const AdminPage: React.FC = () => {
               tab === t ? 'border-lion-orange text-lion-orange' : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
-            {t === 'emails' ? 'Email list' : t === 'submissions' ? 'Vision submissions' : 'Tenants'}
+            {t === 'emails' ? 'Email list' : t === 'bookings' ? 'Bookings' : t === 'submissions' ? 'Vision submissions' : 'Tenants'}
           </button>
         ))}
       </div>
@@ -310,6 +340,68 @@ export const AdminPage: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === 'bookings' && (
+        <>
+          <div className="mb-3">
+            <h2 className="text-sm uppercase tracking-widest text-white/40 mb-1">
+              Bookings {bookings.length ? `(${bookings.length})` : ''}
+            </h2>
+            <p className="text-white/30 text-xs">
+              Every inquiry lands here the moment it's submitted — before the client is
+              redirected to pay the $50 deposit. There's no Stripe webhook wired up, so
+              payment status isn't tracked here; check the Stripe dashboard to confirm a
+              deposit actually landed.
+            </p>
+          </div>
+          {loadingBookings ? (
+            <p className="text-white/40 text-sm">Loading…</p>
+          ) : bookings.length === 0 ? (
+            <p className="text-white/40 text-sm">No bookings yet.</p>
+          ) : (
+            <div className="border border-white/10 rounded-xl overflow-hidden">
+              {bookings.map((b) => {
+                const fullName = [b.first_name, b.last_name].filter(Boolean).join(' ') || 'Unknown';
+                return (
+                  <div key={b.id} className="border-b border-white/10 last:border-0">
+                    <button
+                      onClick={() => setExpandedBookingId(expandedBookingId === b.id ? null : b.id)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm text-left hover:bg-white/5 transition-all"
+                    >
+                      <div>
+                        <div className="font-medium">{fullName}</div>
+                        <div className="text-white/40 text-xs">
+                          <span className="uppercase">{b.source}</span>
+                          {b.event_type ? ` · ${b.event_type}` : ''}
+                          {b.email ? ` · ${b.email}` : ''}
+                        </div>
+                      </div>
+                      <div className="text-xs text-right">
+                        <div className="text-white/30">{b.event_date || '—'}</div>
+                        <div className="text-white/30">{new Date(b.created_at).toLocaleDateString()}</div>
+                      </div>
+                    </button>
+                    {expandedBookingId === b.id && (
+                      <div className="px-4 pb-4 text-xs space-y-2">
+                        {b.phone && <div><span className="text-white/40 uppercase tracking-widest">Phone: </span><span className="text-white/70">{b.phone}</span></div>}
+                        {b.location && <div><span className="text-white/40 uppercase tracking-widest">Location: </span><span className="text-white/70">{b.location}</span></div>}
+                        {b.service_price && <div><span className="text-white/40 uppercase tracking-widest">Quoted price: </span><span className="text-white/70">{b.service_price}</span></div>}
+                        {b.referral_code && <div><span className="text-white/40 uppercase tracking-widest">Referral: </span><span className="text-white/70">{b.referral_code}</span></div>}
+                        {b.details && (
+                          <div>
+                            <div className="text-white/40 uppercase tracking-widest mb-1">Details</div>
+                            <p className="text-white/70 whitespace-pre-wrap">{b.details}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </>

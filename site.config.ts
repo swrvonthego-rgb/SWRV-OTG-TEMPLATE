@@ -31,10 +31,12 @@
 // rather than showing a dead button.
 export const PAYMENT_CONFIG = {
   stripe: {
-    // Fixed $50 — secures a date on Zion's calendar.
-    depositUrl: '',
-    // Built with "let customers choose what they pay": service fees are
-    // quoted per booking, so one link covers every amount.
+    // Fixed $50 — secures a booking (Zion's calendar, or a general service
+    // request). The remaining balance is negotiated/invoiced separately;
+    // this link only ever collects the deposit.
+    depositUrl: 'https://buy.stripe.com/14A4gydAO0HKdd20mPaEE01',
+    // Built with "let customers choose what they pay": for a future full
+    // pay-in-full flow. Not currently linked from anywhere.
     serviceUrl: '',
   },
 } as const;
