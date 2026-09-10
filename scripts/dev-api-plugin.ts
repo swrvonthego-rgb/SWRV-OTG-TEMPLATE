@@ -10,7 +10,19 @@
 // ────────────────────────────────────────────────────────────
 
 import type { Plugin, ViteDevServer } from 'vite';
-import { SWRV_ROADMAP_CONFIG, renderSystemPrompt } from '../modules/roadmap/config';
+import { SWRV_ROADMAP_CONFIG } from '../modules/roadmap/config';
+
+// The real, proprietary prompt (CRITICAL RULES + JSON schema) now lives
+// server-side only in src/worker.js (ROADMAP_PROMPT_SKELETON /
+// buildSystemPrompt) for the actual Cloudflare Worker. This dev-only Vite
+// middleware never ships to production, so it gets a minimal, good-enough
+// prompt for local iteration rather than importing Worker internals.
+function buildDevSystemPrompt(): string {
+  const servicesList = SWRV_ROADMAP_CONFIG.services
+    .map((s: any) => `- ${s.name}${s.price ? ` — ${s.price}` : ''}`)
+    .join('\n');
+  return `You are The Roadmap for ${SWRV_ROADMAP_CONFIG.brandName}. Analyze the user's vision and return ONLY a JSON object with these exact fields: gift, work, purpose, evidence, vision_summary, blueprint (reverse_engineering, mindset, discipline, diet, fitness, community, work_ethic), brand_colors (array of {hex,name,meaning}), business_name_idea, website_blueprint, vision_services_map (array of {vision_element, quote, services}), recommended_services (array of {name, why, components, phase, order}), vision_elevation ({elevated, unseen_needs}), closing_word, roadmap_timeline, qa_reflection, confidence_score (integer 0-100).\n\nSERVICE CATALOG:\n${servicesList}\n\nNo markdown. No prose outside JSON. First character { last character }.`;
+}
 
 export function devApiPlugin(): Plugin {
   return {
@@ -101,8 +113,8 @@ export function devApiPlugin(): Plugin {
 
         // ── REAL: hit Groq ───────────────────────────────────
         try {
-          const userMessage = body.messages?.[0]?.content || '';
-          const systemPrompt = renderSystemPrompt(SWRV_ROADMAP_CONFIG);
+          const userMessage = body.userMessage || body.messages?.[0]?.content || '';
+          const systemPrompt = buildDevSystemPrompt();
 
           const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',

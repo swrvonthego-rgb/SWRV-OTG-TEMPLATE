@@ -23,7 +23,6 @@ const DELIVERY_DAYS: Record<string, number> = {
 };
 
 type Step = 'service' | 'calendar' | 'details' | 'payment' | 'success';
-type PayMethod = 'klarna' | 'afterpay' | 'affirm' | 'zip' | 'sezzle' | 'paylater' | 'paypal' | 'cashapp' | 'venmo' | 'card';
 
 
 // ── VISION FILE PARSER ────────────────────────────────────────────────
@@ -118,7 +117,6 @@ export const ContactSchedule: React.FC = () => {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [payMethod, setPayMethod] = useState<PayMethod>('klarna');
   const [serviceSearch, setServiceSearch] = useState('');
   const [parsedVision, setParsedVision] = useState<ParsedVision | null>(null);
   const [projectFiles, setProjectFiles] = useState<File[]>([]);
@@ -153,7 +151,6 @@ export const ContactSchedule: React.FC = () => {
     ? addBusinessDays(selectedDate, DELIVERY_DAYS[selectedService.id] || 7)
     : null;
 
-  const klarnaAmount = selectedService ? (selectedService.priceNumeric / 4).toFixed(2) : '0';
 
   const filteredServices = SERVICES.filter(s =>
     !serviceSearch || s.name.toLowerCase().includes(serviceSearch.toLowerCase()) || s.category.includes(serviceSearch.toLowerCase())
@@ -231,24 +228,23 @@ export const ContactSchedule: React.FC = () => {
           kickoffDate: format(selectedDate, 'EEEE, MMMM d, yyyy'),
           kickoffTime: selectedTime,
           deliveryDate: deliveryDate ? format(deliveryDate, 'MMMM d, yyyy') : '',
-          name, email, phone, message, payMethod,
+          name, email, phone, message, payMethod: 'stripe',
           assetLink,
           uploadedFileNames: uploadedFiles.map(f => `${f.name} (${(f.size / 1024).toFixed(0)}KB)`).join(', '),
+          referralCode,
         }),
       });
       const data = await res.json();
       if (data.ok) {
-        setStep('success');
-        // Open payment link in new tab for direct payment methods
-        const payLinks: Record<string, string> = {
-          paypal:  PAYMENT_CONFIG.paypal.includes('REPLACE') ? '' : PAYMENT_CONFIG.paypal,
-          cashapp: PAYMENT_CONFIG.cashapp.includes('REPLACE') ? '' : PAYMENT_CONFIG.cashapp,
-          venmo:   PAYMENT_CONFIG.venmo.includes('REPLACE') ? '' : PAYMENT_CONFIG.venmo,
-        };
-        const link = payLinks[payMethod];
-        if (link) {
-          setTimeout(() => window.open(link, '_blank', 'noopener'), 800);
+        // The booking is already saved server-side (system of record), so
+        // it's safe to leave this page immediately — no email step, no
+        // waiting. Full-page redirect (not a new tab) since we're sending
+        // the visitor to actually pay, not just peek at a link.
+        if (showPricing && PAYMENT_CONFIG.stripe.depositUrl) {
+          window.location.href = PAYMENT_CONFIG.stripe.depositUrl;
+          return;
         }
+        setStep('success');
       } else {
         setSubmitError('Something went wrong. Try again or email info@swrvonthego.pro');
       }
@@ -262,10 +258,7 @@ export const ContactSchedule: React.FC = () => {
   const STEP_KEYS: Step[] = ['service', 'calendar', 'details', 'payment', 'success'];
 
   if (step === 'success') {
-    const bnplName = PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.name;
-    const isDirectPay = ['paypal','cashapp','venmo'].includes(payMethod);
-    const isCard = payMethod === 'card';
-    const isBnplPending = PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.pending;
+    const stripeUrl = PAYMENT_CONFIG.stripe.depositUrl;
     const shopUrl = 'https://swrv.printful.me/';
 
     return (
@@ -278,30 +271,24 @@ export const ContactSchedule: React.FC = () => {
           <h2 className="text-3xl font-black mb-3">You're Booked 🎉</h2>
           <p className="text-white/60 mb-2">Confirmation email on the way. SWRV will confirm within 24 hours.</p>
 
-          {/* Payment next step */}
-          {isBnplPending && bnplName && (
-            <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <p className="font-bold text-white mb-1">{bnplName} payment link incoming</p>
-              <p className="text-white/40 text-xs">Check your email — SWRV will send you a secure {bnplName} link. You pay in 4. They pay SWRV in full.</p>
-            </div>
-          )}
-          {isDirectPay && (
-            <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(0,112,186,0.08)', border: '1px solid rgba(0,112,186,0.2)' }}>
-              <p className="font-bold text-white mb-1">Complete your payment</p>
-              <p className="text-white/40 text-xs mb-3">Opening {payMethod === 'paypal' ? 'PayPal' : payMethod === 'cashapp' ? 'Cash App' : 'Venmo'} now. If it didn't open automatically:</p>
-              <a href={payMethod === 'paypal' ? PAYMENT_CONFIG.paypal : payMethod === 'cashapp' ? PAYMENT_CONFIG.cashapp : PAYMENT_CONFIG.venmo}
-                target="_blank" rel="noopener noreferrer"
+          {/* Payment next step — normally unreachable: a successful submit
+              redirects straight to Stripe before this step ever renders.
+              Kept as a fallback in case depositUrl is ever unset. */}
+          {showPricing && (stripeUrl ? (
+            <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(99,91,255,0.08)', border: '1px solid rgba(99,91,255,0.25)' }}>
+              <p className="font-bold text-white mb-1">Secure your booking</p>
+              <p className="text-white/40 text-xs mb-3">Opening the $50 deposit checkout now. If it didn't open automatically:</p>
+              <a href={stripeUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold"
-                style={{ background: 'rgba(0,112,186,0.2)', color: '#60a5fa', border: '1px solid rgba(0,112,186,0.3)' }}>
-                Open {payMethod === 'paypal' ? 'PayPal' : payMethod === 'cashapp' ? 'Cash App' : 'Venmo'} →
+                style={{ background: 'rgba(99,91,255,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,91,255,0.35)' }}>
+                Pay $50 Deposit →
               </a>
             </div>
-          )}
-          {isCard && (
+          ) : (
             <div className="p-4 rounded-2xl mb-4 text-sm" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.15)' }}>
-              <p className="text-white/50 text-xs">SWRV will send an invoice to your email with a secure card payment link.</p>
+              <p className="text-white/50 text-xs">SWRV will email you a secure Stripe payment link to complete your booking.</p>
             </div>
-          )}
+          ))}
 
           {/* Delivery date */}
           {selectedService && deliveryDate && (
@@ -326,7 +313,7 @@ export const ContactSchedule: React.FC = () => {
             </a>
           </div>
 
-          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setPayMethod('klarna'); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); setProjectFiles([]); setFileError(''); setUploadedFiles([]); setAssetLink(''); setCart([]); }}
+          <button onClick={() => { setStep('service'); setSelectedService(null); setSelectedDate(null); setSelectedTime(''); setCurrentMonth(new Date()); setName(''); setEmail(''); setPhone(''); setMessage(''); setSubmitting(false); setSubmitError(''); setParsedVision(null); setUploadError(''); setIsDragging(false); setProjectFiles([]); setFileError(''); setUploadedFiles([]); setAssetLink(''); setCart([]); }}
             className="text-white/30 text-sm underline hover:text-white/60">Book another service</button>
         </div>
       </section>
@@ -891,98 +878,24 @@ export const ContactSchedule: React.FC = () => {
               {deliveryDate && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Delivery by: {format(deliveryDate, 'MMMM d, yyyy')}</p>}
             </div>
 
-            {/* ── BUY NOW PAY LATER — only when pricing is on ── */}
+            {/* ── PAYMENT — every method runs through Stripe ── */}
             {showPricing && (
               <>
-            <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>BUY NOW, PAY LATER</p>
-            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>SWRV receives full payment immediately. You repay your provider interest-free.</p>
-            <div className="flex flex-col gap-2 mb-5">
-              {PAYMENT_CONFIG.bnpl.map((opt) => {
-                const sel = payMethod === opt.id;
-                return (
-                  <button key={opt.id} onClick={() => setPayMethod(opt.id as any)}
-                    className="w-full p-4 rounded-2xl text-left transition-all"
-                    style={{
-                      background: sel ? `${opt.color}12` : 'rgba(255,255,255,0.02)',
-                      border: `1.5px solid ${sel ? opt.color + '60' : 'rgba(255,255,255,0.07)'}`,
-                      opacity: opt.pending && !sel ? 0.7 : 1,
-                    }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded-full flex-shrink-0"
-                          style={{ background: sel ? opt.color : 'rgba(255,255,255,0.12)', border: `2px solid ${sel ? opt.color : 'rgba(255,255,255,0.2)'}` }} />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-sm" style={{ color: sel ? opt.color : '#fff' }}>{opt.name}</p>
-                            {opt.pending && (
-                              <span className="text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded"
-                                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>
-                                SETUP REQUIRED
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{opt.tagline}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm font-black" style={{ color: sel ? opt.color : 'rgba(255,255,255,0.3)' }}>
-                        4× ${((cart.length > 1 ? cartTotal : selectedService.priceNumeric) / 4).toFixed(0)}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+            <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>PAYMENT</p>
+            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>A $50 deposit secures your booking — handled by Stripe.</p>
+            <div className="p-4 rounded-2xl mb-6" style={{ background: 'rgba(99,91,255,0.08)', border: '1.5px solid rgba(99,91,255,0.35)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-bold text-sm" style={{ color: '#a5b4fc' }}>💳 $50 Deposit via Stripe</p>
+                <p className="text-sm font-black" style={{ color: '#a5b4fc' }}>
+                  {cartTotal > 0 ? '$' + cartTotal.toLocaleString() : selectedService.price} total
+                </p>
+              </div>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
+                You'll pay a $50 deposit now via Visa, Mastercard, Amex, Apple Pay or Google Pay
+                to lock in your date. The remaining balance is invoiced separately once the
+                scope of your project is finalized.
+              </p>
             </div>
-
-            {/* ── FULL PAYMENT OPTIONS ── */}
-            <p className="text-xs font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>PAY IN FULL</p>
-            <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>Pay the full amount now via your preferred platform.</p>
-            <div className="flex flex-col gap-2 mb-6">
-              {[
-                { id: 'paypal',  label: 'PayPal',    sub: 'Instant. Buyer protection included.',    color: '#0070BA', icon: '🅿️' },
-                { id: 'cashapp', label: 'Cash App',  sub: 'Simple. Direct. Instant.',               color: '#00D632', icon: '💵' },
-                { id: 'venmo',   label: 'Venmo',     sub: 'Quick and familiar.',                    color: '#3396CD', icon: '💳' },
-                { id: 'card',    label: 'Credit / Debit Card', sub: 'Visa, Mastercard, Amex — all accepted.', color: '#c8a84b', icon: '💳' },
-              ].map(opt => {
-                const sel = payMethod === opt.id;
-                return (
-                  <button key={opt.id} onClick={() => setPayMethod(opt.id as any)}
-                    className="w-full p-3.5 rounded-2xl text-left transition-all"
-                    style={{
-                      background: sel ? `${opt.color}14` : 'rgba(255,255,255,0.02)',
-                      border: `1.5px solid ${sel ? opt.color + '55' : 'rgba(255,255,255,0.07)'}`,
-                    }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded-full flex-shrink-0"
-                          style={{ background: sel ? opt.color : 'rgba(255,255,255,0.12)', border: `2px solid ${sel ? opt.color : 'rgba(255,255,255,0.2)'}` }} />
-                        <div>
-                          <p className="font-bold text-sm" style={{ color: sel ? opt.color : '#fff' }}>{opt.label}</p>
-                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{opt.sub}</p>
-                        </div>
-                      </div>
-                      {showPricing && <p className="text-sm font-black" style={{ color: sel ? opt.color : 'rgba(255,255,255,0.3)' }}>{selectedService.price}</p>}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Context note for selected payment */}
-            {(PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.pending) && (
-              <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
-                You selected {PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.name}. After booking, SWRV will send you a direct payment link. You pay in 4 installments — SWRV receives the full amount upfront.
-              </div>
-            )}
-            {payMethod === 'paypal' && PAYMENT_CONFIG.paypal && !PAYMENT_CONFIG.paypal.includes('REPLACE') && (
-              <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(0,112,186,0.08)', border: '1px solid rgba(0,112,186,0.2)', color: 'rgba(100,180,255,0.8)' }}>
-                After submitting, you will be redirected to complete payment via PayPal.
-              </div>
-            )}
-            {(payMethod === 'cashapp' || payMethod === 'venmo') && (
-              <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
-                After submitting, you will be redirected to complete payment.
-              </div>
-            )}
               </>
             )}
 
@@ -1002,13 +915,8 @@ export const ContactSchedule: React.FC = () => {
               <button onClick={handleBook} disabled={submitting}
                 className="flex-1 py-3 rounded-full font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-60 disabled:scale-100"
                 style={{ background: 'linear-gradient(135deg,#c8a84b,#e8c96a)', color: '#0a0804', boxShadow: '0 8px 24px rgba(200,168,75,0.4)' }}>
-                {submitting ? 'Submitting…' : !showPricing ? 'Send Booking Request →' :
-                 ['klarna','afterpay','affirm','zip','sezzle','paylater'].includes(payMethod)
-                   ? `Book — Pay Later via ${PAYMENT_CONFIG.bnpl.find(b => b.id === payMethod)?.name || payMethod} →`
-                   : payMethod === 'paypal'  ? 'Book + Pay via PayPal →'
-                   : payMethod === 'cashapp' ? 'Book + Pay via Cash App →'
-                   : payMethod === 'venmo'   ? 'Book + Pay via Venmo →'
-                   : `Submit Booking — $${cartTotal > 0 ? cartTotal.toLocaleString() : selectedService.price} →`}
+                {submitting ? 'Submitting…' : !showPricing ? 'Send Booking Request →'
+                  : 'Book + Pay $50 Deposit →'}
               </button>
             </div>
           </div>

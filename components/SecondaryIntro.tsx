@@ -20,6 +20,9 @@ export const SecondaryIntro: React.FC<{ skipIntro?: boolean }> = ({ skipIntro = 
   };
 
   useEffect(() => {
+    // Deep links skip the intro entirely — never arm the takeover timer,
+    // otherwise it fires 4.2s in and locks scroll under a null render.
+    if (skipIntro) return;
     // Wait for the initial video to finish shrinking (3s delay + 1.2s transition)
     const timer = setTimeout(() => {
       setPhase('playing');
@@ -31,10 +34,10 @@ export const SecondaryIntro: React.FC<{ skipIntro?: boolean }> = ({ skipIntro = 
     }, 4200);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [skipIntro]);
 
   useEffect(() => {
-    if (phase === 'playing') {
+    if (phase === 'playing' && !isDismissed) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -42,7 +45,7 @@ export const SecondaryIntro: React.FC<{ skipIntro?: boolean }> = ({ skipIntro = 
     return () => {
       document.body.style.overflow = '';
     };
-  }, [phase]);
+  }, [phase, isDismissed]);
 
   useEffect(() => {
     if (phase === 'ended') {

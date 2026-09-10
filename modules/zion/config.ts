@@ -12,6 +12,8 @@
 //   3. Update STATS, BOOKS, PODCAST, SERVICES, BOOKING
 // ════════════════════════════════════════════════════════════
 
+import { PAYMENT_CONFIG } from '../../site.config';
+
 export const ZION_CONFIG = {
   // ── IDENTITY ────────────────────────────────────────────
   identity: {
@@ -121,16 +123,25 @@ export const ZION_CONFIG = {
   // ── BOOKING ─────────────────────────────────────────────
   booking: {
     eyebrow: 'Book Me',
-    title: "Let's make something together.",
+    title: 'Book SWRV Birdsong For Your Event',
     blurb:
-      'Performances, sessions, speaking engagements, mentorship — fill out the form below and let me know what you have in mind.',
+      'Weddings, festivals, private parties, corporate events, bookstore takeovers, listening rooms — pick your date, tell me the vision, and lock it in.',
+    // ── DEPOSIT ──────────────────────────────────────────
+    // A $50 deposit secures the date. The Stripe Payment Link lives in
+    // site.config.ts so every payment link on the site has one home.
+    depositAmount: 50,
+    depositUrl: PAYMENT_CONFIG.stripe.depositUrl,
+    depositNote:
+      'A $50 deposit secures your date. The rest of the fee is negotiated based on your event, location, and set length — I\'ll follow up personally to lock in the details.',
     submitTo: 'info@swrvonthego.pro',
+    // Event booking inquiry types
     inquiryTypes: [
-      'Live Performance',
-      'Vocal Coaching',
-      'Recording / Production',
+      'Live Performance / Event',
+      'Wedding / Private Party',
+      'Corporate / Brand Event',
+      'Bookstore / Listening Room',
       'Speaking / Workshop',
-      'Press / Media',
+      'Recording / Production',
       'Something Else',
     ],
   },

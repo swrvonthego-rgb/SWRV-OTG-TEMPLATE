@@ -114,58 +114,64 @@ export function useSpeechRecognition({ onTranscript }: UseSpeechRecognitionOpts)
       return;
     }
 
-    const recognition = new SR();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-    recognition.maxAlternatives = 1;
-
+    stopRequestedRef.current = false;
     let runningFinal = '';
 
-    recognition.onresult = (e: any) => {
-      let interim = '';
-      let newFinal = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          newFinal += e.results[i][0].transcript + ' ';
-        } else {
-          interim += e.results[i][0].transcript;
+    // iOS Safari requires a brand-new SpeechRecognition instance on every
+    // segment — calling .start() on an already-ended instance throws and
+    // silently kills dictation. createAndStart() is called both for the
+    // initial start and for every auto-restart after silence.
+    const createAndStart = () => {
+      if (stopRequestedRef.current) return;
+
+      const recognition = new SR();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (e: any) => {
+        let interim = '';
+        let newFinal = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            newFinal += e.results[i][0].transcript + ' ';
+          } else {
+            interim += e.results[i][0].transcript;
+          }
         }
-      }
-      if (newFinal) {
-        runningFinal += newFinal;
-        onTranscript(newFinal, interim);
-      } else {
-        // Just interim updates — pass empty append, current interim
-        onTranscript('', interim);
-      }
-    };
+        if (newFinal) {
+          runningFinal += newFinal;
+          onTranscript(newFinal, interim);
+        } else {
+          onTranscript('', interim);
+        }
+      };
 
-    recognition.onerror = (e: any) => {
-      if (e.error === 'not-allowed') {
-        setState('blocked');
-        stopRequestedRef.current = true;
-      } else if (e.error === 'network') {
-        setState('network-error');
-        stopRequestedRef.current = true;
-      }
-      // 'no-speech' and 'aborted' are normal — let auto-restart handle them
-    };
+      recognition.onerror = (e: any) => {
+        if (e.error === 'not-allowed') {
+          setState('blocked');
+          stopRequestedRef.current = true;
+        } else if (e.error === 'network') {
+          setState('network-error');
+          stopRequestedRef.current = true;
+        }
+        // 'no-speech' and 'aborted' are normal — auto-restart handles them
+      };
 
-    recognition.onstart = () => {
-      isListeningRef.current = true;
-      setState('listening');
-      startViz();
-    };
+      recognition.onstart = () => {
+        isListeningRef.current = true;
+        setState('listening');
+        startViz();
+      };
 
-    recognition.onend = () => {
-      // Auto-restart through silence — only stop if user requested
-      if (!stopRequestedRef.current && isListeningRef.current) {
-        try {
+      recognition.onend = () => {
+        if (!stopRequestedRef.current && isListeningRef.current) {
+          // Fresh instance on every restart — iOS won't accept .start() on a used object
           window.setTimeout(() => {
-            if (!stopRequestedRef.current && isListeningRef.current && recognitionRef.current) {
+            if (!stopRequestedRef.current && isListeningRef.current) {
               try {
-                recognitionRef.current.start();
+                createAndStart();
               } catch {
                 isListeningRef.current = false;
                 setState('idle');
@@ -173,28 +179,24 @@ export function useSpeechRecognition({ onTranscript }: UseSpeechRecognitionOpts)
               }
             }
           }, 200);
-        } catch {
+        } else {
           isListeningRef.current = false;
           setState('idle');
           stopViz();
         }
-      } else {
+      };
+
+      recognitionRef.current = recognition;
+      try {
+        recognition.start();
+      } catch {
         isListeningRef.current = false;
         setState('idle');
         stopViz();
       }
     };
 
-    recognitionRef.current = recognition;
-    stopRequestedRef.current = false;
-
-    try {
-      recognition.start();
-    } catch {
-      isListeningRef.current = false;
-      setState('idle');
-      stopViz();
-    }
+    createAndStart();
   }, [onTranscript, startViz, stopViz, state]);
 
   const stop = useCallback(() => {

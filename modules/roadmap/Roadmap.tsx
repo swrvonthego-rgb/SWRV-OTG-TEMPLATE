@@ -1,10 +1,53 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './roadmap.css';
-import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme, renderSystemPrompt } from './config';
+import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme } from './config';
 import { RoadmapResult, ScreenId } from './types';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { SERVICES, ROADMAP_PRICING, LAUNCH_MODE } from '../../site.config';
-import { PHASE_2_QUESTIONS, BOOK_WISDOM_PROMPT } from './phase2-questions';
+import { PHASE_2_QUESTIONS } from './phase2-questions';
+import { isRoadmapStartIntent } from '../../deepLink';
+import { attributionSummary } from '../../attribution';
+import { RoadmapTour, TourStep } from './RoadmapTour';
+
+// ── Mic guide + live status ───────────────────────────────────────────
+// A small legend that shows the visitor how the voice button works — tap
+// to talk, the music automatically lowers so it can hear you, and the
+// slider sets how loud the music stays. It also surfaces the mic's live
+// state so a blocked/unsupported mic is never silently dead.
+const MIC_STATUS: Record<string, { text: string; tone: 'info' | 'warn' }> = {
+  requesting:      { text: 'Allow microphone access when your browser asks…', tone: 'info' },
+  blocked:         { text: 'Mic is blocked. Tap the 🔒 (or "aA") in your address bar → allow Microphone → tap the mic again.', tone: 'warn' },
+  'network-error': { text: 'Voice service hiccup — tap the mic to try again.', tone: 'warn' },
+  unsupported:     { text: 'Voice input works in Chrome, Edge, or Safari. You can still type your answer below.', tone: 'warn' },
+};
+const MicGuide: React.FC<{ state: string }> = ({ state }) => {
+  const status = MIC_STATUS[state];
+  return (
+    <div className="mic-guide" aria-live="polite">
+      <div className="mic-guide-fig" aria-hidden="true">
+        {/* speaker + sound waves + a music note dipping down = "music lowers while you talk" */}
+        <svg viewBox="0 0 72 48" width="72" height="48" fill="none">
+          {/* head + shoulders */}
+          <circle cx="20" cy="16" r="7" fill="rgba(200,168,75,0.9)"/>
+          <path d="M8 40c0-7 5.4-12 12-12s12 5 12 12" fill="rgba(200,168,75,0.9)"/>
+          {/* speech waves */}
+          <path d="M34 14c2 3 2 8 0 11" stroke="#e8c96a" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M39 10c3.5 5 3.5 14 0 19" stroke="#e8c96a" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
+          {/* music note with down arrow (ducking) */}
+          <circle cx="56" cy="30" r="4" fill="#e8c96a"/>
+          <rect x="59" y="14" width="2.4" height="16" rx="1.2" fill="#e8c96a"/>
+          <path d="M61 12l6 3-6 3" fill="#e8c96a"/>
+          <path d="M52 40l4 4 4-4" stroke="#e8c96a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      <div className="mic-guide-text">
+        <strong>Tap the mic and just talk.</strong>
+        <span>The music lowers so it can hear you — use the slider to set how loud it stays.</span>
+        {status && <span className={`mic-guide-status mic-guide-status-${status.tone}`}>{status.text}</span>}
+      </div>
+    </div>
+  );
+};
 // ── Portal vision sync ────────────────────────────────────────────────
 // Silently saves completed Roadmap results to the SWRV client portal.
 // Only fires if the user is logged into app.swrvonthego.pro (has a
@@ -60,6 +103,13 @@ export interface RoadmapProps {
   config?: RoadmapConfig;
   /** API endpoint for the AI. Defaults to /api/roadmap. */
   apiEndpoint?: string;
+  /**
+   * Vision Portal tenant slug (e.g. "coastal"). When set, branding and the
+   * service catalog are fetched from /api/tenant/:slug on mount and merged
+   * over `config`. Omit for the default SWRV experience at /roadmap —
+   * behavior there is unchanged (no extra network call).
+   */
+  tenantSlug?: string | null;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -69,12 +119,16 @@ export interface RoadmapProps {
 const PROGRESS_PCT: Record<ScreenId, number> = {
   paywall: -1,
   intro: 0,
-  email: 14,
   disclaimer: 28,
   duration: 42,
   vision: 56,
   phase2: 70,
   processing: 85,
+  // 'email' is shown AFTER processing ("your roadmap is ready — where do we
+  // send it?"), so it must sit between processing and heart-note. An early
+  // value here made the bar visibly rewind at the moment of highest intent.
+  email: 90,
+  'heart-note': 95,
   results: 100,
 
 };
@@ -127,9 +181,37 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   isOpen,
   onClose,
   onOpenServices,
-  config = SWRV_ROADMAP_CONFIG,
+  config: configProp = SWRV_ROADMAP_CONFIG,
   apiEndpoint = '/api/roadmap',
+  tenantSlug = null,
 }) => {
+  // ── Tenant resolution (Vision Portal) ─────────────────────
+  // Plain /roadmap (tenantSlug unset) uses configProp (SWRV_ROADMAP_CONFIG)
+  // exactly as before — zero behavior change, zero extra network call.
+  // A tenant slug fetches branding/services from the server (never the
+  // proprietary prompt — that stays server-only) and merges it in.
+  const [config, setConfig] = useState<RoadmapConfig>(configProp);
+  useEffect(() => {
+    if (!tenantSlug) { setConfig(configProp); return; }
+    let cancelled = false;
+    fetch(`/api/tenant/${encodeURIComponent(tenantSlug)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((tenant) => {
+        if (cancelled || !tenant) return;
+        setConfig({
+          ...configProp,
+          brandName: tenant.displayName || configProp.brandName,
+          services: Array.isArray(tenant.services) && tenant.services.length
+            ? tenant.services
+            : configProp.services,
+          copy: { ...configProp.copy, ...(tenant.copyOverrides || {}) },
+        });
+      })
+      .catch(() => { /* keep default config on failure */ });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantSlug]);
+
   // ── Screen / progress ─────────────────────────────────────
   // Check for paid session (Stripe redirect or PayPal manual confirm)
   const checkPaid = () => {
@@ -149,24 +231,107 @@ export const Roadmap: React.FC<RoadmapProps> = ({
 
   const [screen, setScreen] = useState<ScreenId>(() => {
     if (typeof window === 'undefined') return 'paywall';
+    // Direct client link (?roadmap=start OR a clean /roadmap|/test path)
+    // drops them straight into the experience, skipping the gate.
+    if (isRoadmapStartIntent()) {
+      sessionStorage.setItem('swrv_rm_paid', '1');
+      return 'intro';
+    }
     return sessionStorage.getItem('swrv_rm_paid') === '1' ? 'intro' : 'paywall';
   });
-  const QV_QUESTIONS = [
-    { id: "problem",    q: "What's the problem you couldn't ignore that made you want to find — or BE — the solution?",     ph: "The thing that kept showing up in your life until you stopped pretending you didn't see it." },
-    { id: "easy",       q: "What do you do most easily that others can't seem to do?",                                      ph: "The thing people always come to you for. The thing that feels like breathing to you and like math to everyone else." },
-    { id: "younger",    q: "What would you do for the younger or past version of you — in your hardest times?",            ph: "If you could go back and be there for yourself, what would you show up with?" },
-    { id: "allmoods",   q: "What do you unconsciously commit to doing in all moods — happy, mad, sad, bored?",             ph: "What do you keep coming back to no matter how you feel?" },
-    { id: "loved",      q: "What do your family and friends love most about you?",                                          ph: "What do the people closest to you say when they brag about you to someone else?" },
-    { id: "afraid",     q: "What makes you afraid or intimidates you when you think about actually doing it?",             ph: "The thing that excites and terrifies you at the same time." },
-    { id: "pride",      q: "What do you have a sense of pride in — and what conversations do you feel uncomfortable being left out of?", ph: "What can you talk about for hours and feel like an expert?" },
-    { id: "yearn",      q: "What do you yearn to do for others?",                                                          ph: "If you could fix one thing in someone else's life, what would it be?" },
-    { id: "seeself",    q: "Who do you very badly want to see yourself as?",                                               ph: "The version of you that you are always reaching for." },
-    { id: "undeniable", q: "What is that special something — even people who don't like you can't deny about you?",       ph: "The thing your critics can't take away from you." },
+
+  // ── First-run walkthrough (coach-marks) ─────────────────────────────
+  const TOUR_KEY = 'swrv_rm_tour_v1';
+  const [tourOpen, setTourOpen] = useState(false);
+  const TOUR_STEPS: TourStep[] = [
+    {
+      selector: '.music-toggle',
+      emoji: '🔊',
+      title: 'You control the music',
+      body: 'Music starts off so it never talks over the video. Tap the speaker any time to turn it on, switch tracks, or set the volume. While you speak your answers, it automatically lowers so the mic can hear you.',
+    },
+    {
+      selector: '.mic-btn',
+      emoji: '🎤',
+      title: 'Answer by voice or type',
+      body: 'On each question you can tap the mic and just talk — your words fill in automatically — or type it out. While recording, a small slider lets you set how loud the music stays.',
+    },
+    {
+      selector: '.skin-toggle',
+      emoji: '🎨',
+      title: 'Pick your vibe',
+      body: 'Change the whole look and soundtrack of the experience. Choose the world that fits your mood.',
+    },
+    {
+      selector: '.rm-close',
+      emoji: '✕',
+      title: 'Leave anytime',
+      body: 'Close whenever you want — your progress is saved, so you can pick right back up where you left off.',
+    },
   ];
-  const [qvIdx, setQvIdx] = useState(0);
-  const [qvAnswers, setQvAnswers] = useState<Record<string, string>>({});
-  const [qvResult, setQvResult] = useState<{ gift: string; direction: string; services: Array<{name:string;price:string;why:string}> } | null>(null);
-  const [paymentPending, setPaymentPending] = useState(false);
+
+  // Fire the tour once, the first time someone reaches the experience.
+  useEffect(() => {
+    if (screen === 'paywall') return;
+    if (ls.get(TOUR_KEY) === '1') return;
+    const t = window.setTimeout(() => setTourOpen(true), 650);
+    return () => window.clearTimeout(t);
+  }, [screen]);
+
+  const closeTour = useCallback(() => {
+    setTourOpen(false);
+    ls.set(TOUR_KEY, '1');
+  }, []);
+
+  // ── Resume unfinished session ───────────────────────────────────────
+  // The walkthrough promises "your progress is saved — pick right back up
+  // where you left off." We write a snapshot on every step; this is the
+  // other half of that promise. Only screens that make sense to return to
+  // are offered (never mid-'processing', which was an in-flight API call).
+  const RESUME_KEY = 'roadmap-progress';
+  const RESUME_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+  const RESUMABLE: ScreenId[] = ['disclaimer', 'vision', 'phase2', 'results', 'heart-note', 'email'];
+  const [resumeSnap, setResumeSnap] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const raw = ls.get(RESUME_KEY);
+      if (!raw) return;
+      const snap = JSON.parse(raw);
+      if (!snap?.screen || !RESUMABLE.includes(snap.screen)) return;
+      if (!snap.ts || Date.now() - snap.ts > RESUME_MAX_AGE) return;
+      // Nothing worth restoring if they never actually wrote anything.
+      const hasWork = (snap.vision || '').trim().length > 0
+        || Object.keys(snap.phase2Answers || {}).length > 0
+        || !!snap.result;
+      if (!hasWork) return;
+      setResumeSnap(snap);
+    } catch { /* corrupt snapshot — ignore */ }
+  }, [isOpen]);
+
+  const applyResume = useCallback(() => {
+    const snap = resumeSnap;
+    if (!snap) return;
+    if (snap.userName) setUserName(snap.userName);
+    if (snap.userEmail) setUserEmail(snap.userEmail);
+    if (snap.vision) setVision(snap.vision);
+    if (snap.phase2Answers) setPhase2Answers(snap.phase2Answers);
+    if (typeof snap.phase2Idx === 'number') setPhase2Idx(snap.phase2Idx);
+    if (snap.result) setResult(snap.result);
+    if (snap.sessionId) sessionIdRef.current = snap.sessionId;
+    setResumeSnap(null);
+    setTourOpen(false);
+    goTo(snap.screen as ScreenId);
+  }, [resumeSnap]);
+
+  const discardResume = useCallback(() => {
+    setResumeSnap(null);
+    try { localStorage.removeItem(RESUME_KEY); } catch { /* noop */ }
+  }, []);
+
+  // (The "Quick Vision" short-form tier was removed — the Roadmap is now a
+  // single free experience, so its questions/state no longer exist.)
   const [phase2Answers, setPhase2Answers] = useState<Record<string, string>>({});
   const [phase2Idx, setPhase2Idx] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -176,6 +341,10 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [userEmail, setUserEmail] = useState('');
   const [nameError, setNameError] = useState(false);
   const [vision, setVision] = useState('');
+  // Results screen email form
+  const [resultsEmailInput, setResultsEmailInput] = useState('');
+  const [resultsEmailStatus, setResultsEmailStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle');
+  const [resultsEmailReason, setResultsEmailReason] = useState<string | null>(null);
   const [interimVision, setInterimVision] = useState('');
   const [shake, setShake] = useState(false);
 
@@ -209,7 +378,12 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
   const [skinPanelOpen, setSkinPanelOpen] = useState(false);
 
   // ── Music ────────────────────────────────────────────────
-  const [musicMuted, setMusicMuted] = useState<boolean>(() => ls.get('roadmap-music-muted') === '1');
+  // Background music starts OFF. The intro video carries its own audio and
+  // the roadmap track was talking over it. The speaker control stays fully
+  // visible so it reads as "available", not absent — visitors turn it on
+  // when they want it. Only an explicit un-mute ('0') opts back in, and
+  // that choice persists.
+  const [musicMuted, setMusicMuted] = useState<boolean>(() => ls.get('roadmap-music-muted') !== '0');
   const [firstGestureDone, setFirstGestureDone] = useState(false);
   const [nowPlaying, setNowPlaying] = useState<string | null>(null);
   // Music player panel — replaces the simple mute-toggle on the speaker icon
@@ -332,7 +506,7 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
       const paid = checkPaid();
       if (paid && screen === 'paywall') {
         setScreen('intro');
-      } else if (!paid && screen !== 'paywall' && screen !== 'results') {
+      } else if (!paid && screen !== 'paywall' && screen !== 'results' && screen !== 'heart-note') {
         // Only reset to paywall if they haven't reached results yet
         // (don't wipe a completed session on re-open)
       }
@@ -552,16 +726,33 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
       return;
     }
     startMusicOnFirstGesture();
-    goTo('email');
+    goTo('disclaimer');
   }, [userName, goTo, startMusicOnFirstGesture]);
 
-  // After email: go to disclaimer (skip allowed too)
+  // After email bait screen: go to heart-note. Capture email in D1 (fire-and-forget).
   const goToDisclaimerFromEmail = useCallback(
     (skipEmail = false) => {
-      if (skipEmail) setUserEmail('');
-      goTo('disclaimer');
+      if (skipEmail) {
+        setUserEmail('');
+      } else if (userEmail) {
+        fetch('/api/capture-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail,
+            name: userName,
+            source: 'roadmap-bait',
+            // Their own words + where they came from — the qualifying
+            // signal the sales/marketing side actually needs.
+            vision_preview: vision,
+            attribution: attributionSummary(),
+            tenantSlug: tenantSlug || 'swrv',
+          }),
+        }).catch(() => {});
+      }
+      goTo('heart-note');
     },
-    [goTo],
+    [goTo, userEmail, userName, tenantSlug],
   );
 
   // After disclaimer: pick session duration
@@ -607,17 +798,17 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
           .filter(Boolean)
           .join('\n\n');
 
+        // The prompt is built server-side from tenantSlug — this request
+        // never sends or exposes the proprietary question-bank/prompt logic.
         const fetchPromise = fetch(apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: renderSystemPrompt(config) + '\n\n' + BOOK_WISDOM_PROMPT,
-            messages: [
-              {
-                role: 'user',
-                content: `Name: ${userName}\nEmail: ${userEmail || 'not provided'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 1 — THEIR VISION (told in their own words)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${visionText}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 2 — THE 16 GUIDED QUESTIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${phase2Block || '(no Phase 2 answers provided)'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNow combine both phases into the final assessment. Phase 1 shows you what they see. Phase 2 shows you who they are. Weave them into one complete blueprint.`,
-              },
-            ],
+            tenantSlug: tenantSlug || 'swrv',
+            name: userName,
+            email: userEmail || undefined,
+            rawVision: visionText,
+            userMessage: `Name: ${userName}\nEmail: ${userEmail || 'not provided'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 1 — THEIR VISION (told in their own words)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${visionText}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 2 — THE 16 GUIDED QUESTIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${phase2Block || '(no Phase 2 answers provided)'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNow combine both phases into the final assessment. Phase 1 shows you what they see. Phase 2 shows you who they are. Weave them into one complete blueprint.`,
           }),
         });
 
@@ -648,7 +839,7 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
         setError(null);
         // Silently sync to portal if user is logged in
         saveVisionToPortal(parsed, visionText, phase2Answers, userName).catch(() => {});
-        goTo('results');
+        goTo('email');
       } catch (err: any) {
         if (err.message === 'TIMEOUT') {
           setError('The response is taking too long. Your vision is saved — tap Try Again.');
@@ -660,7 +851,7 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
         goTo('results');
       }
     },
-    [apiEndpoint, userName, userEmail, goTo, phase2Answers],
+    [apiEndpoint, userName, userEmail, goTo, phase2Answers, tenantSlug],
   );
 
   const proceedToProcess = useCallback(
@@ -775,6 +966,10 @@ useEffect(() => {
       userName,
       userEmail,
       vision,
+      // Without these, "resume" would drop them back at question 1 with
+      // every answer gone — the 16 guided answers ARE the progress.
+      phase2Answers,
+      phase2Idx,
       sessionDuration,
       result,
       ts: Date.now(),
@@ -790,7 +985,7 @@ useEffect(() => {
         body: JSON.stringify(snapshot),
       }).catch(() => { /* server-side persistence optional */ });
     }
-  }, [screen, userName, userEmail, vision, sessionDuration, result]);
+  }, [screen, userName, userEmail, vision, phase2Answers, phase2Idx, sessionDuration, result]);
 
   // ── Send results email after AI generation completes ─────
   // Fire-and-forget. If RESEND_API_KEY isn't set on the worker, the worker
@@ -805,7 +1000,10 @@ useEffect(() => {
         userName,
         sessionId: sessionIdRef.current,
         result,
+        rawVision: vision,
+        attribution: attributionSummary(),
         brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+        tenantSlug: tenantSlug || 'swrv',
       }),
     })
       .then((r) => r.json())
@@ -815,7 +1013,63 @@ useEffect(() => {
         }
       })
       .catch(() => { /* silent — already showing on screen */ });
-  }, [result, userEmail, userName, config, showToast]);
+  }, [result, userEmail, userName, config, showToast, tenantSlug]);
+
+  // Pre-fill results email input with whatever they entered earlier (if any)
+  useEffect(() => {
+    if (screen === 'results' && userEmail && !resultsEmailInput) {
+      setResultsEmailInput(userEmail);
+    }
+  }, [screen, userEmail]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Turns a /api/send-email response into a specific, human-readable reason.
+  // A generic "didn't go through" tells us nothing when debugging live, so each
+  // distinct failure mode gets its own short code.
+  const emailFailureReason = async (r: Response): Promise<string | null> => {
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('json')) {
+      // The API route didn't reach the server (we got HTML back).
+      return 'the email route isn\u2019t reachable [NO-JSON]';
+    }
+    let data: any = null;
+    try { data = await r.json(); } catch { return 'unreadable reply from the server [BAD-JSON]'; }
+    if (data?.status === 'sent') return null; // success
+    if (data?.status === 'skipped') return 'email sending isn\u2019t switched on yet [NO-KEY]';
+    const d = data?.detail;
+    const detail = typeof d === 'string' ? d : (d?.message || d?.name || JSON.stringify(d ?? data ?? {}));
+    return `the email service rejected it \u2014 ${String(detail).slice(0, 140)} [SEND-FAIL]`;
+  };
+
+  const sendResultsEmail = useCallback(async () => {
+    if (!result || !resultsEmailInput.trim()) return;
+    setResultsEmailStatus('sending');
+    try {
+      const r = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: resultsEmailInput.trim(),
+          userName,
+          sessionId: sessionIdRef.current,
+          result,
+          rawVision: vision,
+          attribution: attributionSummary(),
+          brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+          tenantSlug: tenantSlug || 'swrv',
+        }),
+      });
+      const reason = await emailFailureReason(r);
+      if (!reason) {
+        setResultsEmailStatus('sent');
+      } else {
+        console.warn('Roadmap email failed:', reason);
+        setResultsEmailReason(reason);
+        setResultsEmailStatus('error');
+      }
+    } catch {
+      setResultsEmailStatus('error');
+    }
+  }, [result, resultsEmailInput, userName, config]);
 
 // ── Confetti + celebration sound on first results reveal ─────
 useEffect(() => {
@@ -857,26 +1111,30 @@ useEffect(() => {
         userName,
         sessionId: sessionIdRef.current,
         result,
+        rawVision: vision,
+        attribution: attributionSummary(),
         brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+        tenantSlug: tenantSlug || 'swrv',
       }),
     })
-    .then(r => r.json())
-    .then(data => {
-      if (data?.status === 'sent' || data?.status === 'skipped') {
+    .then(async r => {
+      const reason = await emailFailureReason(r);
+      if (!reason) {
         setEmailSentMsg(`Sent to ${userEmail} ✓`);
         setEmailPromptOpen(false);
       } else {
-        setEmailSentMsg('Could not send — try again');
+        console.warn('Roadmap email failed:', reason);
+        setEmailSentMsg(`Couldn't send — ${reason}. Tap “Print / Save as PDF” to keep your Roadmap.`);
       }
     })
-    .catch(() => setEmailSentMsg('Connection error — try again'));
+    .catch(() => setEmailSentMsg('Couldn\'t send — no connection [OFFLINE]. Tap “Print / Save as PDF” to keep your Roadmap.'));
   } else {
     // No email stored — show inline prompt
     setEmailPromptOpen(true);
     setEmailPromptValue('');
     setEmailSentMsg(null);
   }
-}, [userEmail, userName, result, config]);
+}, [userEmail, userName, result, config, tenantSlug]);
 
 const submitEmailPrompt = useCallback(() => {
   const email = emailPromptValue.trim();
@@ -890,16 +1148,24 @@ const submitEmailPrompt = useCallback(() => {
       userName,
       sessionId: sessionIdRef.current,
       result,
+      rawVision: vision,
+      attribution: attributionSummary(),
       brand: { name: config.brandName, url: config.brandUrl, ctaUrl: config.ctaUrl },
+      tenantSlug: tenantSlug || 'swrv',
     }),
   })
-  .then(r => r.json())
-  .then(data => {
-    setEmailSentMsg(`Sent to ${email} ✓`);
-    setEmailPromptOpen(false);
+  .then(async r => {
+    const reason = await emailFailureReason(r);
+    if (!reason) {
+      setEmailSentMsg(`Sent to ${email} ✓`);
+      setEmailPromptOpen(false);
+    } else {
+      console.warn('Roadmap email failed:', reason);
+      setEmailSentMsg(`Couldn't send — ${reason}. Tap “Print / Save as PDF” to keep your Roadmap.`);
+    }
   })
-  .catch(() => setEmailSentMsg('Connection error — try again'));
-}, [emailPromptValue, userName, result, config]);
+  .catch(() => setEmailSentMsg('Email didn\'t go through — tap “Print / Save as PDF” to keep your Roadmap.'));
+}, [emailPromptValue, userName, result, config, tenantSlug]);
 
 const handleSave = useCallback(() => {
     if (!result) return;
@@ -1027,6 +1293,43 @@ const handleSave = useCallback(() => {
     >
       <div id="progress-bar" style={{ width: `${progress}%` }} />
 
+      {/* Resume prompt — makes good on "your progress is saved" */}
+      {resumeSnap && (
+        <div className="rm-resume" role="dialog" aria-label="Resume your Roadmap">
+          <div className="rm-resume-card">
+            <div className="rm-resume-emoji" aria-hidden="true">🔖</div>
+            <div className="rm-resume-title">
+              {resumeSnap.userName ? `Welcome back, ${resumeSnap.userName}.` : 'Welcome back.'}
+            </div>
+            <div className="rm-resume-body">
+              {resumeSnap.result
+                ? 'Your finished Roadmap is still here. Want to pick it back up?'
+                : 'You have a Roadmap in progress. Want to pick up where you left off?'}
+            </div>
+            <div className="rm-resume-btns">
+              <button type="button" className="rm-resume-primary" onClick={applyResume}>
+                Continue →
+              </button>
+              <button type="button" className="rm-resume-ghost" onClick={discardResume}>
+                Start fresh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* First-run walkthrough + replay button */}
+      <RoadmapTour open={tourOpen && !resumeSnap} steps={TOUR_STEPS} onClose={closeTour} />
+      {screen !== 'paywall' && !tourOpen && (
+        <button
+          type="button"
+          className="rm-tour-help"
+          onClick={() => setTourOpen(true)}
+          aria-label="Replay walkthrough"
+          title="How this works"
+        >?</button>
+      )}
+
       {/* Background music — single audio element, source swapped per track */}
       <audio ref={audioRef} loop={loop} preload="auto" />
 
@@ -1055,7 +1358,7 @@ const handleSave = useCallback(() => {
         className={musicBtnClass}
         onClick={toggleMusicPanel}
         aria-label="Open music player"
-        title={!hasMusic ? 'No track for this skin yet' : musicMuted ? 'Music off — open player' : 'Music player'}
+        title={!hasMusic ? 'No track for this skin yet' : musicMuted ? 'Music is off — tap to turn it on' : 'Music player'}
       >
         <svg className="icon-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
         <svg className="icon-off" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>
@@ -1302,6 +1605,7 @@ const handleSave = useCallback(() => {
             </p>
           </div>
 
+          <MicGuide state={mic.state} />
           <div className="phase2-mic-row">
             <button
               type="button"
@@ -1340,6 +1644,14 @@ const handleSave = useCallback(() => {
             placeholder={config.copy.visionPlaceholder}
           />
 
+          {/* Live word count — tells them the bar up front instead of
+              rejecting them after they hit submit. */}
+          <div className={`vision-wordcount ${words >= 30 ? 'ready' : ''}`} aria-live="polite">
+            {words >= 30
+              ? `✓ ${words} words — you're good to go`
+              : `${words} / 30 words${words > 0 ? ' — keep going' : ''}`}
+          </div>
+
           <div className="vision-footer">
             <button type="button" className="btn-primary" onClick={submitVision}>
               {config.copy.visionCta}
@@ -1356,11 +1668,11 @@ const handleSave = useCallback(() => {
       <section id="screen-paywall" className={`screen ${screen === 'paywall' ? 'active' : ''}`}>
         <div className="grain" />
         <div className="paywall-wrap">
-          <p className="paywall-eyebrow">CHOOSE YOUR EXPERIENCE</p>
+          <p className="paywall-eyebrow">FREE · ABOUT 10 MINUTES</p>
           <h2 className="paywall-title">Before You Begin</h2>
           <p className="paywall-sub">
             The Roadmap maps your vision to your path — and to the exact services that build it.<br/>
-            Choose how deep you want to go.
+            Answer honestly and take your time. There are no wrong answers.
           </p>
 
           {/* Vision scriptures */}
@@ -1430,6 +1742,7 @@ const handleSave = useCallback(() => {
                 <h2 className="phase2-question">{q.question}</h2>
                 {q.context && <p className="phase2-context">{q.context}</p>}
 
+                <MicGuide state={mic.state} />
                 <div className="phase2-mic-row">
                   <button type="button"
                     className={"mic-btn" + (mic.isListening && activeMicTarget === "phase2" ? " recording" : "")}
@@ -1537,7 +1850,43 @@ const handleSave = useCallback(() => {
         </div>
       </section>
 
-      {/* ════════ SCREEN 5 — RESULTS ════════ */}
+      {/* ════════ SCREEN 5 — HEART NOTE ════════ */}
+      <section id="screen-heart-note" className={`screen ${screen === 'heart-note' ? 'active' : ''}`}>
+        <div className="grain" />
+        <div className="disc-box">
+          <div className="disc-ornament">
+            <span />
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
+            <span />
+          </div>
+          <h2 className="disc-title">
+            This Was Always<br />About You.
+          </h2>
+          <p className="disc-text">
+            Whether you're married with kids, a single parent, in a relationship, or doing this alone right now — none of that was left out of this room.
+          </p>
+          <p className="disc-text">
+            The people, places, and things in your life are <strong>not irrelevant</strong>. They are <strong>not dismissed</strong>. We just needed a moment to get to what your heart was given for — before all of that. To get to the depth of who you are, not just the results of the decisions life has positioned you in.
+          </p>
+          <p className="disc-text">
+            In other words — we just wanted to make it about <strong>you</strong> for a second.
+          </p>
+          <p className="disc-text">
+            What would be the positioning of your heart if the only thing you had was you and your dream?
+          </p>
+          <hr className="disc-rule" />
+          <p className="disc-note">
+            That's what we mapped. And regardless of what you already carry — family, love, responsibility — we can plan alongside it. Whoever and whatever is already in your heart is not in the way. It's part of the route.
+          </p>
+          <div className="action-row">
+            <button type="button" className="btn-primary" onClick={() => goTo('results')}>
+              See My Results →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ SCREEN 6 — RESULTS ════════ */}
       <section id="screen-results" className={`screen ${screen === 'results' ? 'active' : ''}`}>
         {error ? (
           <div className="results-content">
@@ -1548,7 +1897,7 @@ const handleSave = useCallback(() => {
                 type="button"
                 className="btn-primary"
                 style={{ marginTop: 32 }}
-                onClick={() => { setError(null); goTo('vision'); }}
+                onClick={() => { setError(null); proceedToProcess(!userEmail); }}
               >
                 ← Try Again
               </button>
@@ -1567,13 +1916,14 @@ const handleSave = useCallback(() => {
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                 Email My Roadmap
               </button>
-              <button type="button" className="btn-save" onClick={handleSave}>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                Save PDF
-              </button>
               <button type="button" className="btn-save" onClick={() => window.print()}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
-                Print
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
+                Print / Save as PDF
+              </button>
+              <button type="button" className="btn-save" onClick={handleSave} title="Download a plain-text copy">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                Text File
               </button>
               {emailPromptOpen && (
                 <div className="email-prompt-inline">
@@ -1587,6 +1937,7 @@ const handleSave = useCallback(() => {
                     autoFocus
                   />
                   <button type="button" className="btn-primary" onClick={submitEmailPrompt} style={{marginTop: 8}}>Send →</button>
+                  <p className="email-consent-note">We'll send your Roadmap and occasional SWRV updates. Unsubscribe anytime.</p>
                 </div>
               )}
               {emailSentMsg && <p className="email-sent-msg">✓ {emailSentMsg}</p>}
@@ -1844,6 +2195,40 @@ const handleSave = useCallback(() => {
                   </div>
                 </div>
               )}
+              {/* ── EMAIL RESULTS ── */}
+              <div className="results-email-block">
+                {resultsEmailStatus === 'sent' ? (
+                  <div className="results-email-label results-email-sent">
+                    ✓ Roadmap sent to {resultsEmailInput}
+                  </div>
+                ) : (
+                  <>
+                    <div className="results-email-label">Email yourself this Roadmap</div>
+                    <div className="results-email-row">
+                      <input
+                        type="email"
+                        className="results-email-input"
+                        placeholder="your@email.com"
+                        value={resultsEmailInput}
+                        onChange={e => { setResultsEmailInput(e.target.value); if (resultsEmailStatus === 'error') setResultsEmailStatus('idle'); }}
+                        onKeyDown={e => { if (e.key === 'Enter') sendResultsEmail(); }}
+                      />
+                      <button
+                        type="button"
+                        className="results-email-btn"
+                        onClick={sendResultsEmail}
+                        disabled={resultsEmailStatus === 'sending' || !resultsEmailInput.trim()}
+                      >
+                        {resultsEmailStatus === 'sending' ? 'Sending…' : resultsEmailStatus === 'error' ? 'Try Again' : 'Send →'}
+                      </button>
+                    </div>
+                    {resultsEmailStatus === 'error' && (
+                      <p className="results-email-error">Couldn't send — check the address and try again.</p>
+                    )}
+                  </>
+                )}
+              </div>
+
               {/* ── CTA ── */}
               {/* ═══ Bottom action block — big lit-up CTA after reading ═══ */}
               <div className="results-bottom-cta">
@@ -1853,13 +2238,13 @@ const handleSave = useCallback(() => {
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                     Email My Roadmap
                   </button>
-                  <button type="button" className="btn-save" onClick={handleSave}>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" /></svg>
-                    Save PDF
+                  <button type="button" className="btn-save" onClick={handleSave} title="Download a plain-text copy">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    Text File
                   </button>
                   <button type="button" className="btn-save" onClick={() => window.print()}>
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" /></svg>
-                    Print
+                    Print / Save as PDF
                   </button>
                 </div>
                 {emailPromptOpen && (

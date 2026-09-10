@@ -122,6 +122,9 @@ export const Footer: React.FC = () => {
                 {link.label}
               </a>
             ))}
+            <a href="/admin" className="hover:text-lion-orange transition-colors opacity-60">
+              Admin
+            </a>
           </div>
         </div>
       </div>

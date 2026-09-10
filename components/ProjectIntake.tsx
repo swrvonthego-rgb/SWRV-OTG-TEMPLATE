@@ -13,6 +13,23 @@ interface Question {
   placeholder?: string;
 }
 
+// ── UNIVERSAL BUDGET QUESTION ─────────────────────────────────────────
+// Injected into every path so no brief ever reaches SWRV without a
+// budget — the #1 thing customers leave out. Required (not optional).
+const BUDGET_Q: Question = {
+  id: 'budget',
+  question: "What\'s your budget for this?",
+  type: 'single',
+  options: [
+    'Under $300',
+    '$300 – $750',
+    '$750 – $2,000',
+    '$2,000 – $5,000',
+    '$5,000+',
+    "Not sure — show me options",
+  ],
+};
+
 // ── INTAKE PATHS BY SERVICE GROUP ─────────────────────────────────────
 const PATHS: Record<string, Question[]> = {
   website: [
@@ -182,7 +199,17 @@ export const ProjectIntake: React.FC<Props> = ({ isOpen, onClose, serviceId, ser
     }
   }, [isOpen]);
 
-  const questions = path ? PATHS[path] : [];
+  // Inject the universal budget question (before the trailing free-form
+  // "notes" question) into any path that doesn't already ask for budget,
+  // so every completed brief carries a structured budget.
+  const questions = React.useMemo(() => {
+    if (!path) return [] as Question[];
+    const base = PATHS[path];
+    if (base.some(q => q.id === 'budget')) return base;
+    const notesIdx = base.findIndex(q => q.id === 'notes');
+    if (notesIdx === -1) return [...base, BUDGET_Q];
+    return [...base.slice(0, notesIdx), BUDGET_Q, ...base.slice(notesIdx)];
+  }, [path]);
   const allQs = [...questions, ...followups];
   const currentQ = allQs[qIdx];
   const progress = allQs.length ? Math.round(((qIdx) / allQs.length) * 100) : 0;

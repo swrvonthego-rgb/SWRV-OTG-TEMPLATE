@@ -13,6 +13,9 @@
   "r2_buckets": [
     { "binding": "UPLOADS", "bucket_name": "swrv-uploads" }
   ],
+  "d1_databases": [
+    { "binding": "EMAIL_DB", "database_name": "swrv-email-list", "database_id": "991ae15a-e114-47b8-be2d-c8ee3509a2fe" }
+  ],
   "vars": {
     "EMAIL_FROM": "SWRV <hello@swrvonthego.pro>",
     "CDN_BASE": "https://pub-1cdab94fe8a14771befbf4d0319622ef.r2.dev"
