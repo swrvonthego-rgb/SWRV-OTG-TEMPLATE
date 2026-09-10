@@ -1188,7 +1188,7 @@ export const HERO_CAROUSEL: {
 } = {
   backgroundVideo:
     'https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_24fps.mp4',
-  title: { line1: 'SWRV', line2: 'HEADQUARTERS.' },
+  title: { line1: 'SWRV', line2: 'MEDIA STRATEGIST.' },
   taglineHeading: 'Swrv On Roadblocks.',
   taglineAccent: 'Let Love GPS.',
   taglineBody:
