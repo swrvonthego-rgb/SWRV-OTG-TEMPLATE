@@ -1189,10 +1189,10 @@ export const HERO_CAROUSEL: {
   backgroundVideo:
     'https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_24fps.mp4',
   title: { line1: 'SWRV', line2: 'MEDIA STRATEGIST.' },
-  taglineHeading: 'Swrv On Roadblocks.',
-  taglineAccent: 'Let Love GPS.',
+  taglineHeading: '"Swrv On Roadblocks. Let Love GPS." — SWRV Birdsong',
+  taglineAccent: '',
   taglineBody:
-    'The central hub for artist development, physical training, authorship, and wisdom. Welcome to the ecosystem.',
+    'When you're driven by your passion, we're the central hub for your content solutions.',
   column1: [
     { image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop', title: 'FIGHTING ARTS', subtitle: 'MARTIAL ARTS' },
     { image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop', title: 'CULINARY ARTS', subtitle: '' },
