@@ -1259,7 +1259,10 @@ async function handleZionBooking(request, env) {
       const errText = await r.text();
       console.error('Resend error:', errText);
       await notifyOwnerOfFailure(env, { source: 'Zion booking notification email', body, err: new Error(errText) });
-      return new Response(JSON.stringify({ error: 'Email send failed' }), { status: 502, headers: jsonHeaders(request) });
+      // The booker is already saved in email_captures above, so the request
+      // did NOT fail — only the owner's notification did. Reporting 502 here
+      // told the visitor their booking broke and sent them away for nothing.
+      return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: jsonHeaders(request) });
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
@@ -1523,7 +1526,7 @@ async function handleBooking(request, env) {
       // notification just failed, so send a separate alert through the
       // hardened multi-key path rather than leaving the owner unaware.
       await notifyOwnerOfFailure(env, { source: 'Service booking notification email', body, err: new Error(errText) });
-      return new Response(JSON.stringify({ error: 'Booking received but email delivery failed. Team has been notified.' }), { status: 502, headers: jsonHeaders(request) });
+      return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: jsonHeaders(request) });
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
