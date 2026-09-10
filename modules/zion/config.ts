@@ -12,6 +12,8 @@
 //   3. Update STATS, BOOKS, PODCAST, SERVICES, BOOKING
 // ════════════════════════════════════════════════════════════
 
+import { PAYMENT_CONFIG } from '../../site.config';
+
 export const ZION_CONFIG = {
   // ── IDENTITY ────────────────────────────────────────────
   identity: {
@@ -125,10 +127,10 @@ export const ZION_CONFIG = {
     blurb:
       'Weddings, festivals, private parties, corporate events, bookstore takeovers, listening rooms — pick your date, tell me the vision, and lock it in.',
     // ── DEPOSIT ──────────────────────────────────────────
-    // A $50 deposit secures the date. paypal.me supports a preset amount
-    // via the /50 path form, so this link opens PayPal pre-filled at $50.
+    // A $50 deposit secures the date. The Stripe Payment Link lives in
+    // site.config.ts so every payment link on the site has one home.
     depositAmount: 50,
-    depositUrl: 'https://paypal.me/swrvonthego/50',
+    depositUrl: PAYMENT_CONFIG.stripe.depositUrl,
     depositNote:
       'A $50 deposit secures your date. The rest of the fee is negotiated based on your event, location, and set length — I\'ll follow up personally to lock in the details.',
     submitTo: 'info@swrvonthego.pro',

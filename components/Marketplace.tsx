@@ -356,18 +356,18 @@ export const Marketplace: React.FC<Props> = ({ onOpenRoadmap }) => {
                 Pay your way. We work with all of it.
               </h4>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, margin: '0 0 16px', maxWidth: 480 }}>
-                We accept Cash App, Venmo, PayPal, and Stripe — whatever is easiest for you.
-                Need to split it up? <strong style={{ color: 'rgba(255,255,255,0.85)' }}>We partner with Klarna</strong> so you can break your investment into manageable payments.
-                Klarna pays us upfront — you pay them on your schedule. No friction, no excuses.
+                Secure checkout by Stripe — every major card, plus Apple Pay and Google Pay.
+                Need to split it up? <strong style={{ color: 'rgba(255,255,255,0.85)' }}>Klarna, Afterpay and Affirm</strong> are built right into checkout, so you can break your investment into manageable payments.
+                They pay us upfront — you pay them on your schedule. No friction, no excuses.
               </p>
               {/* Payment method pills */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {[
-                  { label: 'Cash App', handle: '$SwrvOnTheGo', color: '#00D632' },
-                  { label: 'Venmo', handle: '@swrvonthego', color: '#3D95CE' },
-                  { label: 'PayPal', handle: 'paypal.me/swrvonthego', color: '#009CDE' },
                   { label: 'Stripe', handle: 'Secure checkout', color: '#635BFF' },
+                  { label: 'Card', handle: 'Visa · Mastercard · Amex', color: '#c8a84b' },
                   { label: 'Klarna', handle: 'Buy now, pay later', color: '#FFB3C7' },
+                  { label: 'Afterpay', handle: 'Pay in 4', color: '#B2FCE4' },
+                  { label: 'Affirm', handle: 'Monthly financing', color: '#4B22F4' },
                 ].map(({ label, handle, color }) => (
                   <div key={label} style={{
                     display: 'flex', alignItems: 'center', gap: 7,

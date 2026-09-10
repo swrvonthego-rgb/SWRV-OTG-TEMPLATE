@@ -1210,7 +1210,7 @@ async function handleZionBooking(request, env) {
         </div>
         <div style="background:#1a1610;border:1px solid #c8a84b;border-radius:6px;padding:14px 16px;margin-bottom:20px;">
           <p style="margin:0;color:#e8c96a;font-size:14px;font-weight:700;">💰 They're being shown the $50 deposit link right now.</p>
-          <p style="margin:4px 0 0;color:#8a8070;font-size:12px;">This confirms the inquiry was submitted — it does not confirm they've actually paid. There's no payment webhook wired up yet, so watch for the PayPal notification separately to know it landed.</p>
+          <p style="margin:4px 0 0;color:#8a8070;font-size:12px;">This confirms the inquiry was submitted — it does not confirm they've actually paid. There's no payment webhook wired up yet, so watch for the Stripe notification separately to know it landed.</p>
         </div>
         <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
           <div style="width:140px;color:#8a8070;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;">Name</div>
@@ -1421,16 +1421,7 @@ async function handleBooking(request, env) {
     const safe = (x) => String(x ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
     const PAY_LABELS = {
-      klarna:   '🟡 Klarna — Pay in 4 (merchant link to be sent)',
-      afterpay: '🟢 Afterpay — Pay in 4 (merchant link to be sent)',
-      affirm:   '🟣 Affirm — Financing (merchant link to be sent)',
-      zip:      '🟤 Zip — Pay in 4 (merchant link to be sent)',
-      sezzle:   '🔴 Sezzle — Pay in 4 (merchant link to be sent)',
-      paylater: '🔵 PayPal Pay Later — Pay in 4 (merchant link to be sent)',
-      paypal:   '💙 PayPal — Full payment (client redirected)',
-      cashapp:  '💚 Cash App — Full payment (client redirected)',
-      venmo:    '💜 Venmo — Full payment (client redirected)',
-      card:     '💳 Credit / Debit Card (invoice to be sent)',
+      stripe: '💳 Stripe — client sent to secure checkout (card / Klarna / Afterpay / Affirm)',
     };
     const payLabel = PAY_LABELS[payMethod] || '📋 Payment to be arranged';
 

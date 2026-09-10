@@ -536,17 +536,21 @@ export function Zion({ isOpen, onClose }: ZionProps) {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', alignItems: 'flex-start', width: '100%' }}>
                   <div style={{ fontSize: '0.85rem', color: 'rgba(237,232,220,0.85)', lineHeight: 1.55 }}>
-                    ✅ Request received{eventDate ? ` for ${eventDate}` : ''}! Lock your spot with the ${Z.booking.depositAmount} deposit — I'll be in touch to finalize everything.
+                    ✅ Request received{eventDate ? ` for ${eventDate}` : ''}! {Z.booking.depositUrl
+                      ? `Lock your spot with the $${Z.booking.depositAmount} deposit — I'll be in touch to finalize everything.`
+                      : `I'll email you a secure Stripe link for the $${Z.booking.depositAmount} deposit and follow up to finalize everything.`}
                   </div>
-                  <a
-                    href={Z.booking.depositUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-primary"
-                    style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-                  >
-                    💳 Pay ${Z.booking.depositAmount} Deposit &amp; Secure Date →
-                  </a>
+                  {Z.booking.depositUrl && (
+                    <a
+                      href={Z.booking.depositUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary"
+                      style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                      💳 Pay ${Z.booking.depositAmount} Deposit &amp; Secure Date →
+                    </a>
+                  )}
                   <button
                     onClick={() => { setDepositReady(false); setFirstName(''); setLastName(''); setEmail(''); setInquiryType(''); setEventDate(''); setLocation(''); setMessage(''); }}
                     style={{ background: 'none', border: 'none', color: 'var(--color-muted)', fontSize: '0.75rem', letterSpacing: '0.05em', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}

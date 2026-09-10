@@ -21,24 +21,22 @@
 
 // ── BRAND IDENTITY ─────────────────────────────────────────
 // ── PAYMENT CONFIG ─────────────────────────────────────────────────────
-// Direct payment links — update handles before going live.
-// BNPL merchant portals are for Swerve to apply; API keys go in Cloudflare.
+// Every payment routes through Stripe. Card, Klarna, Afterpay and Affirm
+// are all enabled on the Stripe Payment Links themselves, so there are no
+// per-platform handles or separate BNPL merchant applications to track —
+// turning a method on in the Stripe dashboard turns it on for the site.
+//
+// Paste the Payment Link URLs from Stripe → Payment Links. Until a link is
+// set, the booking flow tells the client a secure link is coming by email
+// rather than showing a dead button.
 export const PAYMENT_CONFIG = {
-  // ── DIRECT PAYMENT (live now once handles are set) ──────────────────
-  paypal:  'https://paypal.me/swrvonthego',   // swrvonthego@gmail.com
-  cashapp: 'https://cash.app/$SwrvOnTheGo',
-  venmo:   'https://venmo.com/u/swrvonthego',
-
-  // ── BNPL MERCHANT SIGNUP PORTALS (for Swerve to apply) ─────────────
-  // Once approved + API keys added to Cloudflare → remove 'pending: true'
-  bnpl: [
-    { id: 'klarna',   name: 'Klarna',   tagline: 'Pay in 4 — no interest',      color: '#FFB800', pending: true, applyUrl: 'https://www.klarna.com/us/business/merchant-sign-up/' },
-    { id: 'afterpay', name: 'Afterpay', tagline: '4 payments — no interest',     color: '#B2FCE4', pending: true, applyUrl: 'https://www.afterpay.com/en-US/business' },
-    { id: 'affirm',   name: 'Affirm',   tagline: '3–36 months — low rates',      color: '#4B22F4', pending: true, applyUrl: 'https://www.affirm.com/business' },
-    { id: 'zip',      name: 'Zip',      tagline: '4 payments — instant approval',color: '#AA8EFF', pending: true, applyUrl: 'https://zip.co/us/merchant-solutions' },
-    { id: 'sezzle',   name: 'Sezzle',   tagline: '4 payments — 0% interest',     color: '#CE3665', pending: true, applyUrl: 'https://sezzle.com/merchant-solutions' },
-    { id: 'paidy',    name: 'PayPal Pay Later', tagline: 'Pay in 4 via PayPal',  color: '#003087', pending: true, applyUrl: 'https://www.paypal.com/us/business/accept-payments/checkout/pay-later' },
-  ],
+  stripe: {
+    // Fixed $50 — secures a date on Zion's calendar.
+    depositUrl: '',
+    // Built with "let customers choose what they pay": service fees are
+    // quoted per booking, so one link covers every amount.
+    serviceUrl: '',
+  },
 } as const;
 
 
