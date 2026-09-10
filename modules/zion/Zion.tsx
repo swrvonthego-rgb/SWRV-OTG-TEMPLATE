@@ -114,12 +114,18 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           message: fullMessage,
         }),
       });
-      if (!res.ok) throw new Error('Server error');
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '(unable to read error)');
+        console.error(`API returned ${res.status}:`, errText);
+        throw new Error(`Server error: ${res.status}`);
+      }
       setIsSending(false);
       setDepositReady(true);
       showToast('Request received! Secure your date with the $50 deposit below.');
     } catch (err) {
       setIsSending(false);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('Booking submit failed:', msg);
       showToast('Something went wrong. Try again or email info@swrvonthego.pro directly.');
     }
   };
