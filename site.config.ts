@@ -1192,7 +1192,7 @@ export const HERO_CAROUSEL: {
   taglineHeading: '"Swrv On Roadblocks. Let Love GPS." — SWRV Birdsong',
   taglineAccent: '',
   taglineBody:
-    'When you're driven by your passion, we're the central hub for your content solutions.',
+    'When you\'re driven by your passion, we\'re the central hub for your content solutions.',
   column1: [
     { image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop', title: 'FIGHTING ARTS', subtitle: 'MARTIAL ARTS' },
     { image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop', title: 'CULINARY ARTS', subtitle: '' },
