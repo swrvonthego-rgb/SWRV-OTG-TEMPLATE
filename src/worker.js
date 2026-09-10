@@ -40,6 +40,22 @@ function getCorsHeaders(request) {
   };
 }
 
+// JSON response headers, computed per-request. This used to be a static
+// constant hardcoded to 'https://swrvonthego.pro' — any visitor whose
+// browser sent Origin: https://www.swrvonthego.pro (or any other allowed
+// origin) got a mismatched Access-Control-Allow-Origin back, so the
+// browser silently blocked every POST response as a CORS violation even
+// though the request had already succeeded server-side. Every handler
+// must use this (or getCorsHeaders directly for non-JSON responses)
+// instead of a fixed value.
+function jsonHeaders(request) {
+  return {
+    ...getCorsHeaders(request),
+    ...SECURITY_HEADERS,
+    'Content-Type': 'application/json',
+  };
+}
+
 // Security headers added to every response
 const SECURITY_HEADERS = {
   'X-Content-Type-Options':  'nosniff',
@@ -47,20 +63,6 @@ const SECURITY_HEADERS = {
   'Referrer-Policy':         'strict-origin-when-cross-origin',
   'Permissions-Policy':      'camera=(), microphone=(self), geolocation=(), payment=(self)',
   'X-XSS-Protection':        '1; mode=block',
-};
-
-// Legacy static headers (for handlers that build their own response)
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://swrvonthego.pro',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-  'Vary': 'Origin',
-};
-
-const JSON_HEADERS = {
-  ...CORS_HEADERS,
-  ...SECURITY_HEADERS,
-  'Content-Type': 'application/json',
 };
 
 // ─────────────────────────────────────────────────────────
@@ -533,10 +535,10 @@ async function sendEscalationEmail(env, tenantConfig, { email, name, rawVision, 
 // includes the prompt skeleton, confidence threshold, or contact email;
 // those stay server-only.
 async function handleTenantPublicConfig(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   const slug = decodeURIComponent(request.url.split('/api/tenant/')[1] || '').split('?')[0];
   if (!slug) {
-    return new Response(JSON.stringify({ error: 'slug required' }), { status: 400, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'slug required' }), { status: 400, headers: jsonHeaders(request) });
   }
   const tenantConfig = await getTenantConfig(env, slug);
   return new Response(JSON.stringify({
@@ -546,7 +548,7 @@ async function handleTenantPublicConfig(request, env) {
     colors: tenantConfig.colors,
     services: tenantConfig.services,
     copyOverrides: tenantConfig.copyOverrides,
-  }), { headers: JSON_HEADERS });
+  }), { headers: jsonHeaders(request) });
 }
 
 export default {
@@ -710,7 +712,7 @@ export default {
         },
         hasKV: !!env.PROGRESS,
         time: new Date().toISOString(),
-      }), { headers: JSON_HEADERS });
+      }), { headers: jsonHeaders(request) });
     }
 
     // Static assets
@@ -722,14 +724,14 @@ export default {
 // AI ROADMAP — Groq
 // ─────────────────────────────────────────────────────────
 async function handleRoadmap(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
   }
   if (!env.GROQ_API_KEY) {
     return new Response(JSON.stringify({
       error: 'GROQ_API_KEY not configured. Add it in Cloudflare Workers > Settings > Variables.'
-    }), { status: 500, headers: JSON_HEADERS });
+    }), { status: 500, headers: jsonHeaders(request) });
   }
 
   try {
@@ -793,7 +795,7 @@ async function handleRoadmap(request, env) {
         ? 'Our AI is at capacity for the moment. Give it about a minute, then tap Try Again — your answers are saved.'
         : (raw || 'The AI had trouble responding. Tap Try Again.');
       return new Response(JSON.stringify({ error: friendly, retryable: isRate }),
-        { status: groqResponse.status, headers: JSON_HEADERS });
+        { status: groqResponse.status, headers: jsonHeaders(request) });
     }
     // Surface truncation explicitly. A 'length' finish_reason means the
     // model ran out of room mid-JSON — previously this failed silently and
@@ -806,7 +808,7 @@ async function handleRoadmap(request, env) {
     if (!text.trim()) {
       console.error('Groq returned empty content:', data);
       return new Response(JSON.stringify({ error: 'AI returned empty response — try again' }),
-        { status: 502, headers: JSON_HEADERS });
+        { status: 502, headers: jsonHeaders(request) });
     }
 
     // Persist the full result server-side — this is the first time a
@@ -832,11 +834,11 @@ async function handleRoadmap(request, env) {
     }
 
     return new Response(JSON.stringify({ content: [{ type: 'text', text }] }),
-      { headers: JSON_HEADERS });
+      { headers: jsonHeaders(request) });
   } catch (err) {
     console.error('handleRoadmap error:', err);
     return new Response(JSON.stringify({ error: 'Server error — try again' }),
-      { status: 500, headers: JSON_HEADERS });
+      { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -844,27 +846,27 @@ async function handleRoadmap(request, env) {
 // SAVE PROGRESS — KV-backed (graceful no-op if KV not bound)
 // ─────────────────────────────────────────────────────────
 async function handleSaveProgress(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: jsonHeaders(request) });
   }
   if (!env.PROGRESS) {
     return new Response(JSON.stringify({ status: 'skipped', reason: 'KV not configured' }),
-      { headers: JSON_HEADERS });
+      { headers: jsonHeaders(request) });
   }
   try {
     const body = await request.json();
     if (!body.sessionId) {
-      return new Response(JSON.stringify({ error: 'sessionId required' }), { status: 400, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'sessionId required' }), { status: 400, headers: jsonHeaders(request) });
     }
     // Store with 90-day TTL — sessions auto-expire
     await env.PROGRESS.put(`session:${body.sessionId}`, JSON.stringify(body), {
       expirationTtl: 60 * 60 * 24 * 90,
     });
     return new Response(JSON.stringify({ status: 'saved', id: body.sessionId }),
-      { headers: JSON_HEADERS });
+      { headers: jsonHeaders(request) });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -873,21 +875,21 @@ async function handleSaveProgress(request, env) {
 // ─────────────────────────────────────────────────────────
 async function handleLoadProgress(request, env) {
   if (!env.PROGRESS) {
-    return new Response(JSON.stringify({ error: 'KV not configured' }), { status: 503, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'KV not configured' }), { status: 503, headers: jsonHeaders(request) });
   }
   const url = new URL(request.url);
   const id = url.searchParams.get('id');
   if (!id) {
-    return new Response(JSON.stringify({ error: 'id query param required' }), { status: 400, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'id query param required' }), { status: 400, headers: jsonHeaders(request) });
   }
   try {
     const raw = await env.PROGRESS.get(`session:${id}`);
     if (!raw) {
-      return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: jsonHeaders(request) });
     }
-    return new Response(raw, { headers: JSON_HEADERS });
+    return new Response(raw, { headers: jsonHeaders(request) });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -895,15 +897,15 @@ async function handleLoadProgress(request, env) {
 // SEND EMAIL — Resend (graceful no-op if RESEND_API_KEY not set)
 // ─────────────────────────────────────────────────────────
 async function handleSendEmail(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: jsonHeaders(request) });
   }
   try {
     const body = await request.json();
     const { to, userName, sessionId, result, brand, rawVision, attribution, tenantSlug } = body;
     if (!to || !result) {
-      return new Response(JSON.stringify({ error: 'to + result required' }), { status: 400, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'to + result required' }), { status: 400, headers: jsonHeaders(request) });
     }
 
     // ALWAYS capture the email to the mailing list first — before we even
@@ -924,7 +926,7 @@ async function handleSendEmail(request, env) {
     const resendKey = await getResendKey(env);
     if (!resendKey) {
       return new Response(JSON.stringify({ status: 'skipped', reason: 'RESEND_API_KEY not configured', captured: true }),
-        { headers: JSON_HEADERS });
+        { headers: jsonHeaders(request) });
     }
 
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
@@ -946,18 +948,18 @@ async function handleSendEmail(request, env) {
     });
     if (!resendRes) {
       return new Response(JSON.stringify({ status: 'skipped', reason: 'No usable Resend key configured', captured: true }),
-        { headers: JSON_HEADERS });
+        { headers: jsonHeaders(request) });
     }
     if (!resendRes.ok) {
       return new Response(JSON.stringify({ status: 'error', detail: data }),
-        { status: resendRes.status, headers: JSON_HEADERS });
+        { status: resendRes.status, headers: jsonHeaders(request) });
     }
 
     return new Response(JSON.stringify({ status: 'sent', id: data.id }),
-      { headers: JSON_HEADERS });
+      { headers: jsonHeaders(request) });
   } catch (err) {
     return new Response(JSON.stringify({ status: 'error', detail: String(err) }),
-      { status: 500, headers: JSON_HEADERS });
+      { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -965,20 +967,20 @@ async function handleSendEmail(request, env) {
 // CAPTURE EMAIL — saves to D1 email list (no Resend needed)
 // ─────────────────────────────────────────────────────────
 async function handleCaptureEmail(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: jsonHeaders(request) });
   }
   try {
     const { email, name, source, vision_preview, attribution, tenantSlug } = await request.json();
     if (!email) {
-      return new Response(JSON.stringify({ error: 'email required' }), { status: 400, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'email required' }), { status: 400, headers: jsonHeaders(request) });
     }
     await captureEmail(env, { email, name, source: source || 'roadmap', vision_preview, attribution, tenant_id: tenantSlug || null });
-    return new Response(JSON.stringify({ status: 'ok' }), { headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ status: 'ok' }), { headers: jsonHeaders(request) });
   } catch (err) {
     return new Response(JSON.stringify({ status: 'error', detail: String(err) }),
-      { status: 500, headers: JSON_HEADERS });
+      { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -1022,23 +1024,23 @@ async function getAdminSession(request, env) {
 }
 
 async function handleAdminLogin(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: jsonHeaders(request) });
   }
   if (!env.EMAIL_DB) {
-    return new Response(JSON.stringify({ error: 'Admin auth not configured' }), { status: 500, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'Admin auth not configured' }), { status: 500, headers: jsonHeaders(request) });
   }
   try {
     const { email, password } = await request.json();
     if (!email || !password) {
-      return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'Email and password required' }), { status: 400, headers: jsonHeaders(request) });
     }
     const row = await env.EMAIL_DB.prepare(
       'SELECT email, salt, password_hash FROM admin_users WHERE email = ?'
     ).bind(email.trim().toLowerCase()).first();
 
-    const invalid = () => new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401, headers: JSON_HEADERS });
+    const invalid = () => new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401, headers: jsonHeaders(request) });
     if (!row) return invalid();
 
     const hash = await sha256Hex(row.salt + password);
@@ -1052,46 +1054,46 @@ async function handleAdminLogin(request, env) {
 
     const cookie = `admin_session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${ADMIN_SESSION_DAYS * 24 * 60 * 60}`;
     return new Response(JSON.stringify({ status: 'ok', email: row.email }), {
-      headers: { ...JSON_HEADERS, 'Set-Cookie': cookie },
+      headers: { ...jsonHeaders(request), 'Set-Cookie': cookie },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: jsonHeaders(request) });
   }
 }
 
 async function handleAdminMe(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   const session = await getAdminSession(request, env);
-  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: JSON_HEADERS });
-  return new Response(JSON.stringify({ email: session.email }), { headers: JSON_HEADERS });
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+  return new Response(JSON.stringify({ email: session.email }), { headers: jsonHeaders(request) });
 }
 
 async function handleAdminLogout(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   const token = parseCookies(request)['admin_session'];
   if (token && env.EMAIL_DB) {
     await env.EMAIL_DB.prepare('DELETE FROM admin_sessions WHERE token = ?').bind(token).run().catch(() => {});
   }
   return new Response(JSON.stringify({ status: 'ok' }), {
-    headers: { ...JSON_HEADERS, 'Set-Cookie': 'admin_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0' },
+    headers: { ...jsonHeaders(request), 'Set-Cookie': 'admin_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0' },
   });
 }
 
 async function handleAdminEmails(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   const session = await getAdminSession(request, env);
-  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: JSON_HEADERS });
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
   const { results } = await env.EMAIL_DB.prepare(
     'SELECT email, name, source, attribution, captured_at FROM email_captures ORDER BY captured_at DESC LIMIT 500'
   ).all();
-  return new Response(JSON.stringify({ emails: results }), { headers: JSON_HEADERS });
+  return new Response(JSON.stringify({ emails: results }), { headers: jsonHeaders(request) });
 }
 
 // Vision Portal submissions — tenant-filterable, most recent first.
 async function handleAdminSubmissions(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   const session = await getAdminSession(request, env);
-  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: JSON_HEADERS });
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
   await ensureTenantTables(env);
   const url = new URL(request.url);
   const tenant = (url.searchParams.get('tenant') || '').trim().toLowerCase();
@@ -1104,23 +1106,23 @@ async function handleAdminSubmissions(request, env) {
         'SELECT id, tenant_slug, email, name, raw_vision, result_json, confidence_score, escalated, created_at FROM vision_submissions ORDER BY created_at DESC LIMIT ?'
       ).bind(limit);
   const { results } = await query.all();
-  return new Response(JSON.stringify({ submissions: results }), { headers: JSON_HEADERS });
+  return new Response(JSON.stringify({ submissions: results }), { headers: jsonHeaders(request) });
 }
 
 // Vision Portal tenants — list existing / onboard a new one. Onboarding a
 // tenant through this endpoint (rather than a config file) is what lets
 // the owner add a client business without a code deploy.
 async function handleAdminTenants(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   const session = await getAdminSession(request, env);
-  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: JSON_HEADERS });
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
   await ensureTenantTables(env);
 
   if (request.method === 'GET') {
     const { results } = await env.EMAIL_DB.prepare(
       'SELECT slug, display_name, contact_email, logo_url, colors_json, services_json, confidence_threshold, created_at FROM tenants ORDER BY created_at DESC'
     ).all();
-    return new Response(JSON.stringify({ tenants: results }), { headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ tenants: results }), { headers: jsonHeaders(request) });
   }
 
   if (request.method === 'POST') {
@@ -1132,7 +1134,7 @@ async function handleAdminTenants(request, env) {
       const services = Array.isArray(body.services) ? body.services : [];
       if (!/^[a-z0-9-]+$/.test(slug) || !displayName || !contactEmail || !services.length) {
         return new Response(JSON.stringify({ error: 'slug (a-z0-9-), displayName, contactEmail, and at least one service are required' }),
-          { status: 400, headers: JSON_HEADERS });
+          { status: 400, headers: jsonHeaders(request) });
       }
       await env.EMAIL_DB.prepare(
         `INSERT INTO tenants (slug, display_name, contact_email, logo_url, colors_json, services_json, copy_overrides_json, confidence_threshold)
@@ -1155,13 +1157,13 @@ async function handleAdminTenants(request, env) {
         JSON.stringify(body.copyOverrides || {}),
         typeof body.confidenceThreshold === 'number' ? body.confidenceThreshold : 60,
       ).run();
-      return new Response(JSON.stringify({ status: 'ok', slug }), { headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ status: 'ok', slug }), { headers: jsonHeaders(request) });
     } catch (err) {
-      return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: jsonHeaders(request) });
     }
   }
 
-  return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: JSON_HEADERS });
+  return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
 }
 
 // EMAIL TEMPLATE moved to ./email-template.js
@@ -1172,16 +1174,16 @@ async function handleAdminTenants(request, env) {
 // Receives form data and emails info@swrvonthego.pro via Resend
 // ─────────────────────────────────────────────────────────
 async function handleZionBooking(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: jsonHeaders(request) });
   }
   let body = null;
   try {
     body = await request.json();
     const { firstName, lastName, email, inquiryType, eventDate, location, message } = body;
     if (!firstName || !email || !message) {
-      return new Response(JSON.stringify({ error: 'firstName, email, message required' }), { status: 400, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'firstName, email, message required' }), { status: 400, headers: jsonHeaders(request) });
     }
 
     const fullName = [firstName, lastName].filter(Boolean).join(' ');
@@ -1193,7 +1195,7 @@ async function handleZionBooking(request, env) {
     // return success so the visitor still proceeds to the deposit step.
     const resendKey = await getResendKey(env);
     if (!resendKey) {
-      return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: jsonHeaders(request) });
     }
     const subject = `💰 $50 Deposit Incoming — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
@@ -1257,14 +1259,14 @@ async function handleZionBooking(request, env) {
       const errText = await r.text();
       console.error('Resend error:', errText);
       await notifyOwnerOfFailure(env, { source: 'Zion booking notification email', body, err: new Error(errText) });
-      return new Response(JSON.stringify({ error: 'Email send failed' }), { status: 502, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'Email send failed' }), { status: 502, headers: jsonHeaders(request) });
     }
 
-    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
   } catch (err) {
     console.error('Zion booking error:', err);
     await notifyOwnerOfFailure(env, { source: 'Zion booking', body, err });
-    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -1327,14 +1329,14 @@ RULES:
 - Never promise delivery dates you don't know`;
 
 async function handleChat(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
   }
   if (!env.GROQ_API_KEY) {
     return new Response(JSON.stringify({
       reply: "Hey! I'm temporarily offline but you can reach Swerve directly at info@swrvonthego.pro — usually responds within a few hours."
-    }), { headers: JSON_HEADERS });
+    }), { headers: jsonHeaders(request) });
   }
 
   try {
@@ -1343,7 +1345,7 @@ async function handleChat(request, env) {
     const messages = Array.isArray(body.messages) ? body.messages : [];
 
     if (messages.length === 0) {
-      return new Response(JSON.stringify({ error: 'No messages provided' }), { status: 400, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'No messages provided' }), { status: 400, headers: jsonHeaders(request) });
     }
 
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -1368,19 +1370,19 @@ async function handleChat(request, env) {
       console.error('Groq chat error:', errText);
       return new Response(JSON.stringify({
         reply: "I'm having trouble connecting right now. Email info@swrvonthego.pro and we'll get back to you shortly."
-      }), { headers: JSON_HEADERS });
+      }), { headers: jsonHeaders(request) });
     }
 
     const data = await groqResponse.json();
     const reply = data.choices?.[0]?.message?.content || "Let me connect you with Swerve directly — email info@swrvonthego.pro.";
 
-    return new Response(JSON.stringify({ reply }), { headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ reply }), { headers: jsonHeaders(request) });
 
   } catch (err) {
     console.error('Chat error:', err);
     return new Response(JSON.stringify({
       reply: "Something went off on my end. Email info@swrvonthego.pro and we'll sort you out."
-    }), { status: 500, headers: JSON_HEADERS });
+    }), { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -1390,9 +1392,9 @@ async function handleChat(request, env) {
 // Also sends a confirmation to the client
 // ─────────────────────────────────────────────────────────
 async function handleBooking(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: jsonHeaders(request) });
   }
 
   // Declared outside the try so a failure alert can still include whatever
@@ -1405,7 +1407,7 @@ async function handleBooking(request, env) {
             assetLink, uploadedFileNames, referralCode, fileAttachments } = body;
 
     if (!serviceName || !name || !email) {
-      return new Response(JSON.stringify({ error: 'serviceName, name, email required' }), { status: 400, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'serviceName, name, email required' }), { status: 400, headers: jsonHeaders(request) });
     }
 
     // Capture the customer's email to the mailing list (never blocks booking).
@@ -1488,7 +1490,7 @@ async function handleBooking(request, env) {
     const resendKey = await getResendKey(env);
     if (!resendKey) {
       // No email service — still return success so booking is tracked
-      return new Response(JSON.stringify({ ok: true, note: 'Email service not configured — booking logged' }), { headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ ok: true, note: 'Email service not configured — booking logged' }), { headers: jsonHeaders(request) });
     }
 
     // Build Resend attachments from base64 files (limit to first 3, max 10MB each)
@@ -1521,15 +1523,15 @@ async function handleBooking(request, env) {
       // notification just failed, so send a separate alert through the
       // hardened multi-key path rather than leaving the owner unaware.
       await notifyOwnerOfFailure(env, { source: 'Service booking notification email', body, err: new Error(errText) });
-      return new Response(JSON.stringify({ error: 'Booking received but email delivery failed. Team has been notified.' }), { status: 502, headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ error: 'Booking received but email delivery failed. Team has been notified.' }), { status: 502, headers: jsonHeaders(request) });
     }
 
-    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
 
   } catch (err) {
     console.error('Booking error:', err);
     await notifyOwnerOfFailure(env, { source: 'Service booking', body, err });
-    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: jsonHeaders(request) });
   }
 }
 
@@ -1537,7 +1539,7 @@ async function handleBooking(request, env) {
 // PROJECT INTAKE AI — Generates follow-up questions + project brief
 // ─────────────────────────────────────────────────────────────────────
 async function handleIntakeAI(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
 
   try {
     const { mode, path, answers, name, email, phone, serviceName } = await request.json();
@@ -1545,9 +1547,9 @@ async function handleIntakeAI(request, env) {
     if (!env.GROQ_API_KEY) {
       if (mode === 'brief') {
         const brief = formatBasicBrief({ path, answers, name, email, phone, serviceName });
-        return new Response(JSON.stringify({ brief }), { headers: JSON_HEADERS });
+        return new Response(JSON.stringify({ brief }), { headers: jsonHeaders(request) });
       }
-      return new Response(JSON.stringify({ questions: [] }), { headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ questions: [] }), { headers: jsonHeaders(request) });
     }
 
     if (mode === 'followup') {
@@ -1575,7 +1577,7 @@ async function handleIntakeAI(request, env) {
         const clean = text.replace(/```json|```/g, '').trim();
         questions = JSON.parse(clean);
       } catch { questions = []; }
-      return new Response(JSON.stringify({ questions }), { headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ questions }), { headers: jsonHeaders(request) });
     }
 
     if (mode === 'brief') {
@@ -1599,14 +1601,14 @@ async function handleIntakeAI(request, env) {
 
       const data = await res.json();
       const brief = data.choices?.[0]?.message?.content || formatBasicBrief({ path, answers, name, email, phone, serviceName });
-      return new Response(JSON.stringify({ brief }), { headers: JSON_HEADERS });
+      return new Response(JSON.stringify({ brief }), { headers: jsonHeaders(request) });
     }
 
-    return new Response(JSON.stringify({ error: 'Unknown mode' }), { status: 400, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: 'Unknown mode' }), { status: 400, headers: jsonHeaders(request) });
 
   } catch (err) {
     console.error('Intake AI error:', err);
-    return new Response(JSON.stringify({ questions: [], brief: 'Brief generation failed. Your answers have been recorded.' }), { headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ questions: [], brief: 'Brief generation failed. Your answers have been recorded.' }), { headers: jsonHeaders(request) });
   }
 }
 
@@ -1635,7 +1637,7 @@ function formatBasicBrief({ path, answers, name, email, phone, serviceName }) {
 // INTAKE SUBMIT — Emails brief to SWRV + confirmation to client
 // ─────────────────────────────────────────────────────────────────────
 async function handleIntakeSubmit(request, env) {
-  if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
 
   let body = null;
   try {
@@ -1691,13 +1693,13 @@ async function handleIntakeSubmit(request, env) {
       ]);
     }
 
-    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
   } catch (err) {
     console.error('Intake submit error:', err);
     // The client still sees success here (see comment below), so the
     // owner alert is the ONLY way this failure surfaces to anyone.
     await notifyOwnerOfFailure(env, { source: 'Project intake submission', body, err });
-    return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS }); // still succeed for client
+    return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) }); // still succeed for client
   }
 }
 
@@ -1718,10 +1720,10 @@ async function handleReferralReport(request, env) {
     return new Response(JSON.stringify({
       message: 'KV not configured. Referrals are tracked in booking emails — search info@swrvonthego.pro for "ref:" to see attributed bookings.',
       tip: 'To activate KV tracking, bind a KV namespace to the PROGRESS binding in your Cloudflare Worker settings.'
-    }), { headers: JSON_HEADERS });
+    }), { headers: jsonHeaders(request) });
   }
   const raw = await env.PROGRESS.get('referrals:all') || '[]';
-  return new Response(raw, { headers: JSON_HEADERS });
+  return new Response(raw, { headers: jsonHeaders(request) });
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -1851,7 +1853,7 @@ async function handleSaveVision(request, env) {
     // Portal sync is an optional enhancement — degrade quietly rather
     // than failing the caller's request.
     return new Response(JSON.stringify({ status: 'skipped', reason: 'SUPABASE_ANON_KEY not configured' }),
-      { headers: JSON_HEADERS });
+      { headers: jsonHeaders(request) });
   }
 
   try {
