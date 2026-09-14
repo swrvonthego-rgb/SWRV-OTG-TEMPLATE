@@ -105,10 +105,11 @@ export const SERVICE_ASSETS: Record<string, {
     note: 'Do not submit a compressed MP3 for mastering. WAV only.',
   },
   'brand-planning': {
-    title: "What we need for Brand Planning",
-    required: ['Business name and any taglines you are considering', 'Brief description of your business and target audience'],
-    optional: ['Existing logo or brand elements', 'Competitor examples', 'Visual inspiration (Pinterest board, screenshots, links)'],
+    title: "What we need for your Complete Branding Package",
+    required: ['Business name (final — not a placeholder)', 'Brief description of your business and target audience', 'What you want your business to be known for'],
+    optional: ['Existing logo or brand elements', 'Competitor examples', 'Color preferences', 'Visual inspiration (Pinterest board, screenshots, links)'],
     formats: '.pdf,.doc,.docx,.jpg,.png,.ai,.eps',
+    note: 'You don\'t need a logo, vision, or mission going in — building those is the whole point of this package.',
   },
   'logo-design': {
     title: "What we need for Logo Design",
@@ -124,23 +125,24 @@ export const SERVICE_ASSETS: Record<string, {
   },
   'website-presence': {
     title: "What we need for your Website",
-    required: ['Brand guide or logo file (PNG, SVG, or AI format)', 'Written content for each page (copy, bio, services)'],
-    optional: ['Professional photography', 'Color palette / brand colors', 'Reference websites you like'],
-    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.txt',
-    note: 'The more content you provide, the faster and better the result.',
+    required: ['Logo file (PNG, SVG, or AI format)', 'Vision statement', 'Mission statement', 'Images (photos of you, your work, or your space)', 'Written content for each page (copy, bio, services)'],
+    optional: ['Video content', 'Professional photography', 'Color palette / brand colors', 'Reference websites you like'],
+    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.txt,.mp4,.mov',
+    note: 'Don\'t have a logo, vision, or mission yet? The Complete Branding Package ($300) covers all of it. The more content you provide, the faster and better the result.',
   },
   'website-platform': {
     title: "What we need for your Website",
-    required: ['Brand guide (logo, colors, fonts)', 'Written copy for all pages', 'Professional photography or image direction'],
-    optional: ['Competitor / reference sites', 'Sitemap or page structure preference', 'Existing domain/hosting credentials'],
-    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx',
+    required: ['Logo file + brand colors', 'Vision statement', 'Mission statement', 'Images / photography', 'Written copy for all pages'],
+    optional: ['Video content', 'Competitor / reference sites', 'Sitemap or page structure preference', 'Existing domain/hosting credentials'],
+    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.mp4,.mov',
+    note: 'Don\'t have a logo, vision, or mission yet? The Complete Branding Package ($300) covers all of it.',
   },
   'website-ecosystem': {
     title: "What we need for your Website Ecosystem",
-    required: ['Full brand guide', 'All written copy (or approve SWRV to write it)', 'Photography / visual assets', 'Domain and hosting access'],
+    required: ['Full brand guide (logo, colors, fonts)', 'Vision statement', 'Mission statement', 'Photography / visual assets', 'Video content', 'All written copy (or approve SWRV to write it)', 'Domain and hosting access'],
     optional: ['CRM / booking system preferences', 'E-commerce product list if applicable', 'Any API keys (Stripe, etc.)'],
-    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.zip',
-    note: 'For Ecosystem builds, a kickoff call is included. Come prepared.',
+    formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.zip,.mp4,.mov',
+    note: 'Don\'t have a logo, vision, or mission yet? The Complete Branding Package ($300) covers all of it. For Ecosystem builds, a kickoff call is included. Come prepared.',
   },
   'enterprise-ecosystem': {
     title: "Enterprise Intake — Custom Scope",
@@ -462,17 +464,30 @@ export const SERVICES: Service[] = [
   // ── BRAND IDENTITY ──────────────────────────────────────────────────────
   {
     id: 'brand-planning',
-    name: 'Brand Planning',
+    name: 'Complete Branding Package',
     category: 'identity',
-    price: '$250',
-    priceNumeric: 250,
-    blurb: 'Live, AI-powered Roadmap experience that maps your gift, purpose, and brand identity. Includes vision + mission writing, color palette, and full brand direction — custom-built for you, not recycled.',
+    price: '$300',
+    priceNumeric: 300,
+    blurb: 'Everything that makes a brand a brand — logo, colors, vision and mission statements, vision mapping, and a business plan foundation. One flat $300. This is the groundwork every website is built on, so most people start here.',
     featured: true,
-    deliveryDays: 2,
-    revisions: 1,
-    includes: ["60-min brand strategy session", "Mission & vision statement", "AI Roadmap session (full blueprint)", "Brand color palette", "Brand voice guide", "Delivered as PDF brand brief"],
-    notIncludes: ["Logo design (separate service)", "Website design (separate service)"],
-    assetsNeeded: ["Any existing brand materials (logos, colors, past designs)", "Description of your business and target audience", "3 competitor brands or brands you admire"],
+    deliveryDays: 10,
+    revisions: 2,
+    includes: [
+      "60-min brand strategy session",
+      "Custom logo design (primary + alternate versions)",
+      "Brand color palette — picked for your business, not a template",
+      "Vision statement",
+      "Mission statement",
+      "Vision mapping — your vision translated into layout and design direction",
+      "Business plan foundation",
+      "Brand voice guide",
+      "AI Roadmap session (full blueprint)",
+      "Logo source files (.ai, .eps, .svg, .png)",
+      "Delivered as a PDF brand brief",
+      "2 rounds of revisions",
+    ],
+    notIncludes: ["Website build (see Website packages — branding pairs with any tier)", "Professional photography (separate service)"],
+    assetsNeeded: ["Business name (final — not placeholder)", "Description of your business and target audience", "Any existing brand materials (logos, colors, past designs)", "3 competitor brands or brands you admire"],
   },
   {
     id: 'logo-design',
@@ -480,11 +495,11 @@ export const SERVICES: Service[] = [
     category: 'identity',
     price: '$250',
     priceNumeric: 250,
-    blurb: 'Custom logo system with primary, secondary, and submark variations. 2 rounds of revisions. Proprietary — not templated.',
+    blurb: 'Logo only, à la carte. Custom logo system with primary, secondary, and submark variations. 2 rounds of revisions. Proprietary — not templated. For $50 more, the Complete Branding Package adds colors, vision + mission, vision mapping, and a business plan foundation — most people go that route.',
     deliveryDays: 10,
     revisions: 2,
     includes: ["Primary logo mark", "2 alternate versions (horizontal, icon-only)", "Full color + black/white versions", "Source files (.ai, .eps, .svg, .png)", "2 rounds of revisions"],
-    notIncludes: ["Brand strategy (see Brand Planning)", "Business cards or print design"],
+    notIncludes: ["Brand strategy, colors, vision & mission (see Complete Branding Package — $300)", "Business cards or print design"],
     assetsNeeded: ["Business name (final — not placeholder)", "Brand description and audience", "Color preferences or existing brand colors", "Examples of logos you like and why"],
   },
   {
@@ -530,7 +545,9 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$500',
     priceNumeric: 500,
-    blurb: '5-page custom site with booking integration, email capture, and content sections. Domain + email included. SEO audit at 3-6 months included. Live in 14 days.',
+    blurb: 'Portfolio site plus the back end to sell products — Stripe checkout, booking integration, email capture, and content sections. Domain + email included. SEO audit at 3-6 months included. Live in 1 week.',
+    deliveryDays: 7,
+    revisions: 2,
   },
   {
     id: 'website-ecosystem',
@@ -538,12 +555,12 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$1,000',
     priceNumeric: 1000,
-    blurb: 'A multifaceted digital home for solopreneurs who operate as a whole company. Custom-built — you won\'t find this anywhere else because we designed this concept. Vision-first: we get what\'s in your head out and into a digital space you can grow into over time. Your Roadmap drives every design decision. Includes domain, email, SEO audit at 3-6 months. Live in 21 days.',
-    deliveryDays: 21,
+    blurb: 'A multifaceted digital home for solopreneurs who operate as a whole company. Custom-built — you won\'t find this anywhere else because we designed this concept. Vision-first: we get what\'s in your head out and into a digital space you can grow into over time. Your Roadmap drives every design decision. All the bells and whistles: full SEO, product selling, multiple pages, an AI chat assistant for your clients, and calendar + scheduling. Includes domain, email, SEO audit at 3-6 months. Live in 2 weeks.',
+    deliveryDays: 14,
     revisions: 3,
-    includes: ["Full modular website", "Custom brand integration", "Mobile-first responsive design", "Booking or inquiry system", "Blog or content hub", "E-commerce ready", "SEO foundations", "Brand Transmission section", "3 rounds of revisions", "SEO audit at 90 days"],
+    includes: ["Full modular website", "Custom brand integration", "Mobile-first responsive design", "Booking or inquiry system", "Calendar & scheduling system", "AI chat assistant for your clients", "Blog or content hub", "E-commerce / product selling", "Full SEO optimization", "Brand Transmission section", "3 rounds of revisions", "SEO audit at 90 days"],
     notIncludes: ["Monthly hosting fees (billed separately)", "Content writing (can be added)", "Custom photography (can be added)"],
-    assetsNeeded: ["Logo files (.svg, .png)", "Brand colors and fonts (if available)", "All written copy for each page", "Professional photos or imagery", "Any existing domain/hosting login credentials"],
+    assetsNeeded: ["Logo files (.svg, .png)", "Vision statement", "Mission statement", "Brand colors and fonts (if available)", "All written copy for each page", "Professional photos or imagery", "Video content", "Any existing domain/hosting login credentials"],
   },
   {
     id: 'enterprise-ecosystem',
@@ -992,59 +1009,8 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
 ];
 
 
-// ── WEB PACKAGES (subset of services, displayed as comparison tiers) ──
-export const WEB_PACKAGES = {
-  tiers: [
-    {
-      id: 'presence',
-      name: 'THE PRESENCE',
-      price: 300,
-      tagline: 'Get found. Look right.',
-      features: [
-        '3-page essential site',
-        'Mobile-optimized',
-        'Brand-aligned design',
-        '7-day delivery',
-        'Domain & hosting setup help',
-      ],
-    },
-    {
-      id: 'platform',
-      name: 'THE PLATFORM',
-      price: 500,
-      tagline: 'Convert. Capture. Connect.',
-      features: [
-        '5-page custom site',
-        'Booking integration',
-        'Email capture + automation',
-        'Content sections (blog/portfolio)',
-        'SEO foundation',
-        '14-day delivery',
-      ],
-      featured: true,
-    },
-    {
-      id: 'ecosystem',
-      name: 'THE ECOSYSTEM',
-      price: 1000,
-      tagline: 'The full SWRV treatment.',
-      features: [
-        'Modular site (unlimited sections)',
-        'Integrated services menu',
-        'AI experience integration',
-        'E-commerce + payments',
-        'Content engine',
-        '21-day delivery',
-      ],
-    },
-  ],
-  addons: [
-    { label: 'Extra pages (beyond 5)', price: '+$100 each' },
-    { label: 'Monthly management (full service)', price: '$125/mo' },
-    { label: 'Additional promo video', price: '$1,250' },
-    { label: '3-6 month SEO audit', price: 'Included' },
-  ],
-} as const;
+// ── WEB PACKAGES ───────────────────────────────────────────
+// Removed — website tiers live in WEB_PACKAGE_TIERS (the one the site renders).
 
 // ── FOOTER ─────────────────────────────────────────────────
 export const FOOTER = {
@@ -1160,10 +1126,11 @@ export const SCHEDULING: {
 
 // ── WEB PACKAGE NOTES (universal disclaimers shown under tiers) ──
 export const WEB_PACKAGE_NOTES = [
+  'Every website needs: a logo, a vision statement, a mission statement, images, and video content',
+  'Don\'t have those yet? The Complete Branding Package ($300) covers logo, colors, vision + mission, and vision mapping — that\'s the groundwork the site gets built on',
   'Domain & hosting not included — we walk you through setup (~$15/yr domain, ~$10–20/mo hosting)',
   'You own your site 100% after delivery — no lock-in, no hidden fees',
   '50% deposit required to begin · 50% due on final delivery',
-  'You provide: photos, logo, and key copy (we can help shape it) — or ask about copy writing as an add-on',
 ] as const;
 
 
@@ -1204,11 +1171,12 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     tagline: 'The $300 website special. Live in 5 days.',
     badge: 'THE $300 SPECIAL',
     bestFor: 'Artists, LLC holders, coaches, and creatives who need a clean, professional page for funding apps, investor decks, portfolio showcases, or proving you exist online.',
-    deliveryDays: '48-hour turnaround',
+    deliveryDays: '5-day turnaround',
     revisions: '1 round',
     includes: [
       'Custom single-page responsive website (desktop + mobile)',
       'Bio / About section',
+      'Portfolio / work showcase',
       'Photo gallery — up to 8 images (you provide)',
       'All social media profile links',
       'Contact form (email-linked, no spam)',
@@ -1217,7 +1185,7 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
       'Your logo & brand colors applied',
     ],
     addOns: null,
-    note: 'You provide: photos, logo, and a short bio. We handle the rest.',
+    note: 'You provide: logo, vision statement, mission statement, images, and a short bio. No logo or vision yet? The Complete Branding Package ($300) covers it.',
     color: 'border-white/10',
     accentColor: 'text-white',
     badgeBg: '',
@@ -1240,7 +1208,9 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
     revisions: '2 rounds',
     includes: [
       'Everything in The Presence',
-      'Payment integration (Stripe, PayPal, or Square — up to 3 products/services)',
+      'Full portfolio section',
+      'Storefront back end — sell products or services (up to 3 listings)',
+      'Stripe payment integration — cards, Apple Pay, Google Pay, buy-now-pay-later',
       'Booking / inquiry form with service category selection',
       'Email list capture (newsletter sign-up integration)',
       'Testimonials & social proof section',
@@ -1280,9 +1250,12 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
       'Full site navigation — desktop menu + mobile hamburger',
       'Full SEO optimization across all pages',
       'Up to 10 products or services in your shop',
+      'Calendar & scheduling system — clients book you directly',
+      'AI chat assistant for your clients — answers questions around the clock',
       'Blog / news page (if selected as one of your 5 pages)',
       'Social media feed integration',
       'Brand style guide document (colors, fonts, logo usage rules)',
+      'Email capture + automated follow-up',
       '30 days of post-launch support & minor updates',
       'Priority response time',
     ],
