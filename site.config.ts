@@ -177,105 +177,8 @@ export const SERVICE_ASSETS: Record<string, {
   },
 };
 
-// ── SERVICE PACKAGES (Fiverr-style tiers) ───────────────────────────────
-export const SERVICE_PACKAGES: Record<string, Array<{
-  name: string;
-  price: string;
-  deliveryDays: number;
-  revisions: number;
-  includes: string[];
-  featured?: boolean;
-}>> = {
-  website: [
-    {
-      name: 'The Presence',
-      price: '$750',
-      deliveryDays: 7,
-      revisions: 1,
-      includes: ['Up to 3 pages', 'Mobile responsive', 'SEO foundations', 'Contact form', '1 round of revisions'],
-    },
-    {
-      name: 'The Platform',
-      price: '$1,500',
-      deliveryDays: 14,
-      revisions: 2,
-      includes: ['Up to 5 pages', 'Booking or inquiry system', 'Blog or content section', 'Analytics', '2 rounds of revisions'],
-      featured: true,
-    },
-    {
-      name: 'The Ecosystem',
-      price: '$3,000',
-      deliveryDays: 21,
-      revisions: 3,
-      includes: ['Full modular site', 'Custom integrations', 'E-commerce or booking', 'Brand Transmission section', '3 rounds of revisions', 'SEO audit at 90 days'],
-    },
-  ],
-  video: [
-    {
-      name: 'Promo',
-      price: '$3,750',
-      deliveryDays: 2,
-      revisions: 2,
-      includes: ['Under 60 seconds', 'Concept + shoot + edit', 'Color grading', '2 revision rounds'],
-    },
-    {
-      name: 'Music Video',
-      price: '$15,000',
-      deliveryDays: 7,
-      revisions: 2,
-      includes: ['2:30–4 minutes', 'Full concept development', '1-day shoot', '5-day post-production', 'Unlimited premium effects', 'Color grading', '2 revision rounds'],
-      featured: true,
-    },
-  ],
-  music: [
-    {
-      name: 'Single',
-      price: '$9,000',
-      deliveryDays: 5,
-      revisions: 2,
-      includes: ['Full beat production', 'Studio recording', 'Vocal coaching', 'Mixing', 'Mastering', 'Ready for distribution'],
-      featured: true,
-    },
-    {
-      name: 'Mix Only',
-      price: '$1,500',
-      deliveryDays: 3,
-      revisions: 2,
-      includes: ['Stem mixing', 'Broadcast-ready output', 'Stereo + stems delivery', '2 revision rounds'],
-    },
-    {
-      name: 'Master Only',
-      price: '$1,500',
-      deliveryDays: 2,
-      revisions: 1,
-      includes: ['Streaming-ready master', 'Broadcast loudness standards', 'WAV + MP3 delivery'],
-    },
-  ],
-  brand: [
-    {
-      name: 'Logo',
-      price: '$750',
-      deliveryDays: 10,
-      revisions: 2,
-      includes: ['Primary logo mark', 'Color variants (light + dark)', 'Web + print formats', '2 revision rounds'],
-    },
-    {
-      name: 'Brand Planning',
-      price: '$750',
-      deliveryDays: 1,
-      revisions: 1,
-      includes: ['Vision + mission statement', 'Brand color palette', 'AI Roadmap session', 'Strategic brief'],
-    },
-    {
-      name: 'Full Identity',
-      price: '$3,000',
-      deliveryDays: 14,
-      revisions: 3,
-      includes: ['Brand planning', 'Logo design', 'Typography system', 'Color palette', 'Social templates', 'Brand guide PDF'],
-      featured: true,
-    },
-  ],
-};
+// ── SERVICE PACKAGES ───────────────────────────────────────────────────
+// Removed — pricing is defined in WEB_PACKAGE_TIERS for websites and SERVICES for everything else.
 
 
 // ── REFERRAL / AFFILIATE CONFIG ────────────────────────────────────────
@@ -724,32 +627,32 @@ export const SERVICES: Service[] = [
     id: 'voiceover',
     name: 'Voiceover Recording & Production',
     category: 'execution',
-    price: '$125/hr',
-    priceNumeric: 125,
+    price: '$100/hr',
+    priceNumeric: 100,
     blurb: 'Professional voiceover for ads, brand intros, audiobooks, or content. Over 25 years in the music business — you\'re paying for the mic, the ear, and the experience.',
   },
   {
     id: 'audiobook',
     name: 'Audiobook Production',
     category: 'execution',
-    price: '$125/hr',
-    priceNumeric: 125,
+    price: '$100/hr',
+    priceNumeric: 100,
     blurb: 'Studio narration, noise cleanup, mastering, and ACX/Findaway-ready deliverables. Broadcast-ready. Every session managed with 25 years of production experience.',
   },
   {
     id: 'live-recording',
-    name: 'Live Recording Session',
+    name: 'Audio Recording & Production',
     category: 'execution',
-    price: '$125/hr',
-    priceNumeric: 125,
-    blurb: 'Capture a live performance, rehearsal, or jam session in broadcast-ready quality. Setup in 20 minutes. Includes recording and basic editing.',
+    price: '$100/hr',
+    priceNumeric: 100,
+    blurb: 'Studio recording, vocal recording, vocal coaching, audiobook narration, and live session capture in broadcast-ready quality. Includes editing and production. 25+ years of music industry experience.',
   },
   {
     id: 'audio-edit-alacarte',
     name: 'Audio Editing',
     category: 'execution',
-    price: '$125/hr',
-    priceNumeric: 125,
+    price: '$100/hr',
+    priceNumeric: 100,
     blurb: 'Scrubbing, noise cancellation, reverb, compression, effects, and mastering. You\'re not just paying for editing — you\'re paying for someone who\'s been in the music business for over 25 years, delivering broadcast-ready quality with meticulous attention to detail.',
   },
   {
@@ -772,6 +675,16 @@ export const SERVICES: Service[] = [
     price: '$125/hr',
     priceNumeric: 125,
     blurb: 'Per-hour recording + editing, leveling, intro/outro integration, and delivery. Broadcast-ready every episode. Bulk sessions available.',
+  },
+
+  // ── LIVE PERFORMANCES ─────────────────────────────────────────────────────
+  {
+    id: 'live-performance',
+    name: 'Live Performance',
+    category: 'execution',
+    price: 'From $100/hr',
+    priceNumeric: 100,
+    blurb: 'Live performances tailored to your event. Coffee shop performances: $100/hr. Weddings: $500/person. Large events: $500/song. Pricing negotiable based on equipment needs and event complexity.',
   },
 
   // ── VIDEOGRAPHY ──────────────────────────────────────────────────────────
@@ -798,12 +711,12 @@ export const SERVICES: Service[] = [
     blurb: 'Complete 1-minute promo — concept to delivery in 1 day. Includes shoot, edit, color grading, and 2 revision rounds. Everything included, nothing recycled.',
   },
   {
-    id: 'on-site-video',
-    name: 'On-Site Filmography & Event Coverage',
+    id: 'content-creation-events',
+    name: 'Content Creation at Events',
     category: 'execution',
-    price: '$500/hr',
-    priceNumeric: 500,
-    blurb: 'On-location brand content, event coverage, behind-the-scenes, or multi-cam event capture. 20-minute setup. Equipment travels with us. Includes footage delivery and basic edit.',
+    price: '$1,000/hr',
+    priceNumeric: 1000,
+    blurb: 'Real-time social media content creation at your event. I log into your socials, capture premier footage, and deliver edited content before the event ends. Pricing negotiable based on project complexity and equipment needs.',
   },
   {
     id: 'live-streaming',
