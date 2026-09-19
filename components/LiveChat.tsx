@@ -219,7 +219,7 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
     if (qr === '🎤 Book SWRV Birdsong') {
       addUser(qr);
       setTimeout(() => addBot(
-        "🎤 Let's book Zion 'SWRV' Birdsong for your event — live performances, weddings, festivals, private parties, and more.\n\nA $50 deposit secures your date, and the rest is negotiated based on your event. Opening the booking page now — pick your date and tell him the vision.",
+        "🎤 Let's book Zion 'SWRV' Birdsong for your event — live performances, weddings, festivals, private parties, and more.\n\nA $100 deposit secures your date, and the rest is negotiated based on your event. Opening the booking page now — pick your date and tell him the vision.",
         undefined,
         { label: 'Open Booking Page →', action: 'book-birdsong' }
       ), 400);

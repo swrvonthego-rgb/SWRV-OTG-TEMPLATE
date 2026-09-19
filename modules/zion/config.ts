@@ -127,12 +127,14 @@ export const ZION_CONFIG = {
     blurb:
       'Weddings, festivals, private parties, corporate events, bookstore takeovers, listening rooms — pick your date, tell me the vision, and lock it in.',
     // ── DEPOSIT ──────────────────────────────────────────
-    // A $50 deposit secures the date. The Stripe Payment Link lives in
-    // site.config.ts so every payment link on the site has one home.
-    depositAmount: 50,
+    // A $100 deposit secures the date. Amount and Stripe Payment Link both
+    // live in site.config.ts so every payment surface has one home.
+    depositAmount: PAYMENT_CONFIG.stripe.depositAmount,
     depositUrl: PAYMENT_CONFIG.stripe.depositUrl,
     depositNote:
-      'A $50 deposit secures your date. The rest of the fee is negotiated based on your event, location, and set length — I\'ll follow up personally to lock in the details.',
+      'A $100 deposit secures your date and takes it off my calendar. The rest of the fee is negotiated based on your event, location, and set length — I\'ll follow up personally to lock in the details.',
+    depositTerms:
+      'The deposit is credited toward your total — it is not an extra fee. If I cancel for any reason, you get every dollar back. If you cancel, the deposit is kept, since the date was held for you and turned away from others. Need to move the date? The deposit transfers once to any open date.',
     submitTo: 'info@swrvonthego.pro',
     // Event booking inquiry types
     inquiryTypes: [

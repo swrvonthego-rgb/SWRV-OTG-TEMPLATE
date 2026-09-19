@@ -16,7 +16,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
   const [location, setLocation] = useState('');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  // After a booking inquiry is sent, reveal the $50 deposit step
+  // After a booking inquiry is sent, reveal the $100 deposit step
   const [depositReady, setDepositReady] = useState(false);
 
   // Today (YYYY-MM-DD) so the date picker can't select past dates
@@ -121,7 +121,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       }
       setIsSending(false);
       setDepositReady(true);
-      showToast('Request received! Secure your date with the $50 deposit below.');
+      showToast('Request received! Secure your date with the $100 deposit below.');
     } catch (err) {
       setIsSending(false);
       const msg = err instanceof Error ? err.message : String(err);
@@ -488,6 +488,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
                 <span style={{ fontSize: '0.72rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--color-gold)' }}>Deposit To Secure Your Date</span>
               </div>
               <p style={{ fontSize: '0.9rem', lineHeight: 1.6, color: 'rgba(237,232,220,0.78)', margin: 0 }}>{Z.booking.depositNote}</p>
+              <p style={{ fontSize: '0.78rem', lineHeight: 1.6, color: 'rgba(237,232,220,0.55)', margin: '0.75rem 0 0' }}>{Z.booking.depositTerms}</p>
             </div>
 
             <div className="booking-note">

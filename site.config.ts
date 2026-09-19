@@ -31,9 +31,14 @@
 // rather than showing a dead button.
 export const PAYMENT_CONFIG = {
   stripe: {
-    // Fixed $50 — secures a booking (Zion's calendar, or a general service
+    // Fixed $100 — secures a booking (Zion's calendar, or a general service
     // request). The remaining balance is negotiated/invoiced separately;
     // this link only ever collects the deposit.
+    //
+    // ⚠ depositAmount must match the amount the Payment Link actually charges.
+    // A Stripe Payment Link's price cannot be edited after creation — changing
+    // the deposit means creating a NEW link in Stripe and pasting it here.
+    depositAmount: 100,
     depositUrl: 'https://buy.stripe.com/14A4gydAO0HKdd20mPaEE01',
     // Built with "let customers choose what they pay": for a future full
     // pay-in-full flow. Not currently linked from anywhere.

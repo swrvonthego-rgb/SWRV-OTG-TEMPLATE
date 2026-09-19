@@ -353,7 +353,7 @@ export const AdminPage: React.FC = () => {
             </h2>
             <p className="text-white/30 text-xs">
               Every inquiry lands here the moment it's submitted — before the client is
-              redirected to pay the $50 deposit. There's no Stripe webhook wired up, so
+              redirected to pay the $100 deposit. There's no Stripe webhook wired up, so
               payment status isn't tracked here; check the Stripe dashboard to confirm a
               deposit actually landed.
             </p>

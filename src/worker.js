@@ -216,7 +216,7 @@ async function captureEmail(env, { email, name, source, vision_preview, attribut
 // ─────────────────────────────────────────────────────────
 // BOOKINGS — the persistent record of every booking inquiry, from Zion's
 // artist page and the general service booking flow alike. This is the
-// system of record for the $50-deposit flow: the client is redirected
+// system of record for the $100-deposit flow: the client is redirected
 // straight to a Stripe Payment Link with no webhook wired up, so this
 // table (visible via /admin) is the only place a booking is guaranteed
 // to be found, independent of whether the owner-notification email or
@@ -1149,7 +1149,7 @@ async function handleAdminEmails(request, env) {
 }
 
 // Booking inquiries — Zion + general service bookings, most recent first.
-// This is the system of record for the $50-deposit flow (see saveBooking):
+// This is the system of record for the $100-deposit flow (see saveBooking):
 // there's no Stripe webhook, so payment status isn't tracked here — the
 // owner checks the Stripe dashboard directly to confirm a deposit landed.
 async function handleAdminBookings(request, env) {
@@ -1269,7 +1269,7 @@ async function handleZionBooking(request, env) {
     // webhook wired up, so this row — visible in /admin — is the only
     // guaranteed trace of the booking once the visitor is redirected to
     // pay. A save failure alerts the owner but never blocks the redirect;
-    // losing a $50 deposit over a DB hiccup is worse than a missing row.
+    // losing a $100 deposit over a DB hiccup is worse than a missing row.
     try {
       await saveBooking(env, {
         source: 'zion', firstName, lastName, email,
@@ -1286,7 +1286,7 @@ async function handleZionBooking(request, env) {
     if (!resendKey) {
       return new Response(JSON.stringify({ ok: true, emailSkipped: true }), { headers: jsonHeaders(request) });
     }
-    const subject = `💰 $50 Deposit Incoming — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
+    const subject = `💰 $100 Deposit Incoming — ${fullName}${eventDate ? ` · ${eventDate}` : ''} (${inquiryType || 'Event'})`;
     const fromAddr = env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>';
     const notifyTo = env.ZION_NOTIFY_EMAIL || env.NOTIFY_EMAIL || 'info@swrvonthego.pro';
 
@@ -1298,7 +1298,7 @@ async function handleZionBooking(request, env) {
           <p style="margin:6px 0 0;font-size:12px;color:#8a8070;">Zion Birdsong · Let's Create Together</p>
         </div>
         <div style="background:#1a1610;border:1px solid #c8a84b;border-radius:6px;padding:14px 16px;margin-bottom:20px;">
-          <p style="margin:0;color:#e8c96a;font-size:14px;font-weight:700;">💰 They're being shown the $50 deposit link right now.</p>
+          <p style="margin:0;color:#e8c96a;font-size:14px;font-weight:700;">💰 They're being shown the $100 deposit link right now.</p>
           <p style="margin:4px 0 0;color:#8a8070;font-size:12px;">This confirms the inquiry was submitted — it does not confirm they've actually paid. There's no payment webhook wired up yet, so watch for the Stripe notification separately to know it landed.</p>
         </div>
         <div style="display:flex;padding:8px 0;border-bottom:1px solid #1c1810;font-size:14px;">
@@ -1410,7 +1410,7 @@ Recording Booth Training — $875
 Artist Development — From $1,000
 Strategy Call — $375 (60-min one-on-one)
 
-PAYMENT: Everything runs through Stripe — every major card, plus Apple Pay, Google Pay, and buy-now-pay-later options (Klarna, Afterpay, Affirm) enabled at checkout. Booking takes a flat $50 deposit to secure the date; the remaining balance is invoiced separately.
+PAYMENT: Everything runs through Stripe — every major card, plus Apple Pay, Google Pay, and buy-now-pay-later options (Klarna, Afterpay, Affirm) enabled at checkout. Booking takes a flat $100 deposit to secure the date; the remaining balance is invoiced separately.
 
 WHAT A WEBSITE NEEDS: Every website needs a logo, a vision statement, a mission statement, images, and video content. If someone doesn't have those yet, point them to the Complete Branding Package ($300) — it covers the logo, colors, vision + mission, and vision mapping, which is the groundwork the site gets built on.
 
@@ -1528,7 +1528,7 @@ async function handleBooking(request, env) {
     const safe = (x) => String(x ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
     const PAY_LABELS = {
-      stripe: '💳 Stripe — client redirected to pay the $50 deposit',
+      stripe: '💳 Stripe — client redirected to pay the $100 deposit',
     };
     const payLabel = PAY_LABELS[payMethod] || '📋 Payment to be arranged';
 
