@@ -739,6 +739,7 @@ export default {
     if (url.pathname === '/api/send-email')     return handleSendEmail(request, env);
     if (url.pathname === '/api/capture-email')  return handleCaptureEmail(request, env);
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
+    if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
     if (url.pathname === '/api/admin-login')    return handleAdminLogin(request, env);
     if (url.pathname === '/api/admin-me')       return handleAdminMe(request, env);
     if (url.pathname === '/api/admin-logout')   return handleAdminLogout(request, env);
@@ -1152,6 +1153,29 @@ async function handleAdminEmails(request, env) {
 // This is the system of record for the $100-deposit flow (see saveBooking):
 // there's no Stripe webhook, so payment status isn't tracked here — the
 // owner checks the Stripe dashboard directly to confirm a deposit landed.
+// Public availability feed for the booking calendars. Deliberately returns
+// ONLY the dates — never a name, email, phone, venue or note. Anyone on the
+// internet can call this, so any column added here is published.
+async function handleBookedDates(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  try {
+    await ensureBookingsTable(env);
+    const today = new Date().toISOString().slice(0, 10);
+    const { results } = await env.EMAIL_DB.prepare(
+      `SELECT DISTINCT event_date FROM bookings
+        WHERE event_date IS NOT NULL AND event_date != '' AND event_date >= ?1
+        ORDER BY event_date`
+    ).bind(today).all();
+    const dates = (results || []).map(r => r.event_date);
+    return new Response(JSON.stringify({ dates }), {
+      headers: { ...jsonHeaders(request), 'Cache-Control': 'public, max-age=300' },
+    });
+  } catch (err) {
+    // Availability is decoration — never let it break the booking form.
+    return new Response(JSON.stringify({ dates: [] }), { headers: jsonHeaders(request) });
+  }
+}
+
 async function handleAdminBookings(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   const session = await getAdminSession(request, env);

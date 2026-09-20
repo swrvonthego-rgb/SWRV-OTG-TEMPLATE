@@ -22,6 +22,16 @@ export function Zion({ isOpen, onClose }: ZionProps) {
   // Today (YYYY-MM-DD) so the date picker can't select past dates
   const todayStr = new Date().toISOString().split('T')[0];
 
+  // Dates already spoken for, so the calendar can warn before a double-booking.
+  const [bookedDates, setBookedDates] = useState<string[]>([]);
+  useEffect(() => {
+    fetch('/api/booked-dates')
+      .then(r => (r.ok ? r.json() : { dates: [] }))
+      .then(d => setBookedDates(Array.isArray(d.dates) ? d.dates : []))
+      .catch(() => {});
+  }, []);
+  const dateTaken = eventDate !== '' && bookedDates.includes(eventDate);
+
   // Scroll reveal refs
   const revealRefs = useRef<(HTMLElement | null)[]>([]);
 
@@ -515,6 +525,11 @@ export function Zion({ isOpen, onClose }: ZionProps) {
                 <div className="form-group">
                   <label>Event Date</label>
                   <input type="date" min={todayStr} value={eventDate} onChange={(e) => setEventDate(e.target.value)} style={{ colorScheme: 'dark' }} />
+                  {dateTaken && (
+                    <p style={{ fontSize: '0.76rem', lineHeight: 1.5, color: 'var(--color-gold)', margin: '0.5rem 0 0' }}>
+                      I already have a booking on this date. Send the request anyway if your event is at a different time of day — I'll tell you straight away whether I can make both work.
+                    </p>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>Event Type</label>
