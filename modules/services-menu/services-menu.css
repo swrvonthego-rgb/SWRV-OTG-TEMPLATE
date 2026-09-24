@@ -441,6 +441,35 @@
   font-weight: 700;
   flex-shrink: 0;
 }
+.services-menu .sm-card-example {
+  display: block;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(200, 168, 75, 0.25);
+  background: rgba(200, 168, 75, 0.05);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.services-menu .sm-card-example:hover {
+  background: rgba(200, 168, 75, 0.1);
+  border-color: rgba(200, 168, 75, 0.5);
+}
+.services-menu .sm-card-example-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #e8c96a;
+  margin-bottom: 3px;
+}
+.services-menu .sm-card-example-desc {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: rgba(237, 232, 220, 0.55);
+  margin: 0;
+}
+
 .services-menu .sm-card-cta-row {
   display: flex;
   flex-direction: column;

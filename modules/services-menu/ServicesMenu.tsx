@@ -66,6 +66,17 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
     );
   };
 
+  // A sample of real finished work — same shape as WebPackageTier.liveExample.
+  const renderLiveExample = (svc: typeof SERVICES[0]) => {
+    if (!svc.liveExample) return null;
+    return (
+      <a href={svc.liveExample.url} target="_blank" rel="noopener noreferrer" className="sm-card-example">
+        <span className="sm-card-example-label">{svc.liveExample.label}</span>
+        <p className="sm-card-example-desc">{svc.liveExample.description}</p>
+      </a>
+    );
+  };
+
   const handleStrategyCallClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (onBookStrategyCall) {
@@ -127,6 +138,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                         {svc.includes.slice(0, 3).map((item, i) => <li key={i}>{item}</li>)}
                       </ul>
                     )}
+                    {renderLiveExample(svc)}
                     {renderCardCta(svc)}
                   </article>
                 );
@@ -222,6 +234,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                         {svc.includes.slice(0, 3).map((item, i) => <li key={i}>{item}</li>)}
                       </ul>
                     )}
+                    {renderLiveExample(svc)}
                     {renderCardCta(svc)}
                   </article>
                 ))}

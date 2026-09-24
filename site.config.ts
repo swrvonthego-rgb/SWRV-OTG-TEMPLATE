@@ -460,6 +460,9 @@ export interface Service {
   // checkout needs a known total to split into a 50% deposit + balance.
   checkoutEnabled?: boolean;
   checkoutCategory?: 'event' | 'project';
+  // Same shape as WebPackageTier.liveExample — an optional sample of real
+  // finished work, shown as a link on the service card.
+  liveExample?: { url: string; label: string; description: string };
   blurb: string;
   deliveryDays?: number;
   revisions?: number;
@@ -747,6 +750,11 @@ export const SERVICES: Service[] = [
     priceNumeric: 5000,
     checkoutEnabled: true,
     checkoutCategory: 'project',
+    liveExample: {
+      url: 'https://youtu.be/ScA8gsOkbrE',
+      label: 'See An Example Music Video →',
+      description: 'A real finished music video, shot and produced by SWRV — this is the quality and style you\'re booking.',
+    },
     blurb: 'Full music video production — concept, 1-day shoot, 5-day post-production, unlimited premium effects and transitions, color grading, and 2 rounds of revisions. A third of what studios charge for the same finish.',
     featured: true,
     deliveryDays: 7,
@@ -779,7 +787,7 @@ export const SERVICES: Service[] = [
     checkoutCategory: 'event',
     blurb: 'A fast content pass for a quick moment — on-site, shot, and edited into reels ready to post.',
     deliveryDays: 1,
-    includes: ['1 hour on-site coverage', 'iPhone-shot content', 'Creative direction on-site', '4 edited reels', 'Raw footage delivered'],
+    includes: ['1 hour on-site coverage', 'iPhone-shot content', 'Creative direction on-site', '5 edited reels', 'Raw footage delivered'],
   },
   {
     id: 'coverage-on-the-go-day',
@@ -792,7 +800,7 @@ export const SERVICES: Service[] = [
     featured: true,
     blurb: 'Our signature coverage — content that keeps up with your whole event, posted while it\'s still happening.',
     deliveryDays: 1,
-    includes: ['Pre-event content plan', '2 hours on-site coverage', 'Real-time story posting to your socials', '8 edited reels', 'Raw footage delivered'],
+    includes: ['Pre-event content plan', '2 hours on-site coverage', 'Real-time story posting to your socials', '10 edited reels', 'Raw footage delivered'],
   },
   {
     id: 'coverage-full-convoy',
@@ -804,7 +812,7 @@ export const SERVICES: Service[] = [
     checkoutCategory: 'event',
     blurb: 'The full ride — complete coverage, real-time posting, and same-day edits from start to finish.',
     deliveryDays: 1,
-    includes: ['Pre-shoot strategy call', 'Shot list built with you', '3 hours on-site coverage', 'Real-time story + reel posting throughout', '10-12 edited reels', 'Raw footage delivered'],
+    includes: ['Pre-shoot strategy call', 'Shot list built with you', '3 hours on-site coverage', 'Real-time story + reel posting throughout', '15 edited reels', 'Raw footage delivered'],
   },
   {
     id: 'live-streaming',
