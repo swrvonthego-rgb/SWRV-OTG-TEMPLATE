@@ -22,6 +22,7 @@ import { AdminPage } from './modules/admin/AdminPage';
 
 import { visionTenantSlug, resolveLegacyRedirect } from './deepLink';
 import { initAttribution } from './attribution';
+import type { IntakePath } from './site.config';
 
 // Record first-touch marketing attribution (UTM + referrer) before React
 // mounts, so a lead captured later can be traced to the channel that sent it.
@@ -55,7 +56,7 @@ const LegacyRedirect: React.FC = () => {
 
 const AppShell: React.FC = () => {
   const navigate = useNavigate();
-  const [intakeService, setIntakeService] = useState<{ id: string; name: string } | null>(null);
+  const [intakeService, setIntakeService] = useState<{ id: string; name: string; path?: IntakePath } | null>(null);
 
   // ── REFERRAL TRACKING ─────────────────────────────────────────────
   // Capture ?ref=CODE from URL and store in localStorage for attribution
@@ -109,8 +110,8 @@ const AppShell: React.FC = () => {
   // any suite page.
   useEffect(() => {
     const handler = (e: Event) => {
-      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail;
-      setIntakeService({ id, name });
+      const { id, name, path } = (e as CustomEvent<{ id: string; name: string; path?: IntakePath }>).detail;
+      setIntakeService({ id, name, path });
     };
     window.addEventListener('swrv:open-intake', handler);
     return () => window.removeEventListener('swrv:open-intake', handler);
@@ -160,6 +161,7 @@ const AppShell: React.FC = () => {
         onClose={() => setIntakeService(null)}
         serviceId={intakeService?.id}
         serviceName={intakeService?.name}
+        intakePath={intakeService?.path}
       />
 
       {/* Live Chat — floating widget bottom-right, on every page */}

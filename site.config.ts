@@ -449,6 +449,8 @@ export const STATS = [
 // IMPORTANT: this is the SINGLE SOURCE of services for the entire site.
 // Both the main Services component AND the Roadmap config import from here.
 // Add/remove/edit services in this one place.
+export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'other';
+
 export interface Service {
   id: string;
   name: string;
@@ -463,6 +465,11 @@ export interface Service {
   // Same shape as WebPackageTier.liveExample — an optional sample of real
   // finished work, shown as a link on the service card.
   liveExample?: { url: string; label: string; description: string };
+  // Overrides the intake question set inherited from the service's
+  // category (SERVICE_SUBCATEGORIES.intakePath). Only needed when a
+  // service belongs to a category but needs different questions (podcast
+  // services sit under Audio) or isn't listed in any category.
+  intakePath?: IntakePath;
   blurb: string;
   deliveryDays?: number;
   revisions?: number;
@@ -711,6 +718,7 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'podcast-launch',
+    intakePath: 'podcast',
     name: 'Podcast Launch Kit',
     category: 'execution',
     price: '$100 + $50/hr',
@@ -724,6 +732,7 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'podcast-editing',
+    intakePath: 'podcast',
     name: 'Podcast Episode Production',
     category: 'execution',
     price: '$125/hr',
@@ -734,6 +743,7 @@ export const SERVICES: Service[] = [
   // ── LIVE PERFORMANCES ─────────────────────────────────────────────────────
   {
     id: 'live-performance',
+    intakePath: 'event',
     name: 'Live Performance',
     category: 'execution',
     price: 'From $100/hr',
@@ -1015,12 +1025,17 @@ export interface SubCategory {
   label: string;
   tagline: string;
   emoji: string;
+  // Which intake question set (intake.config.ts) every service listed in
+  // this category gets. Adding a service to serviceIds below is all it
+  // takes for it to get the right intake — no second list to update.
+  intakePath: IntakePath;
   serviceIds: string[];
 }
 
 export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   {
     id: 'videography',
+    intakePath: 'video',
     label: 'Videography',
     tagline: 'Moving picture, fully produced.',
     emoji: '🎬',
@@ -1038,6 +1053,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   },
   {
     id: 'audio-production',
+    intakePath: 'music',
     label: 'Audio Production',
     tagline: 'Music, voice, and everything between.',
     emoji: '🎵',
@@ -1056,6 +1072,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   },
   {
     id: 'web-digital',
+    intakePath: 'website',
     label: 'Web & Digital',
     tagline: 'Vision-first. Custom-built. Yours alone.',
     emoji: '🌐',
@@ -1071,6 +1088,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   },
   {
     id: 'brand-identity',
+    intakePath: 'brand',
     label: 'Brand Identity',
     tagline: 'Define who you are before you put it anywhere.',
     emoji: '✨',
@@ -1083,6 +1101,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   },
   {
     id: 'coaching',
+    intakePath: 'other',
     label: 'Coaching & Mentorship',
     tagline: 'One-on-one development to level up.',
     emoji: '🎯',
@@ -1095,6 +1114,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   },
   {
     id: 'content-business',
+    intakePath: 'business',
     label: 'Content & Business',
     tagline: 'Books, decks, LLCs — everything to operate.',
     emoji: '📚',

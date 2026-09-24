@@ -1174,10 +1174,17 @@ async function handleBookedDates(request, env) {
   try {
     await ensureBookingsTable(env);
     const today = new Date().toISOString().slice(0, 10);
+    await ensureOrdersTable(env);
+    // Inquiries (bookings) plus event orders with a PAID deposit — an
+    // unpaid checkout that was abandoned mustn't hold a date hostage.
     const { results } = await env.EMAIL_DB.prepare(
-      `SELECT DISTINCT event_date FROM bookings
+      `SELECT event_date FROM bookings
         WHERE event_date IS NOT NULL AND event_date != '' AND event_date >= ?1
-        ORDER BY event_date`
+       UNION
+       SELECT event_date FROM orders
+        WHERE category = 'event' AND status IN ('deposit_paid', 'balance_invoiced')
+          AND event_date IS NOT NULL AND event_date >= ?1
+       ORDER BY event_date`
     ).bind(today).all();
     const dates = (results || []).map(r => r.event_date);
     return new Response(JSON.stringify({ dates }), {
@@ -1444,9 +1451,16 @@ async function ensureOrdersTable(env) {
         balance_invoiced_at   TEXT,
         balance_paid_at       TEXT,
         status                TEXT NOT NULL DEFAULT 'awaiting_deposit',
+        start_date            TEXT,            -- 'project' category: preferred kickoff date
+        intake_json           TEXT,            -- [{question, answer}] from the booking intake
         created_at            TEXT DEFAULT (datetime('now'))
       )`
     ).run();
+    // Columns added after the table first shipped — no-op (duplicate column
+    // error, swallowed) on tables that already have them.
+    for (const col of ['start_date TEXT', 'intake_json TEXT']) {
+      try { await env.EMAIL_DB.prepare(`ALTER TABLE orders ADD COLUMN ${col}`).run(); } catch (_) {}
+    }
     __ordersTableReady = true;
   } catch (_) { /* table may already exist with a compatible schema */ }
 }
@@ -1500,6 +1514,19 @@ async function findOrCreateStripeCustomer(env, { email, name }) {
   return created.id;
 }
 
+// Intake answers arrive as [{question, answer}] from the booking modal.
+// Coerced to plain strings and capped — this is client input that ends up
+// in the owner's email and the admin view, so nothing structured or
+// oversized gets through.
+function normalizeIntake(intake) {
+  if (!Array.isArray(intake)) return null;
+  const clean = intake.slice(0, 40).map((item) => ({
+    question: String(item?.question ?? '').slice(0, 300),
+    answer: String(Array.isArray(item?.answer) ? item.answer.join(', ') : (item?.answer ?? '')).slice(0, 2000),
+  })).filter((item) => item.question && item.answer);
+  return clean.length ? JSON.stringify(clean) : null;
+}
+
 async function handleCheckout(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
@@ -1512,7 +1539,8 @@ async function handleCheckout(request, env) {
   let body;
   try {
     body = await request.json();
-    const { serviceId, serviceName, category, priceCents, customerName, customerEmail, customerPhone, eventDate, origin } = body;
+    const { serviceId, serviceName, category, priceCents, customerName, customerEmail, customerPhone, eventDate, startDate, intake, origin } = body;
+    const intakeJson = normalizeIntake(intake);
 
     if (!serviceId || !serviceName || !customerEmail || !Number.isInteger(priceCents) || priceCents < 100) {
       return new Response(JSON.stringify({ error: 'Missing or invalid booking details.' }), { status: 400, headers: jsonHeaders(request) });
@@ -1550,11 +1578,12 @@ async function handleCheckout(request, env) {
 
     const orderId = await (async () => {
       const result = await env.EMAIL_DB.prepare(
-        `INSERT INTO orders (service_id, service_name, category, customer_name, customer_email, customer_phone, event_date, total_cents, deposit_cents, balance_cents, stripe_customer_id, stripe_checkout_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO orders (service_id, service_name, category, customer_name, customer_email, customer_phone, event_date, start_date, intake_json, total_cents, deposit_cents, balance_cents, stripe_customer_id, stripe_checkout_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         serviceId, serviceName, category === 'event' ? 'event' : 'project',
         customerName || null, customerEmail, customerPhone || null, eventDate || null,
+        category === 'event' ? null : (startDate || null), intakeJson,
         priceCents, depositCents, balanceCents, customerId, session.id,
       ).run();
       return result.meta?.last_row_id ?? null;
@@ -1612,6 +1641,7 @@ async function handleStripeWebhook(request, env) {
           `UPDATE orders SET status = 'deposit_paid', deposit_paid_at = datetime('now'), stripe_payment_intent = ? WHERE id = ?`
         ).bind(session.payment_intent || null, order.id).run();
         await sendDepositReceiptEmail(env, order);
+        await sendOwnerOrderEmail(env, order);
       }
     }
   } catch (err) {
@@ -1646,6 +1676,36 @@ async function sendDepositReceiptEmail(env, order) {
       html,
     });
   } catch (_) { /* Stripe's own receipt still goes out even if this fails */ }
+}
+
+// Sent to SWRV once a deposit is actually paid (not when checkout merely
+// starts), with everything the client answered in the booking intake.
+async function sendOwnerOrderEmail(env, order) {
+  try {
+    const safe = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let answers = [];
+    try { answers = order.intake_json ? JSON.parse(order.intake_json) : []; } catch (_) {}
+    const when = order.category === 'event'
+      ? `Event date: <strong>${safe(order.event_date)}</strong> — balance auto-invoices ${BALANCE_INVOICE_LEAD_DAYS} days before.`
+      : `Preferred start: <strong>${safe(order.start_date || 'not given')}</strong> — send the balance from /admin → Orders → Mark Delivered.`;
+    const rows = answers.map((a) => `
+        <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${safe(a.question)}</td>
+            <td style="padding:8px 0;font-size:13px;">${safe(a.answer)}</td></tr>`).join('');
+    const html = `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+      <h2 style="color:#FF4D00;margin:0 0 6px">💰 New booking — deposit paid</h2>
+      <p style="margin:0 0 16px;font-size:15px;"><strong>${safe(order.service_name)}</strong> · $${(order.total_cents / 100).toFixed(2)} total · $${(order.deposit_cents / 100).toFixed(2)} paid</p>
+      <p style="margin:0 0 4px;font-size:13px;">${safe(order.customer_name)} · <a style="color:#e8c96a" href="mailto:${safe(order.customer_email)}">${safe(order.customer_email)}</a>${order.customer_phone ? ' · ' + safe(order.customer_phone) : ''}</p>
+      <p style="margin:0 0 20px;font-size:13px;color:#8a8070;">${when}</p>
+      ${rows ? `<p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Intake</p><table style="width:100%;border-collapse:collapse;">${rows}</table>` : '<p style="color:#8a8070;font-size:13px;">No intake answers.</p>'}
+    </div>`;
+    await resendPost(env, {
+      from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+      to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
+      reply_to: order.customer_email,
+      subject: `💰 Booked: ${order.service_name} — ${order.customer_name || order.customer_email}`,
+      html,
+    });
+  } catch (_) { /* the order is already saved and visible in /admin either way */ }
 }
 
 // Creates and immediately finalizes+sends a Stripe-hosted invoice for the

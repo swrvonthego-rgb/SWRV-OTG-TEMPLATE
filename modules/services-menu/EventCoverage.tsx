@@ -2,10 +2,11 @@ import React from 'react';
 import './event-coverage.css';
 import { SERVICES } from '../../site.config';
 import type { CheckoutService } from './CheckoutModal';
+import type { IntakePath } from '../../site.config';
 
 interface Props {
   onBook: (svc: CheckoutService) => void;
-  onIntake: (id: string, name: string) => void;
+  onIntake: (id: string, name: string, path?: IntakePath) => void;
 }
 
 // A picker for what an event needs, plus the three fixed SWRV Coverage
@@ -36,6 +37,7 @@ const CATEGORIES = [
     desc: 'Recap videos, testimonials, and promo-ready footage cut from your event.',
     action: 'intake' as const,
     intakeName: 'Event Videography Coverage',
+    intakePath: 'video' as IntakePath,
   },
   {
     id: 'full-ride',
@@ -44,6 +46,7 @@ const CATEGORIES = [
     desc: 'Every lane covered — content, photography, and videography, one crew, one price.',
     action: 'intake' as const,
     intakeName: 'The Full Ride — Full Creative Team',
+    intakePath: 'event' as IntakePath,
   },
 ];
 
@@ -60,7 +63,7 @@ export function EventCoverage({ onBook, onIntake }: Props) {
       const svc = SERVICES.find((s) => s.id === cat.serviceId);
       if (svc) onBook({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory });
     } else {
-      onIntake(cat.id, cat.intakeName || cat.label);
+      onIntake(cat.id, cat.intakeName || cat.label, cat.intakePath);
     }
   };
 
@@ -114,7 +117,7 @@ export function EventCoverage({ onBook, onIntake }: Props) {
           </article>
         ))}
       </div>
-      <p className="ec-tier-note">Half down to lock your date, half auto-invoiced a few days before your event. Need something bigger or more custom? <button type="button" className="ec-tier-note-link" onClick={() => onIntake('full-ride', 'The Full Ride — Full Creative Team')}>Talk to us →</button></p>
+      <p className="ec-tier-note">Half down to lock your date, half auto-invoiced a few days before your event. Need something bigger or more custom? <button type="button" className="ec-tier-note-link" onClick={() => onIntake('full-ride', 'The Full Ride — Full Creative Team', 'event')}>Talk to us →</button></p>
     </section>
   );
 }

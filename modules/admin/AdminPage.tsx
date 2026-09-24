@@ -44,6 +44,8 @@ interface OrderRow {
   customer_email: string;
   customer_phone: string | null;
   event_date: string | null;
+  start_date: string | null;
+  intake_json: string | null;
   total_cents: number;
   deposit_cents: number;
   balance_cents: number;
@@ -494,7 +496,8 @@ export const AdminPage: React.FC = () => {
                       <div className="font-medium">{o.service_name}</div>
                       <div className="text-white/40 text-xs">
                         {o.customer_name || '—'} · {o.customer_email}
-                        {o.event_date ? ` · ${o.event_date}` : ''}
+                        {o.event_date ? ` · event ${o.event_date}` : ''}
+                        {o.start_date ? ` · starts ${o.start_date}` : ''}
                       </div>
                     </div>
                     <div className="text-xs text-right">
@@ -525,6 +528,24 @@ export const AdminPage: React.FC = () => {
                       </a>
                     )}
                   </div>
+                  {(() => {
+                    let intake: { question: string; answer: string }[] = [];
+                    try { intake = o.intake_json ? JSON.parse(o.intake_json) : []; } catch { /* malformed row — show nothing */ }
+                    if (!intake.length) return null;
+                    return (
+                      <details className="mt-2 text-xs">
+                        <summary className="cursor-pointer text-white/40 hover:text-white/70">Intake answers ({intake.length})</summary>
+                        <div className="mt-2 space-y-1.5">
+                          {intake.map((a, i) => (
+                            <div key={i}>
+                              <span className="text-white/40">{a.question} </span>
+                              <span className="text-white/80">{a.answer}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

@@ -1,170 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ArrowRight, ChevronLeft, CheckCircle, FileText, Loader } from 'lucide-react';
 
-// ── TYPES ─────────────────────────────────────────────────────────────
-type AnswerValue = string | string[];
-interface Question {
-  id: string;
-  question: string;
-  sub?: string;
-  type: 'single' | 'multi' | 'text' | 'textarea';
-  options?: string[];
-  optional?: boolean;
-  placeholder?: string;
-}
-
-// ── UNIVERSAL BUDGET QUESTION ─────────────────────────────────────────
-// Injected into every path so no brief ever reaches SWRV without a
-// budget — the #1 thing customers leave out. Required (not optional).
-const BUDGET_Q: Question = {
-  id: 'budget',
-  question: "What\'s your budget for this?",
-  type: 'single',
-  options: [
-    'Under $300',
-    '$300 – $750',
-    '$750 – $2,000',
-    '$2,000 – $5,000',
-    '$5,000+',
-    "Not sure — show me options",
-  ],
-};
-
-// ── INTAKE PATHS BY SERVICE GROUP ─────────────────────────────────────
-const PATHS: Record<string, Question[]> = {
-  website: [
-    { id: 'goal', question: "What does this website need to do?", sub: "Select everything that applies.", type: 'multi',
-      options: ['Showcase my portfolio / work', 'Book clients / sell services', 'Sell physical or digital products', 'Tell my brand story', 'Raise money / crowdfund', 'Build a community or membership', 'Replace or upgrade an existing site'] },
-    { id: 'branding', question: "Do you have existing branding?", type: 'single',
-      options: ['Yes — logo, colors, fonts, the works', 'Partial — I have a logo but not much else', 'Starting completely from scratch', 'Not sure — let\'s figure it out together'] },
-    { id: 'content', question: "What content do you have ready to go?", sub: "Be honest — we'll plan around where you are.", type: 'multi',
-      options: ['Written copy / text for the pages', 'Professional photos', 'Videos', 'Product images', 'Nothing yet — I need help creating it', 'I have some things and need to fill gaps'] },
-    { id: 'pages', question: "How many pages are we thinking?", type: 'single',
-      options: ['1–3 pages (focused, tight, powerful)', '4–7 pages (standard professional site)', '8–15 pages (full content site)', '15+ pages (large scale / e-commerce)', 'Not sure yet — help me decide'] },
-    { id: 'features', question: "Any special functionality needed?", sub: "Select all that apply.", type: 'multi',
-      options: ['Online booking / scheduling', 'E-commerce / online store', 'Blog or content hub', 'Email list / lead capture', 'Client portal or members area', 'Donation or crowdfunding', 'Live chat or support', 'Video or audio player', 'Custom contact forms', 'Multi-language', 'Nothing beyond the basics'] },
-    { id: 'domain', question: "What's your domain and hosting situation?", type: 'single',
-      options: ['I have a domain and hosting already', 'I have a domain but no hosting', 'I need both — starting fresh', 'I have an existing site to replace', 'Not sure what I have'] },
-    { id: 'timeline', question: "When do you need this live?", type: 'single',
-      options: ['ASAP — within 2 weeks', 'About a month', '2–3 months', 'No hard deadline — get it right'] },
-    { id: 'references', question: "Any websites you love that we should reference?", sub: "Paste URLs, describe vibes, or say what you like about them.", type: 'textarea', optional: true, placeholder: "e.g. apple.com — love the clean layout. Also like the dark feel of studio-era artists sites..." },
-    { id: 'notes', question: "Anything else SWRV needs to know before we start?", type: 'textarea', optional: true, placeholder: "Special requirements, hard constraints, things that went wrong with past sites, budget range, goals you haven't mentioned yet..." },
-  ],
-
-  video: [
-    { id: 'type', question: "What kind of video are we creating?", type: 'single',
-      options: ['Music video (full song)', 'Promo / brand video (under 1 min)', 'Live event coverage', 'Short-form content (Reels / TikTok)', 'AI motion graphics', 'Podcast / interview visuals', 'Something else'] },
-    { id: 'length', question: "How long is the video?", type: 'single',
-      options: ['Under 60 seconds', '1–3 minutes', '3–5 minutes', '5+ minutes', 'Not sure yet'] },
-    { id: 'audio', question: "Is the song or audio finalized?", type: 'single',
-      options: ['Yes — mixed and mastered, ready to go', 'Mixed but not mastered yet', 'Still in production — need that too', 'No audio yet — need to start there', 'Instrumental / no vocals'] },
-    { id: 'concept', question: "Do you have a creative concept or treatment?", type: 'single',
-      options: ['Yes — detailed concept, mood board, references', 'General idea — need help developing it', 'Completely open — give me your creative direction', 'I know the vibe but not the story'] },
-    { id: 'location', question: "Where are we filming?", type: 'multi',
-      options: ['My location (I\'ll provide details)', 'Studio / controlled environment', 'Outdoor / natural settings', 'Multiple locations', 'Remote / digital / green screen', 'Not sure yet'] },
-    { id: 'cast', question: "Who\'s in front of the camera?", type: 'multi',
-      options: ['Just me', 'Me and my group / band', 'We need to cast additional talent', 'No people — product or concept-based', 'To be determined'] },
-    { id: 'references', question: "Reference videos that capture what you\'re going for?", type: 'textarea', optional: true, placeholder: "YouTube links, artists, directors, or describe the visual aesthetic..." },
-    { id: 'timeline', question: "When does this need to be done?", type: 'single',
-      options: ['Within 2 weeks', 'About a month', '2–3 months', 'No hard deadline'] },
-    { id: 'notes', question: "Anything else — hard constraints, budget range, specific requirements?", type: 'textarea', optional: true, placeholder: "Anything SWRV needs to know upfront..." },
-  ],
-
-  music: [
-    { id: 'type', question: "What are we creating?", type: 'single',
-      options: ['Original song (full production)', 'Beat / instrumental only', 'Jingle or brand audio', 'Voiceover or narration', 'Audiobook recording', 'Podcast production', 'Mixing / mastering only (I have recordings)', 'Live session recording'] },
-    { id: 'genre', question: "What\'s the genre and vibe?", type: 'textarea', placeholder: "Hip-hop, R&B, gospel, pop, cinematic... and describe the feeling you\'re going for. Reference artists if helpful.", sub: "Be specific — this shapes everything." },
-    { id: 'lyrics', question: "Where are the lyrics?", type: 'single',
-      options: ['Complete and ready to record', 'Work in progress — mostly done', 'Just the hook / concept — need to develop it', 'Need help writing them too', 'No lyrics — instrumental project'] },
-    { id: 'performers', question: "Who\'s performing?", type: 'multi',
-      options: ['Me (solo artist)', 'Group / ensemble', 'Looking for features or collaborators', 'Instrumental — no performers', 'Still figuring out'] },
-    { id: 'purpose', question: "What\'s this music for?", type: 'multi',
-      options: ['Official release / distribution', 'Content / social media', 'Commercial or brand use', 'Film / TV / sync', 'Personal or private project', 'Showcase / demo'] },
-    { id: 'references', question: "Reference tracks that capture the sound you\'re chasing?", type: 'textarea', optional: true, placeholder: "Song titles, artists, or Spotify links. Tell us what specifically you like about them." },
-    { id: 'timeline', question: "Timeline?", type: 'single',
-      options: ['Within 2 weeks', 'About a month', '1–3 months', 'No hard deadline'] },
-    { id: 'notes', question: "Anything else SWRV should know?", type: 'textarea', optional: true, placeholder: "Budget range, session details, technical requirements, past recording experience..." },
-  ],
-
-  brand: [
-    { id: 'stage', question: "Where are you in your brand journey?", type: 'single',
-      options: ['Brand new — starting from zero', 'Have a name, need everything else', 'Existing brand that needs a refresh', 'Rebrand — changing direction entirely', 'Just need specific pieces (logo, etc.)'] },
-    { id: 'business', question: "Describe your business or project in one sentence.", type: 'textarea', placeholder: "What do you do, who do you do it for, and what makes you different?" },
-    { id: 'audience', question: "Who is your audience?", sub: "The more specific, the better.", type: 'textarea', placeholder: "e.g. Independent artists between 18-35 who are building their brand but don\'t have label support..." },
-    { id: 'vibe', question: "What\'s the vibe?", sub: "Select everything that resonates.", type: 'multi',
-      options: ['Premium / Luxury', 'Bold / Disruptive', 'Clean / Minimal', 'Creative / Expressive', 'Community / Approachable', 'Professional / Corporate', 'Gritty / Authentic', 'Spiritual / Purposeful'] },
-    { id: 'deliverables', question: "What specifically do you need?", type: 'multi',
-      options: ['Logo (primary mark)', 'Color palette', 'Typography selection', 'Brand guide / style document', 'Business cards / print materials', 'Social media templates', 'Brand photography', 'Content strategy', 'All of the above — full system'] },
-    { id: 'feeling', question: "What do you want people to FEEL when they encounter your brand?", type: 'textarea', placeholder: "Describe the emotional response. Inspired? Trusted? Impressed? Like they found their people?" },
-    { id: 'references', question: "Brands you love or want to reference?", type: 'textarea', optional: true, placeholder: "Could be direct competitors, brands in different industries, or just aesthetic references..." },
-    { id: 'notes', question: "Anything else?", type: 'textarea', optional: true, placeholder: "Timeline, budget range, things to avoid, past branding attempts..." },
-  ],
-
-  business: [
-    { id: 'type', question: "What are we building?", type: 'single',
-      options: ['Pitch deck (investors / partners)', 'Business plan document', 'Keynote / speaking presentation', 'Book (format + launch)', 'LLC formation + banking setup', 'Multiple — full launch package'] },
-    { id: 'purpose', question: "Who is this for and what do you need it to do?", type: 'textarea', placeholder: "e.g. Investor pitch for a Series A raise. Audience is VC firms in the music tech space. Goal is to get meetings." },
-    { id: 'existing', question: "What do you have already?", type: 'multi',
-      options: ['Detailed notes or an outline', 'A rough draft', 'Financial projections', 'Visual assets / branding', 'Market research', 'Previous version to update', 'Starting from scratch'] },
-    { id: 'scope', question: "Do you need strategy + writing, or design only?", type: 'single',
-      options: ['Strategy + writing + design (full service)', 'I have the content — just need design', 'I have a design — just need content/strategy', 'Not sure — let\'s assess together'] },
-    { id: 'timeline', question: "When do you need this?", type: 'single',
-      options: ['Within a week (urgent)', 'Within 2 weeks', 'About a month', 'No hard deadline'] },
-    { id: 'notes', question: "Context SWRV needs to know — audience, stakes, any hard constraints?", type: 'textarea', optional: true, placeholder: "The more context, the better the output..." },
-  ],
-
-  podcast: [
-    { id: 'concept', question: "What\'s the show about?", type: 'textarea', placeholder: "Name, concept, and who it\'s for. What gap does it fill? What do listeners walk away with?" },
-    { id: 'format', question: "What\'s the format?", type: 'multi',
-      options: ['Solo (just you)', 'Co-hosted', 'Interview / guests', 'Panel discussions', 'Narrative / storytelling', 'Educational / how-to', 'Mix of formats'] },
-    { id: 'frequency', question: "How often will you publish?", type: 'single',
-      options: ['Daily', 'Multiple times a week', 'Weekly', 'Bi-weekly', 'Monthly', 'Seasonal / limited series', 'Not sure yet'] },
-    { id: 'equipment', question: "What recording setup do you have?", type: 'single',
-      options: ['Professional setup — good to go', 'Basic mic — decent quality', 'Just my phone / laptop mic', 'Nothing yet — need guidance on setup', 'Remote guests on different equipment'] },
-    { id: 'distribution', question: "Where do you want the show?", type: 'multi',
-      options: ['Spotify', 'Apple Podcasts', 'YouTube', 'Google Podcasts', 'Amazon Music', 'Website / RSS', 'All major platforms'] },
-    { id: 'existing', question: "Have you recorded any episodes yet?", type: 'single',
-      options: ['Yes — ready to edit and publish', 'Recorded a pilot episode', 'Not yet — planning stage', 'I want to record the first episode with SWRV'] },
-    { id: 'timeline', question: "When do you want to launch?", type: 'single',
-      options: ['ASAP', 'Within a month', '2–3 months', 'No rush — let\'s build it right'] },
-    { id: 'notes', question: "Anything else about the show or what you need from SWRV?", type: 'textarea', optional: true, placeholder: "Budget, sponsors, video component, social media strategy..." },
-  ],
-
-  other: [
-    { id: 'describe', question: "Tell us what you\'re working on.", type: 'textarea', placeholder: "Describe your project, what you need, and what success looks like. The more detail the better — SWRV has seen a lot, nothing surprises us." },
-    { id: 'urgency', question: "How urgent is this?", type: 'single',
-      options: ['Urgent — need to move now', 'Moderate — within a month', 'Planning ahead — no rush', 'Exploring options — not decided yet'] },
-    { id: 'budget', question: "What\'s the budget range?", type: 'single',
-      options: ['Under $500', '$500 – $1,500', '$1,500 – $5,000', '$5,000 – $10,000', '$10,000+', 'Not established yet'] },
-    { id: 'notes', question: "Anything else — constraints, past experiences, goals?", type: 'textarea', optional: true, placeholder: "Context that helps SWRV understand the full picture..." },
-  ],
-};
-
-const SERVICE_GROUP_MAP: Record<string, keyof typeof PATHS> = {
-  'website-presence': 'website', 'website-platform': 'website', 'website-ecosystem': 'website',
-  'enterprise-ecosystem': 'website', 'fundraising-site': 'website', 'website-management': 'website',
-  'website-maintenance': 'website',
-  'music-production': 'music', 'mixing': 'music', 'mastering': 'music', 'jingle': 'music',
-  'voiceover': 'music', 'audiobook': 'music', 'live-recording': 'music', 'audio-edit-alacarte': 'music',
-  'music-video': 'video', 'video-promo': 'video', 'on-site-video': 'video', 'live-streaming': 'video',
-  'short-form-content': 'video', 'ai-motion-30': 'video', 'ai-motion-60': 'video',
-  'ai-motion-120': 'video', 'video-edit-alacarte': 'video',
-  'brand-planning': 'brand', 'logo-design': 'brand', 'photography': 'brand', 'content-system': 'brand',
-  'pitch-deck': 'business', 'keynote-slides': 'business', 'book-format': 'business', 'llc-formation': 'business',
-  'podcast-launch': 'podcast', 'podcast-editing': 'podcast',
-  'vocal-training': 'other', 'recording-booth': 'other', 'artist-development': 'other', 'consulting-call': 'other',
-};
-
-const PATH_LABELS: Record<string, string> = {
-  website: 'Website Project', video: 'Video Production', music: 'Music & Audio',
-  brand: 'Brand Identity', business: 'Business Documents', podcast: 'Podcast', other: 'Project',
-};
+import { PATH_LABELS, getIntakePath, buildIntakeQuestions, type AnswerValue, type Question } from '../intake.config';
+import type { IntakePath } from '../site.config';
 
 // ── COMPONENT ─────────────────────────────────────────────────────────
-interface Props { isOpen: boolean; onClose: () => void; serviceId?: string; serviceName?: string; }
+// intakePath: which question set to use when serviceId isn't a catalog
+// service (e.g. "The Full Ride" card) — otherwise it's worked out from the
+// catalog via getIntakePath.
+interface Props { isOpen: boolean; onClose: () => void; serviceId?: string; serviceName?: string; intakePath?: IntakePath; }
 
-export const ProjectIntake: React.FC<Props> = ({ isOpen, onClose, serviceId, serviceName }) => {
-  const [path, setPath] = useState<keyof typeof PATHS | null>(null);
+export const ProjectIntake: React.FC<Props> = ({ isOpen, onClose, serviceId, serviceName, intakePath }) => {
+  const [path, setPath] = useState<IntakePath | null>(null);
   const [step, setStep] = useState<'select' | 'questions' | 'ai-followup' | 'contact' | 'brief' | 'done'>('select');
   const [qIdx, setQIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
@@ -181,11 +28,11 @@ export const ProjectIntake: React.FC<Props> = ({ isOpen, onClose, serviceId, ser
 
   // Auto-set path from serviceId
   useEffect(() => {
-    if (isOpen && serviceId) {
-      const p = SERVICE_GROUP_MAP[serviceId];
+    if (isOpen && (serviceId || intakePath)) {
+      const p = getIntakePath(serviceId) ?? intakePath ?? null;
       if (p) { setPath(p); setStep('questions'); setQIdx(0); }
     }
-  }, [isOpen, serviceId]);
+  }, [isOpen, serviceId, intakePath]);
 
   // Reset on close
   useEffect(() => {
@@ -199,17 +46,10 @@ export const ProjectIntake: React.FC<Props> = ({ isOpen, onClose, serviceId, ser
     }
   }, [isOpen]);
 
-  // Inject the universal budget question (before the trailing free-form
-  // "notes" question) into any path that doesn't already ask for budget,
-  // so every completed brief carries a structured budget.
-  const questions = React.useMemo(() => {
-    if (!path) return [] as Question[];
-    const base = PATHS[path];
-    if (base.some(q => q.id === 'budget')) return base;
-    const notesIdx = base.findIndex(q => q.id === 'notes');
-    if (notesIdx === -1) return [...base, BUDGET_Q];
-    return [...base.slice(0, notesIdx), BUDGET_Q, ...base.slice(notesIdx)];
-  }, [path]);
+  const questions = React.useMemo(
+    () => buildIntakeQuestions(serviceId, { path }),
+    [path, serviceId],
+  );
   const allQs = [...questions, ...followups];
   const currentQ = allQs[qIdx];
   const progress = allQs.length ? Math.round(((qIdx) / allQs.length) * 100) : 0;
@@ -355,7 +195,7 @@ export const ProjectIntake: React.FC<Props> = ({ isOpen, onClose, serviceId, ser
               <div className="grid grid-cols-2 gap-3">
                 {Object.entries(PATH_LABELS).map(([key, label]) => (
                   <button key={key}
-                    onClick={() => { setPath(key as keyof typeof PATHS); setStep('questions'); setQIdx(0); }}
+                    onClick={() => { setPath(key as IntakePath); setStep('questions'); setQIdx(0); }}
                     className="p-4 rounded-2xl text-left transition-all hover:scale-[1.02]"
                     style={{ background: 'rgba(255,255,255,0.03)', border: `1.5px solid ${BORDER}` }}>
                     <p className="font-bold text-sm text-white">{label}</p>

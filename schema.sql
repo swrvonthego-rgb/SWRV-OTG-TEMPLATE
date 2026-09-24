@@ -123,6 +123,8 @@ CREATE TABLE IF NOT EXISTS orders (
   balance_invoiced_at   TEXT,
   balance_paid_at       TEXT,
   status                TEXT NOT NULL DEFAULT 'awaiting_deposit',
+  start_date            TEXT,            -- 'project' category: preferred kickoff date
+  intake_json           TEXT,            -- [{question, answer}] from the booking intake
   created_at            TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders (created_at);

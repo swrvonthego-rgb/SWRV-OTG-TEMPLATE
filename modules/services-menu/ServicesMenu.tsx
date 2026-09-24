@@ -107,8 +107,8 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
         {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers */}
         <EventCoverage
           onBook={(svc) => setCheckoutService(svc)}
-          onIntake={(id, name) => {
-            window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id, name } }));
+          onIntake={(id, name, path) => {
+            window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id, name, path } }));
             onClose?.();
           }}
         />
