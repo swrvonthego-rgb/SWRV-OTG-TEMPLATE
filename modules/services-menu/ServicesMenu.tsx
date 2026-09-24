@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './services-menu.css';
 import { SERVICES, SERVICE_SUBCATEGORIES as SUB_CATEGORIES } from '../../site.config';
 import { CheckoutModal, CheckoutService } from './CheckoutModal';
+import { EventCoverage } from './EventCoverage';
 
 interface Props {
   isOpen: boolean;
@@ -91,6 +92,15 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           />
           <p className="sm-hero-caption">LEADER OF THE REVOLUTION</p>
         </div>
+
+        {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers */}
+        <EventCoverage
+          onBook={(svc) => setCheckoutService(svc)}
+          onIntake={(id, name) => {
+            window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id, name } }));
+            onClose?.();
+          }}
+        />
 
         {/* ROADMAP RECOMMENDATIONS — shown only when coming from Roadmap CTA */}
         {roadmapRecs.length > 0 && (
