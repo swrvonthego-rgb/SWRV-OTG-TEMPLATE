@@ -740,6 +740,10 @@ export default {
     if (url.pathname === '/api/capture-email')  return handleCaptureEmail(request, env);
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
     if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
+    if (url.pathname === '/api/checkout')       return handleCheckout(request, env);
+    if (url.pathname === '/api/stripe-webhook') return handleStripeWebhook(request, env);
+    if (url.pathname === '/api/admin/orders')   return handleAdminOrders(request, env);
+    if (url.pathname === '/api/admin/mark-delivered') return handleMarkDelivered(request, env);
     if (url.pathname === '/api/admin-login')    return handleAdminLogin(request, env);
     if (url.pathname === '/api/admin-me')       return handleAdminMe(request, env);
     if (url.pathname === '/api/admin-logout')   return handleAdminLogout(request, env);
@@ -777,6 +781,13 @@ export default {
 
     // Static assets
     return env.ASSETS.fetch(request);
+  },
+
+  // Cloudflare Cron Trigger (see wrangler.jsonc "triggers.crons") — the
+  // only automatic (non-click) invoice path, and only for orders tied to
+  // a real calendar date. See the header comment above runBalanceInvoiceSweep.
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(runBalanceInvoiceSweep(env));
   },
 };
 
@@ -1383,6 +1394,332 @@ async function handleZionBooking(request, env) {
     console.error('Zion booking error:', err);
     await notifyOwnerOfFailure(env, { source: 'Zion booking', body, err });
     return new Response(JSON.stringify({ error: 'Server error' }), { status: 500, headers: jsonHeaders(request) });
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// SELF-SERVE CHECKOUT — Stripe Checkout Sessions + auto-invoiced balance
+//
+// Flow: client picks a fixed-price service on the site → pays 50% through a
+// dynamically-created Stripe Checkout Session → webhook marks the deposit
+// paid → the balance is invoiced automatically with NO ONE at SWRV touching
+// an invoice:
+//   - 'event'   orders (a booked date): a daily cron finds orders whose
+//     event_date is BALANCE_INVOICE_LEAD_DAYS away and invoices them then,
+//     so the balance is realistically paid before the event happens.
+//   - 'project' orders (a website, branding, etc. — "done" is a judgment
+//     call, not a date): the invoice fires when an admin clicks "Mark
+//     Delivered", never on a timer, so a client is never billed for
+//     unfinished work.
+// Card numbers never touch this Worker — Stripe Checkout hosts that page.
+// ─────────────────────────────────────────────────────────
+
+const BALANCE_INVOICE_LEAD_DAYS = 3;
+let __ordersTableReady = false;
+
+async function ensureOrdersTable(env) {
+  if (__ordersTableReady || !env.EMAIL_DB) return;
+  try {
+    await env.EMAIL_DB.prepare(
+      `CREATE TABLE IF NOT EXISTS orders (
+        id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+        service_id            TEXT NOT NULL,
+        service_name          TEXT NOT NULL,
+        category              TEXT NOT NULL,   -- 'event' | 'project'
+        customer_name         TEXT,
+        customer_email        TEXT NOT NULL,
+        customer_phone        TEXT,
+        event_date            TEXT,            -- 'event' category only
+        total_cents           INTEGER NOT NULL,
+        deposit_cents         INTEGER NOT NULL,
+        balance_cents         INTEGER NOT NULL,
+        stripe_customer_id    TEXT,
+        stripe_checkout_id    TEXT,
+        stripe_payment_intent TEXT,
+        deposit_paid_at       TEXT,
+        balance_invoice_id    TEXT,
+        balance_invoice_url   TEXT,
+        balance_invoiced_at   TEXT,
+        balance_paid_at       TEXT,
+        status                TEXT NOT NULL DEFAULT 'awaiting_deposit',
+        created_at            TEXT DEFAULT (datetime('now'))
+      )`
+    ).run();
+    __ordersTableReady = true;
+  } catch (_) { /* table may already exist with a compatible schema */ }
+}
+
+// Minimal Stripe REST client — the rest of this Worker talks to every other
+// API (Groq, Resend) with raw fetch, so this matches rather than pulling in
+// the Stripe SDK for two endpoint families.
+async function stripeRequest(env, method, path, params) {
+  if (!env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY is not configured');
+  const body = params ? toStripeForm(params) : undefined;
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || `Stripe ${path} failed (${res.status})`);
+  return data;
+}
+
+// Stripe's form encoding needs bracket notation for nested objects/arrays —
+// e.g. { line_items: [{ price_data: { unit_amount: 100 } }] } becomes
+// 'line_items[0][price_data][unit_amount]=100'. URLSearchParams can't do
+// this on its own, so this walks the object and builds the key paths.
+function toStripeForm(obj, prefix = '', out = new URLSearchParams()) {
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined || value === null) continue;
+    const paramKey = prefix ? `${prefix}[${key}]` : key;
+    if (Array.isArray(value)) {
+      value.forEach((item, i) => {
+        const arrKey = `${paramKey}[${i}]`;
+        if (typeof item === 'object') toStripeForm(item, arrKey, out);
+        else out.append(arrKey, String(item));
+      });
+    } else if (typeof value === 'object') {
+      toStripeForm(value, paramKey, out);
+    } else {
+      out.append(paramKey, String(value));
+    }
+  }
+  return out;
+}
+
+async function findOrCreateStripeCustomer(env, { email, name }) {
+  const existing = await stripeRequest(env, 'GET', `customers?email=${encodeURIComponent(email)}&limit=1`);
+  if (existing.data?.length) return existing.data[0].id;
+  const created = await stripeRequest(env, 'POST', 'customers', { email, name: name || undefined });
+  return created.id;
+}
+
+async function handleCheckout(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
+  }
+  if (!env.STRIPE_SECRET_KEY) {
+    return new Response(JSON.stringify({ error: 'Checkout is not configured yet — email info@swrvonthego.pro to book directly.' }), { status: 503, headers: jsonHeaders(request) });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+    const { serviceId, serviceName, category, priceCents, customerName, customerEmail, customerPhone, eventDate, origin } = body;
+
+    if (!serviceId || !serviceName || !customerEmail || !Number.isInteger(priceCents) || priceCents < 100) {
+      return new Response(JSON.stringify({ error: 'Missing or invalid booking details.' }), { status: 400, headers: jsonHeaders(request) });
+    }
+    if (category === 'event' && !eventDate) {
+      return new Response(JSON.stringify({ error: 'An event date is required for this service.' }), { status: 400, headers: jsonHeaders(request) });
+    }
+
+    await ensureOrdersTable(env);
+    const depositCents = Math.round(priceCents / 2);
+    const balanceCents = priceCents - depositCents;
+
+    const customerId = await findOrCreateStripeCustomer(env, { email: customerEmail, name: customerName });
+
+    const safeOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://swrvonthego.pro';
+    const session = await stripeRequest(env, 'POST', 'checkout/sessions', {
+      mode: 'payment',
+      customer: customerId,
+      line_items: [{
+        quantity: 1,
+        price_data: {
+          currency: 'usd',
+          unit_amount: depositCents,
+          product_data: {
+            name: `${serviceName} — 50% deposit`,
+            description: `Total: $${(priceCents / 100).toFixed(2)} · Deposit due now: $${(depositCents / 100).toFixed(2)} · Balance invoiced ${category === 'event' ? 'before your event' : 'on delivery'}: $${(balanceCents / 100).toFixed(2)}`,
+          },
+        },
+      }],
+      success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${safeOrigin}/`,
+      'invoice_creation[enabled]': 'true',
+      metadata: { service_id: serviceId, category },
+    });
+
+    const orderId = await (async () => {
+      const result = await env.EMAIL_DB.prepare(
+        `INSERT INTO orders (service_id, service_name, category, customer_name, customer_email, customer_phone, event_date, total_cents, deposit_cents, balance_cents, stripe_customer_id, stripe_checkout_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        serviceId, serviceName, category === 'event' ? 'event' : 'project',
+        customerName || null, customerEmail, customerPhone || null, eventDate || null,
+        priceCents, depositCents, balanceCents, customerId, session.id,
+      ).run();
+      return result.meta?.last_row_id ?? null;
+    })();
+
+    return new Response(JSON.stringify({ checkoutUrl: session.url, orderId }), { headers: jsonHeaders(request) });
+  } catch (err) {
+    await notifyOwnerOfFailure(env, { source: 'Checkout session creation', body, err });
+    return new Response(JSON.stringify({ error: 'Something went wrong starting checkout. Try again or email info@swrvonthego.pro directly.' }), { status: 500, headers: jsonHeaders(request) });
+  }
+}
+
+// Verifies the 'Stripe-Signature' header ourselves (Web Crypto HMAC-SHA256)
+// since this Worker doesn't carry the Stripe SDK. Rejects anything not
+// actually signed by Stripe's webhook secret — otherwise anyone could POST
+// a fake "payment succeeded" and get marked as deposit-paid for free.
+async function verifyStripeSignature(rawBody, sigHeader, secret) {
+  const parts = Object.fromEntries(sigHeader.split(',').map(p => p.split('=')));
+  const timestamp = parts.t;
+  const expectedSig = parts.v1;
+  if (!timestamp || !expectedSig) return false;
+
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const signed = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${timestamp}.${rawBody}`));
+  const computedSig = [...new Uint8Array(signed)].map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Reject stale payloads (5-minute tolerance) to block replay of an old,
+  // once-valid signature.
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+  if (computedSig.length !== expectedSig.length) return false;
+  let diff = 0;
+  for (let i = 0; i < computedSig.length; i++) diff |= computedSig.charCodeAt(i) ^ expectedSig.charCodeAt(i);
+  return diff === 0;
+}
+
+async function handleStripeWebhook(request, env) {
+  if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
+  if (!env.STRIPE_WEBHOOK_SECRET) return new Response('Webhook not configured', { status: 503 });
+
+  const rawBody = await request.text();
+  const sig = request.headers.get('Stripe-Signature') || '';
+  const valid = await verifyStripeSignature(rawBody, sig, env.STRIPE_WEBHOOK_SECRET);
+  if (!valid) return new Response('Invalid signature', { status: 400 });
+
+  let event;
+  try { event = JSON.parse(rawBody); } catch { return new Response('Bad payload', { status: 400 }); }
+
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      await ensureOrdersTable(env);
+      const order = await env.EMAIL_DB.prepare('SELECT * FROM orders WHERE stripe_checkout_id = ?').bind(session.id).first();
+      if (order) {
+        await env.EMAIL_DB.prepare(
+          `UPDATE orders SET status = 'deposit_paid', deposit_paid_at = datetime('now'), stripe_payment_intent = ? WHERE id = ?`
+        ).bind(session.payment_intent || null, order.id).run();
+        await sendDepositReceiptEmail(env, order);
+      }
+    }
+  } catch (err) {
+    // Stripe retries on any non-2xx, so a failure here must still return
+    // 200 once logged — otherwise a transient DB hiccup causes Stripe to
+    // hammer this endpoint with retries for hours.
+    await notifyOwnerOfFailure(env, { source: 'Stripe webhook processing', body: event, err });
+  }
+  return new Response('ok', { status: 200 });
+}
+
+async function sendDepositReceiptEmail(env, order) {
+  try {
+    const balanceWhen = order.category === 'event'
+      ? `automatically about ${BALANCE_INVOICE_LEAD_DAYS} days before your event`
+      : `as soon as your project is delivered`;
+    const html = `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
+      <h2 style="margin:0 0 8px">You're booked — thank you!</h2>
+      <p style="color:#555;font-size:14px;line-height:1.6;">Your deposit for <strong>${order.service_name}</strong> is confirmed.</p>
+      <table style="width:100%;font-size:14px;margin:16px 0;border-collapse:collapse;">
+        <tr><td style="padding:6px 0;color:#777;">Total</td><td style="text-align:right;">$${(order.total_cents / 100).toFixed(2)}</td></tr>
+        <tr><td style="padding:6px 0;color:#777;">Paid today</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
+        <tr><td style="padding:6px 0;color:#777;">Balance due</td><td style="text-align:right;">$${(order.balance_cents / 100).toFixed(2)}</td></tr>
+      </table>
+      <p style="color:#555;font-size:13px;line-height:1.6;">Stripe will send you a separate payment receipt for today's charge. The balance will be invoiced ${balanceWhen} — no need to follow up.</p>
+      <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
+    </div>`;
+    await resendPost(env, {
+      from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+      to: [order.customer_email],
+      subject: `You're booked: ${order.service_name}`,
+      html,
+    });
+  } catch (_) { /* Stripe's own receipt still goes out even if this fails */ }
+}
+
+// Creates and immediately finalizes+sends a Stripe-hosted invoice for the
+// balance. Stripe emails it and handles reminders — nothing further to do
+// here once this returns.
+async function invoiceBalance(env, order) {
+  const invoiceItem = await stripeRequest(env, 'POST', 'invoiceitems', {
+    customer: order.stripe_customer_id,
+    amount: order.balance_cents,
+    currency: 'usd',
+    description: `${order.service_name} — remaining balance`,
+  });
+  const invoice = await stripeRequest(env, 'POST', 'invoices', {
+    customer: order.stripe_customer_id,
+    collection_method: 'send_invoice',
+    days_until_due: 7,
+    pending_invoice_items_behavior: 'include',
+  });
+  const sent = await stripeRequest(env, 'POST', `invoices/${invoice.id}/send`);
+  await env.EMAIL_DB.prepare(
+    `UPDATE orders SET balance_invoice_id = ?, balance_invoice_url = ?, balance_invoiced_at = datetime('now'), status = 'balance_invoiced' WHERE id = ?`
+  ).bind(sent.id, sent.hosted_invoice_url || null, order.id).run();
+  return sent;
+}
+
+// Admin-triggered for 'project' orders — see the header note above for why
+// this is a click, not a timer.
+async function handleMarkDelivered(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+
+  try {
+    const { orderId } = await request.json();
+    await ensureOrdersTable(env);
+    const order = await env.EMAIL_DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+    if (!order) return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404, headers: jsonHeaders(request) });
+    if (order.status !== 'deposit_paid') {
+      return new Response(JSON.stringify({ error: `Can't invoice — order status is '${order.status}', not 'deposit_paid'.` }), { status: 409, headers: jsonHeaders(request) });
+    }
+    const invoice = await invoiceBalance(env, order);
+    return new Response(JSON.stringify({ ok: true, invoiceUrl: invoice.hosted_invoice_url }), { headers: jsonHeaders(request) });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message || 'Failed to send balance invoice' }), { status: 500, headers: jsonHeaders(request) });
+  }
+}
+
+async function handleAdminOrders(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+  await ensureOrdersTable(env);
+  const { results } = await env.EMAIL_DB.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 500').all();
+  return new Response(JSON.stringify({ orders: results }), { headers: jsonHeaders(request) });
+}
+
+// Runs daily (see wrangler.jsonc "triggers.crons"). Finds 'event' orders
+// whose date is BALANCE_INVOICE_LEAD_DAYS away and invoices the balance —
+// this is the ONLY automatic (non-click) invoice path, and only for
+// bookings tied to a real calendar date.
+async function runBalanceInvoiceSweep(env) {
+  await ensureOrdersTable(env);
+  const target = new Date();
+  target.setUTCDate(target.getUTCDate() + BALANCE_INVOICE_LEAD_DAYS);
+  const targetDate = target.toISOString().slice(0, 10);
+
+  const { results } = await env.EMAIL_DB.prepare(
+    `SELECT * FROM orders WHERE category = 'event' AND status = 'deposit_paid' AND event_date = ?`
+  ).bind(targetDate).all();
+
+  for (const order of results || []) {
+    try {
+      await invoiceBalance(env, order);
+    } catch (err) {
+      await notifyOwnerOfFailure(env, { source: `Balance invoice sweep (order #${order.id})`, body: order, err });
+    }
   }
 }
 

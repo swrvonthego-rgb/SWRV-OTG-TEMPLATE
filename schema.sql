@@ -93,3 +93,37 @@ CREATE TABLE IF NOT EXISTS bookings (
   created_at    TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings (created_at);
+
+-- Self-serve checkout orders — a client picked a fixed-price service and
+-- paid 50% through a Stripe Checkout Session (see ensureOrdersTable /
+-- handleCheckout in src/worker.js). Distinct from `bookings` above: a
+-- `bookings` row is an INQUIRY that still needs a human to quote and
+-- follow up; an `orders` row is a service someone already paid a deposit
+-- on. status moves awaiting_deposit -> deposit_paid -> balance_invoiced ->
+-- (paid by the client directly on Stripe's hosted invoice, not tracked
+-- here — check the Stripe dashboard for final payment status).
+CREATE TABLE IF NOT EXISTS orders (
+  id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+  service_id            TEXT NOT NULL,
+  service_name          TEXT NOT NULL,
+  category              TEXT NOT NULL,   -- 'event' | 'project'
+  customer_name         TEXT,
+  customer_email        TEXT NOT NULL,
+  customer_phone        TEXT,
+  event_date            TEXT,            -- 'event' category only
+  total_cents           INTEGER NOT NULL,
+  deposit_cents         INTEGER NOT NULL,
+  balance_cents         INTEGER NOT NULL,
+  stripe_customer_id    TEXT,
+  stripe_checkout_id    TEXT,
+  stripe_payment_intent TEXT,
+  deposit_paid_at       TEXT,
+  balance_invoice_id    TEXT,
+  balance_invoice_url   TEXT,
+  balance_invoiced_at   TEXT,
+  balance_paid_at       TEXT,
+  status                TEXT NOT NULL DEFAULT 'awaiting_deposit',
+  created_at            TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders (created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_event_date ON orders (event_date);

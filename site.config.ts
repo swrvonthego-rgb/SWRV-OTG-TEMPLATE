@@ -455,6 +455,11 @@ export interface Service {
   category: 'execution' | 'experience' | 'identity';
   price: string;
   priceNumeric: number;
+  // Fixed-price, one-time services only — hourly rates, "From $X" custom
+  // quotes, and monthly subscriptions stay inquiry-only, since self-serve
+  // checkout needs a known total to split into a 50% deposit + balance.
+  checkoutEnabled?: boolean;
+  checkoutCategory?: 'event' | 'project';
   blurb: string;
   deliveryDays?: number;
   revisions?: number;
@@ -473,6 +478,8 @@ export const SERVICES: Service[] = [
     category: 'identity',
     price: '$300',
     priceNumeric: 300,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Everything that makes a brand a brand — logo, colors, vision and mission statements, vision mapping, and a business plan foundation. One flat $300. This is the groundwork every website is built on, so most people start here.',
     featured: true,
     deliveryDays: 10,
@@ -500,6 +507,8 @@ export const SERVICES: Service[] = [
     category: 'identity',
     price: '$250',
     priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Logo only, à la carte. Custom logo system with primary, secondary, and submark variations. 2 rounds of revisions. Proprietary — not templated. For $50 more, the Complete Branding Package adds colors, vision + mission, vision mapping, and a business plan foundation — most people go that route.',
     deliveryDays: 10,
     revisions: 2,
@@ -513,6 +522,8 @@ export const SERVICES: Service[] = [
     category: 'identity',
     price: '$800',
     priceNumeric: 800,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Half-day brand + lifestyle photoshoot. Full day of shooting, 3-5 hours of professional editing. Color grading included. Deliverables ready for web, press, and social.',
     deliveryDays: 7,
     revisions: 0,
@@ -526,6 +537,8 @@ export const SERVICES: Service[] = [
     category: 'identity',
     price: '$500',
     priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Custom content calendar, brand voice guide, social media templates, hashtag strategy, engagement framework, and post scheduling system. Bespoke — built around your audience.',
   },
 
@@ -537,6 +550,8 @@ export const SERVICES: Service[] = [
     featured: true,
     price: '$300',
     priceNumeric: 300,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'The $300 special. Pick from 10 professionally designed template styles or go custom — we swap in your brand, your words, and your photos. Mobile-friendly. Domain + email setup included. Live in 5 days.',
     deliveryDays: 5,
     revisions: 1,
@@ -550,6 +565,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$500',
     priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Portfolio site plus the back end to sell products — Stripe checkout, booking integration, email capture, and content sections. Domain + email included. SEO audit at 3-6 months included. Live in 1 week.',
     deliveryDays: 7,
     revisions: 2,
@@ -560,6 +577,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$1,000',
     priceNumeric: 1000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'A multifaceted digital home for solopreneurs who operate as a whole company. Custom-built — you won\'t find this anywhere else because we designed this concept. Vision-first: we get what\'s in your head out and into a digital space you can grow into over time. Your Roadmap drives every design decision. All the bells and whistles: full SEO, product selling, multiple pages, an AI chat assistant for your clients, and calendar + scheduling. Includes domain, email, SEO audit at 3-6 months. Live in 2 weeks.',
     deliveryDays: 14,
     revisions: 3,
@@ -598,6 +617,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$1,000',
     priceNumeric: 1000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Campaign page, donation/payment flow, progress tracker, and supporter recognition — built to raise money. A GoFundMe alternative you actually own.',
   },
 
@@ -608,6 +629,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$3,000',
     priceNumeric: 3000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Complete song from concept to master — beat/instrumental creation, vocal recording, arranging, vocal production, vocal coaching, mixing, mastering, and final delivery. 5-day turnaround. Half the industry rate — same broadcast-ready quality.',
     featured: true,
     deliveryDays: 5,
@@ -622,6 +645,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$500',
     priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Professional mixing for your finished recordings. Balances every element — levels, panning, EQ, compression, effects. Broadcast-ready output.',
     deliveryDays: 3,
     revisions: 2,
@@ -635,6 +660,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$500',
     priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Final mastering to streaming and broadcast standards. Loudness normalization, stereo enhancement, and platform-optimized delivery.',
   },
   {
@@ -643,6 +670,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$250',
     priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Original brand jingle, sonic logo, or audio bumper. Custom-written and produced to live in your audience\'s head.',
   },
   {
@@ -716,6 +745,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$5,000',
     priceNumeric: 5000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Full music video production — concept, 1-day shoot, 5-day post-production, unlimited premium effects and transitions, color grading, and 2 rounds of revisions. A third of what studios charge for the same finish.',
     featured: true,
     deliveryDays: 7,
@@ -730,6 +761,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$1,250',
     priceNumeric: 1250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Complete 1-minute promo — concept to delivery in 1 day. Includes shoot, edit, color grading, and 2 revision rounds. Everything included, nothing recycled.',
   },
   {
@@ -754,6 +787,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$100/batch',
     priceNumeric: 300,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Batch of 5-10 short-form videos (TikTok, Instagram Reels, YouTube Shorts). Edited, captioned, and optimized for each platform.',
   },
   {
@@ -762,6 +797,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$600',
     priceNumeric: 600,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: '30-second AI-generated video — intro, animated collage, or branded content. 5 premium effects, 5 premium transitions, 2 revision rounds. 3-hour production time at $200/hr.',
   },
   {
@@ -770,6 +807,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$800',
     priceNumeric: 800,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: '60-second AI-generated video with 8-10 premium effects and transitions. 2 revision rounds. Built with cutting-edge AI tools and edited to broadcast standards.',
   },
   {
@@ -778,6 +817,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$1,200',
     priceNumeric: 1200,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Up to 2-minute AI-generated video with 8-10 premium effects and transitions. 2 revision rounds. Cinematic quality at a fraction of traditional animation costs.',
   },
   {
@@ -796,6 +837,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$250',
     priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Investor-ready pitch deck (up to 12 slides) plus a full business plan document. Narrative arc, design, financial overview, and ask slide — everything you need to walk into the room ready.',
   },
   {
@@ -804,6 +847,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$250',
     priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Custom slide deck for talks, workshops, or presentations. Visual storytelling that amplifies your message — not generic templates.',
   },
   {
@@ -812,6 +857,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$750',
     priceNumeric: 750,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Professional interior formatting + cover layout for KDP, IngramSpark, or print — plus a full marketing launch strategy and social media rollout plan. Built for artists who need their book to sell, not just exist.',
   },
   {
@@ -820,6 +867,8 @@ export const SERVICES: Service[] = [
     category: 'execution',
     price: '$250',
     priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Done-for-you LLC paperwork, EIN setup, business banking connection, and account guidance — everything to make your brand legally operational. All-inclusive.',
   },
 
@@ -830,6 +879,8 @@ export const SERVICES: Service[] = [
     category: 'experience',
     price: '$700',
     priceNumeric: 700,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: '4-session vocal coaching — projection, breath control, performance presence, and voice preservation. The Birdsong Method: developed from 25+ years in the music business.',
   },
   {
@@ -838,6 +889,8 @@ export const SERVICES: Service[] = [
     category: 'experience',
     price: '$875',
     priceNumeric: 875,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
     blurb: 'Studio etiquette, mic technique, producer language, and how to get the best out of every session. For artists who want to walk into any studio ready.',
   },
   {

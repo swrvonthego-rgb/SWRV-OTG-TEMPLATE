@@ -19,5 +19,12 @@
   "vars": {
     "EMAIL_FROM": "SWRV <hello@swrvonthego.pro>",
     "CDN_BASE": "https://pub-1cdab94fe8a14771befbf4d0319622ef.r2.dev"
+  },
+  // Daily sweep that auto-invoices the balance on 'event' orders a few days
+  // out (see BALANCE_INVOICE_LEAD_DAYS in src/worker.js). Requires
+  // STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to be set as Worker secrets
+  // — see the checkout setup notes for exact steps.
+  "triggers": {
+    "crons": ["0 14 * * *"]
   }
 }

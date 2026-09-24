@@ -35,6 +35,25 @@ interface BookingRow {
   created_at: string;
 }
 
+interface OrderRow {
+  id: number;
+  service_id: string;
+  service_name: string;
+  category: 'event' | 'project';
+  customer_name: string | null;
+  customer_email: string;
+  customer_phone: string | null;
+  event_date: string | null;
+  total_cents: number;
+  deposit_cents: number;
+  balance_cents: number;
+  deposit_paid_at: string | null;
+  balance_invoice_url: string | null;
+  balance_invoiced_at: string | null;
+  status: string;
+  created_at: string;
+}
+
 interface TenantRow {
   slug: string;
   display_name: string;
@@ -46,7 +65,7 @@ interface TenantRow {
   created_at: string;
 }
 
-type Tab = 'emails' | 'bookings' | 'submissions' | 'tenants';
+type Tab = 'emails' | 'bookings' | 'orders' | 'submissions' | 'tenants';
 
 export const AdminPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -64,6 +83,12 @@ export const AdminPage: React.FC = () => {
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [expandedBookingId, setExpandedBookingId] = useState<number | null>(null);
+
+  // ── Orders (self-serve checkout deposits) ────────────────────
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [markingDeliveredId, setMarkingDeliveredId] = useState<number | null>(null);
+  const [orderActionError, setOrderActionError] = useState('');
 
   // ── Vision Portal: submissions ──────────────────────────────
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
@@ -120,6 +145,41 @@ export const AdminPage: React.FC = () => {
       .then((data) => setBookings(data.bookings || []))
       .finally(() => setLoadingBookings(false));
   }, [authedEmail, tab]);
+
+  const fetchOrders = () => {
+    if (!authedEmail) return;
+    setLoadingOrders(true);
+    fetch('/api/admin/orders', { credentials: 'same-origin' })
+      .then((res) => (res.ok ? res.json() : { orders: [] }))
+      .then((data) => setOrders(data.orders || []))
+      .finally(() => setLoadingOrders(false));
+  };
+
+  useEffect(() => {
+    if (!authedEmail || tab !== 'orders') return;
+    fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authedEmail, tab]);
+
+  const markDelivered = async (orderId: number) => {
+    setOrderActionError('');
+    setMarkingDeliveredId(orderId);
+    try {
+      const res = await fetch('/api/admin/mark-delivered', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send balance invoice');
+      fetchOrders();
+    } catch (err: any) {
+      setOrderActionError(err?.message || 'Failed to send balance invoice');
+    } finally {
+      setMarkingDeliveredId(null);
+    }
+  };
 
   useEffect(() => {
     if (!authedEmail || tab !== 'submissions') return;
@@ -294,7 +354,7 @@ export const AdminPage: React.FC = () => {
       </div>
 
       <div className="flex gap-2 mb-8 border-b border-white/10">
-        {(['emails', 'bookings', 'submissions', 'tenants'] as Tab[]).map((t) => (
+        {(['emails', 'bookings', 'orders', 'submissions', 'tenants'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -302,7 +362,7 @@ export const AdminPage: React.FC = () => {
               tab === t ? 'border-lion-orange text-lion-orange' : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
-            {t === 'emails' ? 'Email list' : t === 'bookings' ? 'Bookings' : t === 'submissions' ? 'Vision submissions' : 'Tenants'}
+            {t === 'emails' ? 'Email list' : t === 'bookings' ? 'Bookings' : t === 'orders' ? 'Orders' : t === 'submissions' ? 'Vision submissions' : 'Tenants'}
           </button>
         ))}
       </div>
@@ -402,6 +462,71 @@ export const AdminPage: React.FC = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === 'orders' && (
+        <>
+          <div className="mb-3">
+            <h2 className="text-sm uppercase tracking-widest text-white/40 mb-1">
+              Orders {orders.length ? `(${orders.length})` : ''}
+            </h2>
+            <p className="text-white/30 text-xs">
+              Self-serve checkout: someone picked a fixed-price service and paid a 50% deposit through Stripe. For
+              'project' orders, click <span className="text-white/50">Mark Delivered</span> when the work is actually
+              done — Stripe generates and sends the balance invoice instantly. 'event' orders invoice automatically a
+              few days before the date, no click needed.
+            </p>
+          </div>
+          {orderActionError && <p className="text-red-400 text-xs mb-3">{orderActionError}</p>}
+          {loadingOrders ? (
+            <p className="text-white/40 text-sm">Loading…</p>
+          ) : orders.length === 0 ? (
+            <p className="text-white/40 text-sm">No orders yet.</p>
+          ) : (
+            <div className="border border-white/10 rounded-xl overflow-hidden">
+              {orders.map((o) => (
+                <div key={o.id} className="px-4 py-3 border-b border-white/10 last:border-0 text-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{o.service_name}</div>
+                      <div className="text-white/40 text-xs">
+                        {o.customer_name || '—'} · {o.customer_email}
+                        {o.event_date ? ` · ${o.event_date}` : ''}
+                      </div>
+                    </div>
+                    <div className="text-xs text-right">
+                      <div className="text-white/70">${(o.total_cents / 100).toFixed(2)} total</div>
+                      <div className={`uppercase tracking-widest text-[10px] mt-0.5 ${
+                        o.status === 'deposit_paid' ? 'text-lion-orange' :
+                        o.status === 'balance_invoiced' ? 'text-green-400' :
+                        'text-white/30'
+                      }`}>
+                        {o.status.replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-2 text-xs text-white/30">
+                    <span>Deposit ${(o.deposit_cents / 100).toFixed(2)} · Balance ${(o.balance_cents / 100).toFixed(2)}</span>
+                    {o.category === 'project' && o.status === 'deposit_paid' && (
+                      <button
+                        onClick={() => markDelivered(o.id)}
+                        disabled={markingDeliveredId === o.id}
+                        className="px-3 py-1.5 rounded-lg border border-lion-orange/50 text-lion-orange text-xs font-medium hover:bg-lion-orange hover:text-black transition-all disabled:opacity-50"
+                      >
+                        {markingDeliveredId === o.id ? 'Sending…' : 'Mark Delivered →'}
+                      </button>
+                    )}
+                    {o.balance_invoice_url && (
+                      <a href={o.balance_invoice_url} target="_blank" rel="noreferrer" className="underline text-white/40 hover:text-white/70">
+                        View balance invoice
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </>

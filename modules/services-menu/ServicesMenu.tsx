@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './services-menu.css';
 import { SERVICES, SERVICE_SUBCATEGORIES as SUB_CATEGORIES } from '../../site.config';
+import { CheckoutModal, CheckoutService } from './CheckoutModal';
 
 interface Props {
   isOpen: boolean;
@@ -15,6 +16,7 @@ SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [roadmapRecs, setRoadmapRecs] = useState<string[]>([]);
+  const [checkoutService, setCheckoutService] = useState<CheckoutService | null>(null);
 
   // Listen for Roadmap recommendations broadcast
   useEffect(() => {
@@ -32,6 +34,35 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
   const filterFn = (svc: typeof SERVICES[0]) => {
     if (!q) return true;
     return svc.name.toLowerCase().includes(q) || svc.blurb.toLowerCase().includes(q);
+  };
+
+  // Shared CTA block for a service card: a checkout-enabled service leads
+  // with "pay 50% now"; everything else (hourly, custom-quoted, monthly)
+  // leads with the inquiry form since there's no fixed total to split.
+  const renderCardCta = (svc: typeof SERVICES[0]) => {
+    const openIntake = () => {
+      window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: svc.id, name: svc.name } }));
+      onClose?.();
+    };
+    if (svc.checkoutEnabled) {
+      return (
+        <div className="sm-card-cta-row">
+          <button type="button" className="sm-book-btn" onClick={() => setCheckoutService({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory })}>
+            Book & Pay 50% →
+          </button>
+          <button type="button" className="sm-quote-link" onClick={openIntake}>
+            Questions first? Ask →
+          </button>
+        </div>
+      );
+    }
+    return (
+      <div className="sm-card-cta-row">
+        <button type="button" className="sm-intake-btn" onClick={openIntake}>
+          Request a Quote →
+        </button>
+      </div>
+    );
   };
 
   const handleStrategyCallClick = (e: React.MouseEvent) => {
@@ -81,26 +112,12 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                     <h3 className="sm-card-name">{svc.name}</h3>
                     <p className="sm-card-price">{svc.price}</p>
                     <p className="sm-card-blurb">{svc.blurb}</p>
-                    <button
-                      type="button"
-                      className="sm-intake-btn"
-                      onClick={() => {
-                        window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: svc.id, name: svc.name } }));
-                        onClose?.();
-                      }}
-                    >
-                      Start This Project →
-                    </button>
-                    <button
-                      type="button"
-                      className="sm-intake-btn"
-                      onClick={() => {
-                        window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: svc.id, name: svc.name } }));
-                        onClose?.();
-                      }}
-                    >
-                      Start This Project →
-                    </button>
+                    {!!svc.includes?.length && (
+                      <ul className="sm-card-includes">
+                        {svc.includes.slice(0, 3).map((item, i) => <li key={i}>{item}</li>)}
+                      </ul>
+                    )}
+                    {renderCardCta(svc)}
                   </article>
                 );
               })}
@@ -190,16 +207,12 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                     <h3 className="sm-card-name">{svc.name}</h3>
                     <p className="sm-card-price">{svc.price}</p>
                     <p className="sm-card-blurb">{svc.blurb}</p>
-                    <button
-                      type="button"
-                      className="sm-intake-btn"
-                      onClick={() => {
-                        window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: svc.id, name: svc.name } }));
-                        onClose?.();
-                      }}
-                    >
-                      Start This Project →
-                    </button>
+                    {!!svc.includes?.length && (
+                      <ul className="sm-card-includes">
+                        {svc.includes.slice(0, 3).map((item, i) => <li key={i}>{item}</li>)}
+                      </ul>
+                    )}
+                    {renderCardCta(svc)}
                   </article>
                 ))}
               </div>
@@ -231,6 +244,8 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           <p className="sm-footer-copy">© {new Date().getFullYear()} SWRV On The Go · swrvonthego.pro</p>
         </footer>
       </div>
+
+      <CheckoutModal service={checkoutService} onClose={() => setCheckoutService(null)} />
     </div>
   );
 }
