@@ -663,6 +663,8 @@ export default {
       '/revving-up':  'https://swrvonthego.pro/#revving-up',
       '/shop':        'https://swrvonthego.pro/#shop',
       '/websites':    'https://swrvonthego.pro/#need-a-website',
+      '/coverage':    'https://swrvonthego.pro/creative-services',
+      '/event-coverage': 'https://swrvonthego.pro/creative-services',
       '/intros':      'https://swrvonthego.pro/intros/',
       '/intro-studio':'https://swrvonthego.pro/intros/',
       '/templates':   'https://swrvonthego.pro/#website-templates',
