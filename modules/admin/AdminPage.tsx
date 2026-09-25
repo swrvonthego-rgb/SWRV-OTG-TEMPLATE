@@ -96,7 +96,7 @@ interface TenantRow {
   created_at: string;
 }
 
-type Tab = 'emails' | 'bookings' | 'orders' | 'submissions' | 'tenants';
+type Tab = 'emails' | 'bookings' | 'orders' | 'submissions' | 'tenants' | 'setup';
 
 export const AdminPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -108,7 +108,7 @@ export const AdminPage: React.FC = () => {
   const [rows, setRows] = useState<EmailRow[]>([]);
   const [loadingRows, setLoadingRows] = useState(false);
 
-  const [tab, setTab] = useState<Tab>('emails');
+  const [tab, setTab] = useState<Tab>('bookings');
 
   // ── Bookings ──────────────────────────────────────────────────
   const [bookings, setBookings] = useState<BookingRow[]>([]);
@@ -184,6 +184,81 @@ export const AdminPage: React.FC = () => {
 
   const [bookingActionId, setBookingActionId] = useState<number | null>(null);
   const [bookingActionError, setBookingActionError] = useState('');
+
+  // ── Add booking (DM / text / phone bookings) ─────────────────
+  const emptyNewBooking = { firstName: '', lastName: '', email: '', phone: '', eventType: '', eventDate: '', location: '', servicePrice: '', details: '', paid: false };
+  const [showAddBooking, setShowAddBooking] = useState(false);
+  const [newBooking, setNewBooking] = useState(emptyNewBooking);
+  const [addingBooking, setAddingBooking] = useState(false);
+  const addBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBookingActionError('');
+    setAddingBooking(true);
+    try {
+      const res = await fetch('/api/admin/add-booking', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBooking),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not add booking');
+      setNewBooking(emptyNewBooking);
+      setShowAddBooking(false);
+      fetchBookings();
+    } catch (err: any) {
+      setBookingActionError(err?.message || 'Could not add booking');
+    } finally {
+      setAddingBooking(false);
+    }
+  };
+
+  // ── Setup (payments + calendar feed) ─────────────────────────
+  interface Settings {
+    stripeKey: { set: boolean; mode?: string; restricted?: boolean; last4?: string; source: 'cloudflare' | 'admin' | null };
+    webhookSecret: { set: boolean; source: 'cloudflare' | 'admin' | null };
+    calendarFeedUrl: string;
+  }
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [stripeKeyInput, setStripeKeyInput] = useState('');
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const loadSettings = async (body?: object) => {
+    setSettingsBusy(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: body ? 'POST' : 'GET', credentials: 'same-origin',
+        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not load setup');
+      setSettings(data);
+      return true;
+    } catch (err: any) {
+      setSettingsMsg({ ok: false, text: err?.message || 'Could not load setup' });
+      return false;
+    } finally {
+      setSettingsBusy(false);
+    }
+  };
+  useEffect(() => {
+    if (authedEmail && tab === 'setup') loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authedEmail, tab]);
+  const saveStripeKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSettingsMsg(null);
+    if (await loadSettings({ stripeSecretKey: stripeKeyInput })) {
+      setStripeKeyInput('');
+      setSettingsMsg({ ok: true, text: 'Stripe key saved and verified. Book & Pay and automatic payment tracking are live.' });
+    }
+  };
+  const copyFeed = async () => {
+    if (!settings) return;
+    try { await navigator.clipboard.writeText(settings.calendarFeedUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    catch { /* fall back to selecting the text */ }
+  };
   const updateBooking = async (id: number, action: 'release' | 'extend' | 'restore' | 'mark_paid') => {
     setBookingActionError('');
     setBookingActionId(id);
@@ -412,7 +487,7 @@ export const AdminPage: React.FC = () => {
       </div>
 
       <div className="flex gap-2 mb-8 border-b border-white/10">
-        {(['emails', 'bookings', 'orders', 'submissions', 'tenants'] as Tab[]).map((t) => (
+        {(['bookings', 'orders', 'emails', 'submissions', 'tenants', 'setup'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -420,7 +495,7 @@ export const AdminPage: React.FC = () => {
               tab === t ? 'border-lion-orange text-lion-orange' : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
-            {t === 'emails' ? 'Email list' : t === 'bookings' ? 'Bookings' : t === 'orders' ? 'Orders' : t === 'submissions' ? 'Vision submissions' : 'Tenants'}
+            {t === 'emails' ? 'Email list' : t === 'bookings' ? 'Bookings' : t === 'orders' ? 'Orders' : t === 'submissions' ? 'Vision submissions' : t === 'setup' ? 'Setup' : 'Tenants'}
           </button>
         ))}
       </div>
@@ -488,6 +563,46 @@ export const AdminPage: React.FC = () => {
             })()}
           </div>
           {bookingActionError && <p className="text-red-400 text-xs mb-3">{bookingActionError}</p>}
+          <div className="mb-4">
+            {!showAddBooking ? (
+              <button onClick={() => setShowAddBooking(true)}
+                className="px-4 py-2 rounded-lg border border-lion-orange/50 text-lion-orange text-xs font-bold uppercase tracking-widest hover:bg-lion-orange hover:text-black transition-all">
+                + Add booking
+              </button>
+            ) : (
+              <form onSubmit={addBooking} className="border border-white/10 rounded-xl p-4 space-y-3">
+                <p className="text-xs text-white/50">For bookings from DMs, texts or calls. It holds the date and gets the same payment tracking.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {([
+                    ['firstName', 'First name *', 'text'], ['lastName', 'Last name', 'text'],
+                    ['email', 'Email', 'email'], ['phone', 'Phone', 'tel'],
+                    ['eventType', 'Event (e.g. Birthday — acoustic set)', 'text'], ['eventDate', 'Event date *', 'date'],
+                    ['location', 'Venue', 'text'], ['servicePrice', 'Price (e.g. $300)', 'text'],
+                  ] as const).map(([k, label, type]) => (
+                    <input key={k} id={`nb-${k}`} type={type} placeholder={label} aria-label={label}
+                      value={newBooking[k]} onChange={(e) => setNewBooking({ ...newBooking, [k]: e.target.value })}
+                      className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-lion-orange"
+                      style={type === 'date' ? { colorScheme: 'dark' } : undefined} />
+                  ))}
+                </div>
+                <textarea id="nb-details" rows={2} placeholder="Notes (time, what they want, how they'll pay…)" value={newBooking.details}
+                  onChange={(e) => setNewBooking({ ...newBooking, details: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-lion-orange resize-none" />
+                <label className="flex items-center gap-2 text-xs text-white/60">
+                  <input id="nb-paid" type="checkbox" checked={newBooking.paid} onChange={(e) => setNewBooking({ ...newBooking, paid: e.target.checked })} />
+                  Deposit already paid (otherwise it holds the date for 7 days awaiting payment)
+                </label>
+                <div className="flex gap-2">
+                  <button type="submit" disabled={addingBooking}
+                    className="px-4 py-2 rounded-lg bg-lion-orange text-black text-xs font-bold uppercase tracking-widest disabled:opacity-50">
+                    {addingBooking ? 'Adding…' : 'Add booking'}
+                  </button>
+                  <button type="button" onClick={() => { setShowAddBooking(false); setNewBooking(emptyNewBooking); }}
+                    className="px-4 py-2 rounded-lg border border-white/15 text-xs text-white/60">Cancel</button>
+                </div>
+              </form>
+            )}
+          </div>
           {loadingBookings ? (
             <p className="text-white/40 text-sm">Loading…</p>
           ) : bookings.length === 0 ? (
@@ -562,6 +677,74 @@ export const AdminPage: React.FC = () => {
             </div>
           )}
         </>
+      )}
+
+      {tab === 'setup' && (
+        <div className="space-y-8">
+          {settingsMsg && <p className={`text-xs ${settingsMsg.ok ? 'text-green-400' : 'text-red-400'}`}>{settingsMsg.text}</p>}
+          {!settings ? (
+            <p className="text-white/40 text-sm">{settingsBusy ? 'Loading…' : 'Setup unavailable.'}</p>
+          ) : (
+            <>
+              <section className="space-y-3">
+                <h2 className="text-sm uppercase tracking-widest text-white/40">Payments</h2>
+                <div className="border border-white/10 rounded-xl divide-y divide-white/10 text-sm">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span>Stripe secret key</span>
+                    {settings.stripeKey.set
+                      ? <span className="text-green-400 text-xs">✓ {settings.stripeKey.mode} {settings.stripeKey.restricted ? 'restricted ' : ''}key …{settings.stripeKey.last4}</span>
+                      : <span className="text-red-400 text-xs">Not set — Book &amp; Pay is off</span>}
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span>Payment notifications (webhook)</span>
+                    {settings.webhookSecret.set
+                      ? <span className="text-green-400 text-xs">✓ Connected</span>
+                      : <span className="text-red-400 text-xs">Not connected</span>}
+                  </div>
+                </div>
+                <form onSubmit={saveStripeKey} className="space-y-2">
+                  <p className="text-xs text-white/50">
+                    {settings.stripeKey.set ? 'Replace the key' : 'Turn on Book & Pay'}: in Stripe go to Developers → API keys → Create restricted key.
+                    Give it <b className="text-white/70">Write</b> on Customers, Checkout Sessions, Invoices and Invoice Items, then paste it here.
+                    It's checked with Stripe before it's saved, and it's never shown again.
+                  </p>
+                  <div className="flex gap-2">
+                    <input id="stripe-key" type="password" autoComplete="off" placeholder="rk_live_…" value={stripeKeyInput}
+                      onChange={(e) => setStripeKeyInput(e.target.value)}
+                      className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-lion-orange" />
+                    <button type="submit" disabled={settingsBusy || !stripeKeyInput.trim()}
+                      className="px-4 py-2 rounded-lg bg-lion-orange text-black text-xs font-bold uppercase tracking-widest disabled:opacity-50">
+                      {settingsBusy ? 'Checking…' : 'Save'}
+                    </button>
+                  </div>
+                </form>
+              </section>
+
+              <section className="space-y-3">
+                <h2 className="text-sm uppercase tracking-widest text-white/40">Calendar on your phone</h2>
+                <p className="text-xs text-white/50">
+                  Every held and paid booking, updated automatically. Add it once:
+                  <b className="text-white/70"> iPhone</b> — Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar.
+                  <b className="text-white/70"> Google Calendar</b> — on a computer, Other calendars → + → From URL. Google refreshes subscribed calendars every few hours.
+                </p>
+                <div className="flex gap-2">
+                  <input id="feed-url" readOnly value={settings.calendarFeedUrl} onFocus={(e) => e.currentTarget.select()}
+                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs text-white/70" />
+                  <button type="button" onClick={copyFeed}
+                    className="px-4 py-2 rounded-lg border border-white/15 text-xs font-medium hover:border-lion-orange hover:text-lion-orange transition-all">
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <p className="text-xs text-white/40">
+                  Keep this link private — it shows client names and contact details.{' '}
+                  <button type="button" onClick={() => loadSettings({ rotateCalendarKey: true })} className="underline hover:text-white/70">
+                    Make a new link
+                  </button>{' '}if it ever gets shared (the old one stops working).
+                </p>
+              </section>
+            </>
+          )}
+        </div>
       )}
 
       {tab === 'orders' && (

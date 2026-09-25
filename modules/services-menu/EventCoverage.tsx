@@ -21,7 +21,7 @@ const COVERAGE_TIER_IDS = ['coverage-quick-stop', 'coverage-on-the-go-day', 'cov
 const CATEGORIES = [
   {
     id: 'on-the-go-content',
-    label: 'On The Go Content',
+    label: 'Social Content',
     desc: 'Real-time reels, TikToks, and behind-the-scenes — captured and posted while your event is still happening.',
     action: 'tiers' as const,
   },
@@ -91,7 +91,7 @@ export function EventCoverage({ onBook, onIntake }: Props) {
 
       {/* TIERED PACKAGES */}
       <div id="swrv-coverage-tiers" className="ec-tiers-header">
-        <p className="ec-tiers-eyebrow">ON THE GO CONTENT — PICK YOUR PACKAGE</p>
+        <p className="ec-tiers-eyebrow">SOCIAL CONTENT — PICK YOUR PACKAGE</p>
       </div>
       <div className="ec-tier-grid">
         {tiers.map((svc) => (

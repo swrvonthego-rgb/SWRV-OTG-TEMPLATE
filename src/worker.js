@@ -133,6 +133,52 @@ async function getD1ResendKey(env) {
   return __d1KeyCache;
 }
 
+// ─────────────────────────────────────────────────────────
+// STORED CONFIG — Stripe keys and the calendar feed key can live either in
+// Worker secrets (Cloudflare dashboard) or in D1 app_config, set from
+// /admin → Setup by the owner. A Worker secret, when present, always wins.
+// Values are cached per isolate for a minute so an /admin change lands fast
+// without a D1 read on every request. Never returned to the browser.
+// ─────────────────────────────────────────────────────────
+const STORED_CONFIG_KEYS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CALENDAR_FEED_KEY'];
+let __storedConfig = null;
+let __storedConfigAt = 0;
+
+async function readStoredConfig(env) {
+  if (__storedConfig && Date.now() - __storedConfigAt < 60_000) return __storedConfig;
+  const out = {};
+  try {
+    const { results } = await env.EMAIL_DB.prepare(
+      `SELECT key, value FROM app_config WHERE key IN (${STORED_CONFIG_KEYS.map(() => '?').join(',')})`
+    ).bind(...STORED_CONFIG_KEYS).all();
+    for (const r of results || []) out[r.key] = String(r.value || '').trim();
+  } catch (_) { /* table missing or D1 down — fall back to Worker secrets only */ }
+  __storedConfig = out;
+  __storedConfigAt = Date.now();
+  return out;
+}
+
+async function saveStoredConfig(env, key, value) {
+  await env.EMAIL_DB.prepare(
+    `INSERT INTO app_config (key, value, updated_at) VALUES (?, ?, datetime('now'))
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')`
+  ).bind(key, value).run();
+  __storedConfig = null;
+}
+
+// env with any missing Stripe/calendar keys filled from D1. A prototype
+// wrapper rather than a spread, so D1/R2/assets bindings pass through as-is.
+async function withStoredConfig(env) {
+  if (!env.EMAIL_DB || STORED_CONFIG_KEYS.every((k) => env[k])) return env;
+  const stored = await readStoredConfig(env);
+  const merged = Object.create(env);
+  merged.__fromAdmin = new Set();
+  for (const k of STORED_CONFIG_KEYS) {
+    if (!env[k] && stored[k]) { merged[k] = stored[k]; merged.__fromAdmin.add(k); }
+  }
+  return merged;
+}
+
 // Ordered, de-duplicated list of keys worth trying. Malformed values are
 // dropped up front so an obviously-broken paste never costs a round trip.
 async function getResendKeyCandidates(env) {
@@ -651,6 +697,7 @@ async function handleTenantPublicConfig(request, env) {
 
 export default {
   async fetch(request, env, ctx) {
+    env = await withStoredConfig(env);
     const url = new URL(request.url);
 
     // ── SUPPORT PAGE ────────────────────────────────────────────
@@ -794,6 +841,9 @@ export default {
     if (url.pathname === '/api/admin/emails')   return handleAdminEmails(request, env);
     if (url.pathname === '/api/admin/bookings') return handleAdminBookings(request, env);
     if (url.pathname === '/api/admin/booking-status') return handleAdminBookingStatus(request, env);
+    if (url.pathname === '/api/admin/add-booking') return handleAdminAddBooking(request, env);
+    if (url.pathname === '/api/admin/settings') return handleAdminSettings(request, env);
+    if (url.pathname === '/api/calendar.ics') return handleCalendarFeed(request, env);
     if (url.pathname === '/api/admin/submissions') return handleAdminSubmissions(request, env);
     if (url.pathname === '/api/admin/tenants')  return handleAdminTenants(request, env);
 
@@ -832,6 +882,7 @@ export default {
   // only automatic (non-click) invoice path, and only for orders tied to
   // a real calendar date. See the header comment above runBalanceInvoiceSweep.
   async scheduled(controller, env, ctx) {
+    env = await withStoredConfig(env);
     // Each sweep runs even if the other fails. A sweep that dies silently
     // means balances never get invoiced or overdue holds never surface —
     // so log it for Cloudflare and tell the owner.
@@ -1940,6 +1991,143 @@ async function handleAdminBookingStatus(request, env) {
   const r = await env.EMAIL_DB.prepare(SQL[body.action]).bind(id).run();
   if (!r.meta?.changes) return new Response(JSON.stringify({ error: 'Booking not found' }), { status: 404, headers: jsonHeaders(request) });
   return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
+}
+
+// /admin → Bookings → Add booking: DM/text/phone bookings that never went
+// through the site, so they hold the calendar and get payment tracking.
+async function handleAdminAddBooking(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+  let b; try { b = await request.json(); } catch { b = {}; }
+  const str = (v, n) => String(v ?? '').trim().slice(0, n) || null;
+  const eventDate = /^\d{4}-\d{2}-\d{2}$/.test(b.eventDate || '') ? b.eventDate : null;
+  const firstName = str(b.firstName, 80);
+  if (!firstName || !eventDate) {
+    return new Response(JSON.stringify({ error: 'A name and an event date are required.' }), { status: 400, headers: jsonHeaders(request) });
+  }
+  const id = await saveBooking(env, {
+    source: 'manual', firstName, lastName: str(b.lastName, 80), email: str(b.email, 200), phone: str(b.phone, 40),
+    eventType: str(b.eventType, 120), eventDate, location: str(b.location, 200), details: str(b.details, 4000),
+    servicePrice: str(b.servicePrice, 40),
+  });
+  if (b.paid && id) {
+    await env.EMAIL_DB.prepare(`UPDATE bookings SET status = 'confirmed', paid_at = datetime('now') WHERE id = ?`).bind(id).run();
+  }
+  return new Response(JSON.stringify({ ok: true, id }), { headers: jsonHeaders(request) });
+}
+
+function describeStripeKey(key) {
+  if (!key) return { set: false };
+  const m = /^(sk|rk)_(live|test)_/.exec(key);
+  return { set: true, mode: m ? m[2] : 'unknown', restricted: m ? m[1] === 'rk' : false, last4: key.slice(-4) };
+}
+
+// /admin → Setup. Reports what's configured (never the values) and lets the
+// owner save the Stripe secret key without the Cloudflare dashboard.
+async function handleAdminSettings(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+
+  if (request.method === 'POST') {
+    let b; try { b = await request.json(); } catch { b = {}; }
+    if (b.stripeSecretKey !== undefined) {
+      const key = String(b.stripeSecretKey || '').trim();
+      if (!/^(sk|rk)_(live|test)_[A-Za-z0-9]{16,}$/.test(key)) {
+        return new Response(JSON.stringify({ error: "That doesn't look like a Stripe secret key. It starts with rk_live_ (restricted) or sk_live_." }), { status: 400, headers: jsonHeaders(request) });
+      }
+      // Prove it works before saving — a bad key would silently break checkout.
+      const test = await fetch('https://api.stripe.com/v1/customers?limit=1', { headers: { Authorization: `Bearer ${key}` } });
+      if (!test.ok) {
+        const data = await test.json().catch(() => ({}));
+        return new Response(JSON.stringify({ error: `Stripe rejected that key: ${data?.error?.message || test.status}. For a restricted key, give it Write on Customers, Checkout Sessions, Invoices and Invoice Items.` }), { status: 400, headers: jsonHeaders(request) });
+      }
+      await saveStoredConfig(env, 'STRIPE_SECRET_KEY', key);
+    }
+    if (b.rotateCalendarKey) await saveStoredConfig(env, 'CALENDAR_FEED_KEY', randomToken());
+  }
+
+  // A value just saved above isn't on this request's env yet — reload it.
+  env = await withStoredConfig(env.__fromAdmin ? Object.getPrototypeOf(env) : env);
+  const source = (k) => (!env[k] ? null : env.__fromAdmin?.has(k) ? 'admin' : 'cloudflare');
+  let feedKey = env.CALENDAR_FEED_KEY;
+  if (!feedKey) {
+    feedKey = randomToken();
+    await saveStoredConfig(env, 'CALENDAR_FEED_KEY', feedKey);
+  }
+  const origin = ALLOWED_ORIGINS.has(request.headers.get('Origin')) ? request.headers.get('Origin') : 'https://swrvonthego.pro';
+  return new Response(JSON.stringify({
+    stripeKey: { ...describeStripeKey(env.STRIPE_SECRET_KEY), source: source('STRIPE_SECRET_KEY') },
+    webhookSecret: { set: !!env.STRIPE_WEBHOOK_SECRET, source: source('STRIPE_WEBHOOK_SECRET') },
+    calendarFeedUrl: `${origin}/api/calendar.ics?key=${feedKey}`,
+  }), { headers: jsonHeaders(request) });
+}
+
+// iCalendar (RFC 5545) text escaping and 75-octet line folding.
+const icsText = (v) => String(v ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+function icsFold(line) {
+  const bytes = new TextEncoder().encode(line);
+  if (bytes.length <= 75) return line;
+  const out = []; let cur = ''; let curLen = 0;
+  for (const ch of line) {
+    const n = new TextEncoder().encode(ch).length;
+    if (curLen + n > (out.length ? 74 : 75)) { out.push(cur); cur = ''; curLen = 0; }
+    cur += ch; curLen += n;
+  }
+  out.push(cur);
+  return out.join('\r\n ');
+}
+
+// Private calendar feed of booked dates for Google/Apple Calendar to
+// subscribe to. Guarded by an unguessable key (it carries client names and
+// contact details); rotate it from /admin → Setup if the link ever leaks.
+async function handleCalendarFeed(request, env) {
+  const url = new URL(request.url);
+  const given = url.searchParams.get('key') || '';
+  const expected = env.CALENDAR_FEED_KEY || '';
+  let diff = given.length ^ expected.length;
+  for (let i = 0; i < Math.min(given.length, expected.length); i++) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
+  if (!expected || diff !== 0) return new Response('Not found', { status: 404 });
+
+  await ensureBookingsTable(env);
+  await ensureOrdersTable(env);
+  const { results: bookings } = await env.EMAIL_DB.prepare(
+    `SELECT * FROM bookings WHERE status IN ('hold', 'confirmed') AND event_date IS NOT NULL AND event_date != ''`
+  ).all();
+  const { results: orders } = await env.EMAIL_DB.prepare(
+    `SELECT * FROM orders WHERE category = 'event' AND event_date IS NOT NULL
+       AND status IN ('deposit_paid', 'balance_invoiced', 'paid_in_full')`
+  ).all();
+
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const day = (d) => d.replace(/-/g, '');
+  const nextDay = (d) => { const x = new Date(d + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() + 1); return x.toISOString().slice(0, 10).replace(/-/g, ''); };
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SWRV On The Go//Bookings//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    'X-WR-CALNAME:SWRV Bookings', 'X-PUBLISHED-TTL:PT1H', 'REFRESH-INTERVAL;VALUE=DURATION:PT1H'];
+  const addEvent = (uid, date, summary, description, location) => {
+    lines.push('BEGIN:VEVENT', `UID:${uid}`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${day(date)}`, `DTEND;VALUE=DATE:${nextDay(date)}`,
+      `SUMMARY:${icsText(summary)}`, `DESCRIPTION:${icsText(description)}`);
+    if (location) lines.push(`LOCATION:${icsText(location)}`);
+    lines.push('TRANSP:OPAQUE', 'END:VEVENT');
+  };
+  for (const b of bookings || []) {
+    const paid = b.status === 'confirmed';
+    addEvent(`booking-${b.id}@swrvonthego.pro`, b.event_date,
+      `${paid ? '✅' : '⏳'} ${bookingName(b)}${b.event_type ? ' — ' + b.event_type : ''}${paid ? '' : ' (awaiting payment)'}`,
+      [paid ? (b.balance_paid_at ? 'Paid in full' : 'Deposit paid') : 'Awaiting deposit',
+       b.service_price && `Price: ${b.service_price}`, b.email, b.phone, b.details].filter(Boolean).join('\n'),
+      b.location);
+  }
+  for (const o of orders || []) {
+    addEvent(`order-${o.id}@swrvonthego.pro`, o.event_date,
+      `✅ ${o.customer_name || o.customer_email} — ${o.service_name}`,
+      [`$${(o.total_cents / 100).toFixed(2)} · ${o.status.replace(/_/g, ' ')}`, o.customer_email, o.customer_phone].filter(Boolean).join('\n'), null);
+  }
+  lines.push('END:VCALENDAR');
+  return new Response(lines.map(icsFold).join('\r\n') + '\r\n', {
+    headers: { 'Content-Type': 'text/calendar; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' },
+  });
 }
 
 async function sendDepositReceiptEmail(env, order) {
