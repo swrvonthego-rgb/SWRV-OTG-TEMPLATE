@@ -233,7 +233,7 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
     { id: 'socials', question: "Which social accounts should content go to?", type: 'text', optional: true, placeholder: "e.g. @yourbrand on Instagram and TikTok" },
     ...ACCESS_QUESTIONS,
     { id: 'planAround', question: "Anything we should plan around?", sub: "Select all that apply.", type: 'multi', optional: true,
-      options: ['Stage or performance area', 'Power outlets near our spot', 'Livestream needed', 'Another photographer/videographer on-site', 'Food provided for crew', 'Parking or load-in instructions', 'Strict run-of-show / schedule'] },
+      options: ['Stage or performance area', 'Power outlets near our spot', 'Livestream needed', 'Another photographer/videographer on-site', 'Food provided for crew', 'Parking or load-in instructions', 'Strict run-of-show / schedule', 'Outdoor space where a drone can fly (Air Support)'] },
     { id: 'notes', question: "Anything else we should know before the day?", type: 'textarea', optional: true, placeholder: "Special moments to catch, people who must be on camera, things to avoid..." },
   ],
 };

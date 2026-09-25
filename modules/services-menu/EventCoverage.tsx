@@ -16,7 +16,7 @@ interface Props {
 // for SWRV, as fixed, bookable packages instead of an open-ended hourly
 // quote. Internal ids keep their original names so existing orders still
 // match; the display names live in site.config.ts.
-const COVERAGE_TIER_IDS = ['coverage-quick-stop', 'coverage-on-the-go-day', 'coverage-full-convoy'];
+const COVERAGE_TIER_IDS = ['coverage-quick-stop', 'coverage-on-the-go-day', 'coverage-full-convoy', 'coverage-air-support'];
 
 const CATEGORIES = [
   {
