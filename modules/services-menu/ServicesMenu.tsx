@@ -159,7 +159,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           <p className="sm-eyebrow">FULL SERVICE MENU</p>
           <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
           <p className="sm-intro">
-            Everything you need to launch, brand, or scale — from your first logo to your funded launch site. À la carte or bundled.
+            Event content and websites — pick a package, book it, and pay right here. More packages are on the way.
           </p>
           <input
             type="search"
@@ -170,40 +170,6 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             aria-label="Search services"
           />
         </header>
-
-        {/* FEATURED BUNDLES & POPULAR COMBOS */}
-        <section className="sm-featured">
-          <div className="sm-featured-header">
-            <span className="sm-featured-emoji">⭐</span>
-            <div>
-              <h2 className="sm-featured-label">POPULAR STARTING POINTS</h2>
-              <p className="sm-featured-tagline">Most clients start with one of these combos.</p>
-            </div>
-          </div>
-          <div className="sm-featured-grid">
-            <article className="sm-featured-card">
-              <h3>Brand Launch</h3>
-              <p className="sm-featured-items">Complete Branding (logo, colors, vision + mission) + Website + Strategy Call</p>
-              <p className="sm-featured-savings">Usually $975 → <strong>Bundle Save</strong></p>
-            </article>
-            <article className="sm-featured-card">
-              <h3>Artist Production</h3>
-              <p className="sm-featured-items">Vocal Training + Recording Booth + Music Production</p>
-              <p className="sm-featured-savings">Usually $2,630 → <strong>Bundle Save</strong></p>
-            </article>
-            <article className="sm-featured-card">
-              <h3>Video Creator</h3>
-              <p className="sm-featured-items">Promo Video + Color Grading + Video Editing</p>
-              <p className="sm-featured-savings">Usually $1,550 → <strong>Bundle Save</strong></p>
-            </article>
-            <article className="sm-featured-card">
-              <h3>Content Creator</h3>
-              <p className="sm-featured-items">Podcast Launch + Reels + Social Media Strategy</p>
-              <p className="sm-featured-savings">Usually $1,295 → <strong>Bundle Save</strong></p>
-            </article>
-          </div>
-          <p className="sm-featured-note">💡 All services are fully customizable. Secure checkout by Stripe — every major card, plus Apple Pay, Google Pay, and buy-now-pay-later. Book a Strategy Call to build your combo.</p>
-        </section>
 
         {/* SUB-CATEGORIES */}
         {SUB_CATEGORIES.map((sub) => {
@@ -257,12 +223,12 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
         {/* CTA FOOTER */}
         <footer className="sm-footer">
           <p className="sm-footer-eyebrow">DON'T SEE WHAT YOU NEED?</p>
-          <h2 className="sm-footer-title">Custom packages available.</h2>
+          <h2 className="sm-footer-title">More packages are on the way.</h2>
           <p className="sm-footer-body">
-            If you're building something we haven't named yet — a course, a community, a campaign, a creative business with moving parts — let's talk. Most things can be bundled or made à la carte.
+            Music, branding, video and more are being rebuilt into packages. Tell us what you're working on and we'll let you know the moment it's ready.
           </p>
           <a href="#contact" onClick={handleStrategyCallClick} className="sm-cta-btn">
-            Book a Strategy Call →
+            Get In Touch →
           </a>
           <p className="sm-footer-copy">© {new Date().getFullYear()} SWRV On The Go · swrvonthego.pro</p>
         </footer>

@@ -11,7 +11,7 @@ const STEPS = [
   {
     key: 'category',
     bot: "Hey! Welcome to SWRV On The Go 👋\nI'm here to help you find the right creative services — no pressure, just clarity.\n\nWhat are you looking to create or build?",
-    quickReplies: ['🎤 Book SWRV Birdsong', '🎵 Music / Audio', '🎬 Music Video', '✨ Brand Identity', '🌐 Website', '🎙️ Podcast', '📋 Something Else'],
+    quickReplies: ['🎤 Book SWRV Birdsong', '🎬 Event Content', '🌐 Website', '📋 Something Else'],
   },
   {
     key: 'stage',
@@ -31,13 +31,12 @@ const STEPS = [
 ];
 
 // Service category → relevant service IDs
+// Only services currently on offer (SERVICES is already filtered to
+// ACTIVE_SERVICE_IDS in site.config.ts), so no category leads to a dead end.
 const CATEGORY_SERVICES: Record<string, string[]> = {
-  '🎵 Music / Audio':   ['music-production', 'mixing', 'mastering', 'live-recording', 'jingle', 'audio-edit-alacarte'],
-  '🎬 Music Video':     ['music-video', 'video-promo', 'on-site-video', 'short-form-content', 'ai-motion-30'],
-  '✨ Brand Identity':  ['brand-planning', 'logo-design', 'photography', 'content-system'],
-  '🌐 Website':         ['website-presence', 'website-platform', 'website-ecosystem', 'enterprise-ecosystem'],
-  '🎙️ Podcast':         ['podcast-launch', 'podcast-editing', 'voiceover'],
-  '📋 Something Else':  ['brand-planning', 'consulting-call', 'artist-development'],
+  '🎬 Event Content':  ['coverage-quick-stop', 'coverage-on-the-go-day', 'coverage-full-convoy', 'coverage-air-support'],
+  '🌐 Website':        ['website-presence', 'website-platform', 'website-ecosystem'],
+  '📋 Something Else': SERVICES.map((s) => s.id),
 };
 
 const SERVICE_MAP = new Map(SERVICES.map(s => [s.id, s]));
@@ -174,7 +173,7 @@ ${serviceList}
 Write a 2-3 paragraph response that:
 1. Acknowledges what they're building specifically
 2. Recommends 2-3 specific services that fit their stage + budget + timeline (name them exactly)
-3. Ends with a clear next step — either book a Strategy Call ($375) or go straight to booking a service
+3. Ends with a clear next step — book the package right on the site, or reply with any questions
 
 Be conversational. No bullet points. No fluff. Speak like someone who's actually been in the room.`;
 
@@ -192,8 +191,8 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
       setDone(true);
       setTimeout(() => {
         addBot(text, undefined, { label: 'Book a Session →', action: 'book' });
-        setTimeout(() => addBot("You can also browse all 40+ services, or I can answer more questions. What would be most helpful?",
-          ['Show me all services', 'Book a Strategy Call', 'I have a question']), 800);
+        setTimeout(() => addBot("You can also see every package, or I can answer more questions. What would be most helpful?",
+          ['Show me all packages', 'I have a question']), 800);
       }, 300);
     } catch {
       setLoading(false);
@@ -225,7 +224,7 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
       ), 400);
       return;
     }
-    if (qr === 'Show me all services') {
+    if (qr === 'Show me all packages' || qr === 'Show me all services') {
       window.dispatchEvent(new Event('swrv:open-services'));
       setOpen(false);
     } else if (qr === 'Book a Strategy Call') {

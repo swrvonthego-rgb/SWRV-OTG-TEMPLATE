@@ -133,21 +133,21 @@ export const SERVICE_ASSETS: Record<string, {
     required: ['Logo file (PNG, SVG, or AI format)', 'Vision statement', 'Mission statement', 'Images (photos of you, your work, or your space)', 'Written content for each page (copy, bio, services)'],
     optional: ['Video content', 'Professional photography', 'Color palette / brand colors', 'Reference websites you like'],
     formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.txt,.mp4,.mov',
-    note: 'Don\'t have a logo, vision, or mission yet? The Complete Branding Package ($300) covers all of it. The more content you provide, the faster and better the result.',
+    note: 'Don\'t have a logo, vision, or mission yet? Tell us in your notes and we\'ll help you pull it together. The more content you provide, the faster and better the result.',
   },
   'website-platform': {
     title: "What we need for your Website",
     required: ['Logo file + brand colors', 'Vision statement', 'Mission statement', 'Images / photography', 'Written copy for all pages'],
     optional: ['Video content', 'Competitor / reference sites', 'Sitemap or page structure preference', 'Existing domain/hosting credentials'],
     formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.mp4,.mov',
-    note: 'Don\'t have a logo, vision, or mission yet? The Complete Branding Package ($300) covers all of it.',
+    note: 'Don\'t have a logo, vision, or mission yet? Tell us in your notes and we\'ll help you pull it together.',
   },
   'website-ecosystem': {
     title: "What we need for your Website Ecosystem",
     required: ['Full brand guide (logo, colors, fonts)', 'Vision statement', 'Mission statement', 'Photography / visual assets', 'Video content', 'All written copy (or approve SWRV to write it)', 'Domain and hosting access'],
     optional: ['CRM / booking system preferences', 'E-commerce product list if applicable', 'Any API keys (Stripe, etc.)'],
     formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.zip,.mp4,.mov',
-    note: 'Don\'t have a logo, vision, or mission yet? The Complete Branding Package ($300) covers all of it. For Ecosystem builds, a kickoff call is included. Come prepared.',
+    note: 'Don\'t have a logo, vision, or mission yet? Tell us in your notes and we\'ll help you pull it together. For Ecosystem builds, a kickoff call is included. Come prepared.',
   },
   'enterprise-ecosystem': {
     title: "Enterprise Intake — Custom Scope",
@@ -492,7 +492,7 @@ export interface Service {
   featured?: boolean;
 }
 
-export const SERVICES: Service[] = [
+export const ALL_SERVICES: Service[] = [
 
   // ── BRAND IDENTITY ──────────────────────────────────────────────────────
   {
@@ -987,6 +987,24 @@ export const SERVICES: Service[] = [
   },
 ];
 
+// ── WHAT'S ON OFFER RIGHT NOW ─────────────────────────────
+// Only these services appear anywhere on the site (menus, Book & Pay,
+// the Roadmap's recommendations, the chat widget). Everything else in
+// ALL_SERVICES is kept, just hidden until its package is ready — add its
+// id here to bring it back everywhere at once. The Zion performance
+// booking page and the website packages section are separate and stay up.
+export const ACTIVE_SERVICE_IDS = new Set<string>([
+  'coverage-quick-stop',     // On The Go
+  'coverage-on-the-go-day',  // The Drive-Through
+  'coverage-full-convoy',    // The Pull-Up
+  'coverage-air-support',    // Air Support
+  'website-presence',
+  'website-platform',
+  'website-ecosystem',
+]);
+
+export const SERVICES: Service[] = ALL_SERVICES.filter((s) => ACTIVE_SERVICE_IDS.has(s.id));
+
 
 // ── NEED A WEBSITE? — template storefront section ───────────
 // videoUrl: set to your promo video URL (Cloudinary / R2 / CDN) to show
@@ -1271,7 +1289,7 @@ export const SCHEDULING: {
 // ── WEB PACKAGE NOTES (universal disclaimers shown under tiers) ──
 export const WEB_PACKAGE_NOTES = [
   'Every website needs: a logo, a vision statement, a mission statement, images, and video content',
-  'Don\'t have those yet? The Complete Branding Package ($300) covers logo, colors, vision + mission, and vision mapping — that\'s the groundwork the site gets built on',
+  'Don\'t have those yet? Tell us when you book — we\'ll help you pull them together',
   'Domain & hosting not included — we walk you through setup (~$15/yr domain, ~$10–20/mo hosting)',
   'You own your site 100% after delivery — no lock-in, no hidden fees',
   '50% deposit required to begin · 50% due on final delivery',
@@ -1329,7 +1347,7 @@ export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
       'Your logo & brand colors applied',
     ],
     addOns: null,
-    note: 'You provide: logo, vision statement, mission statement, images, and a short bio. No logo or vision yet? The Complete Branding Package ($300) covers it.',
+    note: 'You provide: logo, vision statement, mission statement, images, and a short bio. No logo or vision yet? Tell us when you book and we\'ll help.',
     color: 'border-white/10',
     accentColor: 'text-white',
     badgeBg: '',
