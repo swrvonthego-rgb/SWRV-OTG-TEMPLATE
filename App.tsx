@@ -9,6 +9,7 @@ import { ZionSuitePage } from './pages/ZionSuitePage';
 import { FamilyPage } from './pages/FamilyPage';
 import { AboutShopContactPage } from './pages/AboutShopContactPage';
 import { BookingConfirmedPage } from './pages/BookingConfirmedPage';
+import { SongDetailsPage } from './pages/SongDetailsPage';
 
 // ── Full-bleed, self-contained experiences (own close/back button) ──
 import { Roadmap } from './modules/roadmap/Roadmap';
@@ -152,6 +153,7 @@ const AppShell: React.FC = () => {
         <Route path="/family/birdsong" element={<Birdsong isOpen={true} onClose={() => navigate('/family')} />} />
         <Route path="/about" element={<AboutShopContactPage />} />
         <Route path="/booking-confirmed" element={<BookingConfirmedPage />} />
+        <Route path="/song" element={<SongDetailsPage />} />
         <Route path="*" element={<LegacyRedirect />} />
       </Routes>
 

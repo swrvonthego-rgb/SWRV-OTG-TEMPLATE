@@ -743,6 +743,7 @@ export default {
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
     if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
     if (url.pathname === '/api/checkout')       return handleCheckout(request, env);
+    if (url.pathname === '/api/song-details')   return handleSongDetails(request, env);
     if (url.pathname === '/api/stripe-webhook') return handleStripeWebhook(request, env);
     if (url.pathname === '/api/admin/orders')   return handleAdminOrders(request, env);
     if (url.pathname === '/api/admin/mark-delivered') return handleMarkDelivered(request, env);
@@ -1512,6 +1513,62 @@ async function findOrCreateStripeCustomer(env, { email, name }) {
   if (existing.data?.length) return existing.data[0].id;
   const created = await stripeRequest(env, 'POST', 'customers', { email, name: name || undefined });
   return created.id;
+}
+
+// Custom birthday song brief from the /song page (linked from a client's
+// deposit invoice). Saved as a booking — so it lands in /admin → Bookings
+// and the party date blocks the calendar — and emailed to SWRV. The saved
+// row is the record that matters; the email is best-effort on top.
+async function handleSongDetails(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  if (request.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
+  }
+  let body;
+  try { body = await request.json(); } catch { body = {}; }
+  const name = String(body.name || '').trim().slice(0, 120);
+  const email = String(body.email || '').trim().slice(0, 200);
+  const eventDate = /^\d{4}-\d{2}-\d{2}$/.test(body.eventDate || '') ? body.eventDate : null;
+  const intakeJson = normalizeIntake(body.intake);
+  if (!name || !email.includes('@') || !intakeJson) {
+    return new Response(JSON.stringify({ error: 'Please add your name, email, and the song details.' }), { status: 400, headers: jsonHeaders(request) });
+  }
+  const answers = JSON.parse(intakeJson);
+  const detailsText = answers.map((a) => `${a.question}\n${a.answer}`).join('\n\n');
+
+  let saved = true;
+  try {
+    await saveBooking(env, { source: 'song', firstName: name, email, eventType: 'Custom birthday song', eventDate, details: detailsText });
+  } catch (err) {
+    saved = false;
+    await notifyOwnerOfFailure(env, { source: 'Song details (D1 save)', body, err });
+  }
+  await captureEmail(env, { email, name, source: 'song-details' });
+
+  let emailed = false;
+  try {
+    const safe = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const rows = answers.map((a) => `
+        <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${safe(a.question)}</td>
+            <td style="padding:8px 0;font-size:13px;white-space:pre-wrap;">${safe(a.answer)}</td></tr>`).join('');
+    const { res } = await resendPost(env, {
+      from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+      to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
+      reply_to: email,
+      subject: `🎵 Song details: ${name}${eventDate ? ' — ' + eventDate : ''}`,
+      html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <h2 style="color:#FF4D00;margin:0 0 6px">🎵 Custom song details are in</h2>
+        <p style="margin:0 0 20px;font-size:13px;">${safe(name)} · <a style="color:#e8c96a" href="mailto:${safe(email)}">${safe(email)}</a>${eventDate ? ' · party ' + safe(eventDate) : ''}</p>
+        <table style="width:100%;border-collapse:collapse;">${rows}</table>
+      </div>`,
+    });
+    emailed = !!res?.ok;
+  } catch (_) { /* covered by the saved row, or the error below */ }
+
+  if (!saved && !emailed) {
+    return new Response(JSON.stringify({ error: "Couldn't send that — please email info@swrvonthego.pro directly." }), { status: 500, headers: jsonHeaders(request) });
+  }
+  return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
 }
 
 // Intake answers arrive as [{question, answer}] from the booking modal.

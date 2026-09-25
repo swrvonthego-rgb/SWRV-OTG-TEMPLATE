@@ -4,7 +4,8 @@ import {
   format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, isSameMonth, isSameDay, isBefore, startOfToday,
 } from 'date-fns';
-import { buildIntakeQuestions, type AnswerValue, type Question } from '../../intake.config';
+import { buildIntakeQuestions, type Question } from '../../intake.config';
+import { IntakeFields, FIELD_STYLE, firstMissing, toIntakePayload, type Answers } from '../../components/IntakeFields';
 
 export interface CheckoutService {
   id: string;
@@ -20,20 +21,8 @@ interface Props {
 
 const Gold = '#c8a84b';
 const Orange = '#FF4D00';
-const FIELD_STYLE = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' };
 
 type Step = 'date' | 'intake' | 'details';
-
-function HelpSteps({ steps }: { steps: string[] }) {
-  return (
-    <details className="mt-2 rounded-lg px-3 py-2" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.2)' }}>
-      <summary className="text-xs font-semibold cursor-pointer" style={{ color: '#e8c96a' }}>How do I do this?</summary>
-      <ol className="mt-2 space-y-1.5 list-decimal pl-4">
-        {steps.map((st, i) => <li key={i} className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>{st}</li>)}
-      </ol>
-    </details>
-  );
-}
 
 // Book & Pay: pick a date on the calendar → answer the intake for this
 // service (questions come from intake.config.ts, which derives them from
@@ -45,7 +34,7 @@ export function CheckoutModal({ service, onClose }: Props) {
   const [month, setMonth] = useState(startOfMonth(startOfToday()));
   const [date, setDate] = useState<Date | null>(null);
   const [bookedDates, setBookedDates] = useState<string[]>([]);
-  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
+  const [answers, setAnswers] = useState<Answers>({});
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -80,18 +69,8 @@ export function CheckoutModal({ service, onClose }: Props) {
   // collide with an evening gig.
   const isTaken = (d: Date) => isEvent && bookedDates.includes(dateKey(d));
 
-  const setAnswer = (id: string, value: AnswerValue) => setAnswers((a) => ({ ...a, [id]: value }));
-  const toggleMulti = (id: string, opt: string) => {
-    const cur = Array.isArray(answers[id]) ? (answers[id] as string[]) : [];
-    setAnswer(id, cur.includes(opt) ? cur.filter((o) => o !== opt) : [...cur, opt]);
-  };
-  const isAnswered = (q: Question) => {
-    const v = answers[q.id];
-    return Array.isArray(v) ? v.length > 0 : !!(v && String(v).trim());
-  };
-
   const goToDetails = () => {
-    const missing = questions.find((q) => !q.optional && !isAnswered(q));
+    const missing = firstMissing(questions, answers);
     if (missing) { setError(`Please answer: "${missing.question}"`); return; }
     setError(''); setStep('details');
   };
@@ -104,9 +83,7 @@ export function CheckoutModal({ service, onClose }: Props) {
     setSubmitting(true);
     setError('');
     try {
-      const intake = questions
-        .filter(isAnswered)
-        .map((q) => ({ id: q.id, question: q.question, answer: answers[q.id] }));
+      const intake = toIntakePayload(questions, answers);
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -214,48 +191,7 @@ export function CheckoutModal({ service, onClose }: Props) {
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
                 A few quick questions so we show up ready. Anything marked optional can be skipped.
               </p>
-              {questions.map((q) => (
-                <div key={q.id}>
-                  <p className="text-sm font-semibold text-white">
-                    {q.question}{q.optional && <span className="font-normal" style={{ color: 'rgba(255,255,255,0.35)' }}> · optional</span>}
-                  </p>
-                  {q.sub && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{q.sub}</p>}
-                  {q.help && <HelpSteps steps={q.help} />}
-                  <div className="mt-2">
-                    {(q.type === 'single' || q.type === 'multi') && (
-                      <div className="flex flex-wrap gap-2">
-                        {q.options?.map((opt) => {
-                          const on = q.type === 'multi'
-                            ? Array.isArray(answers[q.id]) && (answers[q.id] as string[]).includes(opt)
-                            : answers[q.id] === opt;
-                          return (
-                            <button key={opt} type="button"
-                              onClick={() => (q.type === 'multi' ? toggleMulti(q.id, opt) : setAnswer(q.id, opt))}
-                              className="px-3 py-1.5 rounded-full text-xs transition-all text-left"
-                              style={{
-                                background: on ? 'rgba(255,77,0,0.18)' : 'rgba(255,255,255,0.04)',
-                                border: `1px solid ${on ? Orange : 'rgba(255,255,255,0.12)'}`,
-                                color: on ? '#fff' : 'rgba(255,255,255,0.7)',
-                              }}>
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {q.type === 'text' && (
-                      <input type="text" value={(answers[q.id] as string) || ''} placeholder={q.placeholder}
-                        onChange={(e) => setAnswer(q.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
-                    )}
-                    {q.type === 'textarea' && (
-                      <textarea rows={3} value={(answers[q.id] as string) || ''} placeholder={q.placeholder}
-                        onChange={(e) => setAnswer(q.id, e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none resize-none" style={FIELD_STYLE} />
-                    )}
-                  </div>
-                </div>
-              ))}
+              <IntakeFields questions={questions} answers={answers} onChange={setAnswers} />
               {error && <p className="text-sm" style={{ color: '#e5484d' }}>{error}</p>}
               <div className="flex gap-2">
                 <button type="button" onClick={() => { setError(''); setStep('date'); }}

@@ -462,7 +462,7 @@ export const STATS = [
 // IMPORTANT: this is the SINGLE SOURCE of services for the entire site.
 // Both the main Services component AND the Roadmap config import from here.
 // Add/remove/edit services in this one place.
-export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'other';
+export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'other';
 
 export interface Service {
   id: string;

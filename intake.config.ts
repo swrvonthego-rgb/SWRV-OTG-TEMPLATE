@@ -205,6 +205,22 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
       options: ['Under $500', '$500 – $1,500', '$1,500 – $5,000', '$5,000 – $10,000', '$10,000+', 'Not established yet'] },
     { id: 'notes', question: "Anything else — constraints, past experiences, goals?", type: 'textarea', optional: true, placeholder: "Context that helps SWRV understand the full picture..." },
   ],
+  // Custom birthday song — also used standalone by the /song page, which
+  // is linked from a client's invoice so the details arrive with the deposit.
+  song: [
+    { id: 'honoree', question: "Who is the song for — and how do you say their name?", sub: "Spell out the pronunciation so it's sung right the first time.", type: 'text', placeholder: "e.g. Name — sounds like: ..." },
+    { id: 'nameStory', question: "Is there a story behind the name?", type: 'textarea', optional: true, placeholder: "Named after someone, a song, a place..." },
+    { id: 'milestone', question: "Which birthday is it?", sub: "Only if you'd like it in the song.", type: 'text', optional: true, placeholder: "e.g. 40th" },
+    { id: 'theme', question: "Is there a theme for the celebration?", type: 'text', optional: true, placeholder: "e.g. a garden party, 70s soul, 'a life in full bloom'" },
+    { id: 'people', question: "Who should the song mention?", sub: "Names (and how to say them), plus who they are to the birthday person.", type: 'textarea', optional: true, placeholder: "e.g. Mom (Denise), best friend Kay, the twins..." },
+    { id: 'memories', question: "Memories, inside jokes, or proud moments to include", type: 'textarea', placeholder: "The more specific, the more it'll feel like theirs." },
+    { id: 'favorites', question: "Favorite things", type: 'textarea', optional: true, placeholder: "Foods, places, sayings, colors, music they love..." },
+    { id: 'style', question: "What style should the song be?", type: 'single',
+      options: ['Soulful & heartfelt (acoustic)', 'Upbeat & fun — everyone sings along', 'Gospel / inspirational', 'R&B / smooth', 'Jazz / classic', 'Afro-soul inspired', 'Surprise me'] },
+    { id: 'mustSay', question: "Anything to include word-for-word — or to stay away from?", type: 'textarea', optional: true, placeholder: "A phrase they always say, a topic to avoid..." },
+    { id: 'notes', question: "Anything else?", type: 'textarea', optional: true, placeholder: "When you'd like the recording, surprises to keep quiet..." },
+  ],
+
   event: [
     { id: 'eventType', question: "What kind of event is it?", type: 'single',
       options: ['Birthday / private party', 'Wedding', 'Corporate or brand event', 'Conference, retreat, or launch', 'Concert or festival', 'Something else'] },
@@ -225,7 +241,7 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
 export const PATH_LABELS: Record<IntakePath, string> = {
   website: 'Website Project', video: 'Video Production', music: 'Music & Audio',
   brand: 'Brand Identity', business: 'Business Documents', podcast: 'Podcast',
-  event: 'Event Coverage', other: 'Project',
+  event: 'Event Coverage', song: 'Custom Song', other: 'Project',
 };
 
 export function getIntakePath(serviceId: string | undefined): IntakePath | null {
