@@ -529,10 +529,17 @@ export const AdminPage: React.FC = () => {
                     )}
                   </div>
                   {(() => {
-                    let intake: { question: string; answer: string }[] = [];
+                    let intake: { id?: string; question: string; answer: string }[] = [];
                     try { intake = o.intake_json ? JSON.parse(o.intake_json) : []; } catch { /* malformed row — show nothing */ }
                     if (!intake.length) return null;
+                    const meta = intake.find((a) => a.id === 'metaAccess')?.answer || '';
+                    const access = meta.startsWith('Yes') ? { label: 'IG/FB access ready', cls: 'text-green-400' }
+                      : meta.startsWith('Not yet') ? { label: 'IG/FB access not set up yet', cls: 'text-yellow-400' }
+                      : meta.startsWith('I need help') ? { label: 'Needs help with IG/FB access', cls: 'text-red-400' }
+                      : null;
                     return (
+                      <>
+                      {access && <div className={`mt-2 text-xs font-semibold ${access.cls}`}>{access.label}</div>}
                       <details className="mt-2 text-xs">
                         <summary className="cursor-pointer text-white/40 hover:text-white/70">Intake answers ({intake.length})</summary>
                         <div className="mt-2 space-y-1.5">
@@ -544,6 +551,7 @@ export const AdminPage: React.FC = () => {
                           ))}
                         </div>
                       </details>
+                      </>
                     );
                   })()}
                 </div>

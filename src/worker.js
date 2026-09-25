@@ -1521,6 +1521,7 @@ async function findOrCreateStripeCustomer(env, { email, name }) {
 function normalizeIntake(intake) {
   if (!Array.isArray(intake)) return null;
   const clean = intake.slice(0, 40).map((item) => ({
+    id: String(item?.id ?? '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50),
     question: String(item?.question ?? '').slice(0, 300),
     answer: String(Array.isArray(item?.answer) ? item.answer.join(', ') : (item?.answer ?? '')).slice(0, 2000),
   })).filter((item) => item.question && item.answer);
@@ -1678,6 +1679,22 @@ async function sendDepositReceiptEmail(env, order) {
   } catch (_) { /* Stripe's own receipt still goes out even if this fails */ }
 }
 
+// Reads the Event intake's account-access answers (ids 'metaAccess' /
+// 'otherAccess' in intake.config.ts) into lines for the booking email, so
+// whether SWRV can actually post is known before the day, not at the door.
+function accessStatusLines(answers) {
+  const find = (id) => (answers.find((a) => a.id === id) || {}).answer || '';
+  const meta = find('metaAccess');
+  const other = find('otherAccess');
+  const lines = [];
+  if (meta.startsWith('Yes')) lines.push(['#46a758', '✅ Instagram / Facebook access: ready']);
+  else if (meta.startsWith('Not yet')) lines.push(['#e8c96a', "⏳ Instagram / Facebook access: not set up yet — they'll do it before the event. Check it's there before you go."]);
+  else if (meta.startsWith('I need help')) lines.push(['#e5484d', '⚠️ Instagram / Facebook access: they need help setting it up — reach out before the event.']);
+  if (other.includes('one-time link')) lines.push(['#e8c96a', '📩 TikTok / other: sending the login through a one-time link — watch for it.']);
+  else if (other.includes('on-site')) lines.push(['#e8c96a', '🔑 TikTok / other: they\'ll sign you in on-site — leave time for it at setup.']);
+  return lines;
+}
+
 // Sent to SWRV once a deposit is actually paid (not when checkout merely
 // starts), with everything the client answered in the booking intake.
 async function sendOwnerOrderEmail(env, order) {
@@ -1696,6 +1713,7 @@ async function sendOwnerOrderEmail(env, order) {
       <p style="margin:0 0 16px;font-size:15px;"><strong>${safe(order.service_name)}</strong> · $${(order.total_cents / 100).toFixed(2)} total · $${(order.deposit_cents / 100).toFixed(2)} paid</p>
       <p style="margin:0 0 4px;font-size:13px;">${safe(order.customer_name)} · <a style="color:#e8c96a" href="mailto:${safe(order.customer_email)}">${safe(order.customer_email)}</a>${order.customer_phone ? ' · ' + safe(order.customer_phone) : ''}</p>
       <p style="margin:0 0 20px;font-size:13px;color:#8a8070;">${when}</p>
+      ${accessStatusLines(answers).map(([color, text]) => `<p style="margin:0 0 8px;font-size:13px;font-weight:600;color:${color};">${safe(text)}</p>`).join('')}
       ${rows ? `<p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Intake</p><table style="width:100%;border-collapse:collapse;">${rows}</table>` : '<p style="color:#8a8070;font-size:13px;">No intake answers.</p>'}
     </div>`;
     await resendPost(env, {

@@ -24,6 +24,17 @@ const FIELD_STYLE = { background: 'rgba(255,255,255,0.05)', border: '1px solid r
 
 type Step = 'date' | 'intake' | 'details';
 
+function HelpSteps({ steps }: { steps: string[] }) {
+  return (
+    <details className="mt-2 rounded-lg px-3 py-2" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.2)' }}>
+      <summary className="text-xs font-semibold cursor-pointer" style={{ color: '#e8c96a' }}>How do I do this?</summary>
+      <ol className="mt-2 space-y-1.5 list-decimal pl-4">
+        {steps.map((st, i) => <li key={i} className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>{st}</li>)}
+      </ol>
+    </details>
+  );
+}
+
 // Book & Pay: pick a date on the calendar → answer the intake for this
 // service (questions come from intake.config.ts, which derives them from
 // the service catalog) → pay 50% through a Stripe Checkout Session. The
@@ -95,7 +106,7 @@ export function CheckoutModal({ service, onClose }: Props) {
     try {
       const intake = questions
         .filter(isAnswered)
-        .map((q) => ({ question: q.question, answer: answers[q.id] }));
+        .map((q) => ({ id: q.id, question: q.question, answer: answers[q.id] }));
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -209,6 +220,7 @@ export function CheckoutModal({ service, onClose }: Props) {
                     {q.question}{q.optional && <span className="font-normal" style={{ color: 'rgba(255,255,255,0.35)' }}> · optional</span>}
                   </p>
                   {q.sub && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{q.sub}</p>}
+                  {q.help && <HelpSteps steps={q.help} />}
                   <div className="mt-2">
                     {(q.type === 'single' || q.type === 'multi') && (
                       <div className="flex flex-wrap gap-2">

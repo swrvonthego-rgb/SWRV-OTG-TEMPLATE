@@ -1,4 +1,4 @@
-import { SERVICES, SERVICE_SUBCATEGORIES, SERVICE_ASSETS, type IntakePath } from './site.config';
+import { SERVICES, SERVICE_SUBCATEGORIES, SERVICE_ASSETS, SOCIAL_ACCESS, type IntakePath } from './site.config';
 
 // ════════════════════════════════════════════════════════════
 // intake.config.ts — the intake questions, tied to the service catalog
@@ -26,6 +26,8 @@ export interface Question {
   options?: string[];
   optional?: boolean;
   placeholder?: string;
+  // Step-by-step instructions shown under a "How do I do this?" toggle.
+  help?: string[];
 }
 
 // ── UNIVERSAL BUDGET QUESTION ─────────────────────────────────────────
@@ -44,6 +46,56 @@ export const BUDGET_Q: Question = {
     "Not sure — show me options",
   ],
 };
+
+// ── ACCOUNT ACCESS (event path) ───────────────────────────────────────
+// Real-time posting at an event needs access to the client's accounts.
+// This never collects a password: Instagram/Facebook access is granted
+// through Meta Business Suite (revocable, no password shared), and for
+// anything that truly needs a login the client sends it through a
+// self-destructing link outside this site. 'metaAccess' / 'otherAccess'
+// ids are read back by the Worker to flag access status in the booking
+// email — keep them stable.
+const META_ADD_STEP = SOCIAL_ACCESS.metaBusinessId
+  ? `Under Users → Partners, tap Add → "Give a partner access to your assets" and enter SWRV's Business ID: ${SOCIAL_ACCESS.metaBusinessId}.`
+  : `Under Users → People, tap Add people and enter ${SOCIAL_ACCESS.accessEmail}.`;
+
+export const ACCESS_QUESTIONS: Question[] = [
+  {
+    id: 'metaAccess',
+    question: "Have you given SWRV posting access to your Instagram / Facebook?",
+    sub: "No password needed — you add us in Meta Business Suite, and remove us with one tap after the event.",
+    type: 'single',
+    options: [
+      "Yes — SWRV is added in Meta Business Suite",
+      "Not yet — I'll do it before the event",
+      "I need help setting it up",
+      "Not posting to Instagram or Facebook",
+    ],
+    help: [
+      "Open business.facebook.com/settings on a computer, or the Meta Business Suite app → Settings.",
+      META_ADD_STEP,
+      "Select your Instagram account (and Facebook Page) and turn on content access — creating and publishing posts, reels and stories. Leave everything else off.",
+      "After the event, remove SWRV from the same screen. Your password never changes hands, so there's nothing to reset.",
+    ],
+  },
+  {
+    id: 'otherAccess',
+    question: "TikTok or any other account that isn't in Meta Business Suite?",
+    sub: "Never type a password into this form, email, or a text message.",
+    type: 'single',
+    optional: true,
+    options: [
+      "Not needed — Instagram / Facebook only",
+      "I'll sign SWRV in on-site before the event starts",
+      "I'll send the login through a one-time link",
+    ],
+    help: [
+      "Easiest: when we arrive, you sign in on our device yourself — you approve any login code on your own phone, and we never see the password.",
+      "If you can't be there: go to onetimesecret.com (free, no account), paste the login, and send us the link. It deletes itself the moment we open it.",
+      "Either way, change that password after the event.",
+    ],
+  },
+];
 
 // ── INTAKE PATHS BY SERVICE GROUP ─────────────────────────────────────
 export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
@@ -163,6 +215,7 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
       options: ['Under 50', '50 – 150', '150 – 300', '300+'] },
     { id: 'onsiteContact', question: "Who's our point of contact on the day?", sub: "Name and phone of whoever will be running things on-site.", type: 'text', placeholder: "e.g. Tasha — (555) 123-4567" },
     { id: 'socials', question: "Which social accounts should content go to?", type: 'text', optional: true, placeholder: "e.g. @yourbrand on Instagram and TikTok" },
+    ...ACCESS_QUESTIONS,
     { id: 'planAround', question: "Anything we should plan around?", sub: "Select all that apply.", type: 'multi', optional: true,
       options: ['Stage or performance area', 'Power outlets near our spot', 'Livestream needed', 'Another photographer/videographer on-site', 'Food provided for crew', 'Parking or load-in instructions', 'Strict run-of-show / schedule'] },
     { id: 'notes', question: "Anything else we should know before the day?", type: 'textarea', optional: true, placeholder: "Special moments to catch, people who must be on camera, things to avoid..." },

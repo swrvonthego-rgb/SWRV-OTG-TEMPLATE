@@ -361,6 +361,19 @@ export const BRAND = {
   ctaUrl: 'https://swrvonthego.pro/services',
 } as const;
 
+// ── SOCIAL ACCOUNT ACCESS ──────────────────────────────────
+// How clients give SWRV posting access for event coverage and social
+// management WITHOUT sharing a password (see the Event intake in
+// intake.config.ts). Clients add SWRV in Meta Business Suite:
+//   - metaBusinessId set  -> they add SWRV as a *partner* by this ID
+//     (Business Suite -> Settings -> Business info shows yours). Cleanest:
+//     access is tied to the SWRV business, not a person.
+//   - metaBusinessId empty -> they add accessEmail as a *person* instead.
+export const SOCIAL_ACCESS = {
+  metaBusinessId: '',
+  accessEmail: 'info@swrvonthego.pro',
+} as const;
+
 // ── BRAND COLOR TOKENS ─────────────────────────────────────
 // These are the source of truth. Tailwind reads them via tailwind.config.js
 // (using the named tokens like `lion-orange`). Modules can also reference

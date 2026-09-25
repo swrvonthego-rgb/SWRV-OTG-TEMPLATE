@@ -227,6 +227,14 @@ export const ProjectIntake: React.FC<Props> = ({ isOpen, onClose, serviceId, ser
               </div>
               <h2 className="text-xl font-black text-white mb-2 leading-tight">{currentQ.question}</h2>
               {currentQ.sub && <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.4)' }}>{currentQ.sub}</p>}
+              {currentQ.help && (
+                <details className="mb-5 rounded-lg px-4 py-3" style={{ background: 'rgba(200,168,75,0.06)', border: '1px solid rgba(200,168,75,0.2)' }}>
+                  <summary className="text-sm font-semibold cursor-pointer" style={{ color: '#e8c96a' }}>How do I do this?</summary>
+                  <ol className="mt-2 space-y-2 list-decimal pl-5">
+                    {currentQ.help.map((st, i) => <li key={i} className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>{st}</li>)}
+                  </ol>
+                </details>
+              )}
 
               {/* Options */}
               {currentQ.options && (
