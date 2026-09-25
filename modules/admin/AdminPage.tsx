@@ -32,7 +32,36 @@ interface BookingRow {
   details: string | null;
   service_price: string | null;
   referral_code: string | null;
+  status: 'hold' | 'confirmed' | 'released' | 'info' | null;
+  hold_expires_at: string | null;
+  stripe_invoice_id: string | null;
+  balance_invoice_id: string | null;
+  paid_at: string | null;
+  balance_paid_at: string | null;
+  reminded_at: string | null;
   created_at: string;
+}
+
+// D1's datetime('now') values are UTC without a zone marker.
+const parseUtc = (v: string | null) => (v ? new Date(v.replace(' ', 'T') + 'Z') : null);
+
+function bookingState(b: BookingRow) {
+  if (b.status === 'info') return { key: 'info', label: 'Info only', cls: 'text-white/40 border-white/15' };
+  if (b.status === 'released') return { key: 'released', label: 'Released', cls: 'text-white/40 border-white/15' };
+  if (b.status === 'confirmed') {
+    return b.balance_paid_at
+      ? { key: 'paid', label: 'Paid in full', cls: 'text-green-400 border-green-400/40' }
+      : { key: 'paid', label: 'Deposit paid', cls: 'text-green-400 border-green-400/40' };
+  }
+  const expires = parseUtc(b.hold_expires_at);
+  if (expires && expires.getTime() < Date.now()) {
+    return { key: 'overdue', label: 'Overdue — no payment', cls: 'text-red-400 border-red-400/40' };
+  }
+  return {
+    key: 'hold',
+    label: `Awaiting payment${expires ? ' · until ' + expires.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}`,
+    cls: 'text-yellow-400 border-yellow-400/40',
+  };
 }
 
 interface OrderRow {
@@ -139,14 +168,41 @@ export const AdminPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authedEmail]);
 
-  useEffect(() => {
-    if (!authedEmail || tab !== 'bookings') return;
+  const fetchBookings = () => {
     setLoadingBookings(true);
     fetch('/api/admin/bookings', { credentials: 'same-origin' })
       .then((res) => (res.ok ? res.json() : { bookings: [] }))
       .then((data) => setBookings(data.bookings || []))
       .finally(() => setLoadingBookings(false));
+  };
+
+  useEffect(() => {
+    if (!authedEmail || tab !== 'bookings') return;
+    fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authedEmail, tab]);
+
+  const [bookingActionId, setBookingActionId] = useState<number | null>(null);
+  const [bookingActionError, setBookingActionError] = useState('');
+  const updateBooking = async (id: number, action: 'release' | 'extend' | 'restore' | 'mark_paid') => {
+    setBookingActionError('');
+    setBookingActionId(id);
+    try {
+      const res = await fetch('/api/admin/booking-status', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+      fetchBookings();
+    } catch (err: any) {
+      setBookingActionError(err?.message || 'Update failed');
+    } finally {
+      setBookingActionId(null);
+    }
+  };
 
   const fetchOrders = () => {
     if (!authedEmail) return;
@@ -414,12 +470,24 @@ export const AdminPage: React.FC = () => {
               Bookings {bookings.length ? `(${bookings.length})` : ''}
             </h2>
             <p className="text-white/30 text-xs">
-              Every inquiry lands here the moment it's submitted — before the client is
-              redirected to pay the $100 deposit. There's no Stripe webhook wired up, so
-              payment status isn't tracked here; check the Stripe dashboard to confirm a
-              deposit actually landed.
+              A new booking holds its date for 7 days while it waits for a deposit. Payment is
+              detected automatically from Stripe and the booking turns green. Still unpaid after
+              7 days? You get an email, and it shows as overdue here: release the date, give
+              7 more days, or mark it paid if they paid another way.
             </p>
+            {bookings.length > 0 && (() => {
+              const counts = bookings.reduce<Record<string, number>>((c, b) => {
+                const k = bookingState(b).key; c[k] = (c[k] || 0) + 1; return c;
+              }, {});
+              const parts = [
+                counts.overdue && <span key="o" className="text-red-400">{counts.overdue} overdue</span>,
+                counts.hold && <span key="h" className="text-yellow-400">{counts.hold} awaiting payment</span>,
+                counts.paid && <span key="p" className="text-green-400">{counts.paid} paid</span>,
+              ].filter(Boolean);
+              return parts.length ? <p className="text-xs mt-2 flex gap-3">{parts}</p> : null;
+            })()}
           </div>
+          {bookingActionError && <p className="text-red-400 text-xs mb-3">{bookingActionError}</p>}
           {loadingBookings ? (
             <p className="text-white/40 text-sm">Loading…</p>
           ) : bookings.length === 0 ? (
@@ -442,13 +510,40 @@ export const AdminPage: React.FC = () => {
                           {b.email ? ` · ${b.email}` : ''}
                         </div>
                       </div>
-                      <div className="text-xs text-right">
-                        <div className="text-white/30">{b.event_date || '—'}</div>
-                        <div className="text-white/30">{new Date(b.created_at).toLocaleDateString()}</div>
+                      <div className="text-xs text-right flex flex-col items-end gap-1">
+                        <div className="text-white/60">{b.event_date || '—'}</div>
+                        <span className={`px-2 py-0.5 rounded-full border text-[10px] uppercase tracking-wider ${bookingState(b).cls}`}>
+                          {bookingState(b).label}
+                        </span>
                       </div>
                     </button>
                     {expandedBookingId === b.id && (
                       <div className="px-4 pb-4 text-xs space-y-2">
+                        {(() => {
+                          const st = bookingState(b).key;
+                          const busy = bookingActionId === b.id;
+                          const btn = (label: string, action: 'release' | 'extend' | 'restore' | 'mark_paid', cls: string) => (
+                            <button key={action} disabled={busy} onClick={() => updateBooking(b.id, action)}
+                              className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all disabled:opacity-50 ${cls}`}>
+                              {busy ? '…' : label}
+                            </button>
+                          );
+                          const actions =
+                            st === 'hold' ? [btn('Mark paid', 'mark_paid', 'border-green-400/50 text-green-400 hover:bg-green-400/10'), btn('Release date', 'release', 'border-white/20 text-white/60 hover:bg-white/10')]
+                            : st === 'overdue' ? [btn('Give 7 more days', 'extend', 'border-yellow-400/50 text-yellow-400 hover:bg-yellow-400/10'), btn('Mark paid', 'mark_paid', 'border-green-400/50 text-green-400 hover:bg-green-400/10'), btn('Release date', 'release', 'border-red-400/50 text-red-400 hover:bg-red-400/10')]
+                            : st === 'paid' ? [btn('Release date (cancelled)', 'release', 'border-white/20 text-white/50 hover:bg-white/10')]
+                            : st === 'released' ? [btn('Put back on hold', 'restore', 'border-white/20 text-white/60 hover:bg-white/10')]
+                            : [];
+                          return (
+                            <>
+                              {actions.length > 0 && <div className="flex flex-wrap gap-2 pb-1">{actions}</div>}
+                              {b.paid_at && <div><span className="text-white/40 uppercase tracking-widest">Deposit paid: </span><span className="text-white/70">{parseUtc(b.paid_at)?.toLocaleString()}</span></div>}
+                              {b.balance_paid_at && <div><span className="text-white/40 uppercase tracking-widest">Balance paid: </span><span className="text-white/70">{parseUtc(b.balance_paid_at)?.toLocaleString()}</span></div>}
+                              {b.stripe_invoice_id && <div><span className="text-white/40 uppercase tracking-widest">Stripe invoice: </span><span className="text-white/70">{b.stripe_invoice_id}</span></div>}
+                              <div><span className="text-white/40 uppercase tracking-widest">Received: </span><span className="text-white/70">{parseUtc(b.created_at)?.toLocaleString()}</span></div>
+                            </>
+                          );
+                        })()}
                         {b.phone && <div><span className="text-white/40 uppercase tracking-widest">Phone: </span><span className="text-white/70">{b.phone}</span></div>}
                         {b.location && <div><span className="text-white/40 uppercase tracking-widest">Location: </span><span className="text-white/70">{b.location}</span></div>}
                         {b.service_price && <div><span className="text-white/40 uppercase tracking-widest">Quoted price: </span><span className="text-white/70">{b.service_price}</span></div>}

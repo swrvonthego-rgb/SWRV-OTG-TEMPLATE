@@ -240,8 +240,35 @@ async function ensureBookingsTable(env) {
         details       TEXT,
         service_price TEXT,
         referral_code TEXT,
+        status             TEXT DEFAULT 'hold',
+        hold_expires_at    TEXT,
+        stripe_invoice_id  TEXT,
+        balance_invoice_id TEXT,
+        paid_at            TEXT,
+        balance_paid_at    TEXT,
+        reminded_at        TEXT,
         created_at    TEXT DEFAULT (datetime('now'))
       )`
+    ).run();
+    // Payment tracking, added after the table first shipped. Each ALTER is a
+    // no-op (duplicate column, swallowed) once it has run.
+    for (const col of [
+      "status TEXT DEFAULT 'hold'", 'hold_expires_at TEXT', 'stripe_invoice_id TEXT',
+      'balance_invoice_id TEXT', 'paid_at TEXT', 'balance_paid_at TEXT', 'reminded_at TEXT',
+    ]) {
+      try { await env.EMAIL_DB.prepare(`ALTER TABLE bookings ADD COLUMN ${col}`).run(); } catch (_) {}
+    }
+    // Rows from before payment tracking: song/access submissions are
+    // information only; anything else gets the standard 7-day hold counted
+    // from when it came in. Idempotent — only touches rows still missing it.
+    await env.EMAIL_DB.prepare(
+      `UPDATE bookings SET status = 'info' WHERE source IN ('song', 'access') AND (status IS NULL OR status = 'hold')`
+    ).run();
+    await env.EMAIL_DB.prepare(
+      `UPDATE bookings SET status = 'hold' WHERE status IS NULL`
+    ).run();
+    await env.EMAIL_DB.prepare(
+      `UPDATE bookings SET hold_expires_at = datetime(created_at, '+7 days') WHERE status = 'hold' AND hold_expires_at IS NULL`
     ).run();
     __bookingsTableReady = true;
   } catch (_) { /* table may already exist with a compatible schema */ }
@@ -250,11 +277,23 @@ async function ensureBookingsTable(env) {
 // Saves one booking inquiry. Throws on failure (unlike captureEmail) —
 // callers decide whether that should block the response, since this
 // table is the primary record, not a best-effort mailing list.
+// Booking status lifecycle (bookings.status):
+//   'hold'      — awaiting payment. Holds the date for HOLD_DAYS; the daily
+//                 sweep then asks the owner to keep or release it.
+//   'confirmed' — deposit paid (Stripe invoice or the $100 Payment Link,
+//                 detected by webhook and re-checked daily), or marked paid
+//                 by hand in /admin.
+//   'released'  — the owner let the date go. Never blocks the calendar.
+//   'info'      — song/access details: information only, never blocks.
+const HOLD_DAYS = 7;
+const INFO_SOURCES = new Set(['song', 'access']);
+
 async function saveBooking(env, { source, firstName, lastName, email, phone, eventType, eventDate, location, details, servicePrice, referralCode }) {
   await ensureBookingsTable(env);
+  const isInfo = INFO_SOURCES.has(source);
   const result = await env.EMAIL_DB.prepare(
-    `INSERT INTO bookings (source, first_name, last_name, email, phone, event_type, event_date, location, details, service_price, referral_code)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO bookings (source, first_name, last_name, email, phone, event_type, event_date, location, details, service_price, referral_code, status, hold_expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${isInfo ? 'NULL' : `datetime('now', '+${HOLD_DAYS} days')`})`
   ).bind(
     source,
     firstName || null,
@@ -267,6 +306,7 @@ async function saveBooking(env, { source, firstName, lastName, email, phone, eve
     details || null,
     servicePrice || null,
     referralCode || null,
+    isInfo ? 'info' : 'hold',
   ).run();
   return result.meta?.last_row_id ?? null;
 }
@@ -753,6 +793,7 @@ export default {
     if (url.pathname === '/api/admin-logout')   return handleAdminLogout(request, env);
     if (url.pathname === '/api/admin/emails')   return handleAdminEmails(request, env);
     if (url.pathname === '/api/admin/bookings') return handleAdminBookings(request, env);
+    if (url.pathname === '/api/admin/booking-status') return handleAdminBookingStatus(request, env);
     if (url.pathname === '/api/admin/submissions') return handleAdminSubmissions(request, env);
     if (url.pathname === '/api/admin/tenants')  return handleAdminTenants(request, env);
 
@@ -791,15 +832,24 @@ export default {
   // only automatic (non-click) invoice path, and only for orders tied to
   // a real calendar date. See the header comment above runBalanceInvoiceSweep.
   async scheduled(controller, env, ctx) {
-    try {
-      await runBalanceInvoiceSweep(env);
-    } catch (err) {
-      // A sweep that dies silently means balances quietly never get
-      // invoiced — log it for Cloudflare and tell the owner.
-      console.error('Balance invoice sweep failed:', err?.stack || err);
-      await notifyOwnerOfFailure(env, { source: 'Daily balance invoice sweep', body: null, err });
-      throw err;
+    // Each sweep runs even if the other fails. A sweep that dies silently
+    // means balances never get invoiced or overdue holds never surface —
+    // so log it for Cloudflare and tell the owner.
+    const sweeps = [
+      ['Daily balance invoice sweep', runBalanceInvoiceSweep],
+      ['Daily booking payment sweep', runBookingPaymentSweep],
+    ];
+    let failed = null;
+    for (const [name, sweep] of sweeps) {
+      try {
+        await sweep(env);
+      } catch (err) {
+        failed = err;
+        console.error(`${name} failed:`, err?.stack || err);
+        await notifyOwnerOfFailure(env, { source: name, body: null, err });
+      }
     }
+    if (failed) throw failed;
   },
 };
 
@@ -1185,11 +1235,13 @@ async function handleBookedDates(request, env) {
     await ensureBookingsTable(env);
     const today = new Date().toISOString().slice(0, 10);
     await ensureOrdersTable(env);
-    // Inquiries (bookings) plus event orders with a PAID deposit — an
-    // unpaid checkout that was abandoned mustn't hold a date hostage.
+    // Bookings that are paid or inside their payment hold (a released date
+    // or an info-only song/access form never blocks), plus event orders
+    // with a PAID deposit — an abandoned checkout mustn't hold a date.
     const { results } = await env.EMAIL_DB.prepare(
       `SELECT event_date FROM bookings
-        WHERE event_date IS NOT NULL AND event_date != '' AND event_date >= ?1
+        WHERE status IN ('hold', 'confirmed')
+          AND event_date IS NOT NULL AND event_date != '' AND event_date >= ?1
        UNION
        SELECT event_date FROM orders
         WHERE category = 'event' AND status IN ('deposit_paid', 'balance_invoiced')
@@ -1212,7 +1264,7 @@ async function handleAdminBookings(request, env) {
   if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
   await ensureBookingsTable(env);
   const { results } = await env.EMAIL_DB.prepare(
-    'SELECT id, source, first_name, last_name, email, phone, event_type, event_date, location, details, service_price, referral_code, created_at FROM bookings ORDER BY created_at DESC LIMIT 500'
+    'SELECT id, source, first_name, last_name, email, phone, event_type, event_date, location, details, service_price, referral_code, status, hold_expires_at, stripe_invoice_id, balance_invoice_id, paid_at, balance_paid_at, reminded_at, created_at FROM bookings ORDER BY created_at DESC LIMIT 500'
   ).all();
   return new Response(JSON.stringify({ bookings: results }), { headers: jsonHeaders(request) });
 }
@@ -1526,16 +1578,17 @@ async function findOrCreateStripeCustomer(env, { email, name }) {
 
 // Details a client sends from a link we gave them (usually on their
 // invoice), outside the Book & Pay flow:
-//   'song'   — /song: custom birthday song brief. The party date is saved as
-//              the booking's event date, so it blocks the calendar.
+//   'song'   — /song: custom birthday song brief.
 //   'access' — /access: how they're giving SWRV posting access (no
-//              passwords). The date goes in the notes only — confirming
-//              access must never block a calendar date on its own.
+//              passwords).
+// Both are information only (status 'info'): the date goes in the notes and
+// never blocks the calendar — the client's actual booking row does that,
+// with payment tracking. A stranger filling in a form can't hold a date.
 // Saved as a booking (/admin -> Bookings) and emailed to SWRV. The saved
 // row is the record that matters; the email is best-effort on top.
 const CLIENT_DETAILS = {
-  song:   { source: 'song',   eventType: 'Custom birthday song', blocksDate: true,  emoji: '🎵', heading: 'Custom song details are in',  subject: 'Song details' },
-  access: { source: 'access', eventType: 'Posting access',       blocksDate: false, emoji: '🔑', heading: 'Posting access update',       subject: 'Posting access' },
+  song:   { source: 'song',   eventType: 'Custom birthday song', emoji: '🎵', heading: 'Custom song details are in',  subject: 'Song details' },
+  access: { source: 'access', eventType: 'Posting access',       emoji: '🔑', heading: 'Posting access update',       subject: 'Posting access' },
 };
 
 async function handleClientDetails(request, env, kind) {
@@ -1554,12 +1607,11 @@ async function handleClientDetails(request, env, kind) {
     return new Response(JSON.stringify({ error: 'Please add your name, email, and your answers.' }), { status: 400, headers: jsonHeaders(request) });
   }
   const answers = JSON.parse(intakeJson);
-  const detailsText = (!cfg.blocksDate && eventDate ? `Event date: ${eventDate}\n\n` : '')
-    + answers.map((a) => `${a.question}\n${a.answer}`).join('\n\n');
+  const detailsText = answers.map((a) => `${a.question}\n${a.answer}`).join('\n\n');
 
   let saved = true;
   try {
-    await saveBooking(env, { source: cfg.source, firstName: name, email, eventType: cfg.eventType, eventDate: cfg.blocksDate ? eventDate : null, details: detailsText });
+    await saveBooking(env, { source: cfg.source, firstName: name, email, eventType: cfg.eventType, eventDate, details: detailsText });
   } catch (err) {
     saved = false;
     await notifyOwnerOfFailure(env, { source: `${cfg.subject} (D1 save)`, body, err });
@@ -1725,7 +1777,13 @@ async function handleStripeWebhook(request, env) {
         ).bind(session.payment_intent || null, order.id).run();
         await sendDepositReceiptEmail(env, order);
         await sendOwnerOrderEmail(env, order);
+      } else if (session.payment_link) {
+        // The fixed $100 Zion/booking deposit Payment Link — no order row,
+        // so match it to the payer's booking by email.
+        await confirmPaymentLinkDeposit(env, session);
       }
+    } else if (event.type === 'invoice.paid') {
+      await handleInvoicePaid(env, event.data.object);
     }
   } catch (err) {
     // Stripe retries on any non-2xx, so a failure here must still return
@@ -1734,6 +1792,154 @@ async function handleStripeWebhook(request, env) {
     await notifyOwnerOfFailure(env, { source: 'Stripe webhook processing', body: event, err });
   }
   return new Response('ok', { status: 200 });
+}
+
+// ─────────────────────────────────────────────────────────
+// BOOKING PAYMENT TRACKING — see the status lifecycle above saveBooking.
+// ─────────────────────────────────────────────────────────
+
+const esc = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function bookingName(b) {
+  return [b.first_name, b.last_name].filter(Boolean).join(' ') || b.email || `Booking #${b.id}`;
+}
+
+async function emailOwner(env, subject, bodyHtml) {
+  const { res } = await resendPost(env, {
+    from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+    to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
+    subject,
+    html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">${bodyHtml}
+      <p style="margin:20px 0 0;font-size:12px;color:#8a8070;">Manage bookings at <a style="color:#e8c96a" href="https://swrvonthego.pro/admin">swrvonthego.pro/admin</a> → Bookings.</p></div>`,
+  });
+  return !!res?.ok;
+}
+
+// Moves a booking to confirmed (deposit) or records its balance, once —
+// safe to call again for the same payment (webhook retries, daily re-check).
+async function markBookingPaid(env, booking, which) {
+  if (which === 'deposit') {
+    if (booking.status === 'confirmed' && booking.paid_at) return false;
+    await env.EMAIL_DB.prepare(
+      `UPDATE bookings SET status = 'confirmed', paid_at = COALESCE(paid_at, datetime('now')) WHERE id = ?`
+    ).bind(booking.id).run();
+  } else {
+    if (booking.balance_paid_at) return false;
+    await env.EMAIL_DB.prepare(
+      `UPDATE bookings SET status = 'confirmed', balance_paid_at = datetime('now') WHERE id = ?`
+    ).bind(booking.id).run();
+  }
+  const when = booking.event_date ? ` for ${esc(booking.event_date)}` : '';
+  await emailOwner(env,
+    which === 'deposit' ? `💰 Deposit paid — ${bookingName(booking)}${booking.event_date ? ' · ' + booking.event_date : ''}` : `✅ Paid in full — ${bookingName(booking)}`,
+    `<h2 style="color:#46a758;margin:0 0 8px">${which === 'deposit' ? '💰 Deposit paid — date locked in' : '✅ Paid in full'}</h2>
+     <p style="margin:0;font-size:14px;">${esc(bookingName(booking))}${when}${booking.event_type ? ' · ' + esc(booking.event_type) : ''}</p>`,
+  ).catch(() => {});
+  return true;
+}
+
+async function handleInvoicePaid(env, invoice) {
+  await ensureBookingsTable(env);
+  const deposit = await env.EMAIL_DB.prepare('SELECT * FROM bookings WHERE stripe_invoice_id = ?').bind(invoice.id).first();
+  if (deposit) await markBookingPaid(env, deposit, 'deposit');
+  const balance = await env.EMAIL_DB.prepare('SELECT * FROM bookings WHERE balance_invoice_id = ?').bind(invoice.id).first();
+  if (balance) await markBookingPaid(env, balance, 'balance');
+
+  // Self-serve orders' balance invoices (sent by invoiceBalance).
+  await ensureOrdersTable(env);
+  await env.EMAIL_DB.prepare(
+    `UPDATE orders SET status = 'paid_in_full', balance_paid_at = datetime('now')
+      WHERE balance_invoice_id = ? AND balance_paid_at IS NULL`
+  ).bind(invoice.id).run();
+}
+
+async function confirmPaymentLinkDeposit(env, session) {
+  const email = session.customer_details?.email || session.customer_email;
+  if (!email) return;
+  await ensureBookingsTable(env);
+  const booking = await env.EMAIL_DB.prepare(
+    `SELECT * FROM bookings WHERE status = 'hold' AND lower(email) = lower(?)
+      ORDER BY created_at DESC LIMIT 1`
+  ).bind(email).first();
+  if (booking) await markBookingPaid(env, booking, 'deposit');
+  else await emailOwner(env, `💰 $100 deposit paid — ${email}`,
+    `<h2 style="color:#46a758;margin:0 0 8px">💰 Booking deposit paid</h2>
+     <p style="margin:0;font-size:14px;">${esc(email)} paid the deposit link, but no open booking matches that email — check /admin and the Stripe dashboard.</p>`).catch(() => {});
+}
+
+// Daily: (1) re-check Stripe for any invoice-backed booking still unpaid,
+// in case a webhook was missed; (2) tell the owner about holds past their
+// 7 days that haven't paid, once per hold, so they can keep or release it.
+async function runBookingPaymentSweep(env) {
+  await ensureBookingsTable(env);
+
+  if (env.STRIPE_SECRET_KEY) {
+    const { results: open } = await env.EMAIL_DB.prepare(
+      `SELECT * FROM bookings WHERE (status = 'hold' AND stripe_invoice_id IS NOT NULL)
+          OR (balance_invoice_id IS NOT NULL AND balance_paid_at IS NULL)`
+    ).all();
+    for (const b of open || []) {
+      try {
+        if (b.status === 'hold' && b.stripe_invoice_id) {
+          const inv = await stripeRequest(env, 'GET', `invoices/${b.stripe_invoice_id}`);
+          if (inv.status === 'paid') await markBookingPaid(env, b, 'deposit');
+        }
+        if (b.balance_invoice_id && !b.balance_paid_at) {
+          const inv = await stripeRequest(env, 'GET', `invoices/${b.balance_invoice_id}`);
+          if (inv.status === 'paid') await markBookingPaid(env, { ...b, status: 'confirmed' }, 'balance');
+        }
+      } catch (err) {
+        console.error(`Payment re-check failed for booking #${b.id}:`, err?.message || err);
+      }
+    }
+  }
+
+  const { results: overdue } = await env.EMAIL_DB.prepare(
+    `SELECT * FROM bookings WHERE status = 'hold' AND hold_expires_at < datetime('now')
+        AND reminded_at IS NULL AND (event_date IS NULL OR event_date >= date('now'))
+      ORDER BY event_date`
+  ).all();
+  if (!overdue?.length) return;
+
+  const rows = overdue.map((b) => `
+    <tr><td style="padding:10px 0;border-top:1px solid #2a241a;font-size:14px;">
+      <strong>${esc(bookingName(b))}</strong>${b.event_date ? ' · ' + esc(b.event_date) : ''}<br>
+      <span style="color:#8a8070;font-size:12px;">${esc(b.event_type || '')}${b.email ? ' · ' + esc(b.email) : ''}${b.phone ? ' · ' + esc(b.phone) : ''} · held since ${esc((b.created_at || '').slice(0, 10))}</span>
+    </td></tr>`).join('');
+  const sent = await emailOwner(env,
+    `⏳ ${overdue.length === 1 ? bookingName(overdue[0]) + " hasn't" : overdue.length + " bookings haven't"} paid — keep or release?`,
+    `<h2 style="color:#e8c96a;margin:0 0 8px">⏳ Unpaid after ${HOLD_DAYS} days</h2>
+     <p style="margin:0 0 12px;font-size:14px;">These dates are still held on your calendar, but no deposit has come in. Check in with them, then in /admin → Bookings choose <strong>Release date</strong>, <strong>Give 7 more days</strong>, or <strong>Mark paid</strong> if they paid another way.</p>
+     <table style="width:100%;border-collapse:collapse;">${rows}</table>`,
+  ).catch(() => false);
+  // Only marked once the owner actually got the email — with the sending
+  // domain unverified this retries daily instead of going quiet.
+  if (sent) {
+    const stmt = env.EMAIL_DB.prepare(`UPDATE bookings SET reminded_at = datetime('now') WHERE id = ?`);
+    await env.EMAIL_DB.batch(overdue.map((b) => stmt.bind(b.id)));
+  }
+}
+
+// /admin → Bookings actions.
+async function handleAdminBookingStatus(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+  let body; try { body = await request.json(); } catch { body = {}; }
+  const id = Number(body.id);
+  const SQL = {
+    release:   `UPDATE bookings SET status = 'released' WHERE id = ?`,
+    extend:    `UPDATE bookings SET status = 'hold', hold_expires_at = datetime('now', '+${HOLD_DAYS} days'), reminded_at = NULL WHERE id = ?`,
+    restore:   `UPDATE bookings SET status = 'hold', hold_expires_at = datetime('now', '+${HOLD_DAYS} days'), reminded_at = NULL WHERE id = ?`,
+    mark_paid: `UPDATE bookings SET status = 'confirmed', paid_at = COALESCE(paid_at, datetime('now')) WHERE id = ?`,
+  };
+  if (!Number.isInteger(id) || !SQL[body.action]) {
+    return new Response(JSON.stringify({ error: 'Unknown booking or action' }), { status: 400, headers: jsonHeaders(request) });
+  }
+  await ensureBookingsTable(env);
+  const r = await env.EMAIL_DB.prepare(SQL[body.action]).bind(id).run();
+  if (!r.meta?.changes) return new Response(JSON.stringify({ error: 'Booking not found' }), { status: 404, headers: jsonHeaders(request) });
+  return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
 }
 
 async function sendDepositReceiptEmail(env, order) {
