@@ -743,7 +743,8 @@ export default {
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
     if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
     if (url.pathname === '/api/checkout')       return handleCheckout(request, env);
-    if (url.pathname === '/api/song-details')   return handleSongDetails(request, env);
+    if (url.pathname === '/api/song-details')   return handleClientDetails(request, env, 'song');
+    if (url.pathname === '/api/access-status')  return handleClientDetails(request, env, 'access');
     if (url.pathname === '/api/stripe-webhook') return handleStripeWebhook(request, env);
     if (url.pathname === '/api/admin/orders')   return handleAdminOrders(request, env);
     if (url.pathname === '/api/admin/mark-delivered') return handleMarkDelivered(request, env);
@@ -790,7 +791,15 @@ export default {
   // only automatic (non-click) invoice path, and only for orders tied to
   // a real calendar date. See the header comment above runBalanceInvoiceSweep.
   async scheduled(controller, env, ctx) {
-    ctx.waitUntil(runBalanceInvoiceSweep(env));
+    try {
+      await runBalanceInvoiceSweep(env);
+    } catch (err) {
+      // A sweep that dies silently means balances quietly never get
+      // invoiced — log it for Cloudflare and tell the owner.
+      console.error('Balance invoice sweep failed:', err?.stack || err);
+      await notifyOwnerOfFailure(env, { source: 'Daily balance invoice sweep', body: null, err });
+      throw err;
+    }
   },
 };
 
@@ -1515,11 +1524,22 @@ async function findOrCreateStripeCustomer(env, { email, name }) {
   return created.id;
 }
 
-// Custom birthday song brief from the /song page (linked from a client's
-// deposit invoice). Saved as a booking — so it lands in /admin → Bookings
-// and the party date blocks the calendar — and emailed to SWRV. The saved
+// Details a client sends from a link we gave them (usually on their
+// invoice), outside the Book & Pay flow:
+//   'song'   — /song: custom birthday song brief. The party date is saved as
+//              the booking's event date, so it blocks the calendar.
+//   'access' — /access: how they're giving SWRV posting access (no
+//              passwords). The date goes in the notes only — confirming
+//              access must never block a calendar date on its own.
+// Saved as a booking (/admin -> Bookings) and emailed to SWRV. The saved
 // row is the record that matters; the email is best-effort on top.
-async function handleSongDetails(request, env) {
+const CLIENT_DETAILS = {
+  song:   { source: 'song',   eventType: 'Custom birthday song', blocksDate: true,  emoji: '🎵', heading: 'Custom song details are in',  subject: 'Song details' },
+  access: { source: 'access', eventType: 'Posting access',       blocksDate: false, emoji: '🔑', heading: 'Posting access update',       subject: 'Posting access' },
+};
+
+async function handleClientDetails(request, env, kind) {
+  const cfg = CLIENT_DETAILS[kind];
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
@@ -1531,23 +1551,27 @@ async function handleSongDetails(request, env) {
   const eventDate = /^\d{4}-\d{2}-\d{2}$/.test(body.eventDate || '') ? body.eventDate : null;
   const intakeJson = normalizeIntake(body.intake);
   if (!name || !email.includes('@') || !intakeJson) {
-    return new Response(JSON.stringify({ error: 'Please add your name, email, and the song details.' }), { status: 400, headers: jsonHeaders(request) });
+    return new Response(JSON.stringify({ error: 'Please add your name, email, and your answers.' }), { status: 400, headers: jsonHeaders(request) });
   }
   const answers = JSON.parse(intakeJson);
-  const detailsText = answers.map((a) => `${a.question}\n${a.answer}`).join('\n\n');
+  const detailsText = (!cfg.blocksDate && eventDate ? `Event date: ${eventDate}\n\n` : '')
+    + answers.map((a) => `${a.question}\n${a.answer}`).join('\n\n');
 
   let saved = true;
   try {
-    await saveBooking(env, { source: 'song', firstName: name, email, eventType: 'Custom birthday song', eventDate, details: detailsText });
+    await saveBooking(env, { source: cfg.source, firstName: name, email, eventType: cfg.eventType, eventDate: cfg.blocksDate ? eventDate : null, details: detailsText });
   } catch (err) {
     saved = false;
-    await notifyOwnerOfFailure(env, { source: 'Song details (D1 save)', body, err });
+    await notifyOwnerOfFailure(env, { source: `${cfg.subject} (D1 save)`, body, err });
   }
-  await captureEmail(env, { email, name, source: 'song-details' });
+  await captureEmail(env, { email, name, source: `${kind}-details` });
 
   let emailed = false;
   try {
     const safe = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const status = kind === 'access'
+      ? accessStatusLines(answers).map(([color, text]) => `<p style="margin:0 0 8px;font-size:13px;font-weight:600;color:${color};">${safe(text)}</p>`).join('')
+      : '';
     const rows = answers.map((a) => `
         <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${safe(a.question)}</td>
             <td style="padding:8px 0;font-size:13px;white-space:pre-wrap;">${safe(a.answer)}</td></tr>`).join('');
@@ -1555,10 +1579,11 @@ async function handleSongDetails(request, env) {
       from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
       to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
       reply_to: email,
-      subject: `🎵 Song details: ${name}${eventDate ? ' — ' + eventDate : ''}`,
+      subject: `${cfg.emoji} ${cfg.subject}: ${name}${eventDate ? ' — ' + eventDate : ''}`,
       html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
-        <h2 style="color:#FF4D00;margin:0 0 6px">🎵 Custom song details are in</h2>
-        <p style="margin:0 0 20px;font-size:13px;">${safe(name)} · <a style="color:#e8c96a" href="mailto:${safe(email)}">${safe(email)}</a>${eventDate ? ' · party ' + safe(eventDate) : ''}</p>
+        <h2 style="color:#FF4D00;margin:0 0 6px">${cfg.emoji} ${cfg.heading}</h2>
+        <p style="margin:0 0 16px;font-size:13px;">${safe(name)} · <a style="color:#e8c96a" href="mailto:${safe(email)}">${safe(email)}</a>${eventDate ? ' · event ' + safe(eventDate) : ''}</p>
+        ${status}
         <table style="width:100%;border-collapse:collapse;">${rows}</table>
       </div>`,
     });
@@ -1787,23 +1812,43 @@ async function sendOwnerOrderEmail(env, order) {
 // balance. Stripe emails it and handles reminders — nothing further to do
 // here once this returns.
 async function invoiceBalance(env, order) {
-  const invoiceItem = await stripeRequest(env, 'POST', 'invoiceitems', {
-    customer: order.stripe_customer_id,
-    amount: order.balance_cents,
-    currency: 'usd',
-    description: `${order.service_name} — remaining balance`,
-  });
-  const invoice = await stripeRequest(env, 'POST', 'invoices', {
-    customer: order.stripe_customer_id,
-    collection_method: 'send_invoice',
-    days_until_due: 7,
-    pending_invoice_items_behavior: 'include',
-  });
-  const sent = await stripeRequest(env, 'POST', `invoices/${invoice.id}/send`);
+  // Resumable, so a retry after a failure part-way through never bills
+  // twice: the invoice id is saved the moment the invoice exists, the
+  // charge is attached to that specific invoice (never left as a loose
+  // pending item that a later invoice would sweep up), and each step
+  // checks what already happened before acting.
+  let invoiceId = order.balance_invoice_id;
+  if (!invoiceId) {
+    const created = await stripeRequest(env, 'POST', 'invoices', {
+      customer: order.stripe_customer_id,
+      collection_method: 'send_invoice',
+      days_until_due: 7,
+      auto_advance: false,
+      pending_invoice_items_behavior: 'exclude',
+      metadata: { order_id: String(order.id), kind: 'balance' },
+    });
+    invoiceId = created.id;
+    await env.EMAIL_DB.prepare('UPDATE orders SET balance_invoice_id = ? WHERE id = ?').bind(invoiceId, order.id).run();
+  }
+
+  let invoice = await stripeRequest(env, 'GET', `invoices/${invoiceId}`);
+  if (invoice.status === 'draft') {
+    if (!invoice.lines?.data?.length) {
+      await stripeRequest(env, 'POST', 'invoiceitems', {
+        customer: order.stripe_customer_id,
+        invoice: invoiceId,
+        amount: order.balance_cents,
+        currency: 'usd',
+        description: `${order.service_name} — remaining balance`,
+      });
+    }
+    invoice = await stripeRequest(env, 'POST', `invoices/${invoiceId}/send`);
+  }
+
   await env.EMAIL_DB.prepare(
-    `UPDATE orders SET balance_invoice_id = ?, balance_invoice_url = ?, balance_invoiced_at = datetime('now'), status = 'balance_invoiced' WHERE id = ?`
-  ).bind(sent.id, sent.hosted_invoice_url || null, order.id).run();
-  return sent;
+    `UPDATE orders SET balance_invoice_url = ?, balance_invoiced_at = datetime('now'), status = 'balance_invoiced' WHERE id = ?`
+  ).bind(invoice.hosted_invoice_url || null, order.id).run();
+  return invoice;
 }
 
 // Admin-triggered for 'project' orders — see the header note above for why
@@ -1843,13 +1888,19 @@ async function handleAdminOrders(request, env) {
 // bookings tied to a real calendar date.
 async function runBalanceInvoiceSweep(env) {
   await ensureOrdersTable(env);
+  const today = new Date().toISOString().slice(0, 10);
   const target = new Date();
   target.setUTCDate(target.getUTCDate() + BALANCE_INVOICE_LEAD_DAYS);
   const targetDate = target.toISOString().slice(0, 10);
 
+  // Everything due within the window, not just the exact lead day: a sweep
+  // that fails one morning retries the next, and a booking made inside the
+  // window (event in 2 days) still gets its balance. invoiceBalance moves
+  // the order to 'balance_invoiced', so nothing is billed twice.
   const { results } = await env.EMAIL_DB.prepare(
-    `SELECT * FROM orders WHERE category = 'event' AND status = 'deposit_paid' AND event_date = ?`
-  ).bind(targetDate).all();
+    `SELECT * FROM orders WHERE category = 'event' AND status = 'deposit_paid'
+       AND event_date >= ? AND event_date <= ?`
+  ).bind(today, targetDate).all();
 
   for (const order of results || []) {
     try {
