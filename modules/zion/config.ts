@@ -47,7 +47,7 @@ export const ZION_CONFIG = {
       "I work with artists, brands, and movements who know they have something to say but need help making it sound like itself. That's the work.",
     ],
     stats: [
-      { value: '15+', label: 'Years in Music' },
+      { value: '25+', label: 'Years in Music' },
       { value: '2', label: 'Books Published' },
       { value: '50+', label: 'Songs to Release' },
       { value: '1', label: 'One Movement' },
