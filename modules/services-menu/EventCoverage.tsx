@@ -13,7 +13,7 @@ interface Props {
 // tiers themselves (site.config.ts: coverage-quick-stop / -on-the-go-day
 // / -full-convoy). Structured after a reference brand's "pick a category,
 // then see tiered packages" content-coverage page — but named and priced
-// for SWRV: the tiers are just the existing $1,000/hr on-site rate packaged
+// for SWRV: the tiers are $500 per on-site hour, packaged
 // into fixed, bookable blocks instead of an open-ended hourly quote.
 const COVERAGE_TIER_IDS = ['coverage-quick-stop', 'coverage-on-the-go-day', 'coverage-full-convoy'];
 

@@ -1895,9 +1895,9 @@ Live Performance — coffee shops $100/hr | weddings $500/person | large events 
 Music Video (2:30-4 min) — $5,000 (unlimited effects, 5 days post, industry standard $7k-$15k)
 Promo Video (under 1 min) — $1,250 (1-day turnaround)
 SWRV Coverage (event content, fixed one-time packages, self-serve checkout — Swerve comes to your event, logs into your social media, captures premier content, and delivers it edited before the event is over):
-  - The Quick Stop — $1,000 (1 hour on-site, 5 edited reels)
-  - On The Go Day — $2,000 (2 hours on-site, real-time posting, 10 edited reels — most popular)
-  - The Full Convoy — $3,000 (3 hours on-site, real-time posting, 15 edited reels)
+  - The Quick Stop — $500 (1 hour on-site, 6 edited reels delivered same day)
+  - On The Go Day — $1,000 (2 hours on-site, real-time posting, 12 edited reels — most popular)
+  - The Full Convoy — $1,500 (3 hours on-site, real-time posting, 18 edited reels)
 Live Streaming Setup & Production — $312/hr (multi-platform, chat monitoring)
 Reels / Short-Form Content — $300/batch (5-10 videos)
 AI Motion Graphics 30s — $600 | 60s — $800 | Up to 2min — $1,200
