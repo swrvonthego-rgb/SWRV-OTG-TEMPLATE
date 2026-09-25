@@ -1842,6 +1842,13 @@ async function invoiceBalance(env, order) {
         description: `${order.service_name} — remaining balance`,
       });
     }
+    // Finalize explicitly, then send — the order Stripe documents, rather
+    // than relying on send to finalize a draft on its own.
+    invoice = await stripeRequest(env, 'POST', `invoices/${invoiceId}/finalize`, { auto_advance: 'false' });
+  }
+  // A retry that lands here after a send already went out re-sends the
+  // same email; it can never create a second charge.
+  if (invoice.status === 'open') {
     invoice = await stripeRequest(env, 'POST', `invoices/${invoiceId}/send`);
   }
 
