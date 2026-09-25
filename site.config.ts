@@ -802,7 +802,7 @@ export const SERVICES: Service[] = [
   // event date and auto-invoices the balance a few days out).
   {
     id: 'coverage-quick-stop',
-    name: 'The Drive-By',
+    name: 'On The Go',
     category: 'execution',
     price: '$500',
     priceNumeric: 500,
@@ -814,7 +814,7 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'coverage-on-the-go-day',
-    name: 'The Pull-Up',
+    name: 'The Drive-Through',
     category: 'execution',
     price: '$1,500',
     priceNumeric: 1500,
@@ -827,7 +827,7 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'coverage-full-convoy',
-    name: 'The Takeover',
+    name: 'The Pull-Up',
     category: 'execution',
     price: '$2,500',
     priceNumeric: 2500,
@@ -845,9 +845,9 @@ export const SERVICES: Service[] = [
     priceNumeric: 3500,
     checkoutEnabled: true,
     checkoutCategory: 'event',
-    blurb: 'Everything in The Takeover, plus drone footage from above — the venue, the arrivals, and the whole crowd in one shot. Outdoor aerials, weather and airspace permitting.',
+    blurb: 'Everything in The Pull-Up, plus drone footage from above — the venue, the arrivals, and the whole crowd in one shot. Outdoor aerials, weather and airspace permitting.',
     deliveryDays: 1,
-    includes: ['Everything in The Takeover', 'Drone footage by an FAA-licensed pilot', 'Aerial shots of the venue, arrivals and crowd', 'Aerial photos', '3 edited aerial reels (15 reels total)'],
+    includes: ['Everything in The Pull-Up', 'Drone footage by an FAA-licensed pilot', 'Aerial shots of the venue, arrivals and crowd', 'Aerial photos', '3 edited aerial reels (15 reels total)'],
   },
   {
     id: 'live-streaming',
