@@ -2351,7 +2351,8 @@ Websites (swrvonthego.pro/website-design):
   - The Ecosystem — $1,000 (SEO, product selling, multiple pages, AI chat assistant for clients, calendar & scheduling, blog, social feeds, brand style guide, 2 weeks)
   Every website needs a logo, a vision statement, a mission statement, images and video content — ask whether they have those.
 
-Zion Vocals — Zion SWRV Birdsong singing on other artists' tracks, booked and paid (50% deposit) on the site:
+Zion Vocals — Zion SWRV Birdsong live and on other artists' tracks, booked and paid (50% deposit) on the site:
+  - Zion Sings At Your Event — from $500 (live vocals at weddings, birthdays, corporate events, church and private events: live vocals by Zion, song selection consult, up to a 1-hour set). The deposit is 50% of $500; the final price depends on set length, travel and extras and is confirmed after the request, before the balance is invoiced ahead of the event. On-location travel in Atlanta $50, farther travel quoted. Don't quote a final total.
   - The Hook — $350 (up to 8 bars sung by Zion, doubles and ad libs, key and tempo matched, dry + processed WAV stems, 3 days, 1 revision)
   - The Feature — $750 (16-bar verse + hook, leads, doubles, harmonies, ad libs, comped and tuned stems, "feat. Zion SWRV Birdsong" credit, 5 days, 2 revisions — most popular)
   - Session Vocals — Full Song — $1,200 (full lead vocal, background arrangement + harmony stacks, one live directed session, 7 days, 2 revisions)

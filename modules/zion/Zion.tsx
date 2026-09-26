@@ -4,7 +4,7 @@ import { SERVICES } from '../../site.config';
 import { CheckoutModal, type CheckoutService } from '../services-menu/CheckoutModal';
 
 // Zion Vocals packages — same catalog entries as the main services grid.
-const VOCAL_PACKAGE_IDS = ['vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'];
+const VOCAL_PACKAGE_IDS = ['vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'];
 import React, { useState, useEffect, useRef } from 'react';
 
 interface ZionProps { isOpen: boolean; onClose: () => void; }
@@ -339,7 +339,7 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           <p className="section-label reveal" ref={addToRefs}>On Your Record</p>
           <h2 className="section-title reveal" ref={addToRefs}>Zion On Your Track</h2>
           <p className="vocals-intro reveal" ref={addToRefs}>
-            Hooks, features and full session vocals, recorded remotely from anywhere in the world, or in the studio in Atlanta. Book it and pay the 50% deposit right here.
+            Zion live at your event, or on your record: hooks, features and full session vocals, recorded remotely from anywhere in the world or in the studio in Atlanta. Book it and pay the 50% deposit right here.
           </p>
           <div className="services-grid vocals-grid">
             {vocalPackages.map((svc) => (
@@ -349,7 +349,11 @@ export function Zion({ isOpen, onClose }: ZionProps) {
                   <div className="service-name">{svc.name}</div>
                   <div className="vocal-price">{svc.price}</div>
                 </div>
-                <p className="vocal-meta">{svc.deliveryDays} days · {svc.revisions} revision{svc.revisions === 1 ? '' : 's'}</p>
+                <p className="vocal-meta">
+                  {svc.checkoutCategory === 'event'
+                    ? 'Live · weddings, birthdays, corporate, church, private events'
+                    : `${svc.deliveryDays} days · ${svc.revisions} revision${svc.revisions === 1 ? '' : 's'}`}
+                </p>
                 <p className="service-desc">{svc.blurb}</p>
                 <ul className="vocal-includes">
                   {svc.includes?.map((item) => <li key={item}>{item}</li>)}
@@ -363,7 +367,8 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             ))}
           </div>
           <p className="vocal-terms">
-            Add-ons at checkout: songwriting +$200 · 48-hour rush +50% · on-location session in Atlanta +$50.
+            Zion Sings At Your Event starts at $500 for up to a 1-hour set; the final price depends on set length, travel and extras and is confirmed after your request.
+            Recording add-ons at checkout: songwriting +$200 · 48-hour rush +50% · on-location session in Atlanta +$50.
             Your vocal is work for hire, so you own the recording. If Zion writes lyrics or melody, he keeps his writer share (BMI).
             The Feature is credited "feat. Zion SWRV Birdsong"; other packages credit Zion in the liner notes.
           </p>

@@ -529,6 +529,9 @@ export interface Service {
   addOns?: string[];
   // Rights / credit / delivery terms shown before payment.
   terms?: string;
+  // Question ids to leave out of the inherited intake set — e.g. a live
+  // performance uses the Event questions but not the social-posting ones.
+  skipQuestions?: string[];
   blurb: string;
   deliveryDays?: number;
   revisions?: number;
@@ -899,6 +902,20 @@ export const ALL_SERVICES: Service[] = [
   // ── ZION VOCALS — Zion singing on other artists' tracks (and producing
   // their vocals). Remote worldwide by default; in-studio in Atlanta.
   {
+    id: 'vocal-live-event',
+    name: 'Zion Sings At Your Event',
+    category: 'execution',
+    intakePath: 'event',
+    skipQuestions: ['socials', 'metaAccess', 'otherAccess'],
+    price: 'From $500',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    terms: "Starts at $500 for up to a 1-hour set. Your deposit is 50% of the starting price; the final price depends on set length, travel and extras, and is confirmed with you after your request, before the balance is invoiced ahead of the event. Remote isn't an option for this one: Zion comes to you. On-location travel in Atlanta is $50; farther travel is quoted.",
+    blurb: 'Zion sings live at your wedding, birthday, corporate event, church service or private event. Final price depends on set length, travel and extras, confirmed after your request.',
+    includes: ['Live vocals by Zion', 'Song selection consult', 'Up to a 1-hour set'],
+  },
+  {
     id: 'vocal-hook',
     name: 'The Hook',
     category: 'execution',
@@ -1120,6 +1137,7 @@ export const ACTIVE_SERVICE_IDS = new Set<string>([
   'coverage-on-the-go-day',  // The Drive-Through
   'coverage-full-convoy',    // The Pull-Up
   'coverage-air-support',    // Air Support
+  'vocal-live-event',        // Zion Sings At Your Event
   'vocal-hook',              // The Hook
   'vocal-feature',           // The Feature
   'vocal-session-full',      // Session Vocals — Full Song
@@ -1208,7 +1226,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     tagline: 'Zion SWRV Birdsong on your record.',
     emoji: '🎙️',
     intakePath: 'vocals',
-    serviceIds: ['vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
+    serviceIds: ['vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
   },
   {
     id: 'videography',

@@ -11,7 +11,7 @@ const STEPS = [
   {
     key: 'category',
     bot: "Hey! Welcome to SWRV On The Go 👋\nI'm here to help you find the right creative services — no pressure, just clarity.\n\nWhat are you looking to create or build?",
-    quickReplies: ['🎤 Book SWRV Birdsong', '🎙️ Zion On Your Track', '🎬 Event Content', '🌐 Website', '📋 Something Else'],
+    quickReplies: ['🎤 Zion Sings At Your Event', '🎙️ Zion On Your Track', '🎬 Event Content', '🌐 Website', '📅 Book SWRV Birdsong', '📋 Something Else'],
   },
   {
     key: 'stage',
@@ -34,6 +34,7 @@ const STEPS = [
 // Only services currently on offer (SERVICES is already filtered to
 // ACTIVE_SERVICE_IDS in site.config.ts), so no category leads to a dead end.
 const CATEGORY_SERVICES: Record<string, string[]> = {
+  '🎤 Zion Sings At Your Event': ['vocal-live-event'],
   '🎙️ Zion On Your Track': ['vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
   '🎬 Event Content':  ['coverage-quick-stop', 'coverage-on-the-go-day', 'coverage-full-convoy', 'coverage-air-support'],
   '🌐 Website':        ['website-presence', 'website-platform', 'website-ecosystem'],
@@ -216,7 +217,7 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
   };
 
   const handleQuickReply = (qr: string) => {
-    if (qr === '🎤 Book SWRV Birdsong') {
+    if (qr === '📅 Book SWRV Birdsong' || qr === '🎤 Book SWRV Birdsong') {
       addUser(qr);
       setTimeout(() => addBot(
         "🎤 Let's book Zion 'SWRV' Birdsong for your event — live performances, weddings, festivals, private parties, and more.\n\nA $100 deposit secures your date, and the rest is negotiated based on your event. Opening the booking page now — pick your date and tell him the vision.",

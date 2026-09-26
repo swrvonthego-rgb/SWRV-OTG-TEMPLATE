@@ -300,6 +300,8 @@ export function buildIntakeQuestions(
   const path = opts.path ?? getIntakePath(serviceId);
   if (!path) return [];
   let base = INTAKE_PATHS[path];
+  const skip = new Set(SERVICES.find((s) => s.id === serviceId)?.skipQuestions || []);
+  if (skip.size) base = base.filter((q) => !skip.has(q.id));
   if (opts.forCheckout) {
     base = base.filter((q) => !SKIP_IN_CHECKOUT.has(q.id));
   } else if (!base.some((q) => q.id === 'budget')) {
