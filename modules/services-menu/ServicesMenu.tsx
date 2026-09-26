@@ -49,7 +49,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
       return (
         <div className="sm-card-cta-row">
           <button type="button" className="sm-book-btn" onClick={() => setCheckoutService({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory })}>
-            Book & Pay 50% →
+            {svc.checkoutCategory === 'monthly' ? 'Start Monthly Plan →' : 'Book & Pay 50% →'}
           </button>
           <button type="button" className="sm-quote-link" onClick={openIntake}>
             Questions first? Ask →

@@ -68,7 +68,7 @@ interface OrderRow {
   id: number;
   service_id: string;
   service_name: string;
-  category: 'event' | 'project';
+  category: 'event' | 'project' | 'monthly';
   customer_name: string | null;
   customer_email: string;
   customer_phone: string | null;
@@ -779,10 +779,10 @@ export const AdminPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-xs text-right">
-                      <div className="text-white/70">${(o.total_cents / 100).toFixed(2)} total</div>
+                      <div className="text-white/70">${(o.total_cents / 100).toFixed(2)}{o.category === 'monthly' ? '/mo' : ' total'}</div>
                       <div className={`uppercase tracking-widest text-[10px] mt-0.5 ${
                         o.status === 'deposit_paid' ? 'text-lion-orange' :
-                        o.status === 'balance_invoiced' ? 'text-green-400' :
+                        o.status === 'balance_invoiced' || o.status === 'subscribed' ? 'text-green-400' :
                         'text-white/30'
                       }`}>
                         {o.status.replace(/_/g, ' ')}
@@ -790,7 +790,9 @@ export const AdminPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-2 text-xs text-white/30">
-                    <span>Deposit ${(o.deposit_cents / 100).toFixed(2)} · Balance ${(o.balance_cents / 100).toFixed(2)}</span>
+                    <span>{o.category === 'monthly'
+                      ? `Monthly plan · billed by Stripe each month${o.status === 'cancelled' ? ' · ended' : ''}`
+                      : `Deposit $${(o.deposit_cents / 100).toFixed(2)} · Balance $${(o.balance_cents / 100).toFixed(2)}`}</span>
                     {o.category === 'project' && o.status === 'deposit_paid' && (
                       <button
                         onClick={() => markDelivered(o.id)}

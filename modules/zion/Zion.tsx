@@ -4,7 +4,7 @@ import { SERVICES } from '../../site.config';
 import { CheckoutModal, type CheckoutService } from '../services-menu/CheckoutModal';
 
 // Zion Vocals packages — same catalog entries as the main services grid.
-const VOCAL_PACKAGE_IDS = ['vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'];
+const VOCAL_PACKAGE_IDS = ['vocal-live-event', 'vocal-production'];
 import React, { useState, useEffect, useRef } from 'react';
 
 interface ZionProps { isOpen: boolean; onClose: () => void; }
@@ -336,11 +336,11 @@ export function Zion({ isOpen, onClose }: ZionProps) {
       {/* ZION VOCALS — sing on your track, bookable with a 50% deposit */}
       {vocalPackages.length > 0 && (
         <section className="services vocals" id="vocals">
-          <p className="section-label reveal" ref={addToRefs}>On Your Record</p>
-          <h2 className="section-title reveal" ref={addToRefs}>Zion On Your Track</h2>
+          <p className="section-label reveal" ref={addToRefs}>Live &amp; In Studio</p>
+          <h2 className="section-title reveal" ref={addToRefs}>Zion Vocals</h2>
           <p className="vocals-tagline reveal" ref={addToRefs}>Professional vocalist and producer. 20+ years. Booked by the song, not the hour.</p>
           <p className="vocals-intro reveal" ref={addToRefs}>
-            Live at your event or on your record. Hooks, features and full session vocals, recorded remotely for artists anywhere or in the studio in Atlanta. Reserve with a 50% deposit, right here.
+            Live at your event, or directing and producing your own vocal, remotely for artists anywhere or in the studio in Atlanta. Reserve with a 50% deposit, right here.
           </p>
           <div className="services-grid vocals-grid">
             {vocalPackages.map((svc) => (
@@ -370,9 +370,8 @@ export function Zion({ isOpen, onClose }: ZionProps) {
           </div>
           <p className="vocal-terms">
             Zion Sings At Your Event is booked by the song: One Song Live $500 · Custom Song $750 · Two Songs Live $1,000, chosen at checkout. On-location travel in Atlanta is $50.
-            Recording options at checkout (recording packages only): songwriting +$200 · 48-hour rush +50% · on-location session in Atlanta +$50.
-            Every vocal is work for hire, so you own the recording. When Zion writes lyrics or melody, he keeps his writer share, registered with BMI.
-            The Feature is credited "feat. Zion SWRV Birdsong"; every other package credits Zion in the liner notes.
+            Vocal Production options at checkout: songwriting +$200 · 48-hour rush +50% · on-location session in Atlanta +$50.
+            You own the recording. When Zion writes lyrics or melody, he keeps his writer share, registered with BMI.
           </p>
         </section>
       )}

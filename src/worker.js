@@ -1572,7 +1572,7 @@ async function ensureOrdersTable(env) {
     ).run();
     // Columns added after the table first shipped — no-op (duplicate column
     // error, swallowed) on tables that already have them.
-    for (const col of ['start_date TEXT', 'intake_json TEXT']) {
+    for (const col of ['start_date TEXT', 'intake_json TEXT', 'stripe_subscription_id TEXT']) {
       try { await env.EMAIL_DB.prepare(`ALTER TABLE orders ADD COLUMN ${col}`).run(); } catch (_) {}
     }
     __ordersTableReady = true;
@@ -1736,7 +1736,7 @@ async function handleCheckout(request, env) {
     if (!svc || !customerEmail) {
       return new Response(JSON.stringify({ error: 'Missing or invalid booking details.' }), { status: 400, headers: jsonHeaders(request) });
     }
-    const category = svc.checkoutCategory === 'event' ? 'event' : 'project';
+    const category = svc.checkoutCategory === 'event' ? 'event' : svc.checkoutCategory === 'monthly' ? 'monthly' : 'project';
     const priced = checkoutTotal(svc, Array.isArray(body.addOnIds) ? body.addOnIds.map(String) : [], body.optionId ? String(body.optionId) : undefined);
     // A service with options (e.g. per-song live pricing) must name one.
     if (svc.options?.length && !priced.option) {
@@ -1758,13 +1758,29 @@ async function handleCheckout(request, env) {
     }
 
     await ensureOrdersTable(env);
-    const depositCents = Math.round(priceCents / 2);
+    // Monthly plans charge the whole first month now (no balance); Stripe
+    // then bills the same total every month on its own.
+    const depositCents = category === 'monthly' ? priceCents : Math.round(priceCents / 2);
     const balanceCents = priceCents - depositCents;
 
     const customerId = await findOrCreateStripeCustomer(env, { email: customerEmail, name: customerName });
 
     const safeOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://swrvonthego.pro';
-    const session = await stripeRequest(env, 'POST', 'checkout/sessions', {
+    const metadata = { service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(',') };
+    const session = category === 'monthly' ? await stripeRequest(env, 'POST', 'checkout/sessions', {
+      mode: 'subscription',
+      customer: customerId,
+      // One recurring line for the plan and one per added platform, so the
+      // client's receipts and invoices itemize exactly what they pay for.
+      line_items: [
+        { quantity: 1, price_data: { currency: 'usd', unit_amount: Math.round(priced.base * 100), recurring: { interval: 'month' }, product_data: { name: serviceName } } },
+        ...priced.lines.map((l) => ({ quantity: 1, price_data: { currency: 'usd', unit_amount: Math.round(l.amount * 100), recurring: { interval: 'month' }, product_data: { name: `${serviceName} — ${l.label}` } } })),
+      ],
+      success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}&plan=monthly`,
+      cancel_url: `${safeOrigin}/`,
+      metadata,
+      subscription_data: { metadata },
+    }) : await stripeRequest(env, 'POST', 'checkout/sessions', {
       mode: 'payment',
       customer: customerId,
       line_items: [{
@@ -1781,7 +1797,7 @@ async function handleCheckout(request, env) {
       success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${safeOrigin}/`,
       'invoice_creation[enabled]': 'true',
-      metadata: { service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(',') },
+      metadata,
     });
 
     const orderId = await (async () => {
@@ -1789,7 +1805,7 @@ async function handleCheckout(request, env) {
         `INSERT INTO orders (service_id, service_name, category, customer_name, customer_email, customer_phone, event_date, start_date, intake_json, total_cents, deposit_cents, balance_cents, stripe_customer_id, stripe_checkout_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
-        serviceId, serviceName, category === 'event' ? 'event' : 'project',
+        serviceId, serviceName, category,
         customerName || null, customerEmail, customerPhone || null, eventDate || null,
         category === 'event' ? null : (startDate || null), intakeJson,
         priceCents, depositCents, balanceCents, customerId, session.id,
@@ -1844,7 +1860,16 @@ async function handleStripeWebhook(request, env) {
       const session = event.data.object;
       await ensureOrdersTable(env);
       const order = await env.EMAIL_DB.prepare('SELECT * FROM orders WHERE stripe_checkout_id = ?').bind(session.id).first();
-      if (order) {
+      if (order && order.category === 'monthly') {
+        // Retried webhooks must not re-send the welcome emails.
+        if (order.status !== 'subscribed' && order.status !== 'cancelled') {
+          await env.EMAIL_DB.prepare(
+            `UPDATE orders SET status = 'subscribed', deposit_paid_at = datetime('now'), stripe_subscription_id = ? WHERE id = ?`
+          ).bind(session.subscription || null, order.id).run();
+          await sendDepositReceiptEmail(env, order);
+          await sendOwnerOrderEmail(env, order);
+        }
+      } else if (order) {
         await env.EMAIL_DB.prepare(
           `UPDATE orders SET status = 'deposit_paid', deposit_paid_at = datetime('now'), stripe_payment_intent = ? WHERE id = ?`
         ).bind(session.payment_intent || null, order.id).run();
@@ -1857,6 +1882,8 @@ async function handleStripeWebhook(request, env) {
       }
     } else if (event.type === 'invoice.paid') {
       await handleInvoicePaid(env, event.data.object);
+    } else if (event.type === 'customer.subscription.deleted') {
+      await handleSubscriptionEnded(env, event.data.object);
     }
   } catch (err) {
     // Stripe retries on any non-2xx, so a failure here must still return
@@ -1924,6 +1951,17 @@ async function handleInvoicePaid(env, invoice) {
     `UPDATE orders SET status = 'paid_in_full', balance_paid_at = datetime('now')
       WHERE balance_invoice_id = ? AND balance_paid_at IS NULL`
   ).bind(invoice.id).run();
+}
+
+// A monthly plan ended (cancelled in Stripe, or payments stopped).
+async function handleSubscriptionEnded(env, subscription) {
+  await ensureOrdersTable(env);
+  const order = await env.EMAIL_DB.prepare('SELECT * FROM orders WHERE stripe_subscription_id = ?').bind(subscription.id).first();
+  if (!order || order.status === 'cancelled') return;
+  await env.EMAIL_DB.prepare(`UPDATE orders SET status = 'cancelled' WHERE id = ?`).bind(order.id).run();
+  await emailOwner(env, `Plan ended — ${order.customer_name || order.customer_email}`,
+    `<h2 style="color:#e8c96a;margin:0 0 8px">Monthly plan ended</h2>
+     <p style="margin:0;font-size:14px;">${esc(order.service_name)} · ${esc(order.customer_name || '')} ${esc(order.customer_email)}. Stripe won't bill them again. Remember to remove SWRV's access from their accounts.</p>`).catch(() => {});
 }
 
 async function confirmPaymentLinkDeposit(env, session) {
@@ -2154,10 +2192,20 @@ async function handleCalendarFeed(request, env) {
 
 async function sendDepositReceiptEmail(env, order) {
   try {
+    const monthly = order.category === 'monthly';
     const balanceWhen = order.category === 'event'
       ? `automatically about ${BALANCE_INVOICE_LEAD_DAYS} days before your event`
       : `as soon as your project is delivered`;
-    const html = `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
+    const html = monthly ? `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
+      <h2 style="margin:0 0 8px">Welcome aboard — your plan is active.</h2>
+      <p style="color:#555;font-size:14px;line-height:1.6;"><strong>${order.service_name}</strong> is confirmed. We'll reach out within one business day to set up access and plan your first month of content.</p>
+      <table style="width:100%;font-size:14px;margin:16px 0;border-collapse:collapse;">
+        <tr><td style="padding:6px 0;color:#777;">Monthly investment</td><td style="text-align:right;">$${(order.total_cents / 100).toFixed(2)}</td></tr>
+        <tr><td style="padding:6px 0;color:#777;">Paid today (first month)</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
+      </table>
+      <p style="color:#555;font-size:13px;line-height:1.6;">Stripe bills the same amount every month on this date and sends you a receipt each time. It's month to month: to cancel, email info@swrvonthego.pro before your next billing date.</p>
+      <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
+    </div>` : `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
       <h2 style="margin:0 0 8px">You're booked — thank you!</h2>
       <p style="color:#555;font-size:14px;line-height:1.6;">Your deposit for <strong>${order.service_name}</strong> is confirmed.</p>
       <table style="width:100%;font-size:14px;margin:16px 0;border-collapse:collapse;">
@@ -2171,7 +2219,7 @@ async function sendDepositReceiptEmail(env, order) {
     await resendPost(env, {
       from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
       to: [order.customer_email],
-      subject: `You're booked: ${order.service_name}`,
+      subject: monthly ? `Your plan is active: ${order.service_name}` : `You're booked: ${order.service_name}`,
       html,
     });
   } catch (_) { /* Stripe's own receipt still goes out even if this fails */ }
@@ -2200,15 +2248,17 @@ async function sendOwnerOrderEmail(env, order) {
     const safe = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     let answers = [];
     try { answers = order.intake_json ? JSON.parse(order.intake_json) : []; } catch (_) {}
-    const when = order.category === 'event'
+    const when = order.category === 'monthly'
+      ? `Monthly plan — preferred start: <strong>${safe(order.start_date || 'not given')}</strong>. Stripe bills $${(order.total_cents / 100).toFixed(2)} every month automatically; nothing to invoice.`
+      : order.category === 'event'
       ? `Event date: <strong>${safe(order.event_date)}</strong> — balance auto-invoices ${BALANCE_INVOICE_LEAD_DAYS} days before.`
       : `Preferred start: <strong>${safe(order.start_date || 'not given')}</strong> — send the balance from /admin → Orders → Mark Delivered.`;
     const rows = answers.map((a) => `
         <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${safe(a.question)}</td>
             <td style="padding:8px 0;font-size:13px;">${safe(a.answer)}</td></tr>`).join('');
     const html = `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
-      <h2 style="color:#FF4D00;margin:0 0 6px">💰 New booking — deposit paid</h2>
-      <p style="margin:0 0 16px;font-size:15px;"><strong>${safe(order.service_name)}</strong> · $${(order.total_cents / 100).toFixed(2)} total · $${(order.deposit_cents / 100).toFixed(2)} paid</p>
+      <h2 style="color:#FF4D00;margin:0 0 6px">${order.category === 'monthly' ? '💰 New monthly client — first month paid' : '💰 New booking — deposit paid'}</h2>
+      <p style="margin:0 0 16px;font-size:15px;"><strong>${safe(order.service_name)}</strong> · $${(order.total_cents / 100).toFixed(2)}${order.category === 'monthly' ? '/month' : ' total'} · $${(order.deposit_cents / 100).toFixed(2)} paid</p>
       <p style="margin:0 0 4px;font-size:13px;">${safe(order.customer_name)} · <a style="color:#e8c96a" href="mailto:${safe(order.customer_email)}">${safe(order.customer_email)}</a>${order.customer_phone ? ' · ' + safe(order.customer_phone) : ''}</p>
       <p style="margin:0 0 20px;font-size:13px;color:#8a8070;">${when}</p>
       ${accessStatusLines(answers).map(([color, text]) => `<p style="margin:0 0 8px;font-size:13px;font-weight:600;color:${color};">${safe(text)}</p>`).join('')}
@@ -2359,22 +2409,23 @@ Websites (swrvonthego.pro/website-design):
 
 Zion Vocals — Zion SWRV Birdsong, professional vocalist and producer, 20+ years in music. Booked by the song, not the hour. Live at your event or on your record, booked and reserved with a 50% deposit on the site. When discussing these, speak like a premium professional: confident, polished, concise; lead with the result the client gets, then what's included; call the price the investment; never use the words cheap, affordable, budget or deal; don't mention any credits or claims beyond what's written here.
   - Zion Sings At Your Event — from $500, booked by the song. A live vocal moment for weddings, celebrations, corporate events, church services and private events, with or without guitar; song selection consultation included. The client chooses one option at checkout: One Song Live $500 (one song performed live); Custom Song $750 (an original song written and produced for the event, performed live); Two Songs Live $1,000 (two songs performed live). 50% deposit at checkout, balance invoiced before the event. Zion performs in person (no remote option). On-location travel in Atlanta $50; travel beyond Atlanta is quoted. It is priced per song, not by the hour or set length. The recording options (songwriting, 48-hour rush) don't apply to this one.
-  - The Hook — $350. A hook that carries the record: up to 8 bars cut to the client's key and tempo, with doubles and ad libs; dry and processed WAV stems; 3 days; 1 revision round; liner-notes credit.
-  - The Feature — $750 (most requested). A complete featured performance: 16-bar verse and hook with leads, doubles, harmonies and ad libs, comped and tuned stems, "feat. Zion SWRV Birdsong" credit; 5 days; 2 revision rounds.
-  - Session Vocals — Full Song — $1,200. The whole song sung and arranged: full lead vocal, background arrangement and harmony stacks, shaped in one live directed session; 7 days; 2 revision rounds.
-  - Vocal Production — Your Voice — $600. The client's own voice, produced at its best: a 2-hour directed session in the Birdsong Method, harmony arrangement, comping, tuning and cleaned stems; 5 days; 2 revision rounds.
-  Recording options (the four recording packages above only, not the live event): songwriting +$200 (Zion writes his part), 48-hour rush +50% of the package investment, on-location session in Atlanta +$50. Mixing and mastering of the full song are not included.
-  Rights: every vocal is work for hire, so the client owns the recording; when Zion writes lyrics or melody he keeps his writer share, registered with BMI. The Feature credits "feat. Zion SWRV Birdsong"; the others credit Zion in the liner notes. Remote from anywhere in the world by default; in-studio sessions in Atlanta.
+  - Vocal Production — Your Voice — $600. The client's own voice, produced at its best: a 2-hour directed session in the Birdsong Method, harmony arrangement, comping, tuning and cleaned stems; 5 days; 2 revision rounds. Options at checkout: songwriting +$200, 48-hour rush +50%, on-location session in Atlanta +$50. Mixing and mastering of the full song are not included.
+  Hooks, features and session vocals on other artists' records are no longer separate packages. For live vocals, point people to Zion Sings At Your Event; for anything else vocal, offer to pass their details to Swerve at info@swrvonthego.pro.
+  Rights: the client owns the recording; when Zion writes lyrics or melody he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions in Atlanta.
+
+Social Media — booked and paid on the site. Same premium, professional tone as above.
+  - Social Brand Kit — $450, one-time (50% deposit, balance when delivered). A look the audience recognizes in one scroll: 30-minute brand discovery call, mood board, color palette with hex codes, font pairing, profile image and cover/banner graphics sized for each platform, 6 branded post templates, Instagram highlight covers, bio rewrite for each platform, brand board PDF and source files; 7 days; 2 revision rounds. Logo design not included.
+  - Social Brand Management — $500/month for Instagram, month to month. SWRV runs the brand behind the scenes, in the client's voice: 12 feed posts a month (reels and carousels), stories 3 times a week, captions, hashtags and a posting schedule, monthly content gathering (we plan the shots, collect their photos and video, and create the graphics), comment and DM replies on weekdays, a monthly performance report and a 30-minute strategy call. Add platforms at checkout, per month: Facebook +$150, Threads +$100, LinkedIn +$200, TikTok +$250, YouTube +$300 (all six = $1,500/month). The first month is charged at checkout and Stripe bills the same total monthly after that; cancel anytime by emailing info@swrvonthego.pro before the next billing date. Access is given through Meta Business Suite and each platform's manager access, never a password. Paid ad spend and on-site shoots are not included.
 
 Book SWRV Birdsong — live performance (singing + guitar) for birthdays, weddings, private parties and events, booked on the Zion booking page. Coffee shops $100/hr; custom birthday song (written with their details, professionally recorded) $100. Weddings and large events are quoted per event — pricing depends on equipment and event complexity, so don't quote a final number. A $100 deposit secures the date.
 
-PAYMENT: Stripe — every major card, Apple Pay and Google Pay. Coverage and website packages: 50% at booking, and the balance is invoiced automatically (a few days before an event, or when a website is delivered). Live performances: $100 deposit to hold the date.
+PAYMENT: Stripe — every major card, Apple Pay and Google Pay. Coverage, website, Zion Vocals and Social Brand Kit packages: 50% at booking, and the balance is invoiced automatically (a few days before an event, or when the work is delivered). Social Brand Management: the first month at checkout, then billed monthly. Live performances on the Zion booking page: $100 deposit to hold the date.
 
 RULES:
 - Be specific — use exact package names and prices when relevant
 - Ask probing questions to understand what they're building
-- If someone asks for anything not listed above (music production, mixing, branding, logos, video editing, podcasts, coaching, pitch decks, etc.), say it's being rebuilt into a package and isn't bookable yet, and offer to pass their details to Swerve via info@swrvonthego.pro — never quote an old price for it
-- SWRV Coverage packages and websites are fixed and bookable on the site — point people there instead of negotiating
+- If someone asks for anything not listed above (music production, mixing, logos, full branding packages, video editing, podcasts, coaching, pitch decks, etc.), say it's being rebuilt into a package and isn't bookable yet, and offer to pass their details to Swerve via info@swrvonthego.pro — never quote an old price for it
+- SWRV Coverage, websites, Zion Vocals and Social Media packages are fixed and bookable on the site — point people there instead of negotiating
 - Keep responses concise — 2-4 sentences max per reply unless they ask for detail
 - If they want to book, tell them to tap "Book a Session →" or scroll to the booking form
 - Never make up services or prices

@@ -482,6 +482,13 @@ export const ADD_ONS: Record<string, AddOn> = {
     id: 'rush-48', label: '48-hour rush', kind: 'percent', amount: 50,
     description: 'Delivered within 48 hours instead of the usual turnaround.',
   },
+  // Extra platforms for Social Brand Management (monthly, on top of
+  // Instagram). Billed every month with the plan.
+  'platform-facebook': { id: 'platform-facebook', label: 'Facebook', kind: 'flat', amount: 150, description: 'Your Facebook Page managed alongside Instagram, with posts adapted for Facebook.' },
+  'platform-threads': { id: 'platform-threads', label: 'Threads', kind: 'flat', amount: 100, description: 'Regular Threads posts and replies in your brand voice.' },
+  'platform-linkedin': { id: 'platform-linkedin', label: 'LinkedIn', kind: 'flat', amount: 200, description: 'LinkedIn posts written for a professional audience, for you or your company page.' },
+  'platform-tiktok': { id: 'platform-tiktok', label: 'TikTok', kind: 'flat', amount: 250, description: 'TikTok-native short videos, trends and captions, edited for the platform.' },
+  'platform-youtube': { id: 'platform-youtube', label: 'YouTube', kind: 'flat', amount: 300, description: 'YouTube Shorts plus channel upkeep: titles, descriptions, thumbnails and playlists.' },
   'on-location-atl': {
     id: 'on-location-atl', label: 'On-location session (Atlanta)', kind: 'flat', amount: 50,
     description: 'Zion comes to you anywhere in Atlanta for the directed session. Remote sessions and in-studio sessions in Atlanta have no travel fee.',
@@ -520,7 +527,7 @@ export interface ServiceOption {
   price: number;
 }
 
-export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'vocals' | 'other';
+export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'vocals' | 'social' | 'other';
 
 export interface Service {
   id: string;
@@ -532,7 +539,9 @@ export interface Service {
   // quotes, and monthly subscriptions stay inquiry-only, since self-serve
   // checkout needs a known total to split into a 50% deposit + balance.
   checkoutEnabled?: boolean;
-  checkoutCategory?: 'event' | 'project';
+  // 'monthly' = a Stripe subscription: the first month is charged in full
+  // at checkout and Stripe bills the same total every month after.
+  checkoutCategory?: 'event' | 'project' | 'monthly';
   // Same shape as WebPackageTier.liveExample — an optional sample of real
   // finished work, shown as a link on the service card.
   liveExample?: { url: string; label: string; description: string };
@@ -632,6 +641,42 @@ export const ALL_SERVICES: Service[] = [
     checkoutEnabled: true,
     checkoutCategory: 'project',
     blurb: 'Custom content calendar, brand voice guide, social media templates, hashtag strategy, engagement framework, and post scheduling system. Bespoke — built around your audience.',
+  },
+
+  // ── SOCIAL MEDIA — the look (one-time) and the monthly management.
+  {
+    id: 'social-brand-kit',
+    name: 'Social Brand Kit',
+    category: 'identity',
+    intakePath: 'brand',
+    skipQuestions: ['deliverables'],
+    price: '$450',
+    priceNumeric: 450,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'A look your audience recognizes in one scroll. We build your mood board, color palette and type, then turn them into ready-to-post graphics for every platform you use.',
+    deliveryDays: 7,
+    revisions: 2,
+    includes: ['30-minute brand discovery call', 'Mood board', 'Color palette with hex codes', 'Font pairing', 'Profile image and cover/banner graphics sized for each platform', '6 branded post templates', 'Instagram highlight covers', 'Bio rewrite for each platform', 'Brand board PDF and all source files', '2 rounds of revisions'],
+    notIncludes: ['Logo design', 'Monthly posting (see Social Brand Management)'],
+    assetsNeeded: ['Your logo (if you have one)', 'Photos of you, your product or your space', '3 brands or accounts whose look you admire'],
+  },
+  {
+    id: 'social-management',
+    name: 'Social Brand Management',
+    category: 'identity',
+    intakePath: 'social',
+    price: '$500/mo',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'monthly',
+    featured: true,
+    addOns: ['platform-facebook', 'platform-threads', 'platform-linkedin', 'platform-tiktok', 'platform-youtube'],
+    terms: "Month to month: you're billed today for your first month, then every month on the same date. Cancel anytime before your next billing date by emailing info@swrvonthego.pro. Your accounts and content stay yours. SWRV works through Meta Business Suite and each platform's manager access, never your passwords.",
+    blurb: 'Your brand, run for you, in your voice. We gather the content, create the posts and manage your Instagram behind the scenes every month, so your online presence stays consistent while you run the business. Add Facebook, Threads, LinkedIn, TikTok or YouTube from $100/mo each.',
+    includes: ['Instagram, managed in your brand voice', '12 feed posts a month (reels and carousels)', 'Stories 3 times a week', 'Captions, hashtags and a posting schedule', 'Monthly content gathering: we plan the shots, collect your photos and video, and create the graphics', 'Comment and DM replies on weekdays', 'Monthly performance report and 30-minute strategy call', 'Add platforms: Facebook +$150 · Threads +$100 · LinkedIn +$200 · TikTok +$250 · YouTube +$300 (per month)'],
+    notIncludes: ['Paid ad spend', 'On-site shoots (book event content separately)'],
+    assetsNeeded: ['Logo and brand colors (or a Social Brand Kit)', 'Photos and video you already have', 'Your current handles on each platform'],
   },
 
   // ── WEB & DIGITAL ────────────────────────────────────────────────────────
@@ -1163,10 +1208,9 @@ export const ACTIVE_SERVICE_IDS = new Set<string>([
   'coverage-full-convoy',    // The Pull-Up
   'coverage-air-support',    // Air Support
   'vocal-live-event',        // Zion Sings At Your Event
-  'vocal-hook',              // The Hook
-  'vocal-feature',           // The Feature
-  'vocal-session-full',      // Session Vocals — Full Song
   'vocal-production',        // Vocal Production — Your Voice
+  'social-brand-kit',        // Social Brand Kit
+  'social-management',       // Social Brand Management (monthly)
   'website-presence',
   'website-platform',
   'website-ecosystem',
@@ -1248,10 +1292,18 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   {
     id: 'zion-vocals',
     label: 'Zion Vocals',
-    tagline: 'Zion SWRV Birdsong on your record.',
+    tagline: 'Zion SWRV Birdsong, live at your event or producing your vocal.',
     emoji: '🎙️',
     intakePath: 'vocals',
     serviceIds: ['vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
+  },
+  {
+    id: 'social-media',
+    label: 'Social Media',
+    tagline: 'Your brand, built and run in your voice.',
+    emoji: '📱',
+    intakePath: 'social',
+    serviceIds: ['social-brand-kit', 'social-management'],
   },
   {
     id: 'videography',

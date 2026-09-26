@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, MessageCircle, Send, ChevronRight } from 'lucide-react';
-import { SERVICES } from '../site.config';
+import { SERVICES, ADD_ONS } from '../site.config';
 
 // ── TYPES ─────────────────────────────────────────────────────────────
 type Role = 'bot' | 'user';
@@ -11,7 +11,7 @@ const STEPS = [
   {
     key: 'category',
     bot: "Hey! Welcome to SWRV On The Go 👋\nI'm here to help you find the right creative services — no pressure, just clarity.\n\nWhat are you looking to create or build?",
-    quickReplies: ['🎤 Zion Sings At Your Event', '🎙️ Zion On Your Track', '🎬 Event Content', '🌐 Website', '📅 Book SWRV Birdsong', '📋 Something Else'],
+    quickReplies: ['🎤 Zion Sings At Your Event', '📱 Social Media', '🎬 Event Content', '🌐 Website', '📅 Book SWRV Birdsong', '📋 Something Else'],
   },
   {
     key: 'stage',
@@ -34,8 +34,8 @@ const STEPS = [
 // Only services currently on offer (SERVICES is already filtered to
 // ACTIVE_SERVICE_IDS in site.config.ts), so no category leads to a dead end.
 const CATEGORY_SERVICES: Record<string, string[]> = {
-  '🎤 Zion Sings At Your Event': ['vocal-live-event'],
-  '🎙️ Zion On Your Track': ['vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
+  '🎤 Zion Sings At Your Event': ['vocal-live-event', 'vocal-production'],
+  '📱 Social Media':   ['social-brand-kit', 'social-management'],
   '🎬 Event Content':  ['coverage-quick-stop', 'coverage-on-the-go-day', 'coverage-full-convoy', 'coverage-air-support'],
   '🌐 Website':        ['website-presence', 'website-platform', 'website-ecosystem'],
   '📋 Something Else': SERVICES.map((s) => s.id),
@@ -159,7 +159,11 @@ export const LiveChat: React.FC<{ onOpenBooking?: () => void }> = ({ onOpenBooki
     const ids = CATEGORY_SERVICES[cat] || CATEGORY_SERVICES['📋 Something Else'];
     const relevant = ids.map(id => SERVICE_MAP.get(id)).filter(Boolean);
 
-    const serviceList = relevant.map(s => `- ${s!.name} (${s!.price}): ${s!.blurb}`).join('\n');
+    const serviceList = relevant.map(s => {
+      const extras = (s!.addOns || []).map((id) => ADD_ONS[id]).filter(Boolean)
+        .map((x) => `${x.label} +${x.kind === 'percent' ? `${x.amount}%` : `$${x.amount}`}${s!.checkoutCategory === 'monthly' ? '/mo' : ''}`);
+      return `- ${s!.name} (${s!.price}): ${s!.blurb}${extras.length ? ` Options: ${extras.join(', ')}.` : ''}`;
+    }).join('\n');
 
     const prompt = `You are SWRV On The Go's customer service AI — direct, warm, knowledgeable. 25 years in the music business. Not a salesperson — a creative advisor.
 
@@ -177,9 +181,9 @@ Write a 2-3 paragraph response that:
 2. Recommends 2-3 specific services that fit their stage + budget + timeline (name them exactly)
 3. Ends with a clear next step — book the package right on the site, or reply with any questions
 
-Be conversational. No bullet points. No fluff. Speak like someone who's actually been in the room.${cat.includes('Zion') ? `
+Be conversational. No bullet points. No fluff. Speak like someone who's actually been in the room.${cat.includes('Zion') || cat.includes('Social') ? `
 
-For Zion's vocal packages, speak like a premium professional: confident, polished, concise. Lead with the result the client gets, then what's included. Call the price the investment. Never use the words cheap, affordable, budget or deal. Zion is a professional vocalist and producer with 20+ years in music, booked by the song, not the hour; his writer share is registered with BMI. Don't mention any other credits or claims.` : ''}`;
+For these packages, speak like a premium professional: confident, polished, concise. Lead with the result the client gets, then what's included. Call the price the investment. Never use the words cheap, affordable, budget or deal. ${cat.includes('Zion') ? "Zion is a professional vocalist and producer with 20+ years in music, booked by the song, not the hour; his writer share is registered with BMI. " : "Social Brand Management is month to month: Instagram is the base plan and each extra platform is a monthly add-on. "}Don't mention any other credits or claims.` : ''}`;
 
     try {
       // Route through /api/chat worker endpoint (uses Groq, keeps API key server-side)

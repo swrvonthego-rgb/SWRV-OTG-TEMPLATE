@@ -238,6 +238,52 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
     { id: 'notes', question: "Anything else?", type: 'textarea', optional: true, placeholder: "Release date, what you'll use the song for, anything to avoid..." },
   ],
 
+  // Monthly social management. Access ids 'metaAccess' / 'otherAccess'
+  // match the event path so the owner email flags access status the
+  // same way; option wording keeps the prefixes accessStatusLines reads.
+  social: [
+    { id: 'brandName', question: "Brand or business name", type: 'text', placeholder: "e.g. Marcus Hill, LLC" },
+    { id: 'handles', question: "Your current handles", sub: "Instagram, plus any platforms you added.", type: 'text', placeholder: "e.g. @marcushillllc on Instagram and TikTok" },
+    { id: 'goal', question: "What should your social presence do for you?", sub: "Select everything that applies.", type: 'multi',
+      options: ['Grow a following', 'Drive sales or bookings', 'Build authority in my field', 'Launch something new', 'Stay consistent without doing it myself'] },
+    { id: 'audience', question: "Who are you trying to reach?", type: 'textarea', placeholder: "e.g. Small-business owners in Atlanta who need their books done right..." },
+    { id: 'voice', question: "How should your brand sound?", type: 'multi',
+      options: ['Polished and professional', 'Warm and personal', 'Bold and energetic', 'Faith-centered', 'Luxury and understated', 'Playful'] },
+    { id: 'contentSource', question: "Where will the content come from?", sub: "Select all that apply. We fill the gaps.", type: 'multi',
+      options: ['I have photos and video ready', "I'll capture content on my phone each month", 'I have past content we can repurpose', 'I need you to create the content'] },
+    {
+      id: 'metaAccess',
+      question: "Have you given SWRV access to your Instagram / Facebook?",
+      sub: "No password needed. You add us in Meta Business Suite and can remove us with one tap at any time.",
+      type: 'single',
+      options: [
+        "Yes — SWRV is added in Meta Business Suite",
+        "Not yet — I'll do it before we start",
+        "I need help setting it up",
+      ],
+      help: [...(ACCESS_QUESTIONS[0].help || []).slice(0, 3), "If you ever end the plan, remove SWRV from the same screen. Your password never changes hands, so there's nothing to reset."],
+    },
+    {
+      id: 'otherAccess',
+      question: "Access for TikTok, YouTube or LinkedIn",
+      sub: "Only if you added those platforms. Never type a password into this form, email, or a text message.",
+      type: 'single',
+      optional: true,
+      options: [
+        "Not needed — Instagram / Facebook / Threads only",
+        "I'll add SWRV as a manager where the platform allows it (YouTube, LinkedIn)",
+        "I'll send the login through a one-time link",
+      ],
+      help: [
+        "YouTube: Settings → Permissions → Invite, add info@swrvonthego.pro as Manager.",
+        "LinkedIn company page: Admin tools → Manage admins → add SWRV as Content admin.",
+        "TikTok or anything else: go to onetimesecret.com (free, no account), paste the login, and send us the link. It deletes itself the moment we open it.",
+      ],
+    },
+    { id: 'avoid', question: "Anything we should never post or talk about?", type: 'textarea', optional: true, placeholder: "Topics, competitors, words or photos to stay away from..." },
+    { id: 'notes', question: "Anything else?", type: 'textarea', optional: true, placeholder: "Upcoming launches, events, promotions, how you like to approve posts..." },
+  ],
+
   event: [
     { id: 'eventType', question: "What kind of event is it?", type: 'single',
       options: ['Birthday / private party', 'Wedding', 'Corporate or brand event', 'Conference, retreat, or launch', 'Concert or festival', 'Something else'] },
@@ -258,7 +304,7 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
 export const PATH_LABELS: Record<IntakePath, string> = {
   website: 'Website Project', video: 'Video Production', music: 'Music & Audio',
   brand: 'Brand Identity', business: 'Business Documents', podcast: 'Podcast',
-  event: 'Event Coverage', song: 'Custom Song', vocals: 'Zion Vocals', other: 'Project',
+  event: 'Event Coverage', song: 'Custom Song', vocals: 'Zion Vocals', social: 'Social Media', other: 'Project',
 };
 
 export function getIntakePath(serviceId: string | undefined): IntakePath | null {
