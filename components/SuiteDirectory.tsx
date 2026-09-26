@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Compass, Sparkles, Globe, Mic2, Users, Info } from 'lucide-react';
+import { Sparkles, Globe, Mic2, Users, Info } from 'lucide-react';
 
 // ════════════════════════════════════════════════════════════
 // SUITE DIRECTORY — the "building directory board."
 // ────────────────────────────────────────────────────────────
-// A visitor lands in the Lobby, sees exactly 6 doors, and picks the one
+// A visitor lands in the Lobby, sees exactly 5 doors, and picks the one
 // they need. This replaces "everything on one page" with "one clear
 // choice per thing SWRV does."
 // ════════════════════════════════════════════════════════════
@@ -21,16 +21,8 @@ interface Suite {
 
 const SUITES: Suite[] = [
   {
-    id: 'roadmap',
-    suiteNumber: 'Suite 1',
-    name: 'The Roadmap',
-    blurb: 'Free AI-guided quiz — map your gift to a real, priced plan in minutes.',
-    path: '/roadmap',
-    icon: <Compass size={28} strokeWidth={1.5} />,
-  },
-  {
     id: 'creative-services',
-    suiteNumber: 'Suite 2',
+    suiteNumber: 'Suite 1',
     name: 'Creative Services',
     blurb: 'Video, audio, podcasts, content — the full à la carte catalog.',
     path: '/creative-services',
@@ -38,7 +30,7 @@ const SUITES: Suite[] = [
   },
   {
     id: 'website-design',
-    suiteNumber: 'Suite 3',
+    suiteNumber: 'Suite 2',
     name: 'Website Design',
     blurb: '$300 templates or a full custom build — pick a style, we make it yours.',
     path: '/website-design',
@@ -46,7 +38,7 @@ const SUITES: Suite[] = [
   },
   {
     id: 'zion',
-    suiteNumber: 'Suite 4',
+    suiteNumber: 'Suite 3',
     name: 'Zion & Artist Development',
     blurb: "Book Zion SWRV Birdsong, or dig into the artist development curriculum.",
     path: '/zion',
@@ -54,7 +46,7 @@ const SUITES: Suite[] = [
   },
   {
     id: 'family',
-    suiteNumber: 'Suite 5',
+    suiteNumber: 'Suite 4',
     name: 'The SWRV Family',
     blurb: 'Sibling products: the No BS Bible, Train BYOB self-defense, The Birdsong Method.',
     path: '/family',
@@ -62,7 +54,7 @@ const SUITES: Suite[] = [
   },
   {
     id: 'about',
-    suiteNumber: 'Suite 6',
+    suiteNumber: 'Suite 5',
     name: 'About, Shop & Contact',
     blurb: "The story behind SWRV, merch, and how to book a session.",
     path: '/about',
@@ -80,7 +72,7 @@ export const SuiteDirectory: React.FC = () => {
             Pick Your Suite
           </h2>
           <p className="text-white/50 text-sm md:text-base max-w-xl mx-auto mt-4">
-            SWRV On The Go is one building, six doors. Choose what you're here for.
+            SWRV On The Go is one building, five doors. Choose what you're here for.
           </p>
         </div>
 

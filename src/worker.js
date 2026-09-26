@@ -1766,6 +1766,8 @@ async function handleCheckout(request, env) {
     const customerId = await findOrCreateStripeCustomer(env, { email: customerEmail, name: customerName });
 
     const safeOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://swrvonthego.pro';
+    // Brand packages send the client on to The Roadmap after paying.
+    const nextStep = svc.roadmapAfterPurchase ? '&next=roadmap' : '';
     const metadata = { service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(',') };
     const session = category === 'monthly' ? await stripeRequest(env, 'POST', 'checkout/sessions', {
       mode: 'subscription',
@@ -1776,7 +1778,7 @@ async function handleCheckout(request, env) {
         { quantity: 1, price_data: { currency: 'usd', unit_amount: Math.round(priced.base * 100), recurring: { interval: 'month' }, product_data: { name: serviceName } } },
         ...priced.lines.map((l) => ({ quantity: 1, price_data: { currency: 'usd', unit_amount: Math.round(l.amount * 100), recurring: { interval: 'month' }, product_data: { name: `${serviceName} — ${l.label}` } } })),
       ],
-      success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}&plan=monthly`,
+      success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}&plan=monthly${nextStep}`,
       cancel_url: `${safeOrigin}/`,
       metadata,
       subscription_data: { metadata },
@@ -1794,7 +1796,7 @@ async function handleCheckout(request, env) {
           },
         },
       }],
-      success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}${nextStep}`,
       cancel_url: `${safeOrigin}/`,
       'invoice_creation[enabled]': 'true',
       metadata,
@@ -2190,6 +2192,16 @@ async function handleCalendarFeed(request, env) {
   });
 }
 
+// The Roadmap step for brand packages, added to the client's welcome email.
+function roadmapStepHtml(order) {
+  if (!SERVICES.find((s) => s.id === order.service_id)?.roadmapAfterPurchase) return '';
+  return `<div style="margin:20px 0;padding:16px;border-left:3px solid #c8a84b;background:#faf6ea;">
+        <p style="margin:0 0 6px;font-size:14px;font-weight:600;">Your next step: The Roadmap</p>
+        <p style="margin:0 0 10px;color:#555;font-size:13px;line-height:1.6;">We build your brand from your long-term vision. Take The Roadmap (about 10 minutes): walk through your vision and answer the questionnaire, and we'll use it to plan everything we create for you.</p>
+        <a href="https://swrvonthego.pro/roadmap" style="display:inline-block;padding:10px 18px;background:#FF4D00;color:#fff;text-decoration:none;border-radius:999px;font-size:13px;font-weight:600;">Start The Roadmap →</a>
+      </div>`;
+}
+
 async function sendDepositReceiptEmail(env, order) {
   try {
     const monthly = order.category === 'monthly';
@@ -2203,6 +2215,7 @@ async function sendDepositReceiptEmail(env, order) {
         <tr><td style="padding:6px 0;color:#777;">Monthly investment</td><td style="text-align:right;">$${(order.total_cents / 100).toFixed(2)}</td></tr>
         <tr><td style="padding:6px 0;color:#777;">Paid today (first month)</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
       </table>
+      ${roadmapStepHtml(order)}
       <p style="color:#555;font-size:13px;line-height:1.6;">Stripe bills the same amount every month on this date and sends you a receipt each time. It's month to month: to cancel, email info@swrvonthego.pro before your next billing date.</p>
       <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
     </div>` : `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
@@ -2213,6 +2226,7 @@ async function sendDepositReceiptEmail(env, order) {
         <tr><td style="padding:6px 0;color:#777;">Paid today</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
         <tr><td style="padding:6px 0;color:#777;">Balance due</td><td style="text-align:right;">$${(order.balance_cents / 100).toFixed(2)}</td></tr>
       </table>
+      ${roadmapStepHtml(order)}
       <p style="color:#555;font-size:13px;line-height:1.6;">Stripe will send you a separate payment receipt for today's charge. The balance will be invoiced ${balanceWhen} — no need to follow up.</p>
       <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
     </div>`;
@@ -2416,6 +2430,7 @@ Zion Vocals — Zion SWRV Birdsong, professional vocalist and producer, 20+ year
 Social Media — booked and paid on the site. Same premium, professional tone as above.
   - Social Brand Kit — $450, one-time (50% deposit, balance when delivered). A look the audience recognizes in one scroll: 30-minute brand discovery call, mood board, color palette with hex codes, font pairing, profile image and cover/banner graphics sized for each platform, 6 branded post templates, Instagram highlight covers, bio rewrite for each platform, brand board PDF and source files; 7 days; 2 revision rounds. Logo design not included.
   - Social Brand Management — $500/month for Instagram, month to month. SWRV runs the brand behind the scenes, in the client's voice: 12 feed posts a month (reels and carousels), stories 3 times a week, captions, hashtags and a posting schedule, monthly content gathering (we plan the shots, collect their photos and video, and create the graphics), comment and DM replies on weekdays, a monthly performance report and a 30-minute strategy call. Add platforms at checkout, per month: Facebook +$150, Threads +$100, LinkedIn +$200, TikTok +$250, YouTube +$300 (all six = $1,500/month). The first month is charged at checkout and Stripe bills the same total monthly after that; cancel anytime by emailing info@swrvonthego.pro before the next billing date. Access is given through Meta Business Suite and each platform's manager access, never a password. Paid ad spend and on-site shoots are not included.
+  Both Social Media packages start from the client's long-term vision: after they pay, they take The Roadmap (swrvonthego.pro/roadmap, free, about 10 minutes), where they walk through their vision and answer the questionnaire so SWRV can build the brand from it. Explain that when relevant; the Roadmap is an onboarding step, not something to sell.
 
 Book SWRV Birdsong — live performance (singing + guitar) for birthdays, weddings, private parties and events, booked on the Zion booking page. Coffee shops $100/hr; custom birthday song (written with their details, professionally recorded) $100. Weddings and large events are quoted per event — pricing depends on equipment and event complexity, so don't quote a final number. A $100 deposit secures the date.
 

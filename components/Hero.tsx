@@ -94,13 +94,6 @@ export const Hero: React.FC<{ onOpenConsultation: () => void }> = ({ onOpenConsu
               >
                 See What We Do →
               </a>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}
-                className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-sm tracking-wider rounded-full transition-all"
-                style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)' }}
-              >
-                Take the Roadmap
-              </button>
             </div>
           </div>
           

@@ -23,7 +23,6 @@ const MENU_GROUPS: MenuGroup[] = [
   {
     heading: 'The Suites',
     items: [
-      { label: 'The Roadmap',              sub: 'Start here — free AI quiz',   action: { kind: 'link', to: '/roadmap' } },
       { label: 'Creative Services',        sub: 'Video, audio, content',       action: { kind: 'link', to: '/creative-services' } },
       { label: 'Website Design',           sub: '$300 templates + custom',     action: { kind: 'link', to: '/website-design' } },
       { label: 'Zion & Artist Development',sub: 'Book Zion + mentorship',      action: { kind: 'link', to: '/zion' } },
@@ -93,7 +92,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="fixed w-full z-50 font-sans">
-      {/* Main bar — Logo | (grows) | Roadmap CTA | Get In Touch | Hamburger */}
+      {/* Main bar — Logo | (grows) | Get In Touch | Hamburger */}
       <div className={`bg-black transition-all duration-300 border-b border-gray-800 ${scrolled ? 'py-2 shadow-lg' : 'py-3'}`}>
         <div className="container mx-auto px-4 md:px-8 flex justify-between items-center h-full gap-4">
 
@@ -112,15 +111,8 @@ export const Header: React.FC = () => {
             />
           </button>
 
-          {/* Right side — always compact: Roadmap + Get In Touch + Hamburger */}
+          {/* Right side — always compact: Get In Touch + Hamburger */}
           <div className="flex items-center gap-2 md:gap-3">
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}
-              className="hidden sm:inline-block text-[12px] font-bold tracking-[0.2em] uppercase text-lion-orange hover:text-white transition-colors bg-transparent border-0 cursor-pointer px-2 md:px-3"
-            >
-              Take the Roadmap
-            </button>
             <button
               type="button"
               onClick={() => {
@@ -184,15 +176,15 @@ export const Header: React.FC = () => {
               <div className="grid gap-3 md:grid-cols-2 mb-10 md:mb-14">
                 <button
                   type="button"
-                  onClick={() => handleAction({ kind: 'roadmap' })}
+                  onClick={() => handleAction({ kind: 'link', to: '/creative-services' })}
                   className="text-left rounded-2xl p-6 md:p-7 transition-all hover:scale-[1.01]"
                   style={{ background: 'linear-gradient(135deg,#ff4d00 0%,#ff6a2a 100%)', boxShadow: '0 8px 24px rgba(255,77,0,0.25)' }}
                 >
                   <div className="text-[11px] font-bold tracking-[0.4em] uppercase mb-3 text-white/85">Start here</div>
                   <div className="text-2xl md:text-3xl text-white leading-[1.05]" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 400 }}>
-                    Take the Roadmap
+                    Book a Package
                   </div>
-                  <div className="text-sm text-white/85 mt-2">Map your gift to a real route.</div>
+                  <div className="text-sm text-white/85 mt-2">Event content, social media, websites and Zion.</div>
                 </button>
                 <button
                   type="button"

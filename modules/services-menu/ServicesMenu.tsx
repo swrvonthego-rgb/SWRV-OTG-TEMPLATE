@@ -188,6 +188,12 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                 </div>
                 <span className="sm-cat-count">{items.length}</span>
               </div>
+              {sub.note && (
+                <p className="sm-cat-note">
+                  {sub.note.text}{' '}
+                  <a href={sub.note.to} onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('swrv:open-roadmap')); }}>{sub.note.linkLabel}</a>
+                </p>
+              )}
               <div className="sm-grid">
                 {items.map((svc) => (
                   <article key={svc.id} className={`sm-card ${svc.featured ? 'sm-card-featured' : ''}`}>

@@ -327,6 +327,24 @@
   margin: 0;
   font-style: italic;
 }
+.services-menu .sm-cat-note {
+  max-width: 760px;
+  margin: -8px 0 24px;
+  padding: 14px 18px;
+  border-left: 2px solid rgba(200, 168, 75, 0.6);
+  background: rgba(200, 168, 75, 0.06);
+  border-radius: 0 12px 12px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(237, 232, 220, 0.75);
+}
+.services-menu .sm-cat-note a {
+  color: #e8c96a;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
 .services-menu .sm-cat-count {
   flex-shrink: 0;
   padding: 6px 16px;

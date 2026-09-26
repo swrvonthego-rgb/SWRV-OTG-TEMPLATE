@@ -558,6 +558,9 @@ export interface Service {
   options?: ServiceOption[];
   // Rights / credit / delivery terms shown before payment.
   terms?: string;
+  // After payment, send the client to The Roadmap (vision + questionnaire)
+  // — shown on the confirmation page and in the welcome email.
+  roadmapAfterPurchase?: boolean;
   // Question ids to leave out of the inherited intake set — e.g. a live
   // performance uses the Event questions but not the social-posting ones.
   skipQuestions?: string[];
@@ -648,12 +651,14 @@ export const ALL_SERVICES: Service[] = [
     id: 'social-brand-kit',
     name: 'Social Brand Kit',
     category: 'identity',
+    roadmapAfterPurchase: true,
     intakePath: 'brand',
     skipQuestions: ['deliverables'],
     price: '$450',
     priceNumeric: 450,
     checkoutEnabled: true,
     checkoutCategory: 'project',
+    terms: "After checkout you'll take The Roadmap: we walk through your long-term vision and you answer the questionnaire, so the look we build fits where your brand is going. 50% today, balance when your kit is delivered.",
     blurb: 'A look your audience recognizes in one scroll. We build your mood board, color palette and type, then turn them into ready-to-post graphics for every platform you use.',
     deliveryDays: 7,
     revisions: 2,
@@ -665,6 +670,7 @@ export const ALL_SERVICES: Service[] = [
     id: 'social-management',
     name: 'Social Brand Management',
     category: 'identity',
+    roadmapAfterPurchase: true,
     intakePath: 'social',
     price: '$500/mo',
     priceNumeric: 500,
@@ -672,7 +678,7 @@ export const ALL_SERVICES: Service[] = [
     checkoutCategory: 'monthly',
     featured: true,
     addOns: ['platform-facebook', 'platform-threads', 'platform-linkedin', 'platform-tiktok', 'platform-youtube'],
-    terms: "Month to month: you're billed today for your first month, then every month on the same date. Cancel anytime before your next billing date by emailing info@swrvonthego.pro. Your accounts and content stay yours. SWRV works through Meta Business Suite and each platform's manager access, never your passwords.",
+    terms: "Month to month: you're billed today for your first month, then every month on the same date. Cancel anytime before your next billing date by emailing info@swrvonthego.pro. Your accounts and content stay yours. SWRV works through Meta Business Suite and each platform's manager access, never your passwords. After checkout you'll take The Roadmap, so we build from your long-term vision.",
     blurb: 'Your brand, run for you, in your voice. We gather the content, create the posts and manage your Instagram behind the scenes every month, so your online presence stays consistent while you run the business. Add Facebook, Threads, LinkedIn, TikTok or YouTube from $100/mo each.',
     includes: ['Instagram, managed in your brand voice', '12 feed posts a month (reels and carousels)', 'Stories 3 times a week', 'Captions, hashtags and a posting schedule', 'Monthly content gathering: we plan the shots, collect your photos and video, and create the graphics', 'Comment and DM replies on weekdays', 'Monthly performance report and 30-minute strategy call', 'Add platforms: Facebook +$150 · Threads +$100 · LinkedIn +$200 · TikTok +$250 · YouTube +$300 (per month)'],
     notIncludes: ['Paid ad spend', 'On-site shoots (book event content separately)'],
@@ -1286,6 +1292,8 @@ export interface SubCategory {
   // takes for it to get the right intake — no second list to update.
   intakePath: IntakePath;
   serviceIds: string[];
+  // Optional short note with a link, shown under the category header.
+  note?: { text: string; linkLabel: string; to: string };
 }
 
 export const SERVICE_SUBCATEGORIES: SubCategory[] = [
@@ -1304,6 +1312,11 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     emoji: '📱',
     intakePath: 'social',
     serviceIds: ['social-brand-kit', 'social-management'],
+    note: {
+      text: "Every brand we build starts with your long-term vision. Once you book, you'll take The Roadmap: we talk through your vision, you answer the questionnaire, and together we map where your brand is going before we build it.",
+      linkLabel: 'See how The Roadmap works →',
+      to: '/roadmap',
+    },
   },
   {
     id: 'videography',
