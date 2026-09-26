@@ -399,7 +399,7 @@
   margin: 0 0 6px;
   letter-spacing: -0.01em;
   line-height: 1.3;
-  padding-right: 64px; /* keep clear of the price tag */
+  padding-right: 88px; /* keep clear of the price tag (fits $1,200) */
 }
 .services-menu .sm-card-price {
   position: absolute;
@@ -412,6 +412,14 @@
   margin: 0;
   letter-spacing: 0.01em;
   line-height: 1;
+}
+/* Featured cards carry a badge in the top-right corner; drop the price
+   below it so the two never overlap. */
+.services-menu .sm-card-featured .sm-card-price {
+  top: 52px;
+}
+.services-menu .sm-card-featured .sm-card-name {
+  margin-top: 28px;
 }
 .services-menu .sm-card-blurb {
   font-size: 13px;

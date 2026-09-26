@@ -462,7 +462,48 @@ export const STATS = [
 // IMPORTANT: this is the SINGLE SOURCE of services for the entire site.
 // Both the main Services component AND the Roadmap config import from here.
 // Add/remove/edit services in this one place.
-export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'other';
+// ── BOOK & PAY ADD-ONS ─────────────────────────────────────
+// 'flat' adds a fixed amount; 'percent' adds a share of the package's own
+// base price (not of other add-ons), so a rush on The Feature is +$375.
+export interface AddOn {
+  id: string;
+  label: string;
+  description: string;
+  kind: 'flat' | 'percent';
+  amount: number; // dollars for 'flat', percent for 'percent'
+}
+
+export const ADD_ONS: Record<string, AddOn> = {
+  songwriting: {
+    id: 'songwriting', label: 'Songwriting', kind: 'flat', amount: 200,
+    description: 'Zion writes the lyrics and melody for his part. He keeps his writer share, registered with BMI.',
+  },
+  'rush-48': {
+    id: 'rush-48', label: '48-hour rush', kind: 'percent', amount: 50,
+    description: 'Delivered within 48 hours instead of the usual turnaround.',
+  },
+  'on-location-atl': {
+    id: 'on-location-atl', label: 'On-location session (Atlanta)', kind: 'flat', amount: 50,
+    description: 'Zion comes to you anywhere in Atlanta for the directed session. Remote sessions and in-studio sessions in Atlanta have no travel fee.',
+  },
+};
+
+export function addOnPrice(base: number, addOn: AddOn): number {
+  return addOn.kind === 'flat' ? addOn.amount : Math.round(base * addOn.amount) / 100;
+}
+
+// The one price calculation used by both the Book & Pay modal and the
+// Worker, so what the client sees is exactly what Stripe charges.
+export function checkoutTotal(service: { priceNumeric: number; addOns?: string[] }, addOnIds: string[] = []) {
+  const chosen = [...new Set(addOnIds)]
+    .filter((id) => service.addOns?.includes(id) && ADD_ONS[id])
+    .map((id) => ADD_ONS[id]);
+  const lines = chosen.map((a) => ({ id: a.id, label: a.label, amount: addOnPrice(service.priceNumeric, a) }));
+  const total = service.priceNumeric + lines.reduce((t, l) => t + l.amount, 0);
+  return { base: service.priceNumeric, lines, total };
+}
+
+export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'vocals' | 'other';
 
 export interface Service {
   id: string;
@@ -483,6 +524,11 @@ export interface Service {
   // service belongs to a category but needs different questions (podcast
   // services sit under Audio) or isn't listed in any category.
   intakePath?: IntakePath;
+  // Optional extras a client can tick in Book & Pay (ids from ADD_ONS).
+  // The server recomputes the total from these — never trusts the browser.
+  addOns?: string[];
+  // Rights / credit / delivery terms shown before payment.
+  terms?: string;
   blurb: string;
   deliveryDays?: number;
   revisions?: number;
@@ -735,7 +781,7 @@ export const ALL_SERVICES: Service[] = [
     name: 'Podcast Launch Kit',
     category: 'execution',
     price: '$100 + $50/hr',
-    priceNumeric: 250,
+    priceNumeric: 100,
     blurb: '$250 covers full strategy, branding, and tech setup — hosting, RSS, distribution on Spotify + Apple Podcasts. Recording sessions at $125/hr. Everything built around your voice and audience.',
     deliveryDays: 7,
     revisions: 1,
@@ -849,6 +895,82 @@ export const ALL_SERVICES: Service[] = [
     deliveryDays: 1,
     includes: ['Everything in The Pull-Up', 'Drone footage by an FAA-licensed pilot', 'Aerial shots of the venue, arrivals and crowd', 'Aerial photos', '3 edited aerial reels (15 reels total)'],
   },
+
+  // ── ZION VOCALS — Zion singing on other artists' tracks (and producing
+  // their vocals). Remote worldwide by default; in-studio in Atlanta.
+  {
+    id: 'vocal-hook',
+    name: 'The Hook',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$350',
+    priceNumeric: 350,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    addOns: ['songwriting', 'rush-48'],
+    terms: "Work for hire: you own the recording of Zion's vocal for your song. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: Zion SWRV Birdsong in the liner notes.",
+    blurb: 'Zion sings your hook — up to 8 bars with doubles and ad libs, cut to your key and tempo.',
+    deliveryDays: 3,
+    revisions: 1,
+    includes: ['Up to 8 bars sung by Zion', 'Doubles and ad libs', 'Key and tempo matched to your beat', 'Dry and processed WAV stems', '1 round of revisions', 'Liner-notes credit'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
+  {
+    id: 'vocal-feature',
+    name: 'The Feature',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$750',
+    priceNumeric: 750,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    featured: true,
+    addOns: ['songwriting', 'rush-48'],
+    terms: "Work for hire: you own the recording of Zion's vocal for your song. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: feat. Zion SWRV Birdsong.",
+    blurb: 'A full feature — 16-bar verse plus the hook, with leads, doubles, harmonies and ad libs, comped and tuned.',
+    deliveryDays: 5,
+    revisions: 2,
+    includes: ['16-bar verse + hook', 'Lead vocals, doubles, harmonies and ad libs', 'Comped and tuned WAV stems', '"feat. Zion SWRV Birdsong" credit', '2 rounds of revisions'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
+  {
+    id: 'vocal-session-full',
+    name: 'Session Vocals — Full Song',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$1,200',
+    priceNumeric: 1200,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    addOns: ['songwriting', 'rush-48', 'on-location-atl'],
+    terms: "Work for hire: you own the recording of Zion's vocal for your song. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: Zion SWRV Birdsong in the liner notes.",
+    blurb: 'Zion sings your whole song — full lead vocal plus background arrangement and harmony stacks, with a live directed session.',
+    deliveryDays: 7,
+    revisions: 2,
+    includes: ['Full lead vocal', 'Background vocal arrangement', 'Harmony stacks', '1 live directed session (remote, or in Atlanta)', 'Comped and tuned WAV stems', '2 rounds of revisions', 'Liner-notes credit'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
+  {
+    id: 'vocal-production',
+    name: 'Vocal Production — Your Voice',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$600',
+    priceNumeric: 600,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    addOns: ['songwriting', 'rush-48', 'on-location-atl'],
+    terms: "You own everything you record. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: Zion SWRV Birdsong (vocal production) in the liner notes.",
+    blurb: 'Zion produces your vocals — a 2-hour directed session in the Birdsong Method style, then harmonies, comping and tuning.',
+    deliveryDays: 5,
+    revisions: 2,
+    includes: ['2-hour directed session, Birdsong Method style', 'Harmony arrangement', 'Comping and tuning', 'Cleaned WAV stems', '2 rounds of revisions'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
   {
     id: 'live-streaming',
     name: 'Live Streaming Setup & Production',
@@ -862,7 +984,7 @@ export const ALL_SERVICES: Service[] = [
     name: 'Reels / Short-Form Content',
     category: 'execution',
     price: '$100/batch',
-    priceNumeric: 300,
+    priceNumeric: 100,
     checkoutEnabled: true,
     checkoutCategory: 'project',
     blurb: 'Batch of 5-10 short-form videos (TikTok, Instagram Reels, YouTube Shorts). Edited, captioned, and optimized for each platform.',
@@ -998,6 +1120,10 @@ export const ACTIVE_SERVICE_IDS = new Set<string>([
   'coverage-on-the-go-day',  // The Drive-Through
   'coverage-full-convoy',    // The Pull-Up
   'coverage-air-support',    // Air Support
+  'vocal-hook',              // The Hook
+  'vocal-feature',           // The Feature
+  'vocal-session-full',      // Session Vocals — Full Song
+  'vocal-production',        // Vocal Production — Your Voice
   'website-presence',
   'website-platform',
   'website-ecosystem',
@@ -1076,6 +1202,14 @@ export interface SubCategory {
 }
 
 export const SERVICE_SUBCATEGORIES: SubCategory[] = [
+  {
+    id: 'zion-vocals',
+    label: 'Zion Vocals',
+    tagline: 'Zion SWRV Birdsong on your record.',
+    emoji: '🎙️',
+    intakePath: 'vocals',
+    serviceIds: ['vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
+  },
   {
     id: 'videography',
     intakePath: 'video',

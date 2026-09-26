@@ -5,6 +5,7 @@ import {
   eachDayOfInterval, isSameMonth, isSameDay, isBefore, startOfToday,
 } from 'date-fns';
 import { buildIntakeQuestions, type Question } from '../../intake.config';
+import { SERVICES, ADD_ONS, checkoutTotal } from '../../site.config';
 import { IntakeFields, FIELD_STYLE, firstMissing, toIntakePayload, type Answers } from '../../components/IntakeFields';
 
 export interface CheckoutService {
@@ -40,6 +41,7 @@ export function CheckoutModal({ service, onClose }: Props) {
   const [phone, setPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [addOnIds, setAddOnIds] = useState<string[]>([]);
 
   const questions = useMemo<Question[]>(
     () => (service ? buildIntakeQuestions(service.id, { forCheckout: true }) : []),
@@ -50,7 +52,7 @@ export function CheckoutModal({ service, onClose }: Props) {
   useEffect(() => {
     if (!service) return;
     setStep('date'); setMonth(startOfMonth(startOfToday())); setDate(null);
-    setAnswers({}); setError(''); setSubmitting(false);
+    setAnswers({}); setError(''); setSubmitting(false); setAddOnIds([]);
     fetch('/api/booked-dates')
       .then((r) => (r.ok ? r.json() : { dates: [] }))
       .then((d) => setBookedDates(Array.isArray(d.dates) ? d.dates : []))
@@ -60,8 +62,18 @@ export function CheckoutModal({ service, onClose }: Props) {
   if (!service) return null;
 
   const isEvent = service.checkoutCategory === 'event';
-  const deposit = Math.round(service.priceNumeric * 50) / 100;
-  const balance = service.priceNumeric - deposit;
+  // Full catalog entry for add-ons and terms; the same checkoutTotal the
+  // Worker uses, and the same cent rounding, so the numbers shown here are
+  // exactly what Stripe charges.
+  const full = SERVICES.find((s) => s.id === service.id);
+  const available = (full?.addOns || []).map((id) => ADD_ONS[id]).filter(Boolean);
+  const priced = checkoutTotal(full || service, addOnIds);
+  const totalCents = Math.round(priced.total * 100);
+  const depositCents = Math.round(totalCents / 2);
+  const deposit = depositCents / 100;
+  const balance = (totalCents - depositCents) / 100;
+  const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
+  const toggleAddOn = (id: string) => setAddOnIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
   const today = startOfToday();
   const days = eachDayOfInterval({ start: startOfWeek(startOfMonth(month)), end: endOfWeek(endOfMonth(month)) });
   const dateKey = (d: Date) => format(d, 'yyyy-MM-dd');
@@ -91,7 +103,7 @@ export function CheckoutModal({ service, onClose }: Props) {
           serviceId: service.id,
           serviceName: service.name,
           category: service.checkoutCategory || 'project',
-          priceCents: Math.round(service.priceNumeric * 100),
+          addOnIds,
           customerName: name.trim(),
           customerEmail: email.trim(),
           customerPhone: phone.trim() || undefined,
@@ -210,6 +222,30 @@ export function CheckoutModal({ service, onClose }: Props) {
           {/* ── STEP 3: CONTACT + PAY ── */}
           {step === 'details' && (
             <div>
+              {available.length > 0 && (
+                <div className="mb-5">
+                  <p className="text-xs font-bold tracking-[0.2em] uppercase mb-2" style={{ color: Gold }}>Add-ons</p>
+                  <div className="space-y-2">
+                    {available.map((a) => {
+                      const on = addOnIds.includes(a.id);
+                      return (
+                        <label key={a.id} htmlFor={`addon-${a.id}`} className="flex items-start gap-3 rounded-xl p-3 cursor-pointer transition-all"
+                          style={{ background: on ? 'rgba(255,77,0,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${on ? Orange : 'rgba(255,255,255,0.1)'}` }}>
+                          <input id={`addon-${a.id}`} type="checkbox" checked={on} onChange={() => toggleAddOn(a.id)} className="mt-1" />
+                          <span className="flex-1">
+                            <span className="flex justify-between gap-3 text-sm text-white font-semibold">
+                              <span>{a.label}</span>
+                              <span>+{a.kind === 'percent' ? `${a.amount}% (${money(priced.base * a.amount / 100)})` : money(a.amount)}</span>
+                            </span>
+                            <span className="block text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{a.description}</span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="rounded-2xl p-4 mb-6" style={{ background: 'rgba(255,77,0,0.08)', border: '1px solid rgba(255,77,0,0.25)' }}>
                 {date && (
                   <div className="flex justify-between text-sm mb-1.5">
@@ -217,19 +253,36 @@ export function CheckoutModal({ service, onClose }: Props) {
                     <span className="text-white font-semibold">{format(date, 'MMM d, yyyy')}</span>
                   </div>
                 )}
+                {priced.lines.length > 0 && (
+                  <>
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span style={{ color: 'rgba(255,255,255,0.6)' }}>{service.name}</span>
+                      <span className="text-white">{money(priced.base)}</span>
+                    </div>
+                    {priced.lines.map((l) => (
+                      <div key={l.id} className="flex justify-between text-sm mb-1.5">
+                        <span style={{ color: 'rgba(255,255,255,0.6)' }}>+ {l.label}</span>
+                        <span className="text-white">{money(l.amount)}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
                 <div className="flex justify-between text-sm mb-1.5">
                   <span style={{ color: 'rgba(255,255,255,0.6)' }}>Total price</span>
-                  <span className="text-white font-semibold">${service.priceNumeric.toLocaleString()}</span>
+                  <span className="text-white font-semibold">{money(priced.total)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1.5">
                   <span style={{ color: 'rgba(255,255,255,0.6)' }}>Due now (50%)</span>
-                  <span className="font-bold" style={{ color: Orange }}>${deposit.toLocaleString()}</span>
+                  <span className="font-bold" style={{ color: Orange }}>{money(deposit)}</span>
                 </div>
                 <div className="flex justify-between text-xs pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
                   <span>Balance (auto-invoiced {isEvent ? 'before your event' : 'when your project is delivered'})</span>
-                  <span>${balance.toLocaleString()}</span>
+                  <span>{money(balance)}</span>
                 </div>
               </div>
+              {full?.terms && (
+                <p className="text-xs leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>{full.terms}</p>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)}
@@ -249,7 +302,7 @@ export function CheckoutModal({ service, onClose }: Props) {
                   <button type="submit" disabled={submitting}
                     className="flex-1 py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60"
                     style={{ background: `linear-gradient(135deg, ${Orange}, #ff7433)`, color: '#fff', boxShadow: '0 8px 24px rgba(255,77,0,0.35)' }}>
-                    {submitting ? 'Redirecting to secure checkout…' : `Pay $${deposit.toLocaleString()} Deposit →`}
+                    {submitting ? 'Redirecting to secure checkout…' : `Pay ${money(deposit)} Deposit →`}
                   </button>
                 </div>
                 <p className="text-xs text-center flex items-center justify-center gap-1.5" style={{ color: 'rgba(255,255,255,0.35)' }}>

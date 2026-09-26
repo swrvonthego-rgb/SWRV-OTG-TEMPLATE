@@ -1,5 +1,6 @@
 import { renderRoadmapEmail } from './email-template.js';
 import { SWRV_ROADMAP_CONFIG } from '../modules/roadmap/config';
+import { SERVICES, checkoutTotal } from '../site.config';
 // src/worker.js — Cloudflare Worker entry point
 //
 // Routes:
@@ -1725,12 +1726,27 @@ async function handleCheckout(request, env) {
   let body;
   try {
     body = await request.json();
-    const { serviceId, serviceName, category, priceCents, customerName, customerEmail, customerPhone, eventDate, startDate, intake, origin } = body;
-    const intakeJson = normalizeIntake(intake);
+    const { serviceId, customerName, customerEmail, customerPhone, eventDate, startDate, intake, origin } = body;
 
-    if (!serviceId || !serviceName || !customerEmail || !Number.isInteger(priceCents) || priceCents < 100) {
+    // The price comes from the catalog (site.config.ts, the same file the
+    // site renders), never from the request — otherwise anyone could edit
+    // the request and pay $1 for a $3,500 package. SERVICES only holds
+    // services currently on offer, so a hidden one can't be bought either.
+    const svc = SERVICES.find((s) => s.id === serviceId && s.checkoutEnabled);
+    if (!svc || !customerEmail) {
       return new Response(JSON.stringify({ error: 'Missing or invalid booking details.' }), { status: 400, headers: jsonHeaders(request) });
     }
+    const serviceName = svc.name;
+    const category = svc.checkoutCategory === 'event' ? 'event' : 'project';
+    const priced = checkoutTotal(svc, Array.isArray(body.addOnIds) ? body.addOnIds.map(String) : []);
+    const priceCents = Math.round(priced.total * 100);
+
+    // Chosen add-ons travel with the intake answers, so they show up in the
+    // owner's booking email and in /admin -> Orders.
+    const intakeWithAddOns = priced.lines.length
+      ? [{ id: 'addOns', question: 'Add-ons', answer: priced.lines.map((l) => `${l.label} (+$${l.amount})`).join(', ') }, ...(Array.isArray(intake) ? intake : [])]
+      : intake;
+    const intakeJson = normalizeIntake(intakeWithAddOns);
     if (category === 'event' && !eventDate) {
       return new Response(JSON.stringify({ error: 'An event date is required for this service.' }), { status: 400, headers: jsonHeaders(request) });
     }
@@ -1751,7 +1767,7 @@ async function handleCheckout(request, env) {
           currency: 'usd',
           unit_amount: depositCents,
           product_data: {
-            name: `${serviceName} — 50% deposit`,
+            name: `${serviceName}${priced.lines.length ? ' + ' + priced.lines.map((l) => l.label).join(' + ') : ''} — 50% deposit`,
             description: `Total: $${(priceCents / 100).toFixed(2)} · Deposit due now: $${(depositCents / 100).toFixed(2)} · Balance invoiced ${category === 'event' ? 'before your event' : 'on delivery'}: $${(balanceCents / 100).toFixed(2)}`,
           },
         },
@@ -1759,7 +1775,7 @@ async function handleCheckout(request, env) {
       success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${safeOrigin}/`,
       'invoice_creation[enabled]': 'true',
-      metadata: { service_id: serviceId, category },
+      metadata: { service_id: serviceId, category, add_ons: priced.lines.map((l) => l.id).join(',') },
     });
 
     const orderId = await (async () => {
@@ -2334,6 +2350,14 @@ Websites (swrvonthego.pro/website-design):
   - The Platform — $500 (portfolio + back end for selling products, booking, email capture, 1 week)
   - The Ecosystem — $1,000 (SEO, product selling, multiple pages, AI chat assistant for clients, calendar & scheduling, blog, social feeds, brand style guide, 2 weeks)
   Every website needs a logo, a vision statement, a mission statement, images and video content — ask whether they have those.
+
+Zion Vocals — Zion SWRV Birdsong singing on other artists' tracks, booked and paid (50% deposit) on the site:
+  - The Hook — $350 (up to 8 bars sung by Zion, doubles and ad libs, key and tempo matched, dry + processed WAV stems, 3 days, 1 revision)
+  - The Feature — $750 (16-bar verse + hook, leads, doubles, harmonies, ad libs, comped and tuned stems, "feat. Zion SWRV Birdsong" credit, 5 days, 2 revisions — most popular)
+  - Session Vocals — Full Song — $1,200 (full lead vocal, background arrangement + harmony stacks, one live directed session, 7 days, 2 revisions)
+  - Vocal Production — Your Voice — $600 (2-hour directed session in the Birdsong Method style, harmony arrangement, comping, tuning, cleaned stems, 5 days, 2 revisions)
+  Add-ons: songwriting +$200 (Zion writes his part), 48-hour rush +50% of the package price, on-location session in Atlanta +$50. Mixing and mastering of the full song are not included.
+  Rights: the vocal is work for hire, so the client owns the recording; if Zion writes lyrics or melody he keeps his writer share (BMI). The Feature credits "feat. Zion SWRV Birdsong"; the others credit Zion in the liner notes. Remote from anywhere in the world by default; in-studio sessions in Atlanta.
 
 Book SWRV Birdsong — live performance (singing + guitar) for birthdays, weddings, private parties and events, booked on the Zion booking page. Coffee shops $100/hr; custom birthday song (written with their details, professionally recorded) $100. Weddings and large events are quoted per event — pricing depends on equipment and event complexity, so don't quote a final number. A $100 deposit secures the date.
 

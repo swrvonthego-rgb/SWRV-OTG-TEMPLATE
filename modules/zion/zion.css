@@ -409,6 +409,80 @@
   color: var(--color-muted);
 }
 
+/* ── ZION VOCALS ── */
+.zion-page .vocals{ background: var(--color-mid); }
+.zion-page .vocals-intro{
+  max-width: 62ch;
+  margin-top: 1rem;
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+.zion-page .vocals-grid{ gap: 1rem; }
+.zion-page .vocal-card{
+  display: flex;
+  flex-direction: column;
+  background: var(--color-deep);
+}
+.zion-page .vocal-card-featured{ border-color: rgba(200, 168, 75, 0.55); }
+.zion-page .vocal-badge{
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-gold);
+  color: #0a0804;
+  font-weight: 700;
+}
+.zion-page .vocal-head{
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-right: 0;
+}
+.zion-page .vocal-card-featured .vocal-head{ padding-top: 0.9rem; }
+.zion-page .vocal-price{
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-gold);
+  white-space: nowrap;
+}
+.zion-page .vocal-meta{
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0.6rem 0 0.9rem;
+}
+.zion-page .vocal-includes{
+  list-style: none;
+  padding: 0;
+  margin: 1.2rem 0;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.zion-page .vocal-includes li{ display: flex; gap: 0.5rem; }
+.zion-page .vocal-includes li::before{ content: '✓'; color: var(--color-gold); font-weight: 700; }
+.zion-page .vocal-note{
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin: 0 0 1.2rem;
+}
+.zion-page .vocal-book{ margin-top: auto; width: 100%; justify-content: center; }
+.zion-page .vocal-terms{
+  max-width: 80ch;
+  margin-top: 2rem;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--color-muted);
+}
+
 /* ── BOOKS ── */
 .zion-page .books{ background: var(--color-warm-dark); }
 

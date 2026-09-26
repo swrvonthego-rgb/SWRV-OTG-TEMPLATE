@@ -221,6 +221,23 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
     { id: 'notes', question: "Anything else?", type: 'textarea', optional: true, placeholder: "When you'd like the recording, surprises to keep quiet..." },
   ],
 
+  // Zion Vocals — Zion singing on (or producing vocals for) a client's track.
+  // The beat, references and lyrics are asked for by the automatic
+  // "which of these do you have ready" question built from assetsNeeded.
+  vocals: [
+    { id: 'artist', question: "Artist name and song title", type: 'text', placeholder: "e.g. Kay Monroe — \"Slow Burn\"" },
+    { id: 'beatLink', question: "Link to the beat or session files", sub: "Dropbox, Google Drive, WeTransfer — anything we can download.", type: 'text', optional: true, placeholder: "https://..." },
+    { id: 'bpmKey', question: "BPM and key", type: 'text', optional: true, placeholder: "e.g. 92 BPM, F minor" },
+    { id: 'part', question: "Where does Zion come in?", sub: "Which section, and the vibe you want there.", type: 'textarea', placeholder: "e.g. The hook after verse 1 — smooth, falsetto on the last line" },
+    { id: 'references', question: "Reference tracks", type: 'textarea', optional: true, placeholder: "Songs or artists that capture the sound you want" },
+    { id: 'lyrics', question: "Lyrics", type: 'single',
+      options: ['I have the lyrics written', 'I have a concept — Zion writes (songwriting add-on)', 'Zion freestyles within my concept'] },
+    { id: 'session', question: "Session preference", sub: "Only matters for packages with a live directed session.", type: 'single', optional: true,
+      options: ['Remote (anywhere in the world)', 'In studio — Atlanta', 'On location — Atlanta (+$50 add-on)'] },
+    { id: 'credit', question: "How should the credit read?", type: 'text', optional: true, placeholder: "e.g. Kay Monroe feat. Zion SWRV Birdsong" },
+    { id: 'notes', question: "Anything else?", type: 'textarea', optional: true, placeholder: "Release date, what you'll use the song for, anything to avoid..." },
+  ],
+
   event: [
     { id: 'eventType', question: "What kind of event is it?", type: 'single',
       options: ['Birthday / private party', 'Wedding', 'Corporate or brand event', 'Conference, retreat, or launch', 'Concert or festival', 'Something else'] },
@@ -241,7 +258,7 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
 export const PATH_LABELS: Record<IntakePath, string> = {
   website: 'Website Project', video: 'Video Production', music: 'Music & Audio',
   brand: 'Brand Identity', business: 'Business Documents', podcast: 'Podcast',
-  event: 'Event Coverage', song: 'Custom Song', other: 'Project',
+  event: 'Event Coverage', song: 'Custom Song', vocals: 'Zion Vocals', other: 'Project',
 };
 
 export function getIntakePath(serviceId: string | undefined): IntakePath | null {

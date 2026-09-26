@@ -1,11 +1,18 @@
 import './zion.css';
 import { ZION_CONFIG as Z } from './config';
+import { SERVICES } from '../../site.config';
+import { CheckoutModal, type CheckoutService } from '../services-menu/CheckoutModal';
+
+// Zion Vocals packages — same catalog entries as the main services grid.
+const VOCAL_PACKAGE_IDS = ['vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'];
 import React, { useState, useEffect, useRef } from 'react';
 
 interface ZionProps { isOpen: boolean; onClose: () => void; }
 export function Zion({ isOpen, onClose }: ZionProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const [checkoutService, setCheckoutService] = useState<CheckoutService | null>(null);
+  const vocalPackages = SERVICES.filter((s) => VOCAL_PACKAGE_IDS.includes(s.id));
 
   // Form state
   const [firstName, setFirstName] = useState('');
@@ -326,6 +333,43 @@ export function Zion({ isOpen, onClose }: ZionProps) {
         </div>
       </section>
 
+      {/* ZION VOCALS — sing on your track, bookable with a 50% deposit */}
+      {vocalPackages.length > 0 && (
+        <section className="services vocals" id="vocals">
+          <p className="section-label reveal" ref={addToRefs}>On Your Record</p>
+          <h2 className="section-title reveal" ref={addToRefs}>Zion On Your Track</h2>
+          <p className="vocals-intro reveal" ref={addToRefs}>
+            Hooks, features and full session vocals, recorded remotely from anywhere in the world, or in the studio in Atlanta. Book it and pay the 50% deposit right here.
+          </p>
+          <div className="services-grid vocals-grid">
+            {vocalPackages.map((svc) => (
+              <div key={svc.id} className={`service-card vocal-card ${svc.featured ? 'vocal-card-featured' : ''}`}>
+                {svc.featured && <span className="vocal-badge">Most popular</span>}
+                <div className="vocal-head">
+                  <div className="service-name">{svc.name}</div>
+                  <div className="vocal-price">{svc.price}</div>
+                </div>
+                <p className="vocal-meta">{svc.deliveryDays} days · {svc.revisions} revision{svc.revisions === 1 ? '' : 's'}</p>
+                <p className="service-desc">{svc.blurb}</p>
+                <ul className="vocal-includes">
+                  {svc.includes?.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+                {svc.notIncludes?.length ? <p className="vocal-note">Not included: {svc.notIncludes.join(', ').toLowerCase()}</p> : null}
+                <button type="button" className="btn-primary vocal-book"
+                  onClick={() => setCheckoutService({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory })}>
+                  Book &amp; Pay 50% →
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="vocal-terms">
+            Add-ons at checkout: songwriting +$200 · 48-hour rush +50% · on-location session in Atlanta +$50.
+            Your vocal is work for hire, so you own the recording. If Zion writes lyrics or melody, he keeps his writer share (BMI).
+            The Feature is credited "feat. Zion SWRV Birdsong"; other packages credit Zion in the liner notes.
+          </p>
+        </section>
+      )}
+
       {/* PHOTO EDITORIAL — left photo only, right side transparent to expose hero portrait behind */}
       <div style={{ overflow: 'hidden', background: 'transparent' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0', background: 'transparent' }}>
@@ -619,6 +663,8 @@ export function Zion({ isOpen, onClose }: ZionProps) {
 
       {/* TOAST */}
       <div className={`toast ${toastMsg ? 'show' : ''}`}>{toastMsg}</div>
+
+      <CheckoutModal service={checkoutService} onClose={() => setCheckoutService(null)} />
     </>
     </div>
     );
