@@ -1,6 +1,7 @@
 import { renderRoadmapEmail } from './email-template.js';
 import { SWRV_ROADMAP_CONFIG } from '../modules/roadmap/config';
 import { SERVICES, checkoutTotal } from '../site.config';
+import { buildAgreement, agreementText, AGREEMENT_VERSION } from '../agreement.config';
 // src/worker.js — Cloudflare Worker entry point
 //
 // Routes:
@@ -831,6 +832,7 @@ export default {
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
     if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
     if (url.pathname === '/api/checkout')       return handleCheckout(request, env);
+    if (url.pathname === '/api/agreement')      return handleAgreementView(request, env);
     if (url.pathname === '/api/song-details')   return handleClientDetails(request, env, 'song');
     if (url.pathname === '/api/access-status')  return handleClientDetails(request, env, 'access');
     if (url.pathname === '/api/stripe-webhook') return handleStripeWebhook(request, env);
@@ -1572,7 +1574,7 @@ async function ensureOrdersTable(env) {
     ).run();
     // Columns added after the table first shipped — no-op (duplicate column
     // error, swallowed) on tables that already have them.
-    for (const col of ['start_date TEXT', 'intake_json TEXT', 'stripe_subscription_id TEXT']) {
+    for (const col of ['start_date TEXT', 'intake_json TEXT', 'stripe_subscription_id TEXT', 'agreement_token TEXT']) {
       try { await env.EMAIL_DB.prepare(`ALTER TABLE orders ADD COLUMN ${col}`).run(); } catch (_) {}
     }
     __ordersTableReady = true;
@@ -1756,6 +1758,12 @@ async function handleCheckout(request, env) {
     if (category === 'event' && !eventDate) {
       return new Response(JSON.stringify({ error: 'An event date is required for this service.' }), { status: 400, headers: jsonHeaders(request) });
     }
+    // No signed agreement, no payment. The signature is a small PNG drawn
+    // on the client's screen.
+    const signature = typeof body.signature === 'string' ? body.signature : '';
+    if (!/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(signature) || signature.length < 200 || signature.length > 400000) {
+      return new Response(JSON.stringify({ error: 'Please sign the agreement to continue.' }), { status: 400, headers: jsonHeaders(request) });
+    }
 
     await ensureOrdersTable(env);
     // Monthly plans charge the whole first month now (no balance); Stripe
@@ -1815,11 +1823,104 @@ async function handleCheckout(request, env) {
       return result.meta?.last_row_id ?? null;
     })();
 
+    // The agreement text is rebuilt here from the catalog (never taken from
+    // the browser) and stored with its fingerprint and the signature.
+    const agreement = buildAgreement({
+      service: svc,
+      optionLabel: priced.option?.label,
+      addOnLabels: priced.lines.map((l) => l.label),
+      totalCents: priceCents,
+      dueTodayCents: depositCents,
+      clientName: String(customerName || '').trim(),
+      clientEmail: String(customerEmail).trim(),
+      date: eventDate || startDate || undefined,
+    });
+    await saveSignedAgreement(env, request, {
+      orderId, serviceId, customerName, customerEmail, text: agreementText(agreement), signature,
+      clientVersion: body.agreementVersion,
+    });
+
     return new Response(JSON.stringify({ checkoutUrl: session.url, orderId }), { headers: jsonHeaders(request) });
   } catch (err) {
     await notifyOwnerOfFailure(env, { source: 'Checkout session creation', body, err });
     return new Response(JSON.stringify({ error: 'Something went wrong starting checkout. Try again or email info@swrvonthego.pro directly.' }), { status: 500, headers: jsonHeaders(request) });
   }
+}
+
+// ─────────────────────────────────────────────────────────
+// SIGNED AGREEMENTS — every Book & Pay checkout signs one first. Stored
+// with what makes an e-signature hold up: the exact text (and its SHA-256
+// fingerprint), the drawn signature, the typed name and email, when, and
+// from which IP and device. Viewable by its private link (/api/agreement?t=).
+// ─────────────────────────────────────────────────────────
+let __agreementsTableReady = false;
+async function ensureAgreementsTable(env) {
+  if (__agreementsTableReady) return;
+  await env.EMAIL_DB.prepare(
+    `CREATE TABLE IF NOT EXISTS agreements (
+      id                INTEGER PRIMARY KEY AUTOINCREMENT,
+      token             TEXT NOT NULL UNIQUE,
+      order_id          INTEGER,
+      service_id        TEXT,
+      client_name       TEXT,
+      client_email      TEXT,
+      version           TEXT,
+      agreement_text    TEXT NOT NULL,
+      text_sha256       TEXT NOT NULL,
+      signature_png     TEXT NOT NULL,
+      ip                TEXT,
+      user_agent        TEXT,
+      signed_at         TEXT DEFAULT (datetime('now'))
+    )`
+  ).run();
+  __agreementsTableReady = true;
+}
+
+async function saveSignedAgreement(env, request, a) {
+  await ensureAgreementsTable(env);
+  const token = randomToken();
+  await env.EMAIL_DB.prepare(
+    `INSERT INTO agreements (token, order_id, service_id, client_name, client_email, version, agreement_text, text_sha256, signature_png, ip, user_agent)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    token, a.orderId, a.serviceId, a.customerName || null, a.customerEmail,
+    AGREEMENT_VERSION, a.text, await sha256Hex(a.text), a.signature,
+    request.headers.get('CF-Connecting-IP') || null, (request.headers.get('User-Agent') || '').slice(0, 300),
+  ).run();
+  if (a.orderId) await env.EMAIL_DB.prepare('UPDATE orders SET agreement_token = ? WHERE id = ?').bind(token, a.orderId).run();
+  return token;
+}
+
+function agreementUrl(token) {
+  return `https://swrvonthego.pro/api/agreement?t=${token}`;
+}
+
+async function handleAgreementView(request, env) {
+  const token = new URL(request.url).searchParams.get('t') || '';
+  const notFound = () => new Response('Agreement not found.', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  if (!/^[0-9a-f]{64}$/.test(token)) return notFound();
+  await ensureAgreementsTable(env);
+  const ag = await env.EMAIL_DB.prepare('SELECT * FROM agreements WHERE token = ?').bind(token).first();
+  if (!ag) return notFound();
+  await ensureOrdersTable(env);
+  const order = ag.order_id ? await env.EMAIL_DB.prepare('SELECT status, deposit_paid_at FROM orders WHERE id = ?').bind(ag.order_id).first() : null;
+  const paid = order && order.status !== 'awaiting_deposit';
+  const [title, versionLine, , ...rest] = String(ag.agreement_text).split('\n');
+  const body = rest.map((l) => l ? `<p>${esc(l)}</p>` : '<hr>').join('');
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>${esc(title)}</title>
+<style>body{font-family:system-ui,-apple-system,sans-serif;background:#f4f1ea;color:#1a1a1a;margin:0;padding:16px}
+.doc{max-width:640px;margin:0 auto;background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+h1{font-size:20px;margin:0 0 4px}.muted{color:#777;font-size:12px}p{font-size:14px;line-height:1.6;margin:0 0 10px}
+hr{border:0;border-top:1px solid #eee;margin:16px 0}.sig{border:1px solid #e5e5e5;border-radius:8px;max-width:100%;height:auto;display:block;margin:8px 0}
+.status{display:inline-block;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:${paid ? '#e6f4ea' : '#fff4e0'};color:${paid ? '#1e6b34' : '#8a5a00'}}
+.audit p{font-size:12px;color:#555;margin:0 0 4px;word-break:break-all}@media print{body{background:#fff}.doc{box-shadow:none}}</style></head>
+<body><div class="doc"><h1>${esc(title)}</h1><p class="muted">${esc(versionLine)} · SWRV On The Go · info@swrvonthego.pro</p>
+<span class="status">${paid ? 'Signed · payment received' : 'Signed · awaiting payment'}</span><hr>${body}<hr>
+<p><strong>Signed by ${esc(ag.client_name || ag.client_email)}</strong></p><img class="sig" src="${/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(ag.signature_png) ? ag.signature_png : ''}" alt="Signature">
+<div class="audit"><p>Signed ${esc(ag.signed_at)} UTC · ${esc(ag.client_email)}</p><p>IP ${esc(ag.ip || 'unknown')} · ${esc(ag.user_agent || '')}</p>
+<p>Document fingerprint (SHA-256): ${esc(ag.text_sha256)}</p></div></div></body></html>`;
+  return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' } });
 }
 
 // Verifies the 'Stripe-Signature' header ourselves (Web Crypto HMAC-SHA256)
@@ -2193,6 +2294,11 @@ async function handleCalendarFeed(request, env) {
 }
 
 // The Roadmap step for brand packages, added to the client's welcome email.
+function agreementLinkHtml(order, color) {
+  if (!order.agreement_token) return '';
+  return `<p style="font-size:13px;margin:12px 0;"><a style="color:${color};font-weight:600;" href="${agreementUrl(order.agreement_token)}">View the signed agreement →</a></p>`;
+}
+
 function roadmapStepHtml(order) {
   if (!SERVICES.find((s) => s.id === order.service_id)?.roadmapAfterPurchase) return '';
   return `<div style="margin:20px 0;padding:16px;border-left:3px solid #c8a84b;background:#faf6ea;">
@@ -2215,6 +2321,7 @@ async function sendDepositReceiptEmail(env, order) {
         <tr><td style="padding:6px 0;color:#777;">Monthly investment</td><td style="text-align:right;">$${(order.total_cents / 100).toFixed(2)}</td></tr>
         <tr><td style="padding:6px 0;color:#777;">Paid today (first month)</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
       </table>
+      ${agreementLinkHtml(order, '#FF4D00')}
       ${roadmapStepHtml(order)}
       <p style="color:#555;font-size:13px;line-height:1.6;">Stripe bills the same amount every month on this date and sends you a receipt each time. It's month to month: to cancel, email info@swrvonthego.pro before your next billing date.</p>
       <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
@@ -2226,6 +2333,7 @@ async function sendDepositReceiptEmail(env, order) {
         <tr><td style="padding:6px 0;color:#777;">Paid today</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
         <tr><td style="padding:6px 0;color:#777;">Balance due</td><td style="text-align:right;">$${(order.balance_cents / 100).toFixed(2)}</td></tr>
       </table>
+      ${agreementLinkHtml(order, '#FF4D00')}
       ${roadmapStepHtml(order)}
       <p style="color:#555;font-size:13px;line-height:1.6;">Stripe will send you a separate payment receipt for today's charge. The balance will be invoiced ${balanceWhen} — no need to follow up.</p>
       <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
@@ -2275,6 +2383,7 @@ async function sendOwnerOrderEmail(env, order) {
       <p style="margin:0 0 16px;font-size:15px;"><strong>${safe(order.service_name)}</strong> · $${(order.total_cents / 100).toFixed(2)}${order.category === 'monthly' ? '/month' : ' total'} · $${(order.deposit_cents / 100).toFixed(2)} paid</p>
       <p style="margin:0 0 4px;font-size:13px;">${safe(order.customer_name)} · <a style="color:#e8c96a" href="mailto:${safe(order.customer_email)}">${safe(order.customer_email)}</a>${order.customer_phone ? ' · ' + safe(order.customer_phone) : ''}</p>
       <p style="margin:0 0 20px;font-size:13px;color:#8a8070;">${when}</p>
+      ${order.agreement_token ? agreementLinkHtml(order, '#e8c96a') : '<p style="margin:0 0 16px;font-size:13px;color:#e5484d;">No signed agreement on file for this order.</p>'}
       ${accessStatusLines(answers).map(([color, text]) => `<p style="margin:0 0 8px;font-size:13px;font-weight:600;color:${color};">${safe(text)}</p>`).join('')}
       ${rows ? `<p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Intake</p><table style="width:100%;border-collapse:collapse;">${rows}</table>` : '<p style="color:#8a8070;font-size:13px;">No intake answers.</p>'}
     </div>`;

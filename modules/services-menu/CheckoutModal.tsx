@@ -6,6 +6,8 @@ import {
 } from 'date-fns';
 import { buildIntakeQuestions, type Question } from '../../intake.config';
 import { SERVICES, ADD_ONS, checkoutTotal } from '../../site.config';
+import { buildAgreement, AGREEMENT_VERSION } from '../../agreement.config';
+import { SignaturePad } from '../../components/SignaturePad';
 import { IntakeFields, FIELD_STYLE, firstMissing, toIntakePayload, type Answers } from '../../components/IntakeFields';
 
 export interface CheckoutService {
@@ -43,6 +45,8 @@ export function CheckoutModal({ service, onClose }: Props) {
   const [error, setError] = useState('');
   const [addOnIds, setAddOnIds] = useState<string[]>([]);
   const [optionId, setOptionId] = useState<string | undefined>(undefined);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [showFullAgreement, setShowFullAgreement] = useState(false);
 
   const questions = useMemo<Question[]>(
     () => (service ? buildIntakeQuestions(service.id, { forCheckout: true }) : []),
@@ -53,7 +57,7 @@ export function CheckoutModal({ service, onClose }: Props) {
   useEffect(() => {
     if (!service) return;
     setStep('date'); setMonth(startOfMonth(startOfToday())); setDate(null);
-    setAnswers({}); setError(''); setSubmitting(false); setAddOnIds([]);
+    setAnswers({}); setError(''); setSubmitting(false); setAddOnIds([]); setSignature(null); setShowFullAgreement(false);
     setOptionId(SERVICES.find((s) => s.id === service.id)?.options?.[0]?.id);
     fetch('/api/booked-dates')
       .then((r) => (r.ok ? r.json() : { dates: [] }))
@@ -98,6 +102,7 @@ export function CheckoutModal({ service, onClose }: Props) {
     e.preventDefault();
     if (!name.trim() || !email.trim()) { setError('Name and email are required.'); return; }
     if (!date) { setError('Pick a date first.'); setStep('date'); return; }
+    if (!signature) { setError('Please sign the agreement to continue.'); return; }
 
     setSubmitting(true);
     setError('');
@@ -118,6 +123,8 @@ export function CheckoutModal({ service, onClose }: Props) {
           eventDate: isEvent ? dateKey(date) : undefined,
           startDate: isEvent ? undefined : dateKey(date),
           intake,
+          signature,
+          agreementVersion: AGREEMENT_VERSION,
           origin: window.location.origin,
         }),
       });
@@ -129,6 +136,18 @@ export function CheckoutModal({ service, onClose }: Props) {
       setSubmitting(false);
     }
   };
+
+  // Same builder the Worker uses, so what the client signs is what's saved.
+  const agreement = full ? buildAgreement({
+    service: full,
+    optionLabel: priced.option?.label,
+    addOnLabels: priced.lines.map((l) => l.label),
+    totalCents,
+    dueTodayCents: depositCents,
+    clientName: name.trim() || 'Your name',
+    clientEmail: email.trim() || 'your email',
+    date: date ? dateKey(date) : undefined,
+  }) : null;
 
   const stepLabels: Record<Step, string> = { date: '1 · Date', intake: '2 · Details', details: '3 · Pay' };
 
@@ -315,9 +334,6 @@ export function CheckoutModal({ service, onClose }: Props) {
                   )}
                 </div>
               </div>
-              {full?.terms && (
-                <p className="text-xs leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>{full.terms}</p>
-              )}
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)}
@@ -327,6 +343,34 @@ export function CheckoutModal({ service, onClose }: Props) {
                 <input type="tel" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
 
+                {agreement && (
+                  <div className="rounded-2xl p-4 mt-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,168,75,0.3)' }}>
+                    <p className="text-xs font-bold tracking-[0.2em] uppercase mb-3" style={{ color: Gold }}>Your agreement</p>
+                    <dl className="text-xs space-y-1 mb-3">
+                      {agreement.summary.map((l) => (
+                        <div key={l.label} className="flex justify-between gap-3">
+                          <dt style={{ color: 'rgba(255,255,255,0.45)' }}>{l.label}</dt>
+                          <dd className="text-right text-white">{l.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <button type="button" onClick={() => setShowFullAgreement((v) => !v)} className="text-xs underline mb-3" style={{ color: Gold }}>
+                      {showFullAgreement ? 'Hide full agreement' : 'Read the full agreement'}
+                    </button>
+                    {showFullAgreement && (
+                      <ol className="text-xs leading-relaxed space-y-2 mb-3 max-h-56 overflow-y-auto pr-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        {agreement.clauses.map((c, i) => (
+                          <li key={c.heading}><strong className="text-white">{i + 1}. {c.heading}.</strong> {c.body}</li>
+                        ))}
+                      </ol>
+                    )}
+                    <SignaturePad onChange={setSignature} />
+                    <p className="text-[11px] leading-relaxed mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                      By signing, I{name.trim() ? `, ${name.trim()},` : ''} agree to this service agreement and the <a href="/terms" target="_blank" rel="noreferrer" className="underline">Terms of Service</a>, and agree that my electronic signature is as valid as a handwritten one.
+                    </p>
+                  </div>
+                )}
+
                 {error && <p className="text-sm" style={{ color: '#e5484d' }}>{error}</p>}
 
                 <div className="flex gap-2">
@@ -334,10 +378,10 @@ export function CheckoutModal({ service, onClose }: Props) {
                     className="px-5 py-3.5 rounded-xl text-sm font-semibold" style={{ ...FIELD_STYLE, color: 'rgba(255,255,255,0.7)' }}>
                     Back
                   </button>
-                  <button type="submit" disabled={submitting}
+                  <button type="submit" disabled={submitting || !signature}
                     className="flex-1 py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60"
                     style={{ background: `linear-gradient(135deg, ${Orange}, #ff7433)`, color: '#fff', boxShadow: '0 8px 24px rgba(255,77,0,0.35)' }}>
-                    {submitting ? 'Redirecting to secure checkout…' : isMonthly ? `Start Plan · ${money(deposit)} Today →` : `Pay ${money(deposit)} Deposit →`}
+                    {submitting ? 'Redirecting to secure checkout…' : !signature ? 'Sign above to continue' : isMonthly ? `Sign & Start Plan · ${money(deposit)} →` : `Sign & Pay ${money(deposit)} Deposit →`}
                   </button>
                 </div>
                 <p className="text-xs text-center flex items-center justify-center gap-1.5" style={{ color: 'rgba(255,255,255,0.35)' }}>

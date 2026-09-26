@@ -80,6 +80,7 @@ interface OrderRow {
   balance_cents: number;
   deposit_paid_at: string | null;
   balance_invoice_url: string | null;
+  agreement_token?: string | null;
   balance_invoiced_at: string | null;
   status: string;
   created_at: string;
@@ -801,6 +802,11 @@ export const AdminPage: React.FC = () => {
                       >
                         {markingDeliveredId === o.id ? 'Sending…' : 'Mark Delivered →'}
                       </button>
+                    )}
+                    {o.agreement_token && (
+                      <a href={`/api/agreement?t=${o.agreement_token}`} target="_blank" rel="noreferrer" className="underline text-white/40 hover:text-white/70">
+                        Signed agreement
+                      </a>
                     )}
                     {o.balance_invoice_url && (
                       <a href={o.balance_invoice_url} target="_blank" rel="noreferrer" className="underline text-white/40 hover:text-white/70">
