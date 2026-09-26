@@ -177,7 +177,9 @@ Write a 2-3 paragraph response that:
 2. Recommends 2-3 specific services that fit their stage + budget + timeline (name them exactly)
 3. Ends with a clear next step — book the package right on the site, or reply with any questions
 
-Be conversational. No bullet points. No fluff. Speak like someone who's actually been in the room.`;
+Be conversational. No bullet points. No fluff. Speak like someone who's actually been in the room.${cat.includes('Zion') ? `
+
+For Zion's vocal packages, speak like a premium professional: confident, polished, concise. Lead with the result the client gets, then what's included. Call the price the investment. Never use the words cheap, affordable, budget or deal. Zion is a professional vocalist and producer with 20+ years in music, booked by the song, not the hour; his writer share is registered with BMI. Don't mention any other credits or claims.` : ''}`;
 
     try {
       // Route through /api/chat worker endpoint (uses Groq, keeps API key server-side)
@@ -220,7 +222,7 @@ Be conversational. No bullet points. No fluff. Speak like someone who's actually
     if (qr === '📅 Book SWRV Birdsong' || qr === '🎤 Book SWRV Birdsong') {
       addUser(qr);
       setTimeout(() => addBot(
-        "🎤 Let's book Zion 'SWRV' Birdsong for your event — live performances, weddings, festivals, private parties, and more.\n\nA $100 deposit secures your date, and the rest is negotiated based on your event. Opening the booking page now — pick your date and tell him the vision.",
+        "🎤 Book Zion 'SWRV' Birdsong for your event: live performances, weddings, festivals and private occasions.\n\nA $100 deposit reserves your date, and the final investment is set with you based on the event. Opening the booking page now so you can choose your date and share the vision.",
         undefined,
         { label: 'Open Booking Page →', action: 'book-birdsong' }
       ), 400);

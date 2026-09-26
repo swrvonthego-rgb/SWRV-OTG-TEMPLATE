@@ -411,6 +411,13 @@
 
 /* ── ZION VOCALS ── */
 .zion-page .vocals{ background: var(--color-mid); }
+.zion-page .vocals-tagline{
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
 .zion-page .vocals-intro{
   max-width: 62ch;
   margin-top: 1rem;
@@ -444,6 +451,13 @@
   padding-right: 0;
 }
 .zion-page .vocal-card-featured .vocal-head{ padding-top: 0.9rem; }
+.zion-page .vocal-price-label{
+  margin-top: 0.5rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
 .zion-page .vocal-price{
   font-family: 'Bebas Neue', sans-serif;
   font-size: 2rem;
