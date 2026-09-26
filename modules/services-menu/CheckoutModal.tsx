@@ -42,6 +42,7 @@ export function CheckoutModal({ service, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [addOnIds, setAddOnIds] = useState<string[]>([]);
+  const [optionId, setOptionId] = useState<string | undefined>(undefined);
 
   const questions = useMemo<Question[]>(
     () => (service ? buildIntakeQuestions(service.id, { forCheckout: true }) : []),
@@ -53,6 +54,7 @@ export function CheckoutModal({ service, onClose }: Props) {
     if (!service) return;
     setStep('date'); setMonth(startOfMonth(startOfToday())); setDate(null);
     setAnswers({}); setError(''); setSubmitting(false); setAddOnIds([]);
+    setOptionId(SERVICES.find((s) => s.id === service.id)?.options?.[0]?.id);
     fetch('/api/booked-dates')
       .then((r) => (r.ok ? r.json() : { dates: [] }))
       .then((d) => setBookedDates(Array.isArray(d.dates) ? d.dates : []))
@@ -67,7 +69,8 @@ export function CheckoutModal({ service, onClose }: Props) {
   // exactly what Stripe charges.
   const full = SERVICES.find((s) => s.id === service.id);
   const available = (full?.addOns || []).map((id) => ADD_ONS[id]).filter(Boolean);
-  const priced = checkoutTotal(full || service, addOnIds);
+  const options = full?.options || [];
+  const priced = checkoutTotal(full || service, addOnIds, optionId);
   const totalCents = Math.round(priced.total * 100);
   const depositCents = Math.round(totalCents / 2);
   const deposit = depositCents / 100;
@@ -104,6 +107,7 @@ export function CheckoutModal({ service, onClose }: Props) {
           serviceName: service.name,
           category: service.checkoutCategory || 'project',
           addOnIds,
+          optionId: options.length ? optionId : undefined,
           customerName: name.trim(),
           customerEmail: email.trim(),
           customerPhone: phone.trim() || undefined,
@@ -133,7 +137,7 @@ export function CheckoutModal({ service, onClose }: Props) {
         <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
           <div>
             <p className="text-xs font-bold tracking-[0.3em] uppercase" style={{ color: Gold }}>Book & Pay · {stepLabels[step]}</p>
-            <p className="text-sm mt-0.5 text-white font-semibold">{service.name} — ${service.priceNumeric.toLocaleString()}</p>
+            <p className="text-sm mt-0.5 text-white font-semibold">{service.name} — {money(priced.base)}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Close">
             <X size={18} style={{ color: 'rgba(255,255,255,0.4)' }} />
@@ -222,6 +226,30 @@ export function CheckoutModal({ service, onClose }: Props) {
           {/* ── STEP 3: CONTACT + PAY ── */}
           {step === 'details' && (
             <div>
+              {options.length > 0 && (
+                <div className="mb-5">
+                  <p className="text-xs font-bold tracking-[0.2em] uppercase mb-2" style={{ color: Gold }}>Choose your option</p>
+                  <div className="space-y-2" role="radiogroup">
+                    {options.map((o) => {
+                      const on = optionId === o.id;
+                      return (
+                        <label key={o.id} htmlFor={`option-${o.id}`} className="flex items-start gap-3 rounded-xl p-3 cursor-pointer transition-all"
+                          style={{ background: on ? 'rgba(255,77,0,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${on ? Orange : 'rgba(255,255,255,0.1)'}` }}>
+                          <input id={`option-${o.id}`} type="radio" name="checkout-option" checked={on} onChange={() => setOptionId(o.id)} className="mt-1" />
+                          <span className="flex-1">
+                            <span className="flex justify-between gap-3 text-sm text-white font-semibold">
+                              <span>{o.label}</span>
+                              <span>{money(o.price)}</span>
+                            </span>
+                            <span className="block text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{o.description}</span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {available.length > 0 && (
                 <div className="mb-5">
                   <p className="text-xs font-bold tracking-[0.2em] uppercase mb-2" style={{ color: Gold }}>Add-ons</p>
@@ -253,10 +281,10 @@ export function CheckoutModal({ service, onClose }: Props) {
                     <span className="text-white font-semibold">{format(date, 'MMM d, yyyy')}</span>
                   </div>
                 )}
-                {priced.lines.length > 0 && (
+                {(priced.lines.length > 0 || priced.option) && (
                   <>
                     <div className="flex justify-between text-sm mb-1.5">
-                      <span style={{ color: 'rgba(255,255,255,0.6)' }}>{service.name}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.6)' }}>{priced.option ? priced.option.label : service.name}</span>
                       <span className="text-white">{money(priced.base)}</span>
                     </div>
                     {priced.lines.map((l) => (

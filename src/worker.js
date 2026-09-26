@@ -1736,16 +1736,22 @@ async function handleCheckout(request, env) {
     if (!svc || !customerEmail) {
       return new Response(JSON.stringify({ error: 'Missing or invalid booking details.' }), { status: 400, headers: jsonHeaders(request) });
     }
-    const serviceName = svc.name;
     const category = svc.checkoutCategory === 'event' ? 'event' : 'project';
-    const priced = checkoutTotal(svc, Array.isArray(body.addOnIds) ? body.addOnIds.map(String) : []);
+    const priced = checkoutTotal(svc, Array.isArray(body.addOnIds) ? body.addOnIds.map(String) : [], body.optionId ? String(body.optionId) : undefined);
+    // A service with options (e.g. per-song live pricing) must name one.
+    if (svc.options?.length && !priced.option) {
+      return new Response(JSON.stringify({ error: 'Please pick an option for this booking.' }), { status: 400, headers: jsonHeaders(request) });
+    }
+    const serviceName = priced.option ? `${svc.name} — ${priced.option.label}` : svc.name;
     const priceCents = Math.round(priced.total * 100);
 
-    // Chosen add-ons travel with the intake answers, so they show up in the
-    // owner's booking email and in /admin -> Orders.
-    const intakeWithAddOns = priced.lines.length
-      ? [{ id: 'addOns', question: 'Add-ons', answer: priced.lines.map((l) => `${l.label} (+$${l.amount})`).join(', ') }, ...(Array.isArray(intake) ? intake : [])]
-      : intake;
+    // The chosen option and add-ons travel with the intake answers, so they
+    // show up in the owner's booking email and in /admin -> Orders.
+    const extraAnswers = [
+      ...(priced.option ? [{ id: 'option', question: 'Option', answer: `${priced.option.label} ($${priced.option.price})` }] : []),
+      ...(priced.lines.length ? [{ id: 'addOns', question: 'Add-ons', answer: priced.lines.map((l) => `${l.label} (+$${l.amount})`).join(', ') }] : []),
+    ];
+    const intakeWithAddOns = extraAnswers.length ? [...extraAnswers, ...(Array.isArray(intake) ? intake : [])] : intake;
     const intakeJson = normalizeIntake(intakeWithAddOns);
     if (category === 'event' && !eventDate) {
       return new Response(JSON.stringify({ error: 'An event date is required for this service.' }), { status: 400, headers: jsonHeaders(request) });
@@ -1775,7 +1781,7 @@ async function handleCheckout(request, env) {
       success_url: `${safeOrigin}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${safeOrigin}/`,
       'invoice_creation[enabled]': 'true',
-      metadata: { service_id: serviceId, category, add_ons: priced.lines.map((l) => l.id).join(',') },
+      metadata: { service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(',') },
     });
 
     const orderId = await (async () => {
@@ -2352,12 +2358,12 @@ Websites (swrvonthego.pro/website-design):
   Every website needs a logo, a vision statement, a mission statement, images and video content — ask whether they have those.
 
 Zion Vocals — Zion SWRV Birdsong live and on other artists' tracks, booked and paid (50% deposit) on the site:
-  - Zion Sings At Your Event — from $500 (live vocals at weddings, birthdays, corporate events, church and private events: live vocals by Zion, song selection consult, up to a 1-hour set). The deposit is 50% of $500; the final price depends on set length, travel and extras and is confirmed after the request, before the balance is invoiced ahead of the event. On-location travel in Atlanta $50, farther travel quoted. Don't quote a final total.
+  - Zion Sings At Your Event — from $500, priced per song (live at weddings, birthdays, corporate events, church and private events; song selection consult included). The client picks one option at checkout: One Song Live $500 (Zion sings one song live, with or without guitar); Custom Song $750 (Zion writes and produces one original song for the event and sings it live); Two Songs Live $1,000 (two songs sung live, with or without guitar). 50% deposit at checkout, balance invoiced before the event. Zion comes to the event (no remote option). On-location travel in Atlanta $50, farther travel quoted. It is priced per song, not by the hour or set length. The recording add-ons (songwriting, 48-hour rush) don't apply to this one.
   - The Hook — $350 (up to 8 bars sung by Zion, doubles and ad libs, key and tempo matched, dry + processed WAV stems, 3 days, 1 revision)
   - The Feature — $750 (16-bar verse + hook, leads, doubles, harmonies, ad libs, comped and tuned stems, "feat. Zion SWRV Birdsong" credit, 5 days, 2 revisions — most popular)
   - Session Vocals — Full Song — $1,200 (full lead vocal, background arrangement + harmony stacks, one live directed session, 7 days, 2 revisions)
   - Vocal Production — Your Voice — $600 (2-hour directed session in the Birdsong Method style, harmony arrangement, comping, tuning, cleaned stems, 5 days, 2 revisions)
-  Add-ons: songwriting +$200 (Zion writes his part), 48-hour rush +50% of the package price, on-location session in Atlanta +$50. Mixing and mastering of the full song are not included.
+  Recording add-ons (the four recording packages above only, not the live event): songwriting +$200 (Zion writes his part), 48-hour rush +50% of the package price, on-location session in Atlanta +$50. Mixing and mastering of the full song are not included.
   Rights: the vocal is work for hire, so the client owns the recording; if Zion writes lyrics or melody he keeps his writer share (BMI). The Feature credits "feat. Zion SWRV Birdsong"; the others credit Zion in the liner notes. Remote from anywhere in the world by default; in-studio sessions in Atlanta.
 
 Book SWRV Birdsong — live performance (singing + guitar) for birthdays, weddings, private parties and events, booked on the Zion booking page. Coffee shops $100/hr; custom birthday song (written with their details, professionally recorded) $100. Weddings and large events are quoted per event — pricing depends on equipment and event complexity, so don't quote a final number. A $100 deposit secures the date.

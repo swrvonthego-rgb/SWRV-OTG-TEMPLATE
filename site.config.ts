@@ -493,14 +493,31 @@ export function addOnPrice(base: number, addOn: AddOn): number {
 }
 
 // The one price calculation used by both the Book & Pay modal and the
-// Worker, so what the client sees is exactly what Stripe charges.
-export function checkoutTotal(service: { priceNumeric: number; addOns?: string[] }, addOnIds: string[] = []) {
+// Worker, so what the client sees is exactly what Stripe charges. When a
+// service has options (e.g. one song vs. two songs), the chosen option's
+// price is the base; an unknown option id gets no option (the Worker
+// rejects that before charging).
+export function checkoutTotal(
+  service: { priceNumeric: number; addOns?: string[]; options?: ServiceOption[] },
+  addOnIds: string[] = [],
+  optionId?: string,
+) {
+  const option = service.options?.length ? service.options.find((o) => o.id === optionId) : undefined;
+  const base = option ? option.price : service.priceNumeric;
   const chosen = [...new Set(addOnIds)]
     .filter((id) => service.addOns?.includes(id) && ADD_ONS[id])
     .map((id) => ADD_ONS[id]);
-  const lines = chosen.map((a) => ({ id: a.id, label: a.label, amount: addOnPrice(service.priceNumeric, a) }));
-  const total = service.priceNumeric + lines.reduce((t, l) => t + l.amount, 0);
-  return { base: service.priceNumeric, lines, total };
+  const lines = chosen.map((a) => ({ id: a.id, label: a.label, amount: addOnPrice(base, a) }));
+  const total = base + lines.reduce((t, l) => t + l.amount, 0);
+  return { base, option, lines, total };
+}
+
+// A priced choice the client picks at checkout (one per booking).
+export interface ServiceOption {
+  id: string;
+  label: string;
+  description: string;
+  price: number;
 }
 
 export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'vocals' | 'other';
@@ -527,6 +544,9 @@ export interface Service {
   // Optional extras a client can tick in Book & Pay (ids from ADD_ONS).
   // The server recomputes the total from these — never trusts the browser.
   addOns?: string[];
+  // Priced choices picked in Book & Pay (the client must pick one). The
+  // server prices the chosen option; priceNumeric stays the "From" price.
+  options?: ServiceOption[];
   // Rights / credit / delivery terms shown before payment.
   terms?: string;
   // Question ids to leave out of the inherited intake set — e.g. a live
@@ -911,9 +931,14 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 500,
     checkoutEnabled: true,
     checkoutCategory: 'event',
-    terms: "Starts at $500 for up to a 1-hour set. Your deposit is 50% of the starting price; the final price depends on set length, travel and extras, and is confirmed with you after your request, before the balance is invoiced ahead of the event. Remote isn't an option for this one: Zion comes to you. On-location travel in Atlanta is $50; farther travel is quoted.",
-    blurb: 'Zion sings live at your wedding, birthday, corporate event, church service or private event. Final price depends on set length, travel and extras, confirmed after your request.',
-    includes: ['Live vocals by Zion', 'Song selection consult', 'Up to a 1-hour set'],
+    options: [
+      { id: 'one-song-live', label: 'One Song Live', price: 500, description: 'Zion sings one song live at your event, with or without guitar.' },
+      { id: 'custom-song', label: 'Custom Song', price: 750, description: 'Zion writes and produces one original song for your event and sings it live.' },
+      { id: 'two-songs-live', label: 'Two Songs Live', price: 1000, description: 'Two songs sung live, with or without guitar.' },
+    ],
+    terms: "Priced per song: One Song Live $500, Custom Song $750 (Zion writes and produces an original song for your event and sings it live), Two Songs Live $1,000. You pay a 50% deposit now; the balance is invoiced before your event. Remote isn't an option for this one: Zion comes to you. On-location travel in Atlanta is $50; farther travel is quoted.",
+    blurb: 'Zion sings live at your wedding, birthday, corporate event, church service or private event. Priced per song: One Song Live $500, Custom Song $750 (an original song written and produced for your event, sung live), Two Songs Live $1,000. With or without guitar. On-location travel in Atlanta is $50.',
+    includes: ['Live vocals by Zion, with or without guitar', 'Song selection consult', 'Priced per song, pick your option at checkout'],
   },
   {
     id: 'vocal-hook',

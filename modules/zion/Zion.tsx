@@ -367,8 +367,8 @@ export function Zion({ isOpen, onClose }: ZionProps) {
             ))}
           </div>
           <p className="vocal-terms">
-            Zion Sings At Your Event starts at $500 for up to a 1-hour set; the final price depends on set length, travel and extras and is confirmed after your request.
-            Recording add-ons at checkout: songwriting +$200 · 48-hour rush +50% · on-location session in Atlanta +$50.
+            Zion Sings At Your Event is priced per song: One Song Live $500 · Custom Song $750 · Two Songs Live $1,000, picked at checkout. On-location travel in Atlanta is $50.
+            Recording add-ons at checkout (recording packages only): songwriting +$200 · 48-hour rush +50% · on-location session in Atlanta +$50.
             Your vocal is work for hire, so you own the recording. If Zion writes lyrics or melody, he keeps his writer share (BMI).
             The Feature is credited "feat. Zion SWRV Birdsong"; other packages credit Zion in the liner notes.
           </p>
