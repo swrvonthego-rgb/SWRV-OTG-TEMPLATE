@@ -38,6 +38,9 @@ export const DeliveryPage: React.FC = () => {
   const [error, setError] = useState('');
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
+  // Optional gratuity: a percentage of the amount due, or a custom amount.
+  const [tipChoice, setTipChoice] = useState<'none' | '10' | '15' | '20' | 'custom'>('none');
+  const [customTip, setCustomTip] = useState('');
   const justPaid = params.get('paid') === '1';
 
   useEffect(() => {
@@ -80,7 +83,7 @@ export const DeliveryPage: React.FC = () => {
     setPaying(true); setPayError('');
     try {
       const res = await fetch('/api/delivery/pay', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, tipCents }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.checkoutUrl) throw new Error(data.error || 'Payment could not start.');
@@ -103,6 +106,10 @@ export const DeliveryPage: React.FC = () => {
   if (!d) return <Shell><p className="text-center text-sm py-16" style={{ color: 'rgba(255,255,255,0.4)' }}>Loading…</p></Shell>;
 
   const paid = d.paid || justPaid;
+  const tipCents = tipChoice === 'none' ? 0
+    : tipChoice === 'custom' ? Math.max(0, Math.round((parseFloat(customTip) || 0) * 100))
+    : Math.round(d.amountDueCents * Number(tipChoice) / 100);
+  const totalCents = d.amountDueCents + tipCents;
 
   return (
     <Shell>
@@ -213,10 +220,32 @@ export const DeliveryPage: React.FC = () => {
                 <span className="text-2xl font-black" style={{ color: Orange }}>{money(d.amountDueCents)}</span>
               </div>
               {d.lineDescription && <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.55)' }}>{d.lineDescription}</p>}
+
+              <div className="mb-4">
+                <p className="text-white text-sm font-semibold mb-1">Add a gratuity</p>
+                <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Optional, and always appreciated by the team who created your content.</p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {([['none', 'None'], ['10', '10%'], ['15', '15%'], ['20', '20%'], ['custom', 'Other']] as const).map(([k, label]) => (
+                    <button key={k} type="button" onClick={() => setTipChoice(k)}
+                      className="py-2.5 rounded-lg text-xs font-semibold" style={choice(tipChoice === k)}>{label}</button>
+                  ))}
+                </div>
+                {tipChoice === 'custom' && (
+                  <input value={customTip} onChange={(e) => setCustomTip(e.target.value.replace(/[^0-9.]/g, ''))} inputMode="decimal"
+                    placeholder="Gratuity amount in $" className={`${input} mt-2`} style={FIELD_STYLE} />
+                )}
+                {tipCents > 0 && (
+                  <div className="text-xs mt-3 space-y-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    <div className="flex justify-between"><span>Amount due</span><span>{money(d.amountDueCents)}</span></div>
+                    <div className="flex justify-between"><span>Gratuity</span><span>{money(tipCents)}</span></div>
+                    <div className="flex justify-between text-white font-semibold pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}><span>Total today</span><span>{money(totalCents)}</span></div>
+                  </div>
+                )}
+              </div>
               <button type="button" onClick={pay} disabled={paying}
                 className="w-full py-4 rounded-xl font-bold text-sm disabled:opacity-60"
                 style={{ background: `linear-gradient(135deg, ${Orange}, #ff7433)`, color: '#fff', boxShadow: '0 8px 24px rgba(255,77,0,0.35)' }}>
-                {paying ? 'Opening secure checkout…' : `Pay ${money(d.amountDueCents)} →`}
+                {paying ? 'Opening secure checkout…' : `Pay ${money(totalCents)} →`}
               </button>
               {payError && <p className="text-sm mt-2" style={{ color: '#e5484d' }}>{payError}</p>}
               <p className="text-xs text-center mt-3 flex items-center justify-center gap-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>

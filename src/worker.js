@@ -1748,6 +1748,10 @@ async function ensureDeliveriesTable(env) {
       created_at          TEXT DEFAULT (datetime('now'))
     )`
   ).run();
+  // Added after the table first shipped — duplicate-column error swallowed.
+  for (const col of ['tip_cents INTEGER', 'paid_total_cents INTEGER']) {
+    try { await env.EMAIL_DB.prepare(`ALTER TABLE deliveries ADD COLUMN ${col}`).run(); } catch (_) {}
+  }
   await env.EMAIL_DB.prepare(
     `CREATE TABLE IF NOT EXISTS delivery_responses (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1810,18 +1814,27 @@ async function handleDeliveryPay(request, env) {
   if (!d) return new Response(JSON.stringify({ error: 'This link is no longer valid.' }), { status: 404, headers: jsonHeaders(request) });
   if (d.status === 'paid') return new Response(JSON.stringify({ error: "This is already paid — thank you!" }), { status: 409, headers: jsonHeaders(request) });
   if (!(d.amount_due_cents > 0)) return new Response(JSON.stringify({ error: 'Nothing is due.' }), { status: 400, headers: jsonHeaders(request) });
+  // Optional gratuity chosen by the client: whole cents, capped at $1,000.
+  const tipCents = Number.isInteger(body.tipCents) ? body.tipCents : 0;
+  if (tipCents < 0 || tipCents > 100000) {
+    return new Response(JSON.stringify({ error: 'Please enter a gratuity between $0 and $1,000.' }), { status: 400, headers: jsonHeaders(request) });
+  }
   try {
     const customer = d.client_email ? await findOrCreateStripeCustomer(env, { email: d.client_email, name: d.client_name }) : undefined;
     // The amount comes from the saved delivery, never from the browser.
     const session = await stripeRequest(env, 'POST', 'checkout/sessions', {
       mode: 'payment',
       customer,
-      line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: d.amount_due_cents,
-        product_data: { name: d.title, description: d.line_description || undefined } } }],
+      line_items: [
+        { quantity: 1, price_data: { currency: 'usd', unit_amount: d.amount_due_cents,
+          product_data: { name: d.title, description: d.line_description || undefined } } },
+        ...(tipCents > 0 ? [{ quantity: 1, price_data: { currency: 'usd', unit_amount: tipCents,
+          product_data: { name: 'Gratuity', description: 'Thank you for your generosity.' } } }] : []),
+      ],
       success_url: `https://swrvonthego.pro/delivered/${d.token}?paid=1`,
       cancel_url: `https://swrvonthego.pro/delivered/${d.token}`,
       'invoice_creation[enabled]': 'true',
-      metadata: { kind: 'delivery', delivery_token: d.token },
+      metadata: { kind: 'delivery', delivery_token: d.token, tip_cents: String(tipCents) },
     });
     await env.EMAIL_DB.prepare('UPDATE deliveries SET stripe_checkout_id = ? WHERE id = ?').bind(session.id, d.id).run();
     return new Response(JSON.stringify({ checkoutUrl: session.url }), { headers: jsonHeaders(request) });
@@ -1835,10 +1848,15 @@ async function handleDeliveryPay(request, env) {
 async function markDeliveryPaid(env, session) {
   const d = await findDelivery(env, session.metadata?.delivery_token);
   if (!d || d.status === 'paid') return;
-  await env.EMAIL_DB.prepare(`UPDATE deliveries SET status = 'paid', paid_at = datetime('now'), stripe_checkout_id = ? WHERE id = ?`).bind(session.id, d.id).run();
-  await emailOwner(env, `✅ Paid — ${d.client_name} · $${(d.amount_due_cents / 100).toFixed(2)}`,
-    `<h2 style="color:#46a758;margin:0 0 8px">✅ Delivery paid</h2>
-     <p style="margin:0;font-size:14px;">${esc(d.client_name)} paid $${(d.amount_due_cents / 100).toFixed(2)} for ${esc(d.title)}.</p>`).catch(() => {});
+  // What Stripe actually collected; the tip is whatever came on top of the amount due.
+  const paidTotal = Number.isInteger(session.amount_total) ? session.amount_total : d.amount_due_cents;
+  const tip = Math.max(0, paidTotal - d.amount_due_cents);
+  await env.EMAIL_DB.prepare(`UPDATE deliveries SET status = 'paid', paid_at = datetime('now'), stripe_checkout_id = ?, tip_cents = ?, paid_total_cents = ? WHERE id = ?`)
+    .bind(session.id, tip, paidTotal, d.id).run();
+  const usd = (c) => `$${(c / 100).toFixed(2)}`;
+  await emailOwner(env, `✅ Paid — ${d.client_name} · ${usd(paidTotal)}${tip ? ` (incl. ${usd(tip)} tip)` : ''}`,
+    `<h2 style="color:#46a758;margin:0 0 8px">✅ Delivery paid${tip ? ' — with a tip 🙏' : ''}</h2>
+     <p style="margin:0;font-size:14px;">${esc(d.client_name)} paid ${usd(d.amount_due_cents)} for ${esc(d.title)}${tip ? `, plus a ${usd(tip)} gratuity (${usd(paidTotal)} total)` : ''}.</p>`).catch(() => {});
   if (d.client_email) {
     await resendPost(env, {
       from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
@@ -1846,7 +1864,7 @@ async function markDeliveryPaid(env, session) {
       subject: `Thank you, ${d.client_name} — payment received`,
       html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
         <h2 style="margin:0 0 8px">Thank you — you're all paid up.</h2>
-        <p style="color:#555;font-size:14px;line-height:1.6;">We received your payment of $${(d.amount_due_cents / 100).toFixed(2)} for ${esc(d.title)}. Stripe will send your receipt separately.</p>
+        <p style="color:#555;font-size:14px;line-height:1.6;">We received your payment of ${usd(paidTotal)} for ${esc(d.title)}${tip ? `, including your ${usd(tip)} gratuity. Thank you, truly` : ''}. Stripe will send your receipt separately.</p>
         <p style="color:#555;font-size:14px;line-height:1.6;">Your content stays available at your delivery page anytime: <a href="https://swrvonthego.pro/delivered/${d.token}">swrvonthego.pro/delivered</a></p>
         <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p></div>`,
     }).catch(() => {});
