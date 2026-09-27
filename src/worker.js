@@ -833,6 +833,10 @@ export default {
     if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
     if (url.pathname === '/api/checkout')       return handleCheckout(request, env);
     if (url.pathname === '/api/agreement')      return handleAgreementView(request, env);
+    if (url.pathname === '/api/delivery')       return handleDeliveryGet(request, env);
+    if (url.pathname === '/api/delivery/respond') return handleDeliveryRespond(request, env);
+    if (url.pathname === '/api/delivery/pay')   return handleDeliveryPay(request, env);
+    if (url.pathname === '/api/admin/deliveries') return handleAdminDeliveries(request, env);
     if (url.pathname === '/api/song-details')   return handleClientDetails(request, env, 'song');
     if (url.pathname === '/api/access-status')  return handleClientDetails(request, env, 'access');
     if (url.pathname === '/api/stripe-webhook') return handleStripeWebhook(request, env);
@@ -1716,6 +1720,167 @@ function normalizeIntake(intake) {
   return clean.length ? JSON.stringify(clean) : null;
 }
 
+// ─────────────────────────────────────────────────────────
+// CLIENT DELIVERIES — one private link per finished job
+// (/delivered/<token>): a personal note, the work (Drive link), raw
+// footage, "post it for me", requests before paying, and a pay button.
+// Created from /admin → Deliveries. Responses email the owner; payment
+// goes through Stripe Checkout and is confirmed by the webhook.
+// ─────────────────────────────────────────────────────────
+let __deliveriesTableReady = false;
+async function ensureDeliveriesTable(env) {
+  if (__deliveriesTableReady) return;
+  await env.EMAIL_DB.prepare(
+    `CREATE TABLE IF NOT EXISTS deliveries (
+      id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+      token               TEXT NOT NULL UNIQUE,
+      client_name         TEXT NOT NULL,
+      client_email        TEXT,
+      title               TEXT NOT NULL,     -- e.g. "On The Go — 10 edited pieces"
+      message             TEXT,              -- personal note shown at the top
+      drive_url           TEXT,
+      raw_url             TEXT,              -- raw footage folder, if already uploaded
+      amount_due_cents    INTEGER NOT NULL DEFAULT 0,
+      line_description    TEXT,              -- what the payment is for (receipt line)
+      status              TEXT NOT NULL DEFAULT 'sent',  -- sent | paid
+      stripe_checkout_id  TEXT,
+      paid_at             TEXT,
+      created_at          TEXT DEFAULT (datetime('now'))
+    )`
+  ).run();
+  await env.EMAIL_DB.prepare(
+    `CREATE TABLE IF NOT EXISTS delivery_responses (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      delivery_id   INTEGER NOT NULL,
+      answers_json  TEXT NOT NULL,
+      created_at    TEXT DEFAULT (datetime('now'))
+    )`
+  ).run();
+  __deliveriesTableReady = true;
+}
+
+async function findDelivery(env, token) {
+  if (!/^[0-9a-f]{64}$/.test(String(token || ''))) return null;
+  await ensureDeliveriesTable(env);
+  return env.EMAIL_DB.prepare('SELECT * FROM deliveries WHERE token = ?').bind(token).first();
+}
+
+const safeUrl = (u) => (/^https:\/\/[^\s"'<>]+$/.test(String(u || '')) ? String(u) : null);
+
+async function handleDeliveryGet(request, env) {
+  const d = await findDelivery(env, new URL(request.url).searchParams.get('t'));
+  if (!d) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: jsonHeaders(request) });
+  return new Response(JSON.stringify({
+    clientName: d.client_name, title: d.title, message: d.message,
+    driveUrl: d.drive_url, rawUrl: d.raw_url, amountDueCents: d.amount_due_cents,
+    lineDescription: d.line_description, paid: d.status === 'paid', paidAt: d.paid_at,
+  }), { headers: { ...jsonHeaders(request), 'Cache-Control': 'no-store' } });
+}
+
+async function handleDeliveryRespond(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
+  let body; try { body = await request.json(); } catch { body = {}; }
+  const d = await findDelivery(env, body.token);
+  if (!d) return new Response(JSON.stringify({ error: 'This link is no longer valid.' }), { status: 404, headers: jsonHeaders(request) });
+  const answers = normalizeIntake(body.answers);
+  if (!answers) return new Response(JSON.stringify({ error: 'Nothing to send yet.' }), { status: 400, headers: jsonHeaders(request) });
+  await env.EMAIL_DB.prepare('INSERT INTO delivery_responses (delivery_id, answers_json) VALUES (?, ?)').bind(d.id, answers).run();
+  const rows = JSON.parse(answers).map((a) => `
+      <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${esc(a.question)}</td>
+          <td style="padding:8px 0;font-size:13px;white-space:pre-wrap;">${esc(a.answer)}</td></tr>`).join('');
+  await resendPost(env, {
+    from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+    to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
+    reply_to: d.client_email || undefined,
+    subject: `💬 ${d.client_name} responded — ${d.title}`,
+    html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+      <h2 style="color:#FF4D00;margin:0 0 6px">💬 ${esc(d.client_name)} responded to their delivery</h2>
+      <p style="margin:0 0 16px;font-size:13px;color:#8a8070;">${esc(d.title)} · ${d.status === 'paid' ? 'paid' : `$${(d.amount_due_cents / 100).toFixed(2)} not paid yet`}</p>
+      <table style="width:100%;border-collapse:collapse;">${rows}</table></div>`,
+  }).catch(() => {});
+  return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
+}
+
+async function handleDeliveryPay(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
+  let body; try { body = await request.json(); } catch { body = {}; }
+  const d = await findDelivery(env, body.token);
+  if (!d) return new Response(JSON.stringify({ error: 'This link is no longer valid.' }), { status: 404, headers: jsonHeaders(request) });
+  if (d.status === 'paid') return new Response(JSON.stringify({ error: "This is already paid — thank you!" }), { status: 409, headers: jsonHeaders(request) });
+  if (!(d.amount_due_cents > 0)) return new Response(JSON.stringify({ error: 'Nothing is due.' }), { status: 400, headers: jsonHeaders(request) });
+  try {
+    const customer = d.client_email ? await findOrCreateStripeCustomer(env, { email: d.client_email, name: d.client_name }) : undefined;
+    // The amount comes from the saved delivery, never from the browser.
+    const session = await stripeRequest(env, 'POST', 'checkout/sessions', {
+      mode: 'payment',
+      customer,
+      line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: d.amount_due_cents,
+        product_data: { name: d.title, description: d.line_description || undefined } } }],
+      success_url: `https://swrvonthego.pro/delivered/${d.token}?paid=1`,
+      cancel_url: `https://swrvonthego.pro/delivered/${d.token}`,
+      'invoice_creation[enabled]': 'true',
+      metadata: { kind: 'delivery', delivery_token: d.token },
+    });
+    await env.EMAIL_DB.prepare('UPDATE deliveries SET stripe_checkout_id = ? WHERE id = ?').bind(session.id, d.id).run();
+    return new Response(JSON.stringify({ checkoutUrl: session.url }), { headers: jsonHeaders(request) });
+  } catch (err) {
+    await notifyOwnerOfFailure(env, { source: 'Delivery payment', body: { delivery: d.id }, err });
+    return new Response(JSON.stringify({ error: 'Payment could not start. Try again, or reply to our email and we\'ll send an invoice.' }), { status: 500, headers: jsonHeaders(request) });
+  }
+}
+
+// Called from the Stripe webhook when a delivery payment completes.
+async function markDeliveryPaid(env, session) {
+  const d = await findDelivery(env, session.metadata?.delivery_token);
+  if (!d || d.status === 'paid') return;
+  await env.EMAIL_DB.prepare(`UPDATE deliveries SET status = 'paid', paid_at = datetime('now'), stripe_checkout_id = ? WHERE id = ?`).bind(session.id, d.id).run();
+  await emailOwner(env, `✅ Paid — ${d.client_name} · $${(d.amount_due_cents / 100).toFixed(2)}`,
+    `<h2 style="color:#46a758;margin:0 0 8px">✅ Delivery paid</h2>
+     <p style="margin:0;font-size:14px;">${esc(d.client_name)} paid $${(d.amount_due_cents / 100).toFixed(2)} for ${esc(d.title)}.</p>`).catch(() => {});
+  if (d.client_email) {
+    await resendPost(env, {
+      from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+      to: [d.client_email],
+      subject: `Thank you, ${d.client_name} — payment received`,
+      html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
+        <h2 style="margin:0 0 8px">Thank you — you're all paid up.</h2>
+        <p style="color:#555;font-size:14px;line-height:1.6;">We received your payment of $${(d.amount_due_cents / 100).toFixed(2)} for ${esc(d.title)}. Stripe will send your receipt separately.</p>
+        <p style="color:#555;font-size:14px;line-height:1.6;">Your content stays available at your delivery page anytime: <a href="https://swrvonthego.pro/delivered/${d.token}">swrvonthego.pro/delivered</a></p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p></div>`,
+    }).catch(() => {});
+  }
+}
+
+async function handleAdminDeliveries(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+  await ensureDeliveriesTable(env);
+  if (request.method === 'POST') {
+    let b; try { b = await request.json(); } catch { b = {}; }
+    const clientName = String(b.clientName || '').trim().slice(0, 120);
+    const title = String(b.title || '').trim().slice(0, 200);
+    const amount = Math.round(Number(b.amountDue || 0) * 100);
+    if (!clientName || !title || !(amount >= 0) || amount > 5000000) {
+      return new Response(JSON.stringify({ error: 'Client name, title and a valid amount are required.' }), { status: 400, headers: jsonHeaders(request) });
+    }
+    const token = randomToken();
+    await env.EMAIL_DB.prepare(
+      `INSERT INTO deliveries (token, client_name, client_email, title, message, drive_url, raw_url, amount_due_cents, line_description)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(token, clientName, String(b.clientEmail || '').trim().slice(0, 200) || null, title,
+      String(b.message || '').slice(0, 3000) || null, safeUrl(b.driveUrl), safeUrl(b.rawUrl), amount,
+      String(b.lineDescription || '').slice(0, 300) || null).run();
+    return new Response(JSON.stringify({ ok: true, url: `https://swrvonthego.pro/delivered/${token}` }), { headers: jsonHeaders(request) });
+  }
+  const { results } = await env.EMAIL_DB.prepare(
+    `SELECT d.*, (SELECT COUNT(*) FROM delivery_responses r WHERE r.delivery_id = d.id) AS responses
+       FROM deliveries d ORDER BY d.created_at DESC LIMIT 200`).all();
+  return new Response(JSON.stringify({ deliveries: results }), { headers: jsonHeaders(request) });
+}
+
 async function handleCheckout(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
@@ -1959,7 +2124,9 @@ async function handleStripeWebhook(request, env) {
   try { event = JSON.parse(rawBody); } catch { return new Response('Bad payload', { status: 400 }); }
 
   try {
-    if (event.type === 'checkout.session.completed') {
+    if (event.type === 'checkout.session.completed' && event.data.object?.metadata?.kind === 'delivery') {
+      await markDeliveryPaid(env, event.data.object);
+    } else if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       await ensureOrdersTable(env);
       const order = await env.EMAIL_DB.prepare('SELECT * FROM orders WHERE stripe_checkout_id = ?').bind(session.id).first();

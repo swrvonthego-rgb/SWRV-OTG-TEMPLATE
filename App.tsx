@@ -9,6 +9,7 @@ import { ZionSuitePage } from './pages/ZionSuitePage';
 import { FamilyPage } from './pages/FamilyPage';
 import { AboutShopContactPage } from './pages/AboutShopContactPage';
 import { BookingConfirmedPage } from './pages/BookingConfirmedPage';
+import { DeliveryPage } from './pages/DeliveryPage';
 import { SongDetailsPage } from './pages/SongDetailsPage';
 import { AccessPage } from './pages/AccessPage';
 
@@ -154,6 +155,7 @@ const AppShell: React.FC = () => {
         <Route path="/family/birdsong" element={<Birdsong isOpen={true} onClose={() => navigate('/family')} />} />
         <Route path="/about" element={<AboutShopContactPage />} />
         <Route path="/booking-confirmed" element={<BookingConfirmedPage />} />
+        <Route path="/delivered/:token" element={<DeliveryPage />} />
         <Route path="/song" element={<SongDetailsPage />} />
         <Route path="/access" element={<AccessPage />} />
         <Route path="*" element={<LegacyRedirect />} />
@@ -168,13 +170,14 @@ const AppShell: React.FC = () => {
         intakePath={intakeService?.path}
       />
 
-      {/* Live Chat — floating widget bottom-right, on every page */}
-      <LiveChat
+      {/* Live Chat — floating widget, on every page except a client's
+          private delivery page */}
+      {!location.pathname.startsWith('/delivered/') && <LiveChat
         onOpenBooking={() => {
           navigate('/about');
           setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 200);
         }}
-      />
+      />}
     </>
   );
 };

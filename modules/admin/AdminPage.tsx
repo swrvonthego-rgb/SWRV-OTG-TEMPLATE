@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { DeliveriesAdmin } from './DeliveriesAdmin';
 
 interface EmailRow {
   email: string;
@@ -97,7 +98,7 @@ interface TenantRow {
   created_at: string;
 }
 
-type Tab = 'emails' | 'bookings' | 'orders' | 'submissions' | 'tenants' | 'setup';
+type Tab = 'emails' | 'bookings' | 'orders' | 'deliveries' | 'submissions' | 'tenants' | 'setup';
 
 export const AdminPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -488,7 +489,7 @@ export const AdminPage: React.FC = () => {
       </div>
 
       <div className="flex gap-2 mb-8 border-b border-white/10">
-        {(['bookings', 'orders', 'emails', 'submissions', 'tenants', 'setup'] as Tab[]).map((t) => (
+        {(['bookings', 'orders', 'deliveries', 'emails', 'submissions', 'tenants', 'setup'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -496,7 +497,7 @@ export const AdminPage: React.FC = () => {
               tab === t ? 'border-lion-orange text-lion-orange' : 'border-transparent text-white/40 hover:text-white/70'
             }`}
           >
-            {t === 'emails' ? 'Email list' : t === 'bookings' ? 'Bookings' : t === 'orders' ? 'Orders' : t === 'submissions' ? 'Vision submissions' : t === 'setup' ? 'Setup' : 'Tenants'}
+            {t === 'emails' ? 'Email list' : t === 'bookings' ? 'Bookings' : t === 'orders' ? 'Orders' : t === 'deliveries' ? 'Deliveries' : t === 'submissions' ? 'Vision submissions' : t === 'setup' ? 'Setup' : 'Tenants'}
           </button>
         ))}
       </div>
@@ -747,6 +748,8 @@ export const AdminPage: React.FC = () => {
           )}
         </div>
       )}
+
+      {tab === 'deliveries' && <DeliveriesAdmin />}
 
       {tab === 'orders' && (
         <>
