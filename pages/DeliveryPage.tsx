@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, FolderOpen, Lock } from 'lucide-react';
 import { FIELD_STYLE } from '../components/IntakeFields';
+import { ReviewForm } from '../components/ReviewForm';
 
 const Orange = '#FF4D00';
 const Gold = '#c8a84b';
@@ -256,6 +257,12 @@ export const DeliveryPage: React.FC = () => {
               </p>
             </>
           )}
+        </div>
+      )}
+      {/* 4 · Review — once paid */}
+      {paid && (
+        <div className="rounded-2xl p-5 mb-10" style={card}>
+          <ReviewForm token={token} />
         </div>
       )}
     </Shell>

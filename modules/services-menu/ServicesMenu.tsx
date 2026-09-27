@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './services-menu.css';
 import { SERVICES, SERVICE_SUBCATEGORIES as SUB_CATEGORIES } from '../../site.config';
+import { ClientReviews } from '../../components/ClientReviews';
 import { CheckoutModal, CheckoutService } from './CheckoutModal';
 import { EventCoverage } from './EventCoverage';
 
@@ -214,6 +215,9 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             </section>
           );
         })}
+
+        {/* CLIENT REVIEWS — published reviews from verified paying clients */}
+        {!q && <ClientReviews />}
 
         {/* EMPTY STATE — shown when search returns nothing */}
         {q && !SUB_CATEGORIES.some(sub =>

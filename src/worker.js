@@ -847,6 +847,9 @@ export default {
     if (url.pathname === '/api/delivery/respond') return handleDeliveryRespond(request, env);
     if (url.pathname === '/api/delivery/pay')   return handleDeliveryPay(request, env);
     if (url.pathname === '/api/admin/deliveries') return handleAdminDeliveries(request, env);
+    if (url.pathname === '/api/review')         return handleReview(request, env);
+    if (url.pathname === '/api/reviews')        return handlePublicReviews(request, env);
+    if (url.pathname === '/api/admin/reviews')  return handleAdminReviews(request, env);
     if (url.pathname === '/api/song-details')   return handleClientDetails(request, env, 'song');
     if (url.pathname === '/api/access-status')  return handleClientDetails(request, env, 'access');
     if (url.pathname === '/api/stripe-webhook') return handleStripeWebhook(request, env);
@@ -1885,6 +1888,135 @@ async function resendPendingDeliveryResponses(env) {
   }
 }
 
+// ─────────────────────────────────────────────────────────
+// CLIENT REVIEWS — only verified paying clients can leave one, through
+// their private link (/review/<token>: a paid delivery's token, or a
+// Book & Pay order's agreement token). Nothing is public until the owner
+// publishes it in /admin → Reviews. Genuine reviews are published
+// whatever their rating; hiding is only for a stated reason (profanity,
+// personal info, spam/off-topic), in line with the FTC's rule against
+// suppressing negative reviews. Suggestions go to the owner only.
+// ─────────────────────────────────────────────────────────
+const REVIEW_HIDE_REASONS = ['Profanity or abusive language', 'Contains personal information', 'Spam or off-topic', 'Client asked us to remove it'];
+let __reviewsTableReady = false;
+async function ensureReviewsTable(env) {
+  if (__reviewsTableReady) return;
+  await env.EMAIL_DB.prepare(
+    `CREATE TABLE IF NOT EXISTS reviews (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_type   TEXT NOT NULL,          -- delivery | order
+      source_token  TEXT NOT NULL UNIQUE,   -- one review per paid job
+      client_name   TEXT,
+      service_name  TEXT,
+      display_name  TEXT,                   -- how the client wants to be shown
+      rating        INTEGER NOT NULL,
+      review_text   TEXT,
+      suggestions   TEXT,                   -- private, owner only
+      allow_public  INTEGER NOT NULL DEFAULT 0,
+      status        TEXT NOT NULL DEFAULT 'pending',  -- pending | published | hidden
+      hide_reason   TEXT,
+      owner_reply   TEXT,
+      created_at    TEXT DEFAULT (datetime('now')),
+      published_at  TEXT
+    )`
+  ).run();
+  __reviewsTableReady = true;
+}
+
+// Who a review link belongs to, and whether they've paid.
+async function reviewSource(env, token) {
+  if (!/^[0-9a-f]{64}$/.test(String(token || ''))) return null;
+  const d = await findDelivery(env, token);
+  if (d) return { type: 'delivery', token, clientName: d.client_name, clientEmail: d.client_email, service: d.title, paid: d.status === 'paid' };
+  await ensureOrdersTable(env);
+  const o = await env.EMAIL_DB.prepare('SELECT * FROM orders WHERE agreement_token = ?').bind(token).first();
+  if (o) return { type: 'order', token, clientName: o.customer_name, clientEmail: o.customer_email, service: o.service_name,
+    paid: ['paid_in_full', 'subscribed', 'cancelled'].includes(o.status) };
+  return null;
+}
+
+function reviewLink(token) { return `https://swrvonthego.pro/review/${token}`; }
+
+async function handleReview(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  await ensureReviewsTable(env);
+  if (request.method === 'GET') {
+    const src = await reviewSource(env, new URL(request.url).searchParams.get('t'));
+    if (!src) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: jsonHeaders(request) });
+    const existing = await env.EMAIL_DB.prepare('SELECT id FROM reviews WHERE source_token = ?').bind(src.token).first();
+    return new Response(JSON.stringify({ clientName: src.clientName, service: src.service, eligible: src.paid, submitted: !!existing }),
+      { headers: { ...jsonHeaders(request), 'Cache-Control': 'no-store' } });
+  }
+  if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
+  let b; try { b = await request.json(); } catch { b = {}; }
+  const src = await reviewSource(env, b.token);
+  if (!src) return new Response(JSON.stringify({ error: 'This link is no longer valid.' }), { status: 404, headers: jsonHeaders(request) });
+  if (!src.paid) return new Response(JSON.stringify({ error: 'Reviews open once your project is complete and paid.' }), { status: 403, headers: jsonHeaders(request) });
+  const rating = Number(b.rating);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return new Response(JSON.stringify({ error: 'Please choose a rating from 1 to 5 stars.' }), { status: 400, headers: jsonHeaders(request) });
+  const text = String(b.review || '').trim().slice(0, 2000);
+  const suggestions = String(b.suggestions || '').trim().slice(0, 2000);
+  const displayName = String(b.displayName || '').trim().slice(0, 60) || null;
+  const allowPublic = b.allowPublic === true && !!text;
+  try {
+    await env.EMAIL_DB.prepare(
+      `INSERT INTO reviews (source_type, source_token, client_name, service_name, display_name, rating, review_text, suggestions, allow_public)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(src.type, src.token, src.clientName || null, src.service || null, displayName, rating, text || null, suggestions || null, allowPublic ? 1 : 0).run();
+  } catch (_) {
+    return new Response(JSON.stringify({ error: "You've already left a review for this project. Thank you!" }), { status: 409, headers: jsonHeaders(request) });
+  }
+  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  await resendPost(env, {
+    from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+    to: ownerInbox(env),
+    reply_to: src.clientEmail || undefined,
+    subject: `${rating <= 3 ? '⚠️' : '⭐'} New ${rating}-star review — ${src.clientName || 'client'}`,
+    html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+      <h2 style="color:${rating <= 3 ? '#e8c96a' : '#46a758'};margin:0 0 6px">${stars}</h2>
+      <p style="margin:0 0 16px;font-size:13px;color:#8a8070;">${esc(src.clientName || '')} · ${esc(src.service || '')}${allowPublic ? ' · OK to publish' : ' · private'}</p>
+      ${rating <= 3 ? '<p style="margin:0 0 16px;font-size:13px;font-weight:600;color:#e8c96a;">They were told you will personally reach out to make it right. Reach out soon.</p>' : ''}
+      ${text ? `<p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Review</p><p style="font-size:14px;white-space:pre-wrap;margin:0 0 16px">${esc(text)}</p>` : ''}
+      ${suggestions ? `<p style="color:#8a8070;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 4px">Private suggestions</p><p style="font-size:14px;white-space:pre-wrap;margin:0 0 16px">${esc(suggestions)}</p>` : ''}
+      <p style="margin:0;font-size:12px;color:#8a8070;">Publish or reply in /admin → Reviews. Nothing is public until you publish it.</p></div>`,
+  }).catch(() => {});
+  return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
+}
+
+async function handlePublicReviews(request, env) {
+  await ensureReviewsTable(env);
+  const { results } = await env.EMAIL_DB.prepare(
+    `SELECT display_name, rating, review_text, service_name, owner_reply, published_at FROM reviews
+      WHERE status = 'published' ORDER BY published_at DESC LIMIT 100`).all();
+  return new Response(JSON.stringify({ reviews: results || [] }), { headers: { ...jsonHeaders(request), 'Cache-Control': 'public, max-age=300' } });
+}
+
+async function handleAdminReviews(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  const session = await getAdminSession(request, env);
+  if (!session) return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401, headers: jsonHeaders(request) });
+  await ensureReviewsTable(env);
+  if (request.method === 'POST') {
+    let b; try { b = await request.json(); } catch { b = {}; }
+    const rev = await env.EMAIL_DB.prepare('SELECT * FROM reviews WHERE id = ?').bind(Number(b.id)).first();
+    if (!rev) return new Response(JSON.stringify({ error: 'Review not found' }), { status: 404, headers: jsonHeaders(request) });
+    if (b.action === 'publish') {
+      if (!rev.allow_public) return new Response(JSON.stringify({ error: "This client didn't give permission to publish." }), { status: 409, headers: jsonHeaders(request) });
+      await env.EMAIL_DB.prepare(`UPDATE reviews SET status = 'published', hide_reason = NULL, published_at = COALESCE(published_at, datetime('now')) WHERE id = ?`).bind(rev.id).run();
+    } else if (b.action === 'hide') {
+      if (!REVIEW_HIDE_REASONS.includes(b.reason)) return new Response(JSON.stringify({ error: 'Pick a reason for hiding it.' }), { status: 400, headers: jsonHeaders(request) });
+      await env.EMAIL_DB.prepare(`UPDATE reviews SET status = 'hidden', hide_reason = ? WHERE id = ?`).bind(b.reason, rev.id).run();
+    } else if (b.action === 'reply') {
+      await env.EMAIL_DB.prepare('UPDATE reviews SET owner_reply = ? WHERE id = ?').bind(String(b.reply || '').trim().slice(0, 1000) || null, rev.id).run();
+    } else {
+      return new Response(JSON.stringify({ error: 'Unknown action' }), { status: 400, headers: jsonHeaders(request) });
+    }
+    return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
+  }
+  const { results } = await env.EMAIL_DB.prepare('SELECT * FROM reviews ORDER BY created_at DESC LIMIT 500').all();
+  return new Response(JSON.stringify({ reviews: results || [], hideReasons: REVIEW_HIDE_REASONS }), { headers: jsonHeaders(request) });
+}
+
 // Called from the Stripe webhook when a delivery payment completes.
 async function markDeliveryPaid(env, session) {
   const d = await findDelivery(env, session.metadata?.delivery_token);
@@ -1907,6 +2039,7 @@ async function markDeliveryPaid(env, session) {
         <h2 style="margin:0 0 8px">Thank you — you're all paid up.</h2>
         <p style="color:#555;font-size:14px;line-height:1.6;">We received your payment of ${usd(paidTotal)} for ${esc(d.title)}${tip ? `, including your ${usd(tip)} gratuity. Thank you, truly` : ''}. Stripe will send your receipt separately.</p>
         <p style="color:#555;font-size:14px;line-height:1.6;">Your content stays available at your delivery page anytime: <a href="https://swrvonthego.pro/delivered/${d.token}">swrvonthego.pro/delivered</a></p>
+        <p style="color:#555;font-size:14px;line-height:1.6;">If you have a moment, we'd be grateful for your review, and for any suggestions on how we can serve you better: <a href="${reviewLink(d.token)}">share your experience</a>.</p>
         <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p></div>`,
     }).catch(() => {});
   }
@@ -2282,10 +2415,26 @@ async function handleInvoicePaid(env, invoice) {
 
   // Self-serve orders' balance invoices (sent by invoiceBalance).
   await ensureOrdersTable(env);
+  const justPaid = await env.EMAIL_DB.prepare(
+    'SELECT * FROM orders WHERE balance_invoice_id = ? AND balance_paid_at IS NULL').bind(invoice.id).first();
   await env.EMAIL_DB.prepare(
     `UPDATE orders SET status = 'paid_in_full', balance_paid_at = datetime('now')
       WHERE balance_invoice_id = ? AND balance_paid_at IS NULL`
   ).bind(invoice.id).run();
+  // Paid in full: thank them and invite a review (once — the row above
+  // only matches the first time this invoice is reported paid).
+  if (justPaid?.agreement_token && justPaid.customer_email) {
+    await resendPost(env, {
+      from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+      to: [justPaid.customer_email],
+      subject: `Thank you, ${justPaid.customer_name || 'friend'} — you're paid in full`,
+      html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
+        <h2 style="margin:0 0 8px">Thank you — you're paid in full.</h2>
+        <p style="color:#555;font-size:14px;line-height:1.6;">It was a privilege to work with you on ${esc(justPaid.service_name)}.</p>
+        <p style="color:#555;font-size:14px;line-height:1.6;">If you have a moment, we'd be grateful for your review, and for any suggestions on how we can serve you better: <a href="${reviewLink(justPaid.agreement_token)}">share your experience</a>.</p>
+        <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p></div>`,
+    }).catch(() => {});
+  }
 }
 
 // A monthly plan ended (cancelled in Stripe, or payments stopped).
