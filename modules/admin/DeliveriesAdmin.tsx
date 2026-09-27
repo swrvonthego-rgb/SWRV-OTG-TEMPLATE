@@ -11,6 +11,7 @@ interface DeliveryRow {
   paid_at: string | null;
   responses: number;
   created_at: string;
+  response_list?: { at: string; emailed: boolean; answers: { question: string; answer: string }[] }[];
 }
 
 const field = 'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-lion-orange/60';
@@ -79,18 +80,30 @@ export function DeliveriesAdmin() {
       <div className="rounded-xl border border-white/10">
         {rows.length === 0 && <p className="p-4 text-white/30 text-sm">No deliveries yet.</p>}
         {rows.map((r) => (
-          <div key={r.id} className="px-4 py-3 border-b border-white/10 last:border-0 text-sm flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <div className="font-medium">{r.client_name} · {r.title}</div>
-              <div className="text-white/40 text-xs truncate">
-                <a className="underline" href={link(r.token)} target="_blank" rel="noreferrer">{link(r.token)}</a>
+          <div key={r.id} className="px-4 py-3 border-b border-white/10 last:border-0 text-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="font-medium">{r.client_name} · {r.title}</div>
+                <div className="text-white/40 text-xs truncate">
+                  <a className="underline" href={link(r.token)} target="_blank" rel="noreferrer">{link(r.token)}</a>
+                </div>
+              </div>
+              <div className="text-xs text-right shrink-0">
+                <div className="text-white/70">${(r.amount_due_cents / 100).toFixed(2)}</div>
+                <div className={`uppercase tracking-widest text-[10px] mt-0.5 ${r.status === 'paid' ? 'text-green-400' : 'text-lion-orange'}`}>{r.status}</div>
+                <div className="text-white/30 mt-0.5">{r.responses} response{r.responses === 1 ? '' : 's'}</div>
               </div>
             </div>
-            <div className="text-xs text-right shrink-0">
-              <div className="text-white/70">${(r.amount_due_cents / 100).toFixed(2)}</div>
-              <div className={`uppercase tracking-widest text-[10px] mt-0.5 ${r.status === 'paid' ? 'text-green-400' : 'text-lion-orange'}`}>{r.status}</div>
-              <div className="text-white/30 mt-0.5">{r.responses} response{r.responses === 1 ? '' : 's'}</div>
-            </div>
+            {r.response_list?.map((resp, i) => (
+              <div key={i} className="mt-3 rounded-lg bg-white/[0.03] border border-white/10 p-3">
+                <div className="text-[10px] uppercase tracking-widest text-white/30 mb-2">
+                  {resp.at} UTC · {resp.emailed ? 'emailed to you' : 'email pending, retrying hourly'}
+                </div>
+                {resp.answers.map((a, j) => (
+                  <div key={j} className="text-xs mb-1.5"><span className="text-white/40">{a.question}: </span><span className="text-white/80 whitespace-pre-wrap">{a.answer}</span></div>
+                ))}
+              </div>
+            ))}
           </div>
         ))}
       </div>

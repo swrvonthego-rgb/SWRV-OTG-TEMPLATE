@@ -25,6 +25,6 @@
   // STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to be set as Worker secrets
   // — see the checkout setup notes for exact steps.
   "triggers": {
-    "crons": ["0 14 * * *"]
+    "crons": ["0 14 * * *", "17 * * * *"]
   }
 }

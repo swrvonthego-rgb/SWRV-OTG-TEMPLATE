@@ -142,7 +142,7 @@ async function getD1ResendKey(env) {
 // Values are cached per isolate for a minute so an /admin change lands fast
 // without a D1 read on every request. Never returned to the browser.
 // ─────────────────────────────────────────────────────────
-const STORED_CONFIG_KEYS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CALENDAR_FEED_KEY'];
+const STORED_CONFIG_KEYS = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CALENDAR_FEED_KEY', 'NOTIFY_EMAIL_EXTRA'];
 let __storedConfig = null;
 let __storedConfigAt = 0;
 
@@ -170,6 +170,16 @@ async function saveStoredConfig(env, key, value) {
 
 // env with any missing Stripe/calendar keys filled from D1. A prototype
 // wrapper rather than a spread, so D1/R2/assets bindings pass through as-is.
+// Every inbox that gets the owner's notifications: the main one plus any
+// extras in NOTIFY_EMAIL_EXTRA (comma-separated; a Worker var or the D1
+// app_config table, kept out of the public repo).
+function ownerInbox(env, primary) {
+  const list = [primary || env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro',
+    ...String(env.NOTIFY_EMAIL_EXTRA || '').split(',')]
+    .map((e) => e.trim()).filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+  return [...new Set(list.map((e) => e.toLowerCase()))];
+}
+
 async function withStoredConfig(env) {
   if (!env.EMAIL_DB || STORED_CONFIG_KEYS.every((k) => env[k])) return env;
   const stored = await readStoredConfig(env);
@@ -385,7 +395,7 @@ async function notifyOwnerOfFailure(env, { source, body, err }) {
       </div>`;
     await resendPost(env, {
       from: fromAddr,
-      to: [notifyTo],
+      to: ownerInbox(env, notifyTo),
       subject: `🚨 ${source} failed — check the site`,
       html,
     });
@@ -893,9 +903,13 @@ export default {
     // Each sweep runs even if the other fails. A sweep that dies silently
     // means balances never get invoiced or overdue holds never surface —
     // so log it for Cloudflare and tell the owner.
-    const sweeps = [
+    // The hourly trigger only retries client responses that didn't email;
+    // the daily one runs everything.
+    const hourly = controller?.cron === HOURLY_CRON;
+    const sweeps = hourly ? [['Client response email retry', resendPendingDeliveryResponses]] : [
       ['Daily balance invoice sweep', runBalanceInvoiceSweep],
       ['Daily booking payment sweep', runBookingPaymentSweep],
+      ['Client response email retry', resendPendingDeliveryResponses],
     ];
     let failed = null;
     for (const [name, sweep] of sweeps) {
@@ -1501,7 +1515,7 @@ async function handleZionBooking(request, env) {
       },
       body: JSON.stringify({
         from: fromAddr,
-        to: [notifyTo],
+        to: ownerInbox(env, notifyTo),
         reply_to: email,
         subject,
         html,
@@ -1544,6 +1558,7 @@ async function handleZionBooking(request, env) {
 // ─────────────────────────────────────────────────────────
 
 const BALANCE_INVOICE_LEAD_DAYS = 3;
+const HOURLY_CRON = '17 * * * *'; // must match wrangler.jsonc triggers.crons
 let __ordersTableReady = false;
 
 async function ensureOrdersTable(env) {
@@ -1687,7 +1702,7 @@ async function handleClientDetails(request, env, kind) {
             <td style="padding:8px 0;font-size:13px;white-space:pre-wrap;">${safe(a.answer)}</td></tr>`).join('');
     const { res } = await resendPost(env, {
       from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
-      to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
+      to: ownerInbox(env),
       reply_to: email,
       subject: `${cfg.emoji} ${cfg.subject}: ${name}${eventDate ? ' — ' + eventDate : ''}`,
       html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
@@ -1760,6 +1775,7 @@ async function ensureDeliveriesTable(env) {
       created_at    TEXT DEFAULT (datetime('now'))
     )`
   ).run();
+  try { await env.EMAIL_DB.prepare('ALTER TABLE delivery_responses ADD COLUMN emailed_at TEXT').run(); } catch (_) {}
   __deliveriesTableReady = true;
 }
 
@@ -1789,20 +1805,10 @@ async function handleDeliveryRespond(request, env) {
   if (!d) return new Response(JSON.stringify({ error: 'This link is no longer valid.' }), { status: 404, headers: jsonHeaders(request) });
   const answers = normalizeIntake(body.answers);
   if (!answers) return new Response(JSON.stringify({ error: 'Nothing to send yet.' }), { status: 400, headers: jsonHeaders(request) });
-  await env.EMAIL_DB.prepare('INSERT INTO delivery_responses (delivery_id, answers_json) VALUES (?, ?)').bind(d.id, answers).run();
-  const rows = JSON.parse(answers).map((a) => `
-      <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${esc(a.question)}</td>
-          <td style="padding:8px 0;font-size:13px;white-space:pre-wrap;">${esc(a.answer)}</td></tr>`).join('');
-  await resendPost(env, {
-    from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
-    to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
-    reply_to: d.client_email || undefined,
-    subject: `💬 ${d.client_name} responded — ${d.title}`,
-    html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
-      <h2 style="color:#FF4D00;margin:0 0 6px">💬 ${esc(d.client_name)} responded to their delivery</h2>
-      <p style="margin:0 0 16px;font-size:13px;color:#8a8070;">${esc(d.title)} · ${d.status === 'paid' ? 'paid' : `$${(d.amount_due_cents / 100).toFixed(2)} not paid yet`}</p>
-      <table style="width:100%;border-collapse:collapse;">${rows}</table></div>`,
-  }).catch(() => {});
+  // Saved first, so a suggestion is never lost even if email is down; the
+  // email is retried by the daily sweep until it goes through.
+  const saved = await env.EMAIL_DB.prepare('INSERT INTO delivery_responses (delivery_id, answers_json) VALUES (?, ?)').bind(d.id, answers).run();
+  await emailDeliveryResponse(env, d, { id: saved.meta?.last_row_id, answers_json: answers });
   return new Response(JSON.stringify({ ok: true }), { headers: jsonHeaders(request) });
 }
 
@@ -1841,6 +1847,41 @@ async function handleDeliveryPay(request, env) {
   } catch (err) {
     await notifyOwnerOfFailure(env, { source: 'Delivery payment', body: { delivery: d.id }, err });
     return new Response(JSON.stringify({ error: 'Payment could not start. Try again, or reply to our email and we\'ll send an invoice.' }), { status: 500, headers: jsonHeaders(request) });
+  }
+}
+
+// Emails one client response to the owner and marks it sent. Returns
+// whether it went out; unsent ones are picked up by the daily sweep.
+async function emailDeliveryResponse(env, d, resp) {
+  const rows = JSON.parse(resp.answers_json).map((a) => `
+      <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${esc(a.question)}</td>
+          <td style="padding:8px 0;font-size:13px;white-space:pre-wrap;">${esc(a.answer)}</td></tr>`).join('');
+  try {
+    const { res } = await resendPost(env, {
+      from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+      to: ownerInbox(env),
+      reply_to: d.client_email || undefined,
+      subject: `💬 ${d.client_name} responded — ${d.title}`,
+      html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
+        <h2 style="color:#FF4D00;margin:0 0 6px">💬 ${esc(d.client_name)} responded to their delivery</h2>
+        <p style="margin:0 0 16px;font-size:13px;color:#8a8070;">${esc(d.title)} · ${d.status === 'paid' ? 'paid' : `$${(d.amount_due_cents / 100).toFixed(2)} not paid yet`}</p>
+        <table style="width:100%;border-collapse:collapse;">${rows}</table>
+        <p style="margin:16px 0 0;font-size:12px;color:#8a8070;">All responses are also saved in /admin → Deliveries.</p></div>`,
+    });
+    if (!res?.ok) return false;
+    if (resp.id) await env.EMAIL_DB.prepare(`UPDATE delivery_responses SET emailed_at = datetime('now') WHERE id = ?`).bind(resp.id).run();
+    return true;
+  } catch (_) { return false; }
+}
+
+// Daily: re-send any client response whose email didn't go through.
+async function resendPendingDeliveryResponses(env) {
+  await ensureDeliveriesTable(env);
+  const { results } = await env.EMAIL_DB.prepare(
+    `SELECT r.id, r.answers_json, d.* , r.id AS resp_id FROM delivery_responses r JOIN deliveries d ON d.id = r.delivery_id
+      WHERE r.emailed_at IS NULL ORDER BY r.id LIMIT 50`).all();
+  for (const row of results || []) {
+    await emailDeliveryResponse(env, row, { id: row.resp_id, answers_json: row.answers_json });
   }
 }
 
@@ -1896,6 +1937,12 @@ async function handleAdminDeliveries(request, env) {
   const { results } = await env.EMAIL_DB.prepare(
     `SELECT d.*, (SELECT COUNT(*) FROM delivery_responses r WHERE r.delivery_id = d.id) AS responses
        FROM deliveries d ORDER BY d.created_at DESC LIMIT 200`).all();
+  const { results: resp } = await env.EMAIL_DB.prepare(
+    `SELECT delivery_id, answers_json, created_at, emailed_at FROM delivery_responses ORDER BY id DESC LIMIT 1000`).all();
+  for (const d of results || []) {
+    d.response_list = (resp || []).filter((x) => x.delivery_id === d.id)
+      .map((x) => ({ at: x.created_at, emailed: !!x.emailed_at, answers: JSON.parse(x.answers_json) }));
+  }
   return new Response(JSON.stringify({ deliveries: results }), { headers: jsonHeaders(request) });
 }
 
@@ -2195,7 +2242,7 @@ function bookingName(b) {
 async function emailOwner(env, subject, bodyHtml) {
   const { res } = await resendPost(env, {
     from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
-    to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
+    to: ownerInbox(env),
     subject,
     html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">${bodyHtml}
       <p style="margin:20px 0 0;font-size:12px;color:#8a8070;">Manage bookings at <a style="color:#e8c96a" href="https://swrvonthego.pro/admin">swrvonthego.pro/admin</a> → Bookings.</p></div>`,
@@ -2574,7 +2621,7 @@ async function sendOwnerOrderEmail(env, order) {
     </div>`;
     await resendPost(env, {
       from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
-      to: [env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro'],
+      to: ownerInbox(env),
       reply_to: order.customer_email,
       subject: `💰 Booked: ${order.service_name} — ${order.customer_name || order.customer_email}`,
       html,
@@ -2919,7 +2966,7 @@ async function handleBooking(request, env) {
     const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
+      body: JSON.stringify({ from: fromAddr, to: ownerInbox(env, notifyTo), reply_to: email,
         subject: `💰 New Booking (${servicePrice}): ${serviceName} — ${name}${referralCode ? ` (ref: ${referralCode})` : ''}`,
         html: teamHtml,
         attachments: attachments.length ? attachments : undefined }),
@@ -3098,7 +3145,7 @@ async function handleIntakeSubmit(request, env) {
         fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ from: fromAddr, to: [notifyTo], reply_to: email,
+          body: JSON.stringify({ from: fromAddr, to: ownerInbox(env, notifyTo), reply_to: email,
             subject: `📋 New Project Intake: ${pathLabel || path} — ${name}`, html: teamHtml }),
         }),
         fetch('https://api.resend.com/emails', {
