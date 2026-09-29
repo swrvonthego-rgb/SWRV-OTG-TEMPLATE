@@ -2131,7 +2131,7 @@ async function handleCheckout(request, env) {
     await ensureOrdersTable(env);
     // Monthly plans charge the whole first month now (no balance); Stripe
     // then bills the same total every month on its own.
-    const depositCents = category === 'monthly' ? priceCents : Math.round(priceCents / 2);
+    const depositCents = category === 'monthly' || svc.payInFull ? priceCents : Math.round(priceCents / 2);
     const balanceCents = priceCents - depositCents;
 
     const customerId = await findOrCreateStripeCustomer(env, { email: customerEmail, name: customerName });
@@ -2339,7 +2339,10 @@ async function handleStripeWebhook(request, env) {
         }
       } else if (order) {
         await env.EMAIL_DB.prepare(
-          `UPDATE orders SET status = 'deposit_paid', deposit_paid_at = datetime('now'), stripe_payment_intent = ? WHERE id = ?`
+          // Nothing left to invoice when the whole price was paid up front.
+          `UPDATE orders SET status = CASE WHEN balance_cents = 0 THEN 'paid_in_full' ELSE 'deposit_paid' END,
+             balance_paid_at = CASE WHEN balance_cents = 0 THEN datetime('now') ELSE balance_paid_at END,
+             deposit_paid_at = datetime('now'), stripe_payment_intent = ? WHERE id = ?`
         ).bind(session.payment_intent || null, order.id).run();
         await sendDepositReceiptEmail(env, order);
         await sendOwnerOrderEmail(env, order);
@@ -2712,11 +2715,11 @@ async function sendDepositReceiptEmail(env, order) {
       <table style="width:100%;font-size:14px;margin:16px 0;border-collapse:collapse;">
         <tr><td style="padding:6px 0;color:#777;">Total</td><td style="text-align:right;">$${(order.total_cents / 100).toFixed(2)}</td></tr>
         <tr><td style="padding:6px 0;color:#777;">Paid today</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
-        <tr><td style="padding:6px 0;color:#777;">Balance due</td><td style="text-align:right;">$${(order.balance_cents / 100).toFixed(2)}</td></tr>
+        ${order.balance_cents > 0 ? `<tr><td style="padding:6px 0;color:#777;">Balance due</td><td style="text-align:right;">$${(order.balance_cents / 100).toFixed(2)}</td></tr>` : ''}
       </table>
       ${agreementLinkHtml(order, '#FF4D00')}
       ${roadmapStepHtml(order)}
-      <p style="color:#555;font-size:13px;line-height:1.6;">Stripe will send you a separate payment receipt for today's charge. The balance will be invoiced ${balanceWhen} — no need to follow up.</p>
+      <p style="color:#555;font-size:13px;line-height:1.6;">Stripe will send you a separate payment receipt for today's charge. ${order.balance_cents > 0 ? `The balance will be invoiced ${balanceWhen} — no need to follow up.` : "You're paid in full. We'll confirm your session time with you shortly."}</p>
       <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
     </div>`;
     await resendPost(env, {
@@ -2755,12 +2758,14 @@ async function sendOwnerOrderEmail(env, order) {
       ? `Monthly plan — preferred start: <strong>${safe(order.start_date || 'not given')}</strong>. Stripe bills $${(order.total_cents / 100).toFixed(2)} every month automatically; nothing to invoice.`
       : order.category === 'event'
       ? `Event date: <strong>${safe(order.event_date)}</strong> — balance auto-invoices ${BALANCE_INVOICE_LEAD_DAYS} days before.`
+      : order.balance_cents === 0
+      ? `Preferred date: <strong>${safe(order.start_date || 'not given')}</strong> — paid in full. Confirm the exact time with them.`
       : `Preferred start: <strong>${safe(order.start_date || 'not given')}</strong> — send the balance from /admin → Orders → Mark Delivered.`;
     const rows = answers.map((a) => `
         <tr><td style="padding:8px 0;color:#8a8070;font-size:12px;vertical-align:top;width:40%;">${safe(a.question)}</td>
             <td style="padding:8px 0;font-size:13px;">${safe(a.answer)}</td></tr>`).join('');
     const html = `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:auto;padding:24px;background:#0a0804;color:#ede8dc;border-radius:8px;">
-      <h2 style="color:#FF4D00;margin:0 0 6px">${order.category === 'monthly' ? '💰 New monthly client — first month paid' : '💰 New booking — deposit paid'}</h2>
+      <h2 style="color:#FF4D00;margin:0 0 6px">${order.category === 'monthly' ? '💰 New monthly client — first month paid' : order.balance_cents === 0 ? '💰 New booking — paid in full' : '💰 New booking — deposit paid'}</h2>
       <p style="margin:0 0 16px;font-size:15px;"><strong>${safe(order.service_name)}</strong> · $${(order.total_cents / 100).toFixed(2)}${order.category === 'monthly' ? '/month' : ' total'} · $${(order.deposit_cents / 100).toFixed(2)} paid</p>
       <p style="margin:0 0 4px;font-size:13px;">${safe(order.customer_name)} · <a style="color:#e8c96a" href="mailto:${safe(order.customer_email)}">${safe(order.customer_email)}</a>${order.customer_phone ? ' · ' + safe(order.customer_phone) : ''}</p>
       <p style="margin:0 0 20px;font-size:13px;color:#8a8070;">${when}</p>
@@ -2918,6 +2923,7 @@ Zion Vocals — Zion SWRV Birdsong, professional vocalist and producer, 20+ year
   Rights: the client owns the recording; when Zion writes lyrics or melody he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions in Atlanta.
 
 Social Media — booked and paid on the site. Same premium, professional tone as above.
+  - Brand Plan Consultation — $100, paid in full at booking. A one-on-one session with Swerve to shape the client's brand plan: vision, audience, look, voice, the platforms and next steps that fit, with the plan and next steps in writing. They take The Roadmap before the session. The client picks a preferred date; the exact time is confirmed with them. The natural first step before the Social Brand Kit or monthly management.
   - Social Brand Kit — $450, one-time (50% deposit, balance when delivered). A look the audience recognizes in one scroll: 30-minute brand discovery call, mood board, color palette with hex codes, font pairing, profile image and cover/banner graphics sized for each platform, 6 branded post templates, Instagram highlight covers, bio rewrite for each platform, brand board PDF and source files; 7 days; 2 revision rounds. Logo design not included.
   - Social Brand Management — $500/month for Instagram, month to month. SWRV runs the brand behind the scenes, in the client's voice: 12 feed posts a month (reels and carousels), stories 3 times a week, captions, hashtags and a posting schedule, monthly content gathering (we plan the shots, collect their photos and video, and create the graphics), comment and DM replies on weekdays, a monthly performance report and a 30-minute strategy call. Add platforms at checkout, per month: Facebook +$150, Threads +$100, LinkedIn +$200, TikTok +$250, YouTube +$300 (all six = $1,500/month). The first month is charged at checkout and Stripe bills the same total monthly after that; cancel anytime by emailing info@swrvonthego.pro before the next billing date. Access is given through Meta Business Suite and each platform's manager access, never a password. Paid ad spend and on-site shoots are not included.
   Both Social Media packages start from the client's long-term vision: after they pay, they take The Roadmap (swrvonthego.pro/roadmap, free, about 10 minutes), where they walk through their vision and answer the questionnaire so SWRV can build the brand from it. Explain that when relevant; the Roadmap is an onboarding step, not something to sell.

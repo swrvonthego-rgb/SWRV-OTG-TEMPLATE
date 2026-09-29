@@ -79,7 +79,8 @@ export function CheckoutModal({ service, onClose }: Props) {
   const options = full?.options || [];
   const priced = checkoutTotal(full || service, addOnIds, optionId);
   const totalCents = Math.round(priced.total * 100);
-  const depositCents = isMonthly ? totalCents : Math.round(totalCents / 2);
+  const payInFull = !!SERVICES.find((s) => s.id === service.id)?.payInFull;
+  const depositCents = isMonthly || payInFull ? totalCents : Math.round(totalCents / 2);
   const deposit = depositCents / 100;
   const balance = (totalCents - depositCents) / 100;
   const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
@@ -171,9 +172,9 @@ export function CheckoutModal({ service, onClose }: Props) {
           {/* ── STEP 1: CALENDAR ── */}
           {step === 'date' && (
             <div>
-              <h3 className="text-white font-bold text-lg mb-1">{isEvent ? 'Pick your event date' : 'Pick your preferred start date'}</h3>
+              <h3 className="text-white font-bold text-lg mb-1">{isEvent ? 'Pick your event date' : payInFull ? 'Pick your preferred date' : 'Pick your preferred start date'}</h3>
               <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                {isEvent ? 'Dates already booked are crossed out.' : isMonthly ? "We'll start managing your brand on or around this date. Your first month is billed today." : "We'll kick off your project on or around this date."}
+                {isEvent ? 'Dates already booked are crossed out.' : isMonthly ? "We'll start managing your brand on or around this date. Your first month is billed today." : payInFull ? "We'll confirm the exact time with you after you book." : "We'll kick off your project on or around this date."}
               </p>
               <div className="flex items-center justify-between mb-3">
                 <button type="button" onClick={() => setMonth(subMonths(month, 1))} disabled={!isBefore(today, startOfMonth(month))}
@@ -323,11 +324,13 @@ export function CheckoutModal({ service, onClose }: Props) {
                   <span className="text-white font-semibold">{money(priced.total)}{per}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1.5">
-                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>{isMonthly ? 'Due today (first month)' : 'Due now (50%)'}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>{isMonthly ? 'Due today (first month)' : payInFull ? 'Due today (paid in full)' : 'Due now (50%)'}</span>
                   <span className="font-bold" style={{ color: Orange }}>{money(deposit)}</span>
                 </div>
                 <div className="flex justify-between text-xs pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
-                  {isMonthly ? (
+                  {payInFull ? (
+                    <><span>No balance. You're all set once you pay.</span><span>$0</span></>
+                  ) : isMonthly ? (
                     <><span>Then billed monthly · cancel anytime</span><span>{money(priced.total)}/mo</span></>
                   ) : (
                     <><span>Balance (auto-invoiced {isEvent ? 'before your event' : 'when your project is delivered'})</span><span>{money(balance)}</span></>
@@ -381,7 +384,7 @@ export function CheckoutModal({ service, onClose }: Props) {
                   <button type="submit" disabled={submitting || !signature}
                     className="flex-1 py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60"
                     style={{ background: `linear-gradient(135deg, ${Orange}, #ff7433)`, color: '#fff', boxShadow: '0 8px 24px rgba(255,77,0,0.35)' }}>
-                    {submitting ? 'Redirecting to secure checkout…' : !signature ? 'Sign above to continue' : isMonthly ? `Sign & Start Plan · ${money(deposit)} →` : `Sign & Pay ${money(deposit)} Deposit →`}
+                    {submitting ? 'Redirecting to secure checkout…' : !signature ? 'Sign above to continue' : isMonthly ? `Sign & Start Plan · ${money(deposit)} →` : payInFull ? `Sign & Pay ${money(deposit)} →` : `Sign & Pay ${money(deposit)} Deposit →`}
                   </button>
                 </div>
                 <p className="text-xs text-center flex items-center justify-center gap-1.5" style={{ color: 'rgba(255,255,255,0.35)' }}>

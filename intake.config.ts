@@ -238,6 +238,18 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
     { id: 'notes', question: "Anything else?", type: 'textarea', optional: true, placeholder: "Release date, what you'll use the song for, anything to avoid..." },
   ],
 
+  // Brand Plan Consultation.
+  consult: [
+    { id: 'business', question: "Tell us about your brand or business", type: 'textarea', placeholder: "What you do, who it's for, and where you are today." },
+    { id: 'goals', question: "What do you want to walk away with?", sub: "Select everything that applies.", type: 'multi',
+      options: ['A clear brand plan', 'The right look and colors', 'Which platforms to focus on', 'A content strategy', 'Pricing and packages', 'Next steps I can act on'] },
+    { id: 'format', question: "How would you like to meet?", type: 'single',
+      options: ['Video call', 'Phone call', 'In person (Atlanta)'] },
+    { id: 'bestTime', question: "What times work best for you?", type: 'text', placeholder: "e.g. weekday evenings after 6 PM" },
+    { id: 'links', question: "Your website or social handles", type: 'text', optional: true, placeholder: "e.g. @yourbrand, yourbrand.com" },
+    { id: 'notes', question: "Anything else we should know before we meet?", type: 'textarea', optional: true, placeholder: "Questions you want answered, deadlines, anything on your mind..." },
+  ],
+
   // Monthly social management. Access ids 'metaAccess' / 'otherAccess'
   // match the event path so the owner email flags access status the
   // same way; option wording keeps the prefixes accessStatusLines reads.
@@ -304,7 +316,7 @@ export const INTAKE_PATHS: Record<IntakePath, Question[]> = {
 export const PATH_LABELS: Record<IntakePath, string> = {
   website: 'Website Project', video: 'Video Production', music: 'Music & Audio',
   brand: 'Brand Identity', business: 'Business Documents', podcast: 'Podcast',
-  event: 'Event Coverage', song: 'Custom Song', vocals: 'Zion Vocals', social: 'Social Media', other: 'Project',
+  event: 'Event Coverage', song: 'Custom Song', vocals: 'Zion Vocals', social: 'Social Media', consult: 'Brand Consultation', other: 'Project',
 };
 
 export function getIntakePath(serviceId: string | undefined): IntakePath | null {

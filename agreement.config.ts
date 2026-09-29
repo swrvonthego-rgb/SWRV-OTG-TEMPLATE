@@ -37,6 +37,7 @@ const usd = (cents: number) => `$${(cents / 100).toLocaleString('en-US', { minim
 export function buildAgreement(a: AgreementInput): Agreement {
   const s = a.service;
   const monthly = s.checkoutCategory === 'monthly';
+  const inFull = !!s.payInFull && !monthly;
   const event = s.checkoutCategory === 'event';
   const pkg = [s.name, a.optionLabel].filter(Boolean).join(' — ') + (a.addOnLabels.length ? ` + ${a.addOnLabels.join(' + ')}` : '');
 
@@ -45,9 +46,9 @@ export function buildAgreement(a: AgreementInput): Agreement {
     { label: 'Package', value: pkg },
     { label: event ? 'Event date' : 'Start date', value: a.date || 'To be confirmed' },
     { label: monthly ? 'Monthly investment' : 'Total investment', value: `${usd(a.totalCents)}${monthly ? '/month' : ''}` },
-    { label: monthly ? 'Due today (first month)' : 'Due today (50% deposit)', value: usd(a.dueTodayCents) },
+    { label: monthly ? 'Due today (first month)' : inFull ? 'Due today (paid in full)' : 'Due today (50% deposit)', value: usd(a.dueTodayCents) },
   ];
-  if (!monthly) summary.push({ label: 'Balance', value: `${usd(a.totalCents - a.dueTodayCents)}, invoiced ${event ? 'before the event' : 'on delivery'}` });
+  if (!monthly && !inFull) summary.push({ label: 'Balance', value: `${usd(a.totalCents - a.dueTodayCents)}, invoiced ${event ? 'before the event' : 'on delivery'}` });
 
   const scope = [
     s.blurb,
@@ -56,7 +57,9 @@ export function buildAgreement(a: AgreementInput): Agreement {
     s.deliveryDays ? `Estimated delivery: ${s.deliveryDays} days after kickoff.` : '',
   ].filter(Boolean).join(' ');
 
-  const payment = monthly
+  const payment = inFull
+    ? `The full amount (${usd(a.dueTodayCents)}) is paid today. There is no balance.`
+    : monthly
     ? `The first month (${usd(a.dueTodayCents)}) is paid today. The same amount is billed every month on the same date until the plan is cancelled. The client can cancel anytime by emailing info@swrvonthego.pro before the next billing date.`
     : `A 50% deposit (${usd(a.dueTodayCents)}) is paid today and confirms the booking. The balance (${usd(a.totalCents - a.dueTodayCents)}) is invoiced ${event ? 'before the event' : 'when the work is delivered'} and is due on that invoice.`;
 

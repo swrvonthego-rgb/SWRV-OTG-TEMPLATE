@@ -527,7 +527,7 @@ export interface ServiceOption {
   price: number;
 }
 
-export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'vocals' | 'social' | 'other';
+export type IntakePath = 'website' | 'video' | 'music' | 'brand' | 'business' | 'podcast' | 'event' | 'song' | 'vocals' | 'social' | 'consult' | 'other';
 
 export interface Service {
   id: string;
@@ -558,6 +558,9 @@ export interface Service {
   options?: ServiceOption[];
   // Rights / credit / delivery terms shown before payment.
   terms?: string;
+  // Charge the whole price at checkout instead of a 50% deposit (small,
+  // one-sitting services like a consultation). No balance invoice.
+  payInFull?: boolean;
   // After payment, send the client to The Roadmap (vision + questionnaire)
   // — shown on the confirmation page and in the welcome email.
   roadmapAfterPurchase?: boolean;
@@ -647,6 +650,22 @@ export const ALL_SERVICES: Service[] = [
   },
 
   // ── SOCIAL MEDIA — the look (one-time) and the monthly management.
+  {
+    id: 'brand-consultation',
+    name: 'Brand Plan Consultation',
+    category: 'identity',
+    intakePath: 'consult',
+    roadmapAfterPurchase: true,
+    price: '$100',
+    priceNumeric: 100,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    payInFull: true,
+    terms: "Paid in full when you book. Pick your preferred date and we'll confirm the exact time with you. Before your session, take The Roadmap so we can start from your long-term vision.",
+    blurb: 'Clarity on where your brand is going and how to get there. A one-on-one session with Swerve to shape your brand plan: your vision, your audience, your look, and the platforms and next steps that fit.',
+    includes: ['One-on-one consultation with Swerve', 'Brand vision and audience review', 'Look, voice and platform recommendations', 'Your brand plan and next steps, in writing', 'The Roadmap, to start from your long-term vision'],
+    notIncludes: ['Design work (see the Social Brand Kit)', 'Monthly management (see Social Brand Management)'],
+  },
   {
     id: 'social-brand-kit',
     name: 'Social Brand Kit',
@@ -1215,6 +1234,7 @@ export const ACTIVE_SERVICE_IDS = new Set<string>([
   'coverage-air-support',    // Air Support
   'vocal-live-event',        // Zion Sings At Your Event
   'vocal-production',        // Vocal Production — Your Voice
+  'brand-consultation',      // Brand Plan Consultation ($100, paid in full)
   'social-brand-kit',        // Social Brand Kit
   'social-management',       // Social Brand Management (monthly)
   'website-presence',
@@ -1311,7 +1331,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     tagline: 'Your brand, built and run in your voice.',
     emoji: '📱',
     intakePath: 'social',
-    serviceIds: ['social-brand-kit', 'social-management'],
+    serviceIds: ['brand-consultation', 'social-brand-kit', 'social-management'],
     note: {
       text: "Every brand we build starts with your long-term vision. Once you book, you'll take The Roadmap: we talk through your vision, you answer the questionnaire, and together we map where your brand is going before we build it.",
       linkLabel: 'See how The Roadmap works →',
