@@ -762,8 +762,8 @@ export default {
       '/revving-up':  'https://swrvonthego.pro/#revving-up',
       '/shop':        'https://swrvonthego.pro/#shop',
       '/websites':    'https://swrvonthego.pro/#need-a-website',
-      '/coverage':    'https://swrvonthego.pro/creative-services',
-      '/event-coverage': 'https://swrvonthego.pro/creative-services',
+      '/coverage':    'https://swrvonthego.pro/content',
+      '/event-coverage': 'https://swrvonthego.pro/content',
       '/intros':      'https://swrvonthego.pro/intros/',
       '/intro-studio':'https://swrvonthego.pro/intros/',
       '/templates':   'https://swrvonthego.pro/#website-templates',
@@ -2904,7 +2904,7 @@ Your job: Help potential clients understand which SWRV services are right for th
 
 WHAT SWRV OFFERS RIGHT NOW (nothing else is on offer at the moment):
 
-SWRV Coverage — event and brand content, fixed packages, booked and paid right on the site (swrvonthego.pro/coverage). Swerve's team comes to the event, captures the content, edits it, and posts it to the client's account before the event is over. Posting access is given through Meta Business Suite — never a password.
+SWRV Coverage — event and brand content, fixed packages, booked and paid right on the site (swrvonthego.pro/content). Swerve's team comes to the event, captures the content, edits it, and posts it to the client's account before the event is over. Posting access is given through Meta Business Suite — never a password.
   - On The Go — $500 (1 hour on-site, 6 edited reels delivered same day)
   - The Drive-Through — $1,500 (2 hours on-site, pre-shoot questionnaire, custom mood board, content strategy, creative direction, iPhone + video, gimbal-stabilized footage, real-time posting, 12 edited reels, raw footage — most popular)
   - The Pull-Up — $2,500 (3 hours on-site, strategy call + concept, mood board + shot list, gimbal-stabilized footage, professional photographer, edited brand photos, up to 3 looks, real-time posting throughout, 12 edited reels, raw footage)

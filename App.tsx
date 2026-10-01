@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 // ── Suite pages ──────────────────────────────────────────────
 import { Lobby } from './pages/Lobby';
@@ -47,6 +47,12 @@ if (typeof window !== 'undefined') {
 // Any old bookmarked/shared/indexed path that isn't a real route anymore
 // (see LEGACY_REDIRECTS in deepLink.ts) lands here and gets sent to its
 // new suite instead of 404ing.
+// Client-side move to a new address, keeping any ?query and #hash.
+const KeepQueryRedirect: React.FC<{ to: string }> = ({ to }) => {
+  const location = useLocation();
+  return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
+};
+
 const LegacyRedirect: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,7 +98,7 @@ const AppShell: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const handler = () => navigate('/creative-services');
+    const handler = () => navigate('/content');
     window.addEventListener('swrv:open-services', handler);
     return () => window.removeEventListener('swrv:open-services', handler);
   }, [navigate]);
@@ -132,7 +138,7 @@ const AppShell: React.FC = () => {
             <Roadmap
               isOpen={true}
               onClose={() => navigate('/')}
-              onOpenServices={() => navigate('/creative-services')}
+              onOpenServices={() => navigate('/content')}
               tenantSlug={visionTenantSlug()}
             />
           }
@@ -143,12 +149,14 @@ const AppShell: React.FC = () => {
             <Roadmap
               isOpen={true}
               onClose={() => navigate('/')}
-              onOpenServices={() => navigate('/creative-services')}
+              onOpenServices={() => navigate('/content')}
               tenantSlug={visionTenantSlug()}
             />
           }
         />
-        <Route path="/creative-services" element={<CreativeServicesPage />} />
+        <Route path="/content" element={<CreativeServicesPage />} />
+        {/* Old address for the same page — sends visitors to /content */}
+        <Route path="/creative-services" element={<KeepQueryRedirect to="/content" />} />
         <Route path="/website-design" element={<WebsiteDesignPage />} />
         <Route path="/zion" element={<ZionSuitePage />} />
         <Route path="/family" element={<FamilyPage />} />

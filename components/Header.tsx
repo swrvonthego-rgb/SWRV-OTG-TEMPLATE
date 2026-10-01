@@ -23,7 +23,7 @@ const MENU_GROUPS: MenuGroup[] = [
   {
     heading: 'The Suites',
     items: [
-      { label: 'Creative Services',        sub: 'Video, audio, content',       action: { kind: 'link', to: '/creative-services' } },
+      { label: 'Creative Services',        sub: 'Video, audio, content',       action: { kind: 'link', to: '/content' } },
       { label: 'Website Design',           sub: '$300 templates + custom',     action: { kind: 'link', to: '/website-design' } },
       { label: 'Zion & Artist Development',sub: 'Book Zion + mentorship',      action: { kind: 'link', to: '/zion' } },
       { label: 'The SWRV Family',          sub: 'Bible, BYOB, Birdsong Method',action: { kind: 'link', to: '/family' } },
@@ -176,7 +176,7 @@ export const Header: React.FC = () => {
               <div className="grid gap-3 md:grid-cols-2 mb-10 md:mb-14">
                 <button
                   type="button"
-                  onClick={() => handleAction({ kind: 'link', to: '/creative-services' })}
+                  onClick={() => handleAction({ kind: 'link', to: '/content' })}
                   className="text-left rounded-2xl p-6 md:p-7 transition-all hover:scale-[1.01]"
                   style={{ background: 'linear-gradient(135deg,#ff4d00 0%,#ff6a2a 100%)', boxShadow: '0 8px 24px rgba(255,77,0,0.25)' }}
                 >

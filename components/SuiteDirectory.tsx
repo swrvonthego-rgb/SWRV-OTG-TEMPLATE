@@ -25,7 +25,7 @@ const SUITES: Suite[] = [
     suiteNumber: 'Suite 1',
     name: 'Creative Services',
     blurb: 'Video, audio, podcasts, content — the full à la carte catalog.',
-    path: '/creative-services',
+    path: '/content',
     icon: <Sparkles size={28} strokeWidth={1.5} />,
   },
   {
