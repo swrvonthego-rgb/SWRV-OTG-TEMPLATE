@@ -31,6 +31,7 @@ import { ProjectIntake } from './components/ProjectIntake';
 import { Pipeline } from './components/Pipeline';
 import { LaunchBanner } from './components/LaunchBanner';
 import { Portfolio } from './components/Portfolio';
+import { InstagramWork } from './components/InstagramWork';
 import { Marketplace } from './components/Marketplace';
 
 // ── CONSOLE FINGERPRINT ─────────────────────────────────────────────
@@ -229,6 +230,7 @@ const App: React.FC = () => {
         />
         {!skipIntro && <BrandTransmission skipIntro={false} />}
         <Portfolio />
+        <InstagramWork />
         <Stats />
         <Marketplace onOpenRoadmap={() => setIsRoadmapOpen(true)} />
         <AboutSWRV />
