@@ -160,7 +160,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           <p className="sm-eyebrow">FULL SERVICE MENU</p>
           <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
           <p className="sm-intro">
-            Event content and websites — pick a package, book it, and pay right here. More packages are on the way.
+            Event coverage, music production, music videos, websites, social media and more — pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
           </p>
           <input
             type="search"
@@ -230,16 +230,29 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           </div>
         )}
 
+        {/* CUSTOM BOOKING CTA */}
+        {!q && (
+          <section className="sm-custom-booking">
+            <p className="sm-footer-eyebrow">NEED SOMETHING CUSTOM?</p>
+            <h2 className="sm-footer-title">Don't see your exact package?</h2>
+            <p className="sm-footer-body">
+              Working on something that doesn't fit a price sheet? Build a bundle, get a custom quote, or just tell us what you're working on. No back-and-forth — we'll put it together.
+            </p>
+            <button
+              type="button"
+              className="sm-cta-btn"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: 'custom', name: 'Custom Service Request' } }));
+                onClose?.();
+              }}
+            >
+              Build a Custom Package →
+            </button>
+          </section>
+        )}
+
         {/* CTA FOOTER */}
         <footer className="sm-footer">
-          <p className="sm-footer-eyebrow">DON'T SEE WHAT YOU NEED?</p>
-          <h2 className="sm-footer-title">More packages are on the way.</h2>
-          <p className="sm-footer-body">
-            Music, branding, video and more are being rebuilt into packages. Tell us what you're working on and we'll let you know the moment it's ready.
-          </p>
-          <a href="#contact" onClick={handleStrategyCallClick} className="sm-cta-btn">
-            Get In Touch →
-          </a>
           <p className="sm-footer-copy">© {new Date().getFullYear()} SWRV On The Go · swrvonthego.pro</p>
         </footer>
       </div>
