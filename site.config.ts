@@ -1,6 +1,6 @@
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// site.config.ts â SINGLE SOURCE OF TRUTH
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════════════════════
+// site.config.ts — SINGLE SOURCE OF TRUTH
+// ════════════════════════════════════════════════════════════
 //
 // Everything client-customizable lives here. To clone this template
 // for a new client, copy the repo and edit ONLY this file (plus
@@ -8,48 +8,35 @@
 // per-experience modules).
 //
 // What lives here:
-//   â¢ Brand identity (name, tagline, contact email, social links)
-//   â¢ Logo + primary brand image URLs
-//   â¢ Hero copy
-//   â¢ About / story copy
-//   â¢ Stats numbers
-//   â¢ WebPackages tiers + add-ons
-//   â¢ Service catalog (also imported by Roadmap config to keep them in sync)
-//   â¢ Footer content
-//   â¢ Brand color tokens (also read by tailwind.config.js + CSS modules)
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//   • Brand identity (name, tagline, contact email, social links)
+//   • Logo + primary brand image URLs
+//   • Hero copy
+//   • About / story copy
+//   • Stats numbers
+//   • WebPackages tiers + add-ons
+//   • Service catalog (also imported by Roadmap config to keep them in sync)
+//   • Footer content
+//   • Brand color tokens (also read by tailwind.config.js + CSS modules)
+// ════════════════════════════════════════════════════════════
 
-// ââ BRAND IDENTITY âââââââââââââââââââââââââââââââââââââââââ
-// ââ PAYMENT CONFIG âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── BRAND IDENTITY ─────────────────────────────────────────
+// ── PAYMENT CONFIG ─────────────────────────────────────────────────────
 // Every payment routes through Stripe. Card, Klarna, Afterpay and Affirm
 // are all enabled on the Stripe Payment Links themselves, so there are no
-// per-platform handles or separate BNPL merchant applications to track â
+// per-platform handles or separate BNPL merchant applications to track —
 // turning a method on in the Stripe dashboard turns it on for the site.
 //
-// Paste the Payment Link URLs from Stripe â Payment Links. Until a link is
+// Paste the Payment Link URLs from Stripe → Payment Links. Until a link is
 // set, the booking flow tells the client a secure link is coming by email
 // rather than showing a dead button.
 export const PAYMENT_CONFIG = {
   stripe: {
-    // Fixed $100 â secures a booking (Zion's calendar, or a general service
+    // Fixed $100 — secures a booking (Zion's calendar, or a general service
     // request). The remaining balance is negotiated/invoiced separately;
     // this link only ever collects the deposit.
     //
-    // â  depositAmount must match the amount the Payment Link actually charges.
-    // A Stripe Payment Link's price cannot be edited after creation â changing
-    // the deposit means creating a NEW link in Stripe and pasting it here.
-    depositAmount: 100,
-    depositUrl: 'https://buy.stripe.com/14A4gydAO0HKdd20mPaEE01',
-    // Built with "let customers choose what by email
-// rather than showing a dead button.
-export const PAYMENT_CONFIG = {
-  stripe: {
-    // Fixed $100 â secures a booking (Zion's calendar, or a general service
-    // request). The remaining balance is negotiated/invoiced separately;
-    // this link only ever collects the deposit.
-    //
-    // â  depositAmount must match the amount the Payment Link actually charges.
-    // A Stripe Payment Link's price cannot be edited after creation â changing
+    // ⚠ depositAmount must match the amount the Payment Link actually charges.
+    // A Stripe Payment Link's price cannot be edited after creation — changing
     // the deposit means creating a NEW link in Stripe and pasting it here.
     depositAmount: 100,
     depositUrl: 'https://buy.stripe.com/14A4gydAO0HKdd20mPaEE01',
@@ -60,15 +47,15 @@ export const PAYMENT_CONFIG = {
 } as const;
 
 
-// ââ ROADMAP ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-// The Roadmap is FREE â it's the top of the funnel, not a product.
+// ── ROADMAP ────────────────────────────────────────────────────────────
+// The Roadmap is FREE — it's the top of the funnel, not a product.
 // There is one experience (no tiers) and nothing is charged for it.
 export const ROADMAP_PRICING = {
   full: {
     price: 'Free',
     priceNumeric: 0,
     label: 'The Roadmap',
-    tagline: 'Your complete blueprint â vision mapped to services.',
+    tagline: 'Your complete blueprint — vision mapped to services.',
     bulletPoints: [
       'Deep evidence-based analysis of your vision',
       '7-part life blueprint (mindset, diet, fitness, community)',
@@ -79,7 +66,7 @@ export const ROADMAP_PRICING = {
 } as const;
 
 
-// ââ SERVICE ASSET REQUIREMENTS ââââââââââââââââââââââââââââââââââââââââââ
+// ── SERVICE ASSET REQUIREMENTS ──────────────────────────────────────────
 // What each service needs from the client before work begins.
 // Drives the file upload guidance in the booking flow.
 export const SERVICE_ASSETS: Record<string, {
@@ -124,15 +111,27 @@ export const SERVICE_ASSETS: Record<string, {
   },
   'brand-planning': {
     title: "What we need for your Complete Branding Package",
-    required: ['Business name (final â not a placeholder)', 'Brief description of your business and target audience', 'What you want your business to be known for'],
+    required: ['Business name (final — not a placeholder)', 'Brief description of your business and target audience', 'What you want your business to be known for'],
     optional: ['Existing logo or brand elements', 'Competitor examples', 'Color preferences', 'Visual inspiration (Pinterest board, screenshots, links)'],
     formats: '.pdf,.doc,.docx,.jpg,.png,.ai,.eps',
-    note: 'You don\'t need a logo, vision, or mission going in â building those is the whole point of this package.',
+    note: 'You don\'t need a logo, vision, or mission going in — building those is the whole point of this package.',
   },
   'logo-design': {
     title: "What we need for Logo Design",
     required: ['Brand planning brief or answers to our intake form', 'Color preferences or mood reference'],
-    optional: ['Existing brand assets to work with or replace', 'Font preferences', 'Examples of logos you like or dislike andeo content', 'Professional photography', 'Color palette / brand colors', 'Reference websites you like'],
+    optional: ['Existing brand assets to work with or replace', 'Font preferences', 'Examples of logos you like or dislike and why'],
+    formats: '.pdf,.jpg,.png,.ai,.eps,.doc,.docx',
+  },
+  'photography': {
+    title: "What we need for your Photo Shoot",
+    required: ['Shot list or usage goal (album cover, social, press, brand)'],
+    optional: ['Mood board or visual reference images', 'Wardrobe plan / outfit ideas', 'Location preferences or restrictions'],
+    formats: '.pdf,.jpg,.png,.doc,.docx',
+  },
+  'website-presence': {
+    title: "What we need for your Website",
+    required: ['Logo file (PNG, SVG, or AI format)', 'Vision statement', 'Mission statement', 'Images (photos of you, your work, or your space)', 'Written content for each page (copy, bio, services)'],
+    optional: ['Video content', 'Professional photography', 'Color palette / brand colors', 'Reference websites you like'],
     formats: '.pdf,.ai,.eps,.svg,.png,.jpg,.doc,.docx,.txt,.mp4,.mov',
     note: 'Don\'t have a logo, vision, or mission yet? Tell us in your notes and we\'ll help you pull it together. The more content you provide, the faster and better the result.',
   },
@@ -151,7 +150,7 @@ export const SERVICE_ASSETS: Record<string, {
     note: 'Don\'t have a logo, vision, or mission yet? Tell us in your notes and we\'ll help you pull it together. For Ecosystem builds, a kickoff call is included. Come prepared.',
   },
   'enterprise-ecosystem': {
-    title: "Enterprise Intake â Custom Scope",
+    title: "Enterprise Intake — Custom Scope",
     required: ['Executive brief or project overview', 'Brand guide and all existing assets', 'Technical requirements doc if applicable'],
     optional: ['Existing codebase or documentation', 'Team access credentials', 'Budget and timeline constraints'],
     formats: '.pdf,.zip,.docx,.pptx',
@@ -185,13 +184,13 @@ export const SERVICE_ASSETS: Record<string, {
   },
 };
 
-// ââ SERVICE PACKAGES âââââââââââââââââââââââââââââââââââââââââââââââââââ
-// Removed â pricing is defined in WEB_PACKAGE_TIERS for websites and SERVICES for everything else.
+// ── SERVICE PACKAGES ───────────────────────────────────────────────────
+// Removed — pricing is defined in WEB_PACKAGE_TIERS for websites and SERVICES for everything else.
 
 
-// ââ REFERRAL / AFFILIATE CONFIG ââââââââââââââââââââââââââââââââââââââââ
+// ── REFERRAL / AFFILIATE CONFIG ────────────────────────────────────────
 // SWRV clients and partners get a unique referral code.
-// Anyone who books via their link â they earn a finder fee.
+// Anyone who books via their link → they earn a finder fee.
 // Payout is tracked automatically and sent manually (or via PayPal Payouts API later).
 export const REFERRAL_CONFIG = {
   finderFeePercent: 15,          // 15% of the service price goes to the referrer
@@ -205,7 +204,7 @@ export const REFERRAL_CONFIG = {
 } as const;
 
 
-// ââ SWRV PIPELINE â Pre-rollout projects âââââââââââââââââââââââââââ
+// ── SWRV PIPELINE — Pre-rollout projects ───────────────────────────
 export interface PipelineProject {
   id: string;
   name: string;
@@ -224,12 +223,12 @@ export const PIPELINE_PROJECTS: PipelineProject[] = [
   {
     id: 'no-bs-bible',
     name: 'The SWRV No BS Bible',
-    tagline: 'The Word â without the whitewash.',
-    description: `A free Bible for everyone. Original canons translated the way they were actually written â with kingdom culture, historical accuracy, and zero colonial agenda. We are not afraid of the truth. We are afraid of what happens when young people never encounter it.\n\nThis includes the Book of Enoch, the Dead Sea Scrolls, and every scripture source that is historically relevant and aligned with the Word as God intended it. We have also documented how the Bible was assembled â not to create controversy, but because the people deserve to understand what they are reading and why.\n\nBuilt with AI tools wielded by people who actually have a relationship with God. Free to access. Supported by the community.`,
+    tagline: 'The Word — without the whitewash.',
+    description: `A free Bible for everyone. Original canons translated the way they were actually written — with kingdom culture, historical accuracy, and zero colonial agenda. We are not afraid of the truth. We are afraid of what happens when young people never encounter it.\n\nThis includes the Book of Enoch, the Dead Sea Scrolls, and every scripture source that is historically relevant and aligned with the Word as God intended it. We have also documented how the Bible was assembled — not to create controversy, but because the people deserve to understand what they are reading and why.\n\nBuilt with AI tools wielded by people who actually have a relationship with God. Free to access. Supported by the community.`,
     status: 'live-preview',
     statusLabel: 'Live Preview',
     url: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/',
-    ctaLabel: 'Access the Preview â',
+    ctaLabel: 'Access the Preview →',
     accentColor: '#c8a84b',
     supportCta: 'Support This Project',
     supportUrl: 'https://square.link/u/wXrlUcBY?src=sheet',
@@ -237,20 +236,20 @@ export const PIPELINE_PROJECTS: PipelineProject[] = [
 ];
 
 
-// ââ LAUNCH MODE ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── LAUNCH MODE ────────────────────────────────────────────────────
 // Set to true to hide pricing and drive inquiries.
 // Flip to false when ready to show prices again.
 export const LAUNCH_MODE = {
   active: false,
   badge: 'NOW OPEN',
-  headline: 'SWRV On The Go â Grand Opening',
+  headline: 'SWRV On The Go — Grand Opening',
   subline: 'We are officially open for business and now accepting new clients. Reach out to discuss your project and receive custom pricing.',
   pricingCta: 'Request Pricing',
   pricingNote: 'Pricing available on request. Book a consultation or reach out directly.',
 } as const;
 
 
-// ââ PORTFOLIO â Showcase for employers / collaborators âââââââââââââ
+// ── PORTFOLIO — Showcase for employers / collaborators ─────────────
 export interface PortfolioProject {
   id: string;
   name: string;
@@ -270,8 +269,8 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     id: 'swrv-otg',
     name: 'SWRV On The Go',
     type: 'Full-Stack Creative Platform',
-    description: 'The flagship. A complete creative agency platform with an AI-powered vision experience (The Roadmap), e-commerce, booking system, payment integrations, referral tracking, and dynamic service marketplace â all custom built.',
-    role: 'Sole creator â design, development, and everything end to end',
+    description: 'The flagship. A complete creative agency platform with an AI-powered vision experience (The Roadmap), e-commerce, booking system, payment integrations, referral tracking, and dynamic service marketplace — all custom built.',
+    role: 'Sole creator — design, development, and everything end to end',
     stack: ['React', 'TypeScript', 'Cloudflare Workers', 'AI Integration', 'Stripe/PayPal'],
     status: 'live',
     statusLabel: 'Live',
@@ -282,8 +281,8 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     id: 'no-bs-bible',
     name: 'The SWRV No BS Bible',
     type: 'Full-Stack Web App',
-    description: 'A free, historically accurate Bible web app featuring original canon translations, the Book of Enoch, and Dead Sea Scrolls â with documentation on how scripture was assembled. Built to make the Word accessible without whitewashing.',
-    role: 'Sole creator â design, development, research, everything end to end',
+    description: 'A free, historically accurate Bible web app featuring original canon translations, the Book of Enoch, and Dead Sea Scrolls — with documentation on how scripture was assembled. Built to make the Word accessible without whitewashing.',
+    role: 'Sole creator — design, development, research, everything end to end',
     stack: ['React', 'Cloudflare Workers', 'AI-Assisted Translation', 'Payment Integration'],
     status: 'live',
     statusLabel: 'Live',
@@ -295,8 +294,8 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     id: 'birdsong-method',
     name: 'The Birdsong Method',
     type: 'AI Vocal Analysis Platform',
-    description: 'An AI-powered vocal coaching platform built on 25 years of real experience. Record or upload a performance, get instant scored feedback on pitch, tone, breath control, and style â with actionable next steps, not just a number.',
-    role: 'Sole creator â design, development, and everything end to end',
+    description: 'An AI-powered vocal coaching platform built on 25 years of real experience. Record or upload a performance, get instant scored feedback on pitch, tone, breath control, and style — with actionable next steps, not just a number.',
+    role: 'Sole creator — design, development, and everything end to end',
     stack: ['React', 'TypeScript', 'AI Integration', 'Web Audio API', 'Cloudflare Workers'],
     status: 'in-development',
     statusLabel: 'In Development',
@@ -307,8 +306,8 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     id: 'trainbyob',
     name: 'TrainBYOB.me',
     type: 'Business Website',
-    description: 'Fitness and self-defense coaching website â "Train your body, protect your peace." Built to convert visitors into booked coaching clients with a clean, motivating brand presence.',
-    role: 'Sole creator â design, development, and everything end to end',
+    description: 'Fitness and self-defense coaching website — "Train your body, protect your peace." Built to convert visitors into booked coaching clients with a clean, motivating brand presence.',
+    role: 'Sole creator — design, development, and everything end to end',
     stack: ['React', 'Cloudflare Pages', 'Responsive Design', 'Brand Identity'],
     status: 'live',
     statusLabel: 'Live',
@@ -318,10 +317,10 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   },
   {
     id: 'mypatrol',
-    name: 'MyPatrol â Patrol Shift Log',
+    name: 'MyPatrol — Patrol Shift Log',
     type: 'Voice-First Field App',
-    description: 'A voice-driven shift documentation system built for security professionals. Speak your shift â the app fills both patrol forms automatically. Deployed for Southern Protection Agency, Fairfield Plantation.',
-    role: 'Sole creator â design, development, and everything end to end',
+    description: 'A voice-driven shift documentation system built for security professionals. Speak your shift — the app fills both patrol forms automatically. Deployed for Southern Protection Agency, Fairfield Plantation.',
+    role: 'Sole creator — design, development, and everything end to end',
     stack: ['Vanilla JS', 'HTML/CSS', 'Voice API', 'Cloudflare Workers', 'PWA'],
     status: 'live',
     statusLabel: 'Live',
@@ -333,8 +332,8 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     id: 'byob-timer',
     name: 'BYOB Timer',
     type: 'Web Tool / App',
-    description: 'A custom interval and workout timer built for the BYOB training programs â purpose-built for coaching sessions, rounds, and structured workouts. Zero setup, offline-ready, mobile-first.',
-    role: 'Sole creator â built completely end to end',
+    description: 'A custom interval and workout timer built for the BYOB training programs — purpose-built for coaching sessions, rounds, and structured workouts. Zero setup, offline-ready, mobile-first.',
+    role: 'Sole creator — built completely end to end',
     stack: ['JavaScript', 'Web App', 'UI/UX Design'],
     status: 'live',
     statusLabel: 'Live',
@@ -351,7 +350,7 @@ export const BRAND = {
   fullAcronym: 'Serving With Righteous Vision',
   tagline: 'Let Love GPS',
   description:
-    'Full-service creative agency for artists, solopreneurs, and visionaries. Music production, brand strategy, video, and web â built to last.',
+    'Full-service creative agency for artists, solopreneurs, and visionaries. Music production, brand strategy, video, and web — built to last.',
   url: 'https://swrvonthego.pro',
   founderName: 'Zion SWRV Birdsong',
   contactEmail: 'info@swrvonthego.pro',
@@ -362,7 +361,7 @@ export const BRAND = {
   ctaUrl: 'https://swrvonthego.pro/services',
 } as const;
 
-// ââ SOCIAL ACCOUNT ACCESS ââââââââââââââââââââââââââââââââââ
+// ── SOCIAL ACCOUNT ACCESS ──────────────────────────────────
 // How clients give SWRV posting access for event coverage and social
 // management WITHOUT sharing a password (see the Event intake in
 // intake.config.ts). Clients add SWRV in Meta Business Suite:
@@ -375,12 +374,12 @@ export const SOCIAL_ACCESS = {
   accessEmail: 'info@swrvonthego.pro',
 } as const;
 
-// ââ BRAND COLOR TOKENS âââââââââââââââââââââââââââââââââââââ
+// ── BRAND COLOR TOKENS ─────────────────────────────────────
 // These are the source of truth. Tailwind reads them via tailwind.config.js
 // (using the named tokens like `lion-orange`). Modules can also reference
 // the hex values directly through this import.
 export const BRAND_TOKENS = {
-  // â  Tailwind v4 reads its theme from index.css's @theme block â keep
+  // ⚠ Tailwind v4 reads its theme from index.css's @theme block — keep
   //    these values in sync with index.css for them to actually render.
   //    To rebrand: change values here AND in index.css @theme block.
   colors: {
@@ -396,7 +395,7 @@ export const BRAND_TOKENS = {
   },
 } as const;
 
-// ââ SOCIAL LINKS âââââââââââââââââââââââââââââââââââââââââââ
+// ── SOCIAL LINKS ───────────────────────────────────────────
 // Only ones with non-empty URLs render in Footer / Zion / Hero.
 export const SOCIAL = {
   instagram: 'https://instagram.com/zionswrvbirdsong',
@@ -410,7 +409,7 @@ export const SOCIAL = {
   bandcamp: '',
 } as const;
 
-// ââ HERO âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── HERO ───────────────────────────────────────────────────
 export const HERO = {
   eyebrow: 'YOUR ECOSYSTEM. ON THE GO.',
   headline: 'Built for the artist who is everything at once.',
@@ -420,25 +419,25 @@ export const HERO = {
   secondaryCta: { label: 'See the work', target: '#about' },
 } as const;
 
-// ââ ABOUT ââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── ABOUT ──────────────────────────────────────────────────
 export const ABOUT = {
   eyebrow: '// ORIGIN STORY',
   title: 'ABOUT',
   titleAccent: 'SWRV ON THE GO',
-  intro: "We didn't start as an agency. We started as a calling â a genuine desire to help artists, visionaries, and everyday people show the world who they really are.",
+  intro: "We didn't start as an agency. We started as a calling — a genuine desire to help artists, visionaries, and everyday people show the world who they really are.",
   blocks: [
     {
       heading: 'Where We Come From',
       paragraphs: [
-        'Over 20 years ago, Zion "SWRV" Birdsong started doing something most people couldn\'t put a category on â helping people build their brand before branding was cool. Musicians. Coaches. Pastors. Business owners. People with a vision and no roadmap to execute it.',
-        "He showed up with a camera, a microphone, a genuine care for people's stories, and a relentless drive to make their vision real. That's not a pitch. That's just what happened â over and over â for two decades.",
+        'Over 20 years ago, Zion "SWRV" Birdsong started doing something most people couldn\'t put a category on — helping people build their brand before branding was cool. Musicians. Coaches. Pastors. Business owners. People with a vision and no roadmap to execute it.',
+        "He showed up with a camera, a microphone, a genuine care for people's stories, and a relentless drive to make their vision real. That's not a pitch. That's just what happened — over and over — for two decades.",
       ],
     },
     {
       heading: "What We've Been Doing",
       paragraphs: [
         'Photography. Videography. Original music and jingles. Commercials. Radio shows turned podcasts. Vision and mission statements. Brand strategy. Web presence. Content creation from concept to delivery.',
-        'Not as separate vendors charging you three different invoices â but as one integrated team that knows your story, your voice, and your vision. We build with you. Not just for you.',
+        'Not as separate vendors charging you three different invoices — but as one integrated team that knows your story, your voice, and your vision. We build with you. Not just for you.',
       ],
     },
   ],
@@ -447,11 +446,11 @@ export const ABOUT = {
     { year: '2010', label: 'The Movement Grows', detail: 'Clients from music, ministry, athletics, and business. Real people. Real visions. Real results.' },
     { year: '2015', label: 'Full Service Unlocked', detail: 'Expanded into photography, videography, original music, jingles, and brand media production.' },
     { year: '2020', label: 'Built to Evolve', detail: 'When the world shut down, SWRV adapted. New platforms, new tools, same love-driven mission.' },
-    { year: 'NOW',  label: 'SWRV On The Go', detail: 'A full-service brand ecosystem that swerves with you â wherever your vision is trying to go.' },
+    { year: 'NOW',  label: 'SWRV On The Go', detail: 'A full-service brand ecosystem that swerves with you — wherever your vision is trying to go.' },
   ],
 } as const;
 
-// ââ STATS ââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── STATS ──────────────────────────────────────────────────
 export const STATS = [
   { value: '25+', label: 'Years of Guidance' },
   { value: '350+', label: 'Routes Mapped' },
@@ -459,11 +458,11 @@ export const STATS = [
   { value: '500', label: 'Partners' },
 ] as const;
 
-// ââ SERVICES (root catalog) ââââââââââââââââââââââââââââââââ
+// ── SERVICES (root catalog) ────────────────────────────────
 // IMPORTANT: this is the SINGLE SOURCE of services for the entire site.
 // Both the main Services component AND the Roadmap config import from here.
 // Add/remove/edit services in this one place.
-// ââ BOOK & PAY ADD-ONS âââââââââââââââââââââââââââââââââââââ
+// ── BOOK & PAY ADD-ONS ─────────────────────────────────────
 // 'flat' adds a fixed amount; 'percent' adds a share of the package's own
 // base price (not of other add-ons), so a rush on The Feature is +$375.
 export interface AddOn {
@@ -536,14 +535,14 @@ export interface Service {
   category: 'execution' | 'experience' | 'identity';
   price: string;
   priceNumeric: number;
-  // Fixed-price, one-time services only â hourly rates, "From $X" custom
+  // Fixed-price, one-time services only — hourly rates, "From $X" custom
   // quotes, and monthly subscriptions stay inquiry-only, since self-serve
   // checkout needs a known total to split into a 50% deposit + balance.
   checkoutEnabled?: boolean;
   // 'monthly' = a Stripe subscription: the first month is charged in full
   // at checkout and Stripe bills the same total every month after.
   checkoutCategory?: 'event' | 'project' | 'monthly';
-  // Same shape as WebPackageTier.liveExample â an optional sample of real
+  // Same shape as WebPackageTier.liveExample — an optional sample of real
   // finished work, shown as a link on the service card.
   liveExample?: { url: string; label: string; description: string };
   // Overrides the intake question set inherited from the service's
@@ -552,7 +551,7 @@ export interface Service {
   // services sit under Audio) or isn't listed in any category.
   intakePath?: IntakePath;
   // Optional extras a client can tick in Book & Pay (ids from ADD_ONS).
-  // The server recomputes the total from these â client trusts the browser.
+  // The server recomputes the total from these — hever trusts the browser.
   addOns?: string[];
   // Priced choices picked in Book & Pay (the client must pick one). The
   // server prices the chosen option; priceNumeric stays the "From" price.
@@ -563,9 +562,9 @@ export interface Service {
   // one-sitting services like a consultation). No balance invoice.
   payInFull?: boolean;
   // After payment, send the client to The Roadmap (vision + questionnaire)
-  // â shown on the confirmation page and in the welcome email.
+  // — shown on the confirmation page and in the welcome email.
   roadmapAfterPurchase?: boolean;
-  // Question ids to leave out of the inherited intake set â e.g. a live
+  // Question ids to leave out of the inherited intake set — e.g. a live
   // performance uses the Event questions but not the social-posting ones.
   skipQuestions?: string[];
   blurb: string;
@@ -579,7 +578,7 @@ export interface Service {
 
 export const ALL_SERVICES: Service[] = [
 
-  // ââ BRAND IDENTITY version â ââââââââââââââââââââââââââââââ
+  // ── BRAND IDENTITY ──────────────────────────────────────────────────────
   {
     id: 'brand-planning',
     name: 'Complete Branding Package',
@@ -588,17 +587,17 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 300,
     checkoutEnabled: true,
     checkoutCategory: 'project',
-    blurb: 'Everything that makes a brand a brand â logo, colors, vision and mission statements, vision mapping, and a business plan foundation. One flat $300. This is the groundwork every website is built on, so most people start here.',
+    blurb: 'Everything that makes a brand a brand — logo, colors, vision and mission statements, vision mapping, and a business plan foundation. One flat $300. This is the groundwork every website is built on, so most people start here.',
     featured: true,
     deliveryDays: 10,
     revisions: 2,
     includes: [
       "60-min brand strategy session",
       "Custom logo design (primary + alternate versions)",
-      "Brand color palette â picked for your business, not a template",
+      "Brand color palette — picked for your business, not a template",
       "Vision statement",
       "Mission statement",
-      "Vision mapping â your vision translated into layout and design direction",
+      "Vision mapping — your vision translated into layout and design direction",
       "Business plan foundation",
       "Brand voice guide",
       "AI Roadmap session (full blueprint)",
@@ -606,8 +605,8 @@ export const ALL_SERVICES: Service[] = [
       "Delivered as a PDF brand brief",
       "2 rounds of revisions",
     ],
-    notIncludes: ["Website build (see Website packages â branding pairs with any tier)", "Professional photography (separate service)"],
-    assetsNeeded: ["Business name (final â l placeholder)", "Description of your business and target audience", "Any existing brand materials (logos, colors, past designs)", "3 competitor brands or brands you admire"],
+    notIncludes: ["Website build (see Website packages — branding pairs with any tier)", "Professional photography (separate service)"],
+    assetsNeeded: ["Business name (final — not placeholder)", "Description of your business and target audience", "Any existing brand materials (logos, colors, past designs)", "3 competitor brands or brands you admire"],
   },
   {
     id: 'logo-design',
@@ -617,15 +616,15 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 250,
     checkoutEnabled: true,
     checkoutCategory: 'project',
-    blurb: 'Logo only, Ã  la carte. Custom logo system with primary, secondary, and submark variations. 2 rounds of revisions. Proprietary â not templated. For $50 more, the Complete Branding Package adds colors, vision + mission, vision mapping, and a business plan foundation â most people go that route.',
+    blurb: 'Logo only, à la carte. Custom logo system with primary, secondary, and submark variations. 2 rounds of revisions. Proprietary — not templated. For $50 more, the Complete Branding Package adds colors, vision + mission, vision mapping, and a business plan foundation — most people go that route.',
     deliveryDays: 10,
     revisions: 2,
     includes: ["Primary logo mark", "2 alternate versions (horizontal, icon-only)", "Full color + black/white versions", "Source files (.ai, .eps, .svg, .png)", "2 rounds of revisions"],
-    notIncludes: ["Brand strategy, colors, vision & mission (see Complete Branding Package â $300)", "Business cards or print design"],
-    assetsNeeded: ["Business name (final â l placeholder)", "Brand description and audience", "Color preferences or existing brand colors", "Examples of logos you like and why"],
+    notIncludes: ["Brand strategy, colors, vision & mission (see Complete Branding Package — $300)", "Business cards or print design"],
+    assetsNeeded: ["Business name (final — not placeholder)", "Brand description and audience", "Color preferences or existing brand colors", "Examples of logos you like and why"],
   },
   {
-    id: 'photographically',
+    id: 'photography',
     name: 'Photography Package',
     category: 'identity',
     price: '$800',
@@ -635,176 +634,785 @@ export const ALL_SERVICES: Service[] = [
     blurb: 'Half-day brand + lifestyle photoshoot. Full day of shooting, 3-5 hours of professional editing. Color grading included. Deliverables ready for web, press, and social.',
     deliveryDays: 7,
     revisions: 0,
-    includes: ["Half-day shoot (3-5 hours)", "Professional edi[ÈÛÛÜÜY[ÈÌ
-È[[Y]Y[XYÙ\È[]\HXHÛ[HØ[\HKÝ[ÛY\ÎÈ][Ý]ÚYHY]È\XH
-YHX^H\JHØ\ØHÝ[[ÈK\ÜÙ]ÓYYYÈÚÝ\ÝÜÜX]]H\XÝ[Û
-Ü[Û[
-HØ\ØHÜ[ÛÈ
-ËMÛÚÜÈXÛÛ[Y[Y
-HØØ][ÛY\[Ù\ÈÜ\Ý[ÈÙ[XÝKKÂY	ØÛÛ[\Þ\Ý[IË[YN	ÐÛÛ[Ý]YÞH	ÛØÚX[YYXHÚ]	ËØ]YÛÜN	ÚY[]IËXÙN	É
-L	ËXÙS[Y\XÎ
-LÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÐÝ\ÝÛHÛÛ[Ø[[\[ÚXÙHÝZYKÛØÚX[YYXH[\]\Ë\ÚYÈÝ]YÞK[ØYÙ[Y[[Y]ÛÜË[ÜÝØÚY[[ÈÞ\Ý[K\ÜÚÙH8 %Z[\Ý[[Ý\]YY[ÙKËKËÈ8¥ 8¥ ÓÐÒPSQQPH8 %HÛÚÈ
-ÛK][YJH[H[ÛHX[YÙ[Y[ÂY	Ø[XÛÛÝ[][ÛË[YN	Ð[[ÛÛÝ[][ÛËØ]YÛÜN	ÚY[]IË[ZÙT]	ØÛÛÝ[	ËØYX\Y\\Ú\ÙNYKXÙN	ÉL	ËXÙS[Y\XÎLÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë^R[[YK\\ÎZY[[Ú[[ÝHÛÚËXÚÈ[Ý\Y\Y]H[ÙIÛÛÛ\HH^XÝ[YHÚ][ÝKYÜH[Ý\Ù\ÜÚ[ÛZÙHHØYX\ÛÈÙHØ[Ý\ÛH[Ý\ÛË]\H\Ú[Û\	ÐÛ\]HÛÚ\H[Ý\[\ÈÛÚ[È[ÝÈÈÙ]\KHÛK[Û[ÛHÙ\ÜÚ[ÛÚ]ÝÙ\HÈÚ\H[Ý\[[[Ý\\Ú[Û[Ý\]YY[ÙK[Ý\ÛÚË[H]Ü\È[^Ý\È]]Ë[ÛY\ÎÉÓÛK[Û[ÛHÛÛÝ[][ÛÚ]ÝÙ\IË	Ð[\Ú[Û[]YY[ÙH]Y]ÉË	ÓÛÚËÚXÙH[]ÜHXÛÛ[Y[][ÛÉË	Ö[Ý\[[[^Ý\Ë[Ü][ÉË	ÕHØYX\ÈÝ\ÛH[Ý\ÛË]\H\Ú[Û×KÝ[ÛY\ÎÉÑ\ÚYÛÛÜÈ
-ÙYHHÛØÚX[[Ú]
-IË	Ó[ÛHX[YÙ[Y[
-ÙYHÛØÚX[[X[YÙ[Y[
-I×KKÂY	ÜÛØÚX[X[ZÚ]	Ë[YN	ÔÛØÚX[[Ú]	ËØ]YÛÜN	ÚY[]IËØYX\Y\\Ú\ÙNYK[ZÙT]	Ø[	ËÚÚ\]Y\Ý[ÛÎÉÙ[]\X\É×KXÙN	É
+    includes: ["Half-day shoot (3-5 hours)", "Professional editing", "Color grading", "30+ final edited images", "Delivery via online gallery"],
+    notIncludes: ["Travel outside metro area (fee may apply)", "Wardrobe styling"],
+    assetsNeeded: ["Shot list or creative direction (optional)", "Wardrobe options (3-4 looks recommended)", "Location preferences or approval to select"],
+  },
+  {
+    id: 'content-system',
+    name: 'Content Strategy & Social Media Kit',
+    category: 'identity',
+    price: '$500',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Custom content calendar, brand voice guide, social media templates, hashtag strategy, engagement framework, and post scheduling system. Bespoke — built around your audience.',
+  },
 
-L	ËXÙS[Y\XÎ
+  // ── SOCIAL MEDIA — the look (one-time) and the monthly management.
+  {
+    id: 'brand-consultation',
+    name: 'Brand Plan Consultation',
+    category: 'identity',
+    intakePath: 'consult',
+    roadmapAfterPurchase: true,
+    price: '$100',
+    priceNumeric: 100,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    payInFull: true,
+    terms: "Paid in full when you book. Pick your preferred date and we'll confirm the exact time with you. Before your session, take The Roadmap so we can start from your long-term vision.",
+    blurb: 'Clarity on where your brand is going and how to get there. A one-on-one session with Swerve to shape your brand plan: your vision, your audience, your look, and the platforms and next steps that fit.',
+    includes: ['One-on-one consultation with Swerve', 'Brand vision and audience review', 'Look, voice and platform recommendations', 'Your brand plan and next steps, in writing', 'The Roadmap, to start from your long-term vision'],
+    notIncludes: ['Design work (see the Social Brand Kit)', 'Monthly management (see Social Brand Management)'],
+  },
+  {
+    id: 'social-brand-kit',
+    name: 'Social Brand Kit',
+    category: 'identity',
+    roadmapAfterPurchase: true,
+    intakePath: 'brand',
+    skipQuestions: ['deliverables'],
+    price: '$450',
+    priceNumeric: 450,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    terms: "After checkout you'll take The Roadmap: we walk through your long-term vision and you answer the questionnaire, so the look we build fits where your brand is going. 50% today, balance when your kit is delivered.",
+    blurb: 'A look your audience recognizes in one scroll. We build your mood board, color palette and type, then turn them into ready-to-post graphics for every platform you use.',
+    deliveryDays: 7,
+    revisions: 2,
+    includes: ['30-minute brand discovery call', 'Mood board', 'Color palette with hex codes', 'Font pairing', 'Profile image and cover/banner graphics sized for each platform', '6 branded post templates', 'Instagram highlight covers', 'Bio rewrite for sach platform', 'Brand board PDF and all source files', '2 rounds of revisions'],
+    notIncludes: ['Logo design', 'Monthly posting (see Social Brand Management)'],
+    assetsNeeded: ['Your logo (if you have one)', 'Photos of you, your product or your space', '3 brands or accounts whose look you admire'],
+  },
+  {
+    id: 'social-management',
+    name: 'Social Brand Management',
+    category: 'identity',
+    roadmapAfterPurchase: true,
+    intakePath: 'social',
+    price: '$500/mo',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'monthly',
+    featured: true,
+    addOns: ['platform-facebook', 'platform-threads', 'platform-linkedin', 'platform-tiktok', 'platform-youtube'],
+    terms: "Month to month: you're billed today for your first month, then every month on the same date. Cancel anytime before your next billing date by emailing info@swrvonthego.pro. Your accounts and content stay yours. SWRV works through Meta Business Suite and each platform's manager access, never your passwords. After checkout you'll take The Roadmap, so we build from your long-term vision.",
+    blurb: 'Your brand, run for you, in your voice. We gather the content, create the posts and manage your Instagram behind the scenes every month, so your online presence stays consistent while you run the business. Add Facebook, Threads, LinkedIn, TikTok or YouTube from $100/mo each.',
+    includes: ['Instagram, managed in your brand voice', '12 feed posts a month (reels and carousels)', 'Stories 3 times a week', 'Captions, hashtags and a posting schedule', 'Monthly content gathering: we plan the shots, collect your photos and video, and create the graphics', 'Comment and DM replies on weekdays', 'Monthly performance report and 30-minute strategy call', 'Add platforms: Facebook +$150 · Threads +$100 · LinkedIn +$200 · TikTok +$250 · YouTube +$300 (per month)'],
+    notIncludes: ['Paid ad spend', 'On-site shoots (book event content separately)'],
+    assetsNeeded: ['Logo and brand colors (or a Social Brand Kit)', 'Photos and video you already have', 'Your current handles on each platform'],
+  },
 
-LÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\\ÎY\ÚXÚÛÝ][ÝIÛZÙHHØYX\ÙHØ[ÈÝYÚ[Ý\ÛË]\H\Ú[Û[[ÝH[ÝÙ\H]Y\Ý[ÛZ\KÛÈHÛÚÈÙHZ[]ÈÚ\H[Ý\[\ÈÛÚ[Ë
-L	HÙ^K[[ÙHÚ[[Ý\Ú]\È[]\Y\	ÐHÛÚÈ[Ý\]YY[ÙHXÛÙÛ^\È[ÛHØÜÛÙHZ[[Ý\[ÛÙØ\ÛÛÜ[]H[\K[\[H[ÈXYK]Ë\ÜÝÜ\XÜÈÜ]\H]ÜH[ÝH\ÙKË[]\Q^\Î
-Ë]\Ú[ÛÎ[ÛY\ÎÉÌÌ[Z[]H[\ØÛÝ\HØ[	Ë	Ó[ÛÙØ\	Ë	ÐÛÛÜ[]HÚ]^ÛÙ\ÉË	ÑÛZ\[ÉË	ÔÙ[H[XYÙH[ÛÝ\Ø[\Ü\XÜÈÚ^YÜXXÚ]ÜIË	Í[YÜÝ[\]\ÉË	Ò[ÝYÜ[HYÚYÚÛÝ\ÉË	Ð[È]Ü]HÜXXÚ]ÜIË	Ð[Ø\[[ÛÝ\ÙH[\ÉË	ÌÝ[ÈÙ]\Ú[ÛÉ×KÝ[ÛY\ÎÉÓÙÛÈ\ÚYÛË	Ó[ÛHÜÝ[È
-ÙYHÛØÚX[[X[YÙ[Y[
-I×K\ÜÙ]ÓYYYÉÖ[Ý\ÙÛÈ
-Y[ÝH]HÛJIË	ÔÝÜÈÙ[ÝK[Ý\ÙXÝÜ[Ý\ÜXÙIË	ÌÈ[ÈÜXØÛÝ[ÈÚÜÙHÛÚÈ[ÝHYZ\I×KKÂY	ÜÛØÚX[[X[YÙ[Y[	Ë[YN	ÔÛØÚX[[X[YÙ[Y[	ËØ]YÛÜN	ÚY[]IËØYX\Y\\Ú\ÙNYK[ZÙT]	ÜÛØÚX[	ËXÙN	É
-LÛ[ÉËXÙS[Y\XÎ
-LÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	Û[ÛIËX]\YYKYÛÎÉÜ]ÜKYXÙXÛÚÉË	Ü]ÜK]XYÉË	Ü]ÜK[[ÙY[Ë	Ü]ÜK]ZÝÚÉË	Ü]ÜK^[Ý]XI×K\\Î[ÛÈ[Û[ÝIÜH[YÙ^HÜ[Ý\\Ý[Û[]\H[ÛÛHØ[YH]KØ[Ù[[][YHYÜH[Ý\^[[È]HH[XZ[[È[ÐÝÜÛYÛËË[Ý\XØÛÝ[È[ÛÛ[Ý^H[Ý\ËÕÔÛÜÜÈÝYÚY]H\Ú[\ÜÈÝZ]H[XXÚ]ÜIÜÈX[YÙ\XØÙ\ÜË]\[Ý\\ÜÝÛÜËY\ÚXÚÛÝ][ÝIÛZÙHHØYX\ÛÈÙHZ[ÛH[Ý\ÛË]\H\Ú[Û\	Ö[Ý\[[Ü[ÝK[[Ý\ÚXÙKÙHØ]\HÛÛ[ÜX]HHÜÝÈ[X[YÙH[Ý\[ÝYÜ[HZ[HØÙ[\È]\H[ÛÛÈ[Ý\Û[H\Ù[ÙHÝ^\ÈÛÛÚ\Ý[Ú[H[ÝH[H\Ú[\ÜËYXÙXÛÚËXYË[ÙY[ZÕÚÈÜ[ÝUXHÛH	LÛ[ÈXXÚË[ÛY\ÎÉÒ[ÝYÜ[KX[YÙY[[Ý\[ÚXÙIË	ÌLYYÜÝÈH[Û
-Y[È[Ø\Ý\Ù[ÊIË	ÔÝÜY\ÈÈ[Y\ÈHÙYZÉË	ÐØ\[ÛË\ÚYÜÈ[HÜÝ[ÈØÚY[IË	Ó[ÛHÛÛ[Ø]\[ÎÙH[HÚÝËÛÛXÝ[Ý\ÝÜÈ[Y[Ë[ÜX]HHÜ\XÜÉË	ÐÛÛ[Y[[H\Y\ÈÛÙYZÙ^\ÉË	Ó[ÛH\ÜX[ÙH\Ü[Ì[Z[]HÝ]YÞHØ[	Ë	ÐY]Ü\ÎXÙXÛÚÈ
-ÉML0­ÈXYÈ
-ÉL0­È[ÙY[
-É0­ÈZÕÚÈ
-ÉL0­È[ÝUXH
-ÉÌ
-\[Û
-I×KÝ[ÛY\ÎÉÔZYYÜ[	Ë	ÓÛ\Ú]HÚÛÝÈ
-ÛÚÈ][ÛÛ[Ù\\][JI×K\ÜÙ]ÓYYYÉÓÙÛÈ[[ÛÛÜÈ
-ÜHÛØÚX[[Ú]
-IË	ÔÝÜÈ[Y[È[ÝH[XYH]IË	Ö[Ý\Ý\[[\ÈÛXXÚ]ÜI×KKËÈ8¥ 8¥ ÑP	QÒUS8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ ÂY	ÝÙXÚ]K\\Ù[ÙIË[YN	ÕÙXÚ]H8 %H\Ù[ÙH
-	ÌÜXÚX[
-IËØ]YÛÜN	Ù^XÝ][ÛËX]\YYKXÙN	ÉÌ	ËXÙS[Y\XÎÌÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÕH	ÌÜXÚX[XÚÈÛHLÙ\ÜÚ[Û[H\ÚYÛY[\]HÝ[\ÈÜÛÈÝ\ÝÛH8 %ÙHÝØ\[[Ý\[[Ý\ÛÜË[[Ý\ÝÜË[Ø[KYY[KÛXZ[
-È[XZ[Ù]\[ÛYY]H[
-H^\ËË[]\Q^\Î
-K]\Ú[ÛÎK[ÛY\ÎÈ[Ý\ÚÚXÙHÙL[\]HÝ[\È
-ÜÝ\ÝÛHË\YÙJH[Ý\[ÛÛÜËÙÛÈ	ÛÛ[[Ø[H\ÜÛÚ]H\ÚYÛÛÛXÝÜH\ÚXÈÑSÈÙ]\HÝ[Ù]\Ú[ÛÈ]H[
-H^\ÈKÝ[ÛY\ÎÈKXÛÛ[Y\ÙHÛÚÚ[ÈÞ\Ý[HÝ\ÝÛH[[X][ÛÈK\ÜÙ]ÓYYYÈÙÛÈ
-[HÜX]
-HÜ][ÛÜHÜXXÚYÙHKLÈYÚ]X[]HÝÜÈÜ[XYÙ\ÈÛÛÜY\[Ù\È
-YÈ[[È^\ÝÈY]
-HKKÂY	ÝÙXÚ]K\]ÜIË[YN	ÕÙXÚ]H8 %H]ÜIËØ]YÛÜN	Ù^XÝ][ÛËXÙN	É
-L	ËXÙS[Y\XÎ
-LÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÔÜÛ[ÈÚ]H\ÈHXÚÈ[ÈÙ[ÙXÝÈ8 %Ý\HÚXÚÛÝ]ÛÚÚ[È[YÜ][Û[XZ[Ø\\K[ÛÛ[ÙXÝ[ÛËÛXZ[
-È[XZ[[ÛYYÑSÈ]Y]]ËM[ÛÈ[ÛYY]H[HÙYZËË[]\Q^\Î
-Ë]\Ú[ÛÎKÂY	ÝÙXÚ]KYXÛÜÞ\Ý[IË[YN	ÕÙXÚ]H8 %HXÛÜÞ\Ý[IËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉK	ËXÙS[Y\XÎLÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÐH][YXÙ]YYÚ][ÛYHÜÛÛÜ[]\ÈÚÈÜ\]H\ÈHÚÛHÛÛ\[KÝ\ÝÛKXZ[8 %[ÝHÛÛ	Ý[\È[]Ú\H[ÙHXØ]\ÙHÙH\ÚYÛY\ÈÛÛÙ\\Ú[ÛY\ÝÙHÙ]Ú]	ÜÈ[[Ý\XYÝ][[ÈHYÚ][ÜXÙH[ÝHØ[ÜÝÈ[ÈÝ\[YK[Ý\ØYX\]\È]\H\ÚYÛXÚ\Ú[Û[H[È[Ú\Ý\Î[ÑSËÙXÝÙ[[Ë][\HYÙ\Ë[RHÚ]\ÜÚ\Ý[Ü[Ý\ÛY[Ë[Ø[[\
-ÈØÚY[[Ë[ÛY\ÈÛXZ[[XZ[ÑSÈ]Y]]ËM[ÛË]H[ÙYZÜËË[]\Q^\ÎM]\Ú[ÛÎË[ÛY\ÎÈ[[Ù[\ÙXÚ]HÝ\ÝÛH[[YÜ][Û[Ø[KY\Ý\ÜÛÚ]H\ÚYÛÛÚÚ[ÈÜ[]Z\HÞ\Ý[HØ[[\	ØÚY[[ÈÞ\Ý[HRHÚ]\ÜÚ\Ý[Ü[Ý\ÛY[ÈÙÈÜÛÛ[XKXÛÛ[Y\ÙHÈÙXÝÙ[[È[ÑSÈÜ[Z^][Û[[ÛZ\ÜÚ[ÛÙXÝ[ÛÈÝ[ÈÙ]\Ú[ÛÈÑSÈ]Y]]L^\ÈKÝ[ÛY\ÎÈ[ÛHÜÝ[ÈY\È
-[YÙ\\][JHÛÛ[Ü][È
-Ø[HYY
-HÝ\ÝÛHÝÙÜ\H
-Ø[HYY
-HK\ÜÙ]ÓYYYÈÙÛÈ[\È
-ÝËÊH\Ú[ÛÝ][Y[Z\ÜÚ[ÛÝ][Y[[ÛÛÜÈ[ÛÈ
-Y]Z[XJH[Ü][ÛÜHÜXXÚYÙHÙ\ÜÚ[Û[ÝÜÈÜ[XYÙ\HY[ÈÛÛ[[H^\Ý[ÈÛXZ[ÚÜÝ[ÈÙÚ[ÜY[X[ÈKKÂY	Ù[\\ÙKYXÛÜÞ\Ý[IË[YN	Ñ[\\ÙHXÛÜÞ\Ý[IËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÑÛH	
-K	ËXÙS[Y\XÎ
-L\	ÑÜÜÙHZ[[ÈÛÛY][ÈHÚ^HÙ\KZXÜÜÛÙÜH[YÚ][XÛÜX[8 %Ú]][\H]\Ú[ÛËÙXÙ\Ë[Ü\][ÛÈ[\ÛHYÚ][ÛÙ][KX[\Ú]XÝ\KX[HÜ[Ë\\ÝÜÝ\Ë][YHÝX[\Ë[^[Ú]H[\ÝXÝ\K\Ú[ÛY\ÝZ[ÈØØ[KÝ\È]	
-KÝ\ÝÛK\][ÝYHØÛÜKËX]\YYKKÂY	ÝÙXÚ]K[XZ[[[ÙIË[YN	ÕÙXÚ]HXZ[[[ÙH8 %Ù[TÙ\XÙIËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉÌÛ[Û	ËXÙS[Y\XÎÌ\	ÔÙXÝ\]H\]\ËÚÙ[[È^\Ë[ÛÛ[\]\È[ÛK[ÝH[HÚ]H8 %ÙHÙY\]ÛX[[Ý\[ËKÂY	ÝÙXÚ]K[X[YÙ[Y[	Ë[YN	ÕÙXÚ]HX[YÙ[Y[8 %[Ù\XÙIËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉLKÛ[Û	ËXÙS[Y\XÎLK\	ÕÙHX[YÙH]\][È8 %ÙXÝ\]K\]\ËÛÛ[ÑSÈ[Û]Ü[Ë[\ÜX[ÙHÜ[Z^][ÛÈÙ\\]H]Y]YYYØXÝ]KÝXXÝ]KËKÂY	Ù[Z\Ú[Ë\Ú]IË[YN	ÐÜÝÙ[[ÈÈ[Z\Ú[ÈÚ]IËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉK	ËXÙS[Y\XÎLÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÐØ[\ZYÛYÙKÛ][ÛÜ^[Y[ÝËÙÜ\ÜÈXÚÙ\[Ý\Ü\XÛÙÛ][Û8 %Z[ÈZ\ÙH[Û^KHÛÑ[YH[\]]H[ÝHXÝX[HÝÛËKËÈ8¥ 8¥ UTÒPÈ	UQSÈ8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ 8¥ ÂY	Û]\ÚXË\ÙXÝ[ÛË[YN	Ñ[ÛÛÈÙXÝ[ÛËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉË	ËXÙS[Y\XÎÌÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÐÛÛ\]HÛÛÈÛHÛÛÙ\ÈX\Ý\8 %X]Ú[Ý[Y[[ÜX][ÛØØ[XÛÜ[Ë\[Ú[ËØØ[ÙXÝ[ÛØØ[ÛØXÚ[ËZ^[ËX\Ý\[Ë[[[[]\K
-KY^H\\Ý[[H[\ÝH]H8 %Ø[YHØYØ\Ý\XYH]X[]KËX]\YYK[]\Q^\Î
-K]\Ú[ÛÎ[ÛY\ÎÈÝ\ÝÛHX]ÜÙXÝ[ÛÝY[ÈXÛÜ[ÈÙ\ÜÚ[ÛØØ[ÛØXÚ[È	\XÝ[ÛZ^[ÈX\Ý\[ÈØYØ\Ý\XYHÝ\[È[H
-Ø]HÝ[ÈÙ]\Ú[ÛÈKÝ[ÛY\ÎÈ\XÈÜ][È
-Ø[HYY
-H]\ÚXÈY[ÈÙXÝ[ÛK\ÜÙ]ÓYYYÈÜ][\XÜÈÜÛÛÙ\Ý\ÈY\[ÙHXÚÜÈÜÛÝ[\XÝ[Û[H^\Ý[ÈÝ[\ÈÜXÛÜ[ÜÈYZ[[ÈÛ[ÜÛÜÈKKÂY	ÛZ^[ÉË[YN	ÓZ^[ÉËØ]YÛÜN	Ù^XÝ][ÛËXÙN	É
-L	ËXÙS[Y\XÎ
-LÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÔÙ\ÜÚ[Û[Z^[ÈÜ[Ý\[\ÚYXÛÜ[ÜË[[Ù\È]\H[[Y[8 %][Ë[[ËTKÛÛ\\ÜÚ[ÛYXÝËØYØ\Ý\XYHÝ]]Ë[]\Q^\ÎË]\Ú[ÛÎ[ÛY\ÎÈÙ\ÜÚ[Û[Z^ÙHÛÛÈØØ[[[ÙKTKÛÛ\\ÜÚ[ÛYXÝÈØYØ\Ý\XYHÝ\[È[H
-Ø]HÝ[ÈÙ]\Ú[ÛÈKÝ[ÛY\ÎÈX\Ý\[È
-Ù\\]HÙ\XÙH8 %[HÜØ][ÜÊHX]ÙXÝ[ÛK\ÜÙ]ÓYYYÈ[[]YX[XÚÈ[\È
-Ý[\ÊH[Ø]ÜX]Y\[ÙHXÚÈÜZ^\XÝ[Û[\ËÚÙ^H[ÈY]Z[XHKKÂY	ÛX\Ý\[ÉË[YN	ÓX\Ý\[ÉËØ]YÛÜN	Ù^XÝ][ÛËXÙN	É
-L	ËXÙS[Y\XÎ
-LÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	Ñ[[X\Ý\[ÈÈÝX[Z[È[ØYØ\ÝÝ[\ËÝY\ÜÈÜX[^][ÛÝ\[È[[Ù[Y[[]ÜK[Ü[Z^Y[]\KËKÂY	Ú[ÛIË[YN	Ò[ÛHÈ[]Y[ÉËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉL	ËXÙS[Y\XÎLÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	Ë\	ÓÜYÚ[[[[ÛKÛÛXÈÙÛËÜ]Y[È[\\Ý\ÝÛK]Ü][[ÙXÙYÈ]H[[Ý\]YY[ÙW	ÜÈXYËKÂY	ÝÚXÙ[Ý\Ë[YN	ÕÚXÙ[Ý\XÛÜ[È	ÙXÝ[ÛËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉLÚËXÙS[Y\XÎL\	ÔÙ\ÜÚ[Û[ÚXÙ[Ý\ÜYË[[ÜË]Y[ØÛÚÜËÜÛÛ[Ý\HYX\È[H]\ÚXÈ\Ú[\ÜÈ8 %[ÝW	ÜH^Z[ÈÜHZXËHX\[H^\Y[ÙKËKÂY	Ø]Y[ØÛÚÉË[YN	Ð]Y[ØÛÚÈÙXÝ[ÛËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉLÚËXÙS[Y\XÎL\	ÔÝY[È\][ÛÚ\ÙHÛX[\X\Ý\[Ë[PÖÑ[]Ø^K\XYH[]\X\ËØYØ\Ý\XYK]\HÙ\ÜÚ[ÛX[YÙYÚ]HYX\ÈÙÙXÝ[Û^\Y[ÙKËKÂY	Û]K\XÛÜ[ÉË[YN	Ð]Y[ÈXÛÜ[È	ÙXÝ[ÛËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉLÚËXÙS[Y\XÎL\	ÔÝY[ÈXÛÜ[ËØØ[XÛÜ[ËØØ[ÛØXÚ[Ë]Y[ØÛÚÈ\][Û[]HÙ\ÜÚ[ÛØ\\H[ØYØ\Ý\XYH]X[]K[ÛY\ÈY][È[ÙXÝ[ÛJÈYX\ÈÙ]\ÚXÈ[\ÝH^\Y[ÙKËKÂY	Ø]Y[ËYY]X[XØ\IË[YN	Ð]Y[ÈY][ÉËØ]YÛÜN	Ù^XÝ][ÛËXÙN	ÉLÚËXÙS[Y\XÎL\	ÔØÜX[ËÚ\ÙHØ[Ù[][Û]\ÛÛ\\ÜÚ[ÛYXÝË[X\Ý\[Ë[ÝW	ÜHÝ\Ý^Z[ÈÜY][È8 %[ÝW	ÜH^Z[ÈÜÛÛY[ÛHÚ×	ÜÈY[[H]\ÚXÈ\Ú[\ÜÈÜÝ\HYX\Ë[]\[ÈÆF67B×&VGVÆGvFÖWF7VÆ÷W2GFVçFöâFòFWFÂârÀ¢ÒÀ¢°¢C¢wöF67BÖÆVæ6rÀ¢çF¶UF¢wöF67BrÀ¢æÖS¢uöF67BÆVæ6¶BrÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rC²CSö"rÀ¢&6TçVÖW&3¢À¢&ÇW&#¢rC#S6÷fW'2gVÆÂ7G&FVwÂ'&æFærÂæBFV66WGW(	B÷7FærÂ%52ÂF7G&'WFöâöâ7÷Fg²ÆRöF67G2â&V6÷&Fær6W76öç2BC#Rö"âWfW'Fær'VÇB&÷VæB÷W"fö6RæBVFVæ6RârÀ¢FVÆfW'F3¢rÀ¢&Wf6öç3¢À¢æ6ÇVFW3¢²%6÷r6öæ6WB6öç7VÇFFöâ"Â%%52fVVB6WGW"Â$6÷fW"'BFW6vâ"Â%7V&Ö76öâFò7÷FgbÆRöF67G2"Â$W6öFRFV×ÆFR"Â$ÆVæ67G&FVwFö2%ÒÀ¢æ÷Dæ6ÇVFW3¢²$öævöærW6öFRVFFær6VRöF67BVFFær"Â%&V6÷&FærWVÖVçB%ÒÀ¢76WG4æVVFVC¢²%6÷ræÖRæBFW67&Föâ"Â%F&vWBVFVæ6RFW67&Föâ"Â$÷7BæÖRæB&ò"Â$VG6÷Bf÷"6÷fW"'B%ÒÀ¢ÒÀ¢°¢C¢wöF67BÖVFFærrÀ¢çF¶UF¢wöF67BrÀ¢æÖS¢uöF67BW6öFR&öGV7FöârÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rC#Rö"rÀ¢&6TçVÖW&3¢#RÀ¢&ÇW&#¢uW"Ö÷W"&V6÷&Fær²VFFærÂÆWfVÆærÂçG&òö÷WG&òçFVw&FöâÂæBFVÆfW'â'&öF67B×&VGWfW'W6öFRâ'VÆ²6W76öç2fÆ&ÆRârÀ¢ÒÀ ¢òò)H)HÄdRU$dõ$Ôä4U2)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H ¢°¢C¢vÆfR×W&f÷&Öæ6RrÀ¢çF¶UF¢vWfVçBrÀ¢æÖS¢tÆfRW&f÷&Öæ6RrÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢tg&öÒCö"rÀ¢&6TçVÖW&3¢À¢&ÇW&#¢tÆfRW&f÷&Öæ6W2FÆ÷&VBFò÷W"WfVçBâ6öffVR6÷W&f÷&Öæ6W3¢Cö"âvVFFæw3¢CS÷W'6öââÆ&vRWfVçG3¢CS÷6öærâ&6æræVv÷F&ÆR&6VBöâWVÖVçBæVVG2æBWfVçB6ö×ÆWGârÀ¢ÒÀ ¢òò)H)HdDTôu$)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H)H ¢°¢C¢v×W62×fFVòrÀ¢æÖS¢t×W62fFVò#£3(	3BÖârÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rCRÃrÀ¢&6TçVÖW&3¢SÀ¢6V6¶÷WDVæ&ÆVC¢G'VRÀ¢6V6¶÷WD6FVv÷'¢w&ö¦V7BrÀ¢ÆfTW×ÆS¢°¢W&Ã¢vGG3¢ò÷÷WGRæ&Rõ64w4ö¶'$RrÀ¢Æ&VÃ¢u6VRâW×ÆR×W62fFVò(i"rÀ¢FW67&Föã¢t&VÂfæ6VB×W62fFVòÂ6÷BæB&öGV6VB'5u%b(	BF22FRVÆGæB7GÆR÷UÂw&R&öö¶ærârÀ¢ÒÀ¢&ÇW&#¢tgVÆÂ×W62fFVò&öGV7Föâ(	B6öæ6WBÂÖF6ö÷BÂRÖF÷7B×&öGV7FöâÂVæÆÖFVB&VÖVÒVffV7G2æBG&ç6Föç2Â6öÆ÷"w&FærÂæB"&÷VæG2öb&Wf6öç2âF&BöbvB7GVF÷26&vRf÷"FR6ÖRfæ6ârÀ¢fVGW&VC¢G'VRÀ¢FVÆfW'F3¢rÀ¢&Wf6öç3¢"À¢æ6ÇVFW3¢²$6öæ6WBFWfVÆ÷ÖVçB6W76öâ"Â#gVÆÂFöbfÆÖær"Â#RÖF&öfW76öæÂVFB"Â%VæÆÖFVB&VÖVÒVffV7G2bG&ç6Föç2"Â$6öÆ÷"w&Fær"Â#"&÷VæG2öb&Wf6öç2"Â$FVÆfW'âD²²6ö×&W76VBvV"fW'6öâ%ÒÀ¢æ÷Dæ6ÇVFW3¢²%6öær&öGV7Föâ×W7B&RÖVBbÖ7FW&VB"Â%FÆVçB67FærfVW2"Â$Æö6FöâW&ÖG2%ÒÀ¢76WG4æVVFVC¢²$fæ6VBÂÖ7FW&VBVFòfÆRçvb÷"æ×2"Â$7&VFfR6öæ6WB÷"ÖööB&ö&B÷FöæÂ'WBVÇgVÂ"Â$ç7V6f2v&G&ö&RÂ&÷2Â÷"f7VÂ&VfW&Væ6W2%ÒÀ¢ÒÀ¢°¢C¢wfFVò×&öÖòrÀ¢æÖS¢u&öÖòfFVòVæFW"ÖârÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rCÃ#SrÀ¢&6TçVÖW&3¢#SÀ¢6V6¶÷WDVæ&ÆVC¢G'VRÀ¢6V6¶÷WD6FVv÷'¢w&ö¦V7BrÀ¢&ÇW&#¢t6ö×ÆWFRÖÖçWFR&öÖò(	B6öæ6WBFòFVÆfW'âFâæ6ÇVFW26ö÷BÂVFBÂ6öÆ÷"w&FærÂæB"&Wf6öâ&÷VæG2âWfW'Færæ6ÇVFVBÂæ÷Fær&V76ÆVBârÀ¢ÒÀ¢òò)H)H5u%b4õdU$tR(	BWfVçBæB'&æB6öçFVçBÂ6öÆB2fVBöâ×6FP¢òò6¶vW2&FW"Fââ÷VâÖVæFVB÷W&ÇV÷FRâfVB²öæR×FÖRÂ6ð¢òòÆÂF&VR&R6VÆb×6W'fR6V6¶÷WF&ÆR6FVv÷'¢vWfVçBr6öÆÆV7G2FP¢òòWfVçBFFRæBWFòÖçfö6W2FR&Ææ6RfWrF2÷WBà¢°¢C¢v6÷fW&vR×V6²×7F÷rÀ¢æÖS¢töâFRvòrÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rCSrÀ¢&6TçVÖW&3¢SÀ¢6V6¶÷WDVæ&ÆVC¢G'VRÀ¢6V6¶÷WD6FVv÷'¢vWfVçBrÀ¢&ÇW&#¢tV6²÷W"öâ×6FR(	BvR6GW&RFRÖöÖVçBæB÷RfRVFFVB&VVÇ2FR6ÖRFârÀ¢FVÆfW'F3¢À¢æ6ÇVFW3¢²s÷W"öâ×6FR6÷fW&vRrÂvöæR×6÷B6öçFVçBrÂt7&VFfRF&V7Föâöâ×6FRrÂsbVFFVB&VVÇ2rÂu&VVÇ2FVÆfW&VB6ÖRFrÂu&rfö÷FvRFVÆfW&VBuÒÀ¢ÒÀ¢°¢C¢v6÷fW&vRÖöâ×FRÖvòÖFrÀ¢æÖS¢uFRG&fRÕF&÷VvrÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rCÃSrÀ¢&6TçVÖW&3¢SÀ¢6V6¶÷WDVæ&ÆVC¢G'VRÀ¢6V6¶÷WD6FVv÷'¢vWfVçBrÀ¢fVGW&VC¢G'VRÀ¢&ÇW&#¢uGvò÷W'2vFÆâ&VæBB(	BÖööB&ö&BÂ6öçFVçB7G&FVwÂæB÷W"6ö6Ç2÷7FærÆfRvÆRBVç2ârÀ¢FVÆfW'F3¢À¢æ6ÇVFW3¢²s"÷W'2öâ×6FRrÂu&R×6ö÷BVW7Föææ&RrÂt7W7FöÒÖööB&ö&BrÂt6öçFVçB7G&FVw²ÆææærrÂt7&VFfRF&V7Föâöâ×6FRrÂvöæR²fFVò6öçFVçBrÂtvÖ&Â×7F&Æ¦VBfö÷FvRrÂu&VÂ×FÖR7F÷'÷7FærFò÷W"6ö6Ç2rÂs"VFFVB&VVÇ2rÂu&rfö÷FvRFVÆfW&VBuÒÀ¢ÒÀ¢°¢C¢v6÷fW&vRÖgVÆÂÖ6öçf÷rÀ¢æÖS¢uFRVÆÂÕWrÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rC"ÃSrÀ¢&6TçVÖW&3¢#SÀ¢6V6¶÷WDVæ&ÆVC¢G'VRÀ¢6V6¶÷WD6FVv÷'¢vWfVçBrÀ¢&ÇW&#¢uF&VR÷W'2öbgVÆÂ&öGV7Föâ(	B&öfW76öæÂ÷Föw&W"ÂVFFVB'&æB÷F÷2ÂæBÆfR÷7FærvÆRvRF¶R÷fW"÷W"6ö6Ç2ârÀ¢FVÆfW'F3¢À¢æ6ÇVFW3¢²s2÷W'2öâ×6FRrÂu&R×6ö÷B7G&FVw6ÆÂ²6öæ6WBrÂtÖööB&ö&B²6÷BÆ7BrÂt7&VFfRF&V7Föâöâ×6FRrÂvöæR²fFVò6öçFVçBrÂtvÖ&Â×7F&Æ¦VBfö÷FvRrÂu&öfW76öæÂ÷Föw&W"rÂtVFFVB'&æB÷F÷2rÂuWFò2Æöö·2rÂu&VÂ×FÖR7F÷'²&VVÂ÷7FærF&÷Vv÷WBrÂs"VFFVB&VVÇ2rÂu&rfö÷FvRFVÆfW&VBuÒÀ¢ÒÀ¢°¢C¢v6÷fW&vRÖ"×7W÷'BrÀ¢æÖS¢t"7W÷'BrÀ¢6FVv÷'¢vWV7WFöârÀ¢&6S¢rC2ÃSrÀ¢&6TçVÖW&3¢3SÀ¢6V6¶÷WDVæ&ÆVC¢G'VRÀ¢6V6¶÷WD6FVv÷'¢vWfVçBrÀ¢&ÇW&#¢tWfW'FærâFRVÆÂÕWÂÇW2G&öæRfö÷FvRg&öÒ&÷fR(	BFRfVçVRÂFR'&fÇ2ÂæBFRvöÆR7&÷vBâöæR6÷Bâ÷WFFö÷"W&Ç2ÂvVFW"æB'76RW&ÖGFærârÀ¢FVÆfW'F3¢À¢æ6ÇVFW3¢²tWfW'FærâFRVÆÂÕWrÂtG&öæRfö÷FvR'âdÖÆ6Vç6VBÆ÷BrÂtW&Â6÷G2öbFRfVçVRÂ'&fÇ2æB7&÷vBrÂtW&Â÷F÷2rÂs2VFFVBW&Â&VVÇ2R&VVÇ2F÷FÂuÒÀ¢ÒÀ ¢òò)H)H¤ôâdô4Å2(	B¦öâ6æværöâ÷FW"'F7G2rG&6·2æB&öGV6æp¢òòFV"fö6Ç2èÔ[[ÝHÛÜÚYHHY][È[\ÝY[È[][KÂY	ÝØØ[[]KY][	Ë[YN	Ö[ÛÚ[ÜÈ][Ý\][	ËØ]YÛÜN	Ù^XÝ][ÛË[ZÙT]	Ù][	ËÚÚ\]Y\Ý[ÛÎÉÜÛØÚX[ÉË	ÛY]PXØÙ\ÜÉË	ÛÝ\XØÙ\ÜÉ×KXÙN	ÑÛH	
-L	ËXÙS[Y\XÎ
-LÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	Ù][	ËÜ[ÛÎÂÈY	ÛÛK\ÛÛË[]IËX[	ÓÛHÛÛÈ]IËXÙN
-L\ØÜ\[Û	ÓÛHÛÛÈ\ÜYY]HH[ÛÚ]ÜÚ]Ý]ÝZ]\ÈKÈY	ØÝ\ÝÛK\ÛÛÉËX[	ÐÝ\ÝÛHÛÛÉËXÙN
-ÍL\ØÜ\[Û	Ð[ÜYÚ[[ÛÛÈÜ][[ÙXÙYÜ[Ý\][\ÜYY]HH[ÛÈKÈY	ÝÛË\ÛÛÜË[]IËX[	ÕÛÈÛÛÜÈ]IËXÙNL\ØÜ\[Û	ÕÛÈÛÛÜÈ\ÜYY]HH[ÛÚ]ÜÚ]Ý]ÝZ]\ÈKK\\Î[Ý\[\ÝY[\ÈÙ]HHÛÛÎÛHÛÛÈ]H	
-L0­ÈÝ\ÝÛHÛÛÈ	
-ÍL0­ÈÛÈÛÛÜÈ]H	KH
-L	H\ÜÚ]\Ù\\È[Ý\]NÈH[[ÙH\È[ÚXÙYYÜH[Ý\][[Û\Ü\È[\ÛÛÛÈ\H\ÈÈ[[ÝHÜ[ÛÛ[ØØ][Û][[][H\È	
-LÈ][^[Û][H\È][ÝY\H]HØØ[[ÛY[[Ý\ÝY\ÝÈÚ[[Y[X\[Û\Ü\È][Ý\ÙY[ËÙ[X][ÛÛÜÜ]H][Ú\ÚÙ\XÙHÜ]]H][Ú]ÜÚ]Ý]ÝZ]\ÛÚÙYHHÛÛÎÛHÛÛÈ]H	
-L0­ÈÝ\ÝÛHÛÛÈ	
-ÍL[ÜYÚ[[Ü][[ÙXÙYÜ[Ý\][0­ÈÛÈÛÛÜÈ]H	K[ÛY\ÎÉÓ]HØØ[\ÜX[ÙHH[ÛÚ]ÜÚ]Ý]ÝZ]\Ë	ÔÛÛÈÙ[XÝ[ÛÛÛÝ[][ÛË	ÐÝ\ÝÛHÛÛÎ[ÜYÚ[[Ü][[ÙXÙYÜ[Ý\][	Ë	ÓÛ[ØØ][Û][[][N	
-L	×KKÂY	ÝØØ[ZÛÚÉË[YN	ÕHÛÚÉËØ]YÛÜN	Ù^XÝ][ÛË[ZÙT]	ÝØØ[ÉËXÙN	ÉÍL	ËXÙS[Y\XÎÍLÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	ËYÛÎÉÜÛÛÝÜ][ÉË	Ü\ÚM	×K\\ÎÛÜÈÜ\N[ÝHÝÛHXÛÜ[ÈÙ[ÛÜÈØØ[Ü[Ý\ÛÛËY[ÛÜ]\È[H\XÜÈÜY[ÙKHÙY\È\ÈÜ]\Ú\KYÚ\Ý\YÚ]RK[[ÝHÛH[]Ú\H[HÛÜHY][È[\ÝY[ÈÙ\ÜÚ[ÛÈ]Z[XH[][KÜY][ÛÕÔ\ÛÛÈ[H[\Ý\Ë\HÛÚÈ]Ø\Y\È[Ý\XÛÜ[Û[]\È\È\ÈÝ]È[Ý\Ù^H[[\ËÚ]ÝX\È[YXËXYHÈÜ[È[Ý\Ù\ÜÚ[Û[]\Q^\ÎË]\Ú[ÛÎK[ÛY\ÎÉÕ\È\È\ÜYYH[ÛË	ÑÝX\È[YXÉË	ÓX]ÚYÈ[Ý\Ù^H[[\ÉË	ÑH[ØÙ\ÜÙYÐUÝ[\ÉË	ÌHÝ[Ù]\Ú[ÛÉË	Ó[\[Ý\ÈÜY]	×KÝ[ÛY\ÎÉÓZ^[È[X\Ý\[ÈÙH[ÛÛÉ×K\ÜÙ]ÓYYYÉÐX]ÜÙ\ÜÚ[Û[H
-Ú]H[Ù^JIË	ÔY\[ÙHXÚÜÉË	Ó\XÜÈÜÛÛÙ\	×KKÂY	ÝØØ[YX]\IË[YN	ÕHX]\IËØ]YÛÜN	Ù^XÝ][ÛË[ZÙT]	ÝØØ[ÉËXÙN	É
-ÍL	ËXÙS[Y\XÎ
-ÍLÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	ËX]\YYKYÛÎÉÜÛÛÝÜ][ÉË	Ü\ÚM	×K\\ÎÛÜÈÜ\N[ÝHÝÛHXÛÜ[ÈÙ[ÛÜÈØØ[Ü[Ý\ÛÛËY[ÛÜ]\È[H\XÜÈÜY[ÙKHÙY\È\ÈÜ]\Ú\KYÚ\Ý\YÚ]RK[[ÝHÛH[]Ú\H[HÛÜHY][È[\ÝY[ÈÙ\ÜÚ[ÛÈ]Z[XH[][KÜY]X][ÛÕÔ\ÛÛË\HÛÛ\]HX]\Y\ÜX[ÙHÛ[Ý\XÛÜHMX\\ÙH[HÛÚËÚ]XYËÝX\Ë\[ÛY\È[YXËÛÛ\Y[[YÜY]YX][ÛÕÔ\ÛÛË[]\Q^\Î
-K]\Ú[ÛÎ[ÛY\ÎÉÌMX\\ÙH[ÛÚÉË	ÓXYØØ[ËÝX\Ë\[ÛY\È[YXÉË	ÐÛÛ\Y[[YÐUÝ[\ÉË	ÈX][ÛÕÔ\ÛÛÈÜY]	Ë	ÌÝ[ÈÙ]\Ú[ÛÉ×KÝ[ÛY\ÎÉÓZ^[È[X\Ý\[ÈÙH[ÛÛÉ×K\ÜÙ]ÓYYYÉÐX]ÜÙ\ÜÚ[Û[H
-Ú]H[Ù^JIË	ÔY\[ÙHXÚÜÉË	Ó\XÜÈÜÛÛÙ\	×KKÂY	ÝØØ[\Ù\ÜÚ[ÛY[	Ë[YN	ÔÙ\ÜÚ[ÛØØ[È8 %[ÛÛÉËØ]YÛÜN	Ù^XÝ][ÛË[ZÙT]	ÝØØ[ÉËXÙN	ÉK	ËXÙS[Y\XÎLÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	ËYÛÎÉÜÛÛÝÜ][ÉË	Ü\ÚM	Ë	ÛÛ[ØØ][ÛX]	×K\\ÎÛÜÈÜ\N[ÝHÝÛHXÛÜ[ÈÙ[ÛÜÈØØ[Ü[Ý\ÛÛËY[ÛÜ]\È[H\XÜÈÜY[ÙKHÙY\È\ÈÜ]\Ú\KYÚ\Ý\YÚ]RK[[ÝHÛH[]Ú\H[HÛÜHY][È[\ÝY[ÈÙ\ÜÚ[ÛÈ]Z[XH[][KÜY][ÛÕÔ\ÛÛÈ[H[\Ý\Ë\[Ý\ÚÛHÛÛËÝ[È[\[ÙY[Û[]\ÈHXYØØ[HXÚÙÜÝ[\[Ù[Y[[H\[ÛHÝXÚÜËÚ\Y[H]H\XÝYÙ\ÜÚ[Û[]\Q^\Î
-Ë]\Ú[ÛÎ[ÛY\ÎÉÑ[XYØØ[	Ë	ÐXÚÙÜÝ[ØØ[\[Ù[Y[	Ë	Ò\[ÛHÝXÚÜÉË	ÌH]H\XÝYÙ\ÜÚ[Û[[ÝHÜ[][IË	ÐÛÛ\Y[[YÐUÝ[\ÉË	ÌÝ[ÈÙ]\Ú[ÛÉË	Ó[\[Ý\ÈÜY]	×KÝ[ÛY\ÎÉÓZ^[È[X\Ý\[ÈÙH[ÛÛÉ×K\ÜÙ]ÓYYYÉÐX]ÜÙ\ÜÚ[Û[H
-Ú]H[Ù^JIË	ÔY\[ÙHXÚÜÉË	Ó\XÜÈÜÛÛÙ\	×KKÂY	ÝØØ[\ÙXÝ[ÛË[YN	ÕØØ[ÙXÝ[Û8 %[Ý\ÚXÙIËØ]YÛÜN	Ù^XÝ][ÛË[ZÙT]	ÝØØ[ÉËXÙN	É
-	ËXÙS[Y\XÎ
-ÚXÚÛÝ][XYYKÚXÚÛÝ]Ø]YÛÜN	ÜÚXÝ	ËYÛÎÉÜÛÛÝÜ][ÉË	Ü\ÚM	Ë	ÛÛ[ØØ][ÛX]	×K\\Î[ÝHÝÛ]\][È[ÝHXÛÜY[ÛÜ]\È[H\XÜÈÜY[ÙKHÙY\È\ÈÜ]\Ú\KYÚ\Ý\YÚ]RK[[ÝHÛH[]Ú\H[HÛÜHY][È[\ÝY[ÈÙ\ÜÚ[ÛÈ]Z[XH[][KÜY][ÛÕÔ\ÛÛÈ
-ØØ[ÙXÝ[ÛH[H[\Ý\Ë\[Ý\ÝÛÚXÙKÙXÙY]]È\Ý[Û\XÝÈHZÝ\Ù\ÜÚ[Û[H\Û¹5Ñ¡½°Ñ¡¸ÉÉ¹Ìå½ÕÈ¡Éµ½¹¥Ì¹½µÁÌ¹ÑÕ¹Ìå½ÕÈÙ½°¥¹Ñ¼±¸ÍÑµÌ¸°(±¥ÙÉååÌèÔ°(ÉÙ¥Í¥½¹ÌèÈ°(¥¹±ÕÌèlÈµ¡½ÕÈ¥ÉÑÍÍÍ¥½¸¥¸Ñ¡	¥ÉÍ½¹5Ñ¡½°!Éµ½¹äÉÉ¹µ¹Ð°
-½µÁ¥¹¹ÑÕ¹¥¹°
-±¹]XÍÑµÌ°ÈÉ½Õ¹Ì½ÉÙ¥Í¥½¹Ìt°(¹½Ñ%¹±ÕÌèl5¥á¥¹¹µÍÑÉ¥¹½Ñ¡Õ±°Í½¹t°(ÍÍÑÍ9èl	Ð½ÈÍÍÍ¥½¸¥±¡Ý¥Ñ 	A4¹­ä¤°IÉ¹ÑÉ­Ì°1åÉ¥Ì½È½¹ÁÐt°(ô°(ì(¥è±¥ÙµÍÑÉµ¥¹°(¹µè1¥ÙMÑÉµ¥¹MÑÕÀAÉ½ÕÑ¥½¸°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÌÀÀ½¡È°(ÁÉ¥9ÕµÉ¥èÌÀÀ°(±ÕÉèI°µÑ¥µµÕ±Ñ¤µÁ±Ñ½É´ÍÑÉµ¥¹Ñ¼e½ÕQÕ°%¹ÍÑÉ´°½½¬°½ÈQÝ¥Ñ ¸%¹±ÕÌÍÑÕÀ°µÉÍÝ¥Ñ¡¥¹°Õ¥¼µ¹µ¹Ð°±¥Ù¡Ðµ½¹¥Ñ½É¥¹°¹Õ¥¹¹µ¹ÐÑ¡É½Õ¡½ÕÐÑ¡É½ÍÐ¸°(ô°(ì(¥èÍ¡½ÉÐµ½É´µ½¹Ñ¹Ð°(¹µèI±Ì¼M¡½ÉÐµ½É´
-½¹Ñ¹Ð°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÄÀÀ½Ñ °(ÁÉ¥9ÕµÉ¥èÄÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉè	Ñ ½Ô´ÄÀÍ¡½ÉÐµ½É´Ù¥½Ì¡Q¥­Q½¬°%¹ÍÑÉ´I±Ì°e½ÕQÕM¡½ÉÑÌ¤¸¥Ñ°ÁÑ¥½¹°¹½ÁÑ¥µ¥é½È Á±Ñ½É´¸°(ô°(ì(¥è¤µµ½Ñ¥½¸´ÌÀ°(¹µè$5½Ñ¥½¸ÉÁ¡¥ÌPÌÀM½¹Ì°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èØÀÀ°(ÁÉ¥9ÕµÉ¥èØÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉèÌÀµÍ½¹$µ¹ÉÑÙ¥¼P¥¹ÑÉ¼°¹¥µÑ½±±°½ÈÉ¹½¹Ñ¹Ð¸ÔÁÉµ¥Õ´ÑÌ°ÔÁÉµ¥Õ´ÑÉ¹Í¥Ñ¥½¹Ì°ÈÉÙ¥Í¥½¸É½Õ¹Ì¸Ìµ¡½ÕÈÁÉ½ÕÑ¥½¸Ñ¥µÐÈÀÀ½¡È¸°(ô°(ì(¥è¤µµ½Ñ¥½¸´ØÀ°(¹µè$5½Ñ¥½¸ÉÁ¡¥ÌPØÀM½¹Ì°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èàÀÀ°(ÁÉ¥9ÕµÉ¥èàÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉèØÀµÍ½¹$µ¹ÉÑÙ¥¼Ý¥Ñ à´ÄÀÁÉµ¥Õ´ÑÌ¹ÑÉ¹Í¥Ñ¥½¹Ì¸ÈÉÙ¥Í¥½¸É½Õ¹Ì¸	Õ¥±ÐÝ¥Ñ ÕÑÑ¥¹µ$Ñ½½±Ì¹¥ÑÑ¼É½ÍÐÍÑ¹ÉÌ¸°(ô°(ì(¥è¤µµ½Ñ¥½¸´ÄÈÀ°(¹µè$5½Ñ¥½¸ÉÁ¡¥ÌPUÀÑ¼È5¥¹ÕÑÌ°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÄ°ÈÀÀ°(ÁÉ¥9ÕµÉ¥èÄÈÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉèUÀÑ¼Èµµ¥¹ÕÑ$µ¹ÉÑÙ¥¼Ý¥Ñ à´ÄÀÁÉµ¥Õ´ÑÌ¹ÑÉ¹Í¥Ñ¥½¹Ì¸ÈÉÙ¥Í¥½¸É½Õ¹Ì¸
-¥¹µÑ¥ÅÕ±¥ÑäÐÉÑ¥½¸½ÑÉ¥Ñ¥½¹°¹¥µÑ¥½¸½ÍÑÌ¸°(ô°(ì(¥èÙ¥¼µ¥Ðµ±ÉÑ°(¹µèY¥¼¥Ñ¥¹°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÈÔÀ½¡È°(ÁÉ¥9ÕµÉ¥èÈÔÀ°(±ÕÉèAÉ½ÍÍ¥½¹°Ù¥¼¥Ñ¥¹½Èá¥ÍÑ¥¹½½ÑPÕÑÌ°ÑÉ¹Í¥Ñ¥½¹Ì°ÉÁ¡¥Ì°½±½È°¹±¥ÙÉä¸	É¥¹Ñ¡½½Ñ°±ÙÝ¥Ñ ¥¹¥Í¡ÕÑÌ¸°(ô°((¼¼RR 	UM%9ML
-=9Q9PRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR (ì(¥èÁ¥Ñ µ¬°(¹µèA¥Ñ ¬¬	ÕÍ¥¹ÍÌA±¸°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÈÔÀ°(ÁÉ¥9ÕµÉ¥èÈÔÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉè%¹ÙÍÑ½ÈµÉäÁ¥Ñ ¬¡ÕÀÑ¼ÄÈÍ±¥Ì¤Á±ÕÌÕ±°ÕÍ¥¹ÍÌÁ±¸½Õµ¹Ð¸9ÉÉÑ¥ÙÉ°Í¥¸°¥¹¹¥°½ÙÉÙ¥Ü°¹Í¬Í±¥PÙÉåÑ¡¥¹å½Ô¹Ñ¼Ý±¬¥¹Ñ¼Ñ¡É½½´Éä¸°(ô°(ì(¥è­å¹½ÑµÍ±¥Ì°(¹µè-å¹½Ñ¼MÁ­¥¹M±¥Ì°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÈÔÀ°(ÁÉ¥9ÕµÉ¥èÈÔÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉè
-ÕÍÑ½´Í±¥¬½ÈÑ±­Ì°Ý½É­Í¡½ÁÌ°½ÈÁÉÍ¹ÑÑ¥½¹Ì¸Y¥ÍÕ°ÍÑ½ÉåÑ±±¥¹Ñ¡ÐµÁ±¥¥Ìå½ÕÈµÍÍP¹½Ð¹É¥ÑµÁ±ÑÌ¸°(ô°(ì(¥è½½¬µ½ÉµÐ°(¹µè	½½¬½ÉµÑÑ¥¹¬5É­Ñ¥¹1Õ¹ °(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÜÔÀ°(ÁÉ¥9ÕµÉ¥èÜÔÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉèAÉ½ÍÍ¥½¹°¥¹ÑÉ¥½È½ÉµÑÑ¥¹¬½ÙÈ±å½ÕÐ½È-@°%¹ÉµMÁÉ¬°½ÈÁÉ¥¹ÐPÁ±ÕÌÕ±°µÉ­Ñ¥¹±Õ¹ ÍÑÉÑä¹Í½¥°µ¥É½±±½ÕÐÁ±¸¸	Õ¥±Ð½ÈÉÑ¥ÍÑÌÝ¡¼¹Ñ¡¥È½½¬Ñ¼Í±°°¹½Ð©ÕÍÐá¥ÍÐ¸°(ô°(ì(¥è±±µ½ÉµÑ¥½¸°(¹µè11½ÉµÑ¥½¸¬	ÕÍ¥¹ÍÌ	¹­¥¹°(Ñ½ÉäèáÕÑ¥½¸°(ÁÉ¥èÈÔÀ°(ÁÉ¥9ÕµÉ¥èÈÔÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉè½¹µ½Èµå½Ô11ÁÁÉÝ½É¬°%8ÍÑÕÀ°ÕÍ¥¹ÍÌ¹­¥¹½¹¹Ñ¥½¸°¹½Õ¹ÐÕ¥¹PÙÉåÑ¡¥¹Ñ¼µ­å½ÕÈÉ¹±±±ä½ÁÉÑ¥½¹°¸±°µ¥¹±ÕÍ¥Ù¸°(ô°((¼¼RR 
-=
-!%959Q=IM!%@RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR (ì(¥èÙ½°µÑÉ¥¹¥¹°(¹µèY½°QÉ¥¹¥¹¡	¥ÉÍ½¹5Ñ¡½¤°(Ñ½ÉäèáÁÉ¥¹°(ÁÉ¥èÜÀÀ°(ÁÉ¥9ÕµÉ¥èÜÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉèÐµÍÍÍ¥½¸Ù½°½¡¥¹PÁÉ½©Ñ¥½¸°ÉÑ ½¹ÑÉ½°°ÁÉ½Éµ¹ÁÉÍ¹°¹Ù½¥ÁÉÍÉÙÑ¥½¸¸Q¡	¥ÉÍ½¹5Ñ¡½èÙ±½ÁÉ½´ÈÔ¬åÉÌ¥¸Ñ¡µÕÍ¥ÕÍ¥¹ÍÌ¸°(ô°(ì(¥èÉ½É¥¹µ½½Ñ °(¹µèI½É¥¹	½½Ñ QÉ¥¹¥¹°(Ñ½ÉäèáÁÉ¥¹°(ÁÉ¥èàÜÔ°(ÁÉ¥9ÕµÉ¥èàÜÔ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(±ÕÉèMÑÕ¥¼Ñ¥ÅÕÑÑ°µ¥Ñ¡¹¥ÅÕ°ÁÉ½ÕÈ±¹Õ°¹¡½ÜÑ¼ÐÑ¡ÍÐ½ÕÐ½ÙÉäÍÍÍ¥½¸¸½ÈÉÑ¥ÍÑÌÝ¡¼Ý¹ÐÑ¼Ý±¬¥¹Ñ¼¹äÍÑÕ¥¼Éä¸°(ô°(ì(¥èÉÑ¥ÍÐµÙ±½Áµ¹Ð°(¹µèÉÑ¥ÍÐÙ±½Áµ¹Ð°(Ñ½ÉäèáÁÉ¥¹°(ÁÉ¥èÉ½´Ä°ÀÀÀ°(ÁÉ¥9ÕµÉ¥èÄÀÀÀ°(±ÕÉè5Õ±Ñ¤µÝ¬µ¹Ñ½ÉÍ¡¥À½ÈÉÑ¥ÍÑÌÐÑ¡¥¹±Ñ¥½¸Á½¥¹Ð¸M½Õ¹°¥µ°ÕÍ¥¹ÍÌ°ÍÑÁÉÍ¹PÕ¥±ÐÉ½Õ¹å½ÕÈÙ¥Í¥½¸°¹½Ð½ÉµÕ±¸AÉ½ÁÉ¥ÑÉä¸AÉÍ½¹°¸IÍÕ±ÑÌµÉ¥Ù¸¸°(ô°(ì(¥è½¹ÍÕ±Ñ¥¹µ±°°(¹µèMÑÉÑä
-±°°(Ñ½ÉäèáÁÉ¥¹°(ÁÉ¥èÌÜÔ°(ÁÉ¥9ÕµÉ¥èÌÜÔ°(±ÕÉèØÀµµ¥¹ÕÑ½¹µ½¸µ½¹±°Ñ¼µÀÍÁ¥¥¥Í¥½¸°ÁÉ¥ÁÉ½©Ð°Õ¹±½¬Ñ¡¹áÐµ½Ù°½ÈÕ¥±É½µÀ¸ÈÔåÉÌ½µÕÍ¥ÕÍ¥¹ÍÌ¥¹Í¥¡Ð¥¸½¹¡½ÕÈ¸°(ô°((¼¼RR 5UM%Y%<A
--LRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR (¼¼I±Ñ¥½¹Í¡¥ÀµÕ¥±¥¹ÉÑÌPÕ±°Í½¹°Õ±°Ù¥¼°½È½Ñ Ñ½Ñ¡È¸(¼¼Q¡ÍÉÑ¡¥¹ÑÉ¼ÁÉ¥ÌMÝÉÙ½ÉÌÑ¼¹Ü±¥¹ÑÌ¡ÌÕ¥±¥¹(¼¼±½¹µÑÉ´Ý½É­¥¹É±Ñ¥½¹Í¡¥ÀÝ¥Ñ ¸AÉµ¥Õ´Õ±°µÍÉÙ¥ÉÑÌÉ(¼¼¥¸Ñ¡µÕÍ¥µÁÉ½ÕÑ¥½¸¹µÕÍ¥µÙ¥¼¹ÑÉ¥Ì½Ù¸(ì(¥èÍ½¹µÁÉ½ÕÑ¥½¸µ¥¹ÑÉ¼°(¹µèM½¹AÉ½ÕÑ¥½¸°(Ñ½ÉäèáÕÑ¥½¸°(¥¹Ñ­AÑ èµÕÍ¥°(ÁÉ¥èÄ°ÀÀÀ°(ÁÉ¥9ÕµÉ¥èÄÀÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(ÑÕÉèÑÉÕ°(±¥ÙÉååÌèÄÐ°(ÉÙ¥Í¥½¹ÌèÈ°(±ÕÉè½µÁ±Ñ°É±ÍµÉä½É¥¥¹°Í½¹PÕÍÑ½´¥¹ÍÑÉÕµ¹Ñ°°å½ÕÈÙ½±ÌÁÉ½Õ¹¥ÉÑ°µ¥á°µÍÑÉ°¹±¥ÙÉÝ¥Ñ ÙÉåÑ¡¥¹å½Ô¹Ñ¼É±Í¥Ð¸ÈµÝ¬ÑÕÉ¹É½Õ¹¸ÔÀÑ¼ÍÑÉÐ°ÔÀ½¸½µÁ±Ñ¥½¸¸°(¥¹±ÕÌèl(
-ÕÍÑ½´½É¥¥¹°¥¹ÍÑÉÕµ¹Ñ°½Ð°(Y½°ÁÉ½ÕÑ¥½¸¥ÉÑ¥½¸¡½¡¥¹¥¹±Õ¤°(5¥á¥¹°(5ÍÑÉ¥¹°(MÍÍ¥½¸ÍÑµÌ±¥ÙÉ ¹ÝØ¤°(MÁ±¥ÐÍ¡Ð½ÈÍå¹±¥¹Í¥¹°(
-½ÁåÉ¥¡Ð½¹±¥¹¥ÍÑÉ¥ÕÑ¥½¸Õ¥¹°(ÈÉ½Õ¹Ì½ÉÙ¥Í¥½¹Ì°(t°(¹½Ñ%¹±ÕÌèl5ÕÍ¥Ù¥¼¡ÍM½¹¬Y¥¼	Õ¹±PÈ°ÀÀÀ¤°1åÉ¥ÝÉ¥Ñ¥¹¡¸¤t°(ÑÉµÌè]½É¬½È¡¥Éèå½Ô½Ý¸Ñ¡¥¹¥Í¡µÍÑÈ¸ÔÀÁ½Í¥ÐÍÕÉÌå½ÕÈÍÍÍ¥½¸ìÑ¡±¹¥ÌÕ½¸±¥ÙÉä¸ÈµÝ¬ÑÕÉ¹É½Õ¹É½´Á½Í¥ÐÑ¸
-É¥ÐèAÉ½Õäi¥½¸M]IX	¥ÉÍ½¹¸°(ÍÍÑÍ9èlY½¥µµ¼½å½ÕÈµ±½ä½È½¹ÁÐ¡Ù¸É½Õ ¤°IÉ¹ÑÉ­Ì½ÈÍ½Õ¹¥ÉÑ¥½¸°1åÉ¥Ì½È½¹ÁÐ¹½ÑÌt°(ô°(ì(¥èµÕÍ¥µÙ¥¼µ¥¹ÑÉ¼°(¹µè5ÕÍ¥Y¥¼°(Ñ½ÉäèáÕÑ¥½¸°(¥¹Ñ­AÑ èÙ¥¼°(ÁÉ¥èÄ°ÔÀÀ°(ÁÉ¥9ÕµÉ¥èÄÔÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(ÑÕÉèÑÉÕ°(±¥ÙÉååÌèÈÄ°(ÉÙ¥Í¥½¹ÌèÈ°(±ÕÉèÕ±°Ìµµ¥¹ÕÑµÕÍ¥Ù¥¼°Í¡½Ð¹ÁÉ½ÕPÁ±ÕÌ¡¥¹µÑ¡µÍ¹Ì½½Ñ½È½Õµ¹ÑÉä½ÈÙ±½°ÄÀÑ,¥ÑÁ¡½Ñ½Ì½ÈÍ½¥°°¹ÄÀÉ±ÌÕÐÉ½´å½ÕÈÍ¡½½Ð¸ÙÉåÑ¡¥¹å½Ô¹Ñ¼É½ÀÁÉ½©Ð¸°(¥¹±ÕÌèl(Ìµµ¥¹ÕÑµÕÍ¥Ù¥¼°Õ±±äÁÉ½Õ°(	¡¥¹µÑ¡µÍ¹Ì½½Ñ¡½Õµ¹ÑÉä½Ù±½Éä¤°(ÄÀÑ,¥ÑÁ¡½Ñ½Ì½ÈÍ½¥°µ¥°(ÄÀÉ±ÌÕÐÉ½´å½ÕÈÙ¥¼Í¡½½Ð°(ÈÉ½Õ¹Ì½ÉÙ¥Í¥½¹Ì°(t°(¹½Ñ%¹±ÕÌèlM½¹ÁÉ½ÕÑ¥½¸¡ÍM½¹¬Y¥¼	Õ¹±PÈ°ÀÀÀ¤°M½¹µÕÍÐ¥¹°µ¥à½µÍÑÉ½ÉÍ¡½½Ðät°(ÑÉµÌèÔÀÁ½Í¥ÐÍÕÉÌå½ÕÈÍ¡½½ÐÑìÑ¡±¹¥ÌÕ½¸±¥ÙÉä¸¥¹°µ¥á¹µÍÑÉÍ½¹µÕÍÐÁÉ½Ù¥½ÉÁÉ½ÕÑ¥½¸¥¹Ì¸°(ÍÍÑÍ9èl5ÍÑÉÍ½¹¥± ¹ÝØ½È¹µÀÌ¤°
-½¹ÁÐ½ÈÑÉÑµ¹Ð¥Ì¡Ù¸É½Õ ¤°1½Ñ¥½¸¥Ì½Èµ½½½É°ÉÑ¥ÍÐÉÉ¹Á¡½Ñ½Ìt°(ô°(ì(¥èÍ½¹µÙ¥¼µÕ¹±°(¹µèM½¹¬Y¥¼	Õ¹±°(Ñ½ÉäèáÕÑ¥½¸°(¥¹Ñ­AÑ èµÕÍ¥°(ÁÉ¥èÈ°ÀÀÀ°(ÁÉ¥9ÕµÉ¥èÈÀÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(ÑÕÉèÑÉÕ°(±¥ÙÉååÌèÈà°(ÉÙ¥Í¥½¹ÌèÈ°(±ÕÉèQ¡Õ±°Á­P½É¥¥¹°Í½¹ÁÉ½Õ¹µÍÑÉ°Á±ÕÌÕ±°Ìµµ¥¹ÕÑµÕÍ¥Ù¥¼°	QL½½Ñ°ÄÀÑ,Á¡½Ñ½Ì°¹ÄÀÉ±Ì¸ÔÀÀ½Ý¡¸å½Ô½½¬½Ñ Ñ½Ñ¡È¸Q¡¥Ì¥ÌÑ¡É±Ñ¥½¹Í¡¥ÀµÕ¥±¥¹ÁÉ¥P½ÈÉÑ¥ÍÑÌÉäÑ¼Õ¥±Í½µÑ¡¥¹É°¸°(¥¹±ÕÌèl(ÙÉåÑ¡¥¹¥¸M½¹AÉ½ÕÑ¥½¸ Ä°ÀÀÀÙ±Õ¤°(ÙÉåÑ¡¥¹¥¸5ÕÍ¥Y¥¼ Ä°ÔÀÀÙ±Õ¤°(ÔÀÀÍÙ¥¹ÌÙÌ¸½½­¥¹ÍÁÉÑ±ä°(
-ÕÍÑ½´¥¹ÍÑÉÕµ¹Ñ°°Ù½±ÌÁÉ½Õ¥ÉÑ°(5¥á¥¹µÍÑÉ¥¹°(MÍÍ¥½¸ÍÑµÌ¬ÍÁ±¥ÐÍ¡Ð°(
-½ÁåÉ¥¡Ð¥ÍÑÉ¥ÕÑ¥½¸Õ¥¹°(Ìµµ¥¸µÕÍ¥Ù¥¼°	QL½½Ñ°(ÄÀÑ,¥ÑÁ¡½Ñ½Ì¬ÄÀÉ±Ì°(t°(¹½Ñ%¹±ÕÌèl1åÉ¥ÝÉ¥Ñ¥¹¡¸¤t°(ÑÉµÌèÔÀÁ½Í¥ÐÍÕÉÌå½ÕÈÁÉ½©ÐìÑ¡±¹¥ÌÕ½¸±¥ÙÉä¸M½¹¥ÌÁÉ½Õ¥ÉÍÐ ÈÝ­Ì¤°Ñ¡¸Ñ¡Ù¥¼Í¡½½ÑÌ½¹Ñ¡µÍÑÈ¥Ì½¹¸Q½Ñ°±¥ÙÉäèøÐÝ­Ì¸
-É¥ÐèAÉ½Õäi¥½¸M]IX	¥ÉÍ½¹¸°(ÍÍÑÍ9èlY½¥µµ¼½å½ÕÈµ±½ä½È½¹ÁÐ°IÉ¹ÑÉ­Ì°1åÉ¥Ì½È½¹ÁÐ¹½ÑÌt°(ô°(ì(¥èÍ½¥°µ½¹Ñ¹Ðµ¥±ä°(¹µèM½¥°5¥P¥±ä
-½¹Ñ¹Ð°(Ñ½Éäè¥¹Ñ¥Ñä°(¥¹Ñ­AÑ èÍ½¥°°(ÁÉ¥èÈÀÀ½µ¼°(ÁÉ¥9ÕµÉ¥èÈÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½Éäèµ½¹Ñ¡±ä°(±¥ÙÉååÌèÀ°(±ÕÉèe½ÕÈ½¹Ñ¹ÐÁÕÍ¡ÏLÔÑ¥µÌ¥±äÐÁ¬Í½¥°ÑÉ¥Ñ¥µÌ¸]¡¹±Ñ¡Í¡Õ±¥¹°ÁÑ¥½¹Ì°¹½¹Í¥ÍÑ¹äPå½Ô¡¹±Ñ¡ÕÍ¥¹ÍÌ¸5½¹Ñ µÑ¼µµ½¹Ñ °¹°¹åÑ¥µ¸°(¥¹±ÕÌèl(
-½¹Ñ¹ÐÁ½ÍÑÏLÕà¥±äÐÁ¬ÑÉ¥Ñ¥µÌ°(
-ÁÑ¥½¹Ì¹¡Í¡ÑÍÑÉÑä°(%¹ÍÑÉ´¡ÁÉ¥µÉäÁ±Ñ½É´¤°(A½ÍÑ¥¹Í¡Õ±Õ¥±ÐÉ½Õ¹å½ÕÈÕ¥¹°(5½¹Ñ µÑ¼µµ½¹Ñ P¹¼±½¹µÑÉ´½¹ÑÉÐ°(t°(¹½Ñ%¹±ÕÌèl
-½¹Ñ¹ÐÉÑ¥½¸¡å½ÔÁÉ½Ù¥Ñ¡Á¡½Ñ½Ì½Ù¥½Ì¤°A¥ÍÁ¹°5Õ±Ñ¥Á±Á±Ñ½É´µ¹µ¹Ð¡ÍM½¥°	É¹5¹µ¹ÐPÔÀÀ½µ¼¤t°(ÑÉµÌè5½¹Ñ µÑ¼µµ½¹Ñ ¸¥ÉÍÐµ½¹Ñ ¥±±Ð¡­½ÕÐìÍµÑÙÉäµ½¹Ñ ÑÈ¸
-¹°½Éå½ÕÈ¹áÐ¥±±¥¹ÑÐ¥¹½ÍÝÉÙ½¹Ñ¡¼¹ÁÉ¼¸
-½¹Ñ¹ÐµÕÍÐÁÉ½Ù¥äå½ÔPÑ¡¥ÌÁ±¸¡¹±ÌÍ¡Õ±¥¹¹ÁÑ¥½¹Ì°¹½Ð½¹Ñ¹ÐÉÑ¥½¸¸°(ÍÍÑÍ9èle½ÕÈ%¹ÍÑÉ´¡¹±¹ÍÌ¡Ù¥5Ñ	ÕÍ¥¹¹ÍÌMÕ¥Ñ¤°e½ÕÈÉ¹Õ¥±¥¹Ì¼Ù½¥°QÉÐÕ¥¹Ñ¥±Ìt°(¹½ÑèQ¡µ½É½¹ÑáÐå½Ô¥Ù°Ñ¡ÑÑÈå½ÕÈ½¹Ñ¹Ð¸]p°Ñ¥±½ÈÑ½¹°ÍÑå±°¹Á½ÍÐÑ¥µ¥¹Ñ¼å½ÕÈÍÁ¥¥Õ¥¹¸°(ô°)ôì((¼¼ôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôô(¼¼M
-Q%=8ÌPMIY%
-L(¼¼ôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôôô((¼¼´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´(¼¼Ì¸ÄQ¡ÍÉÙ¥Ñ±½(¼¼´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´(¼¨¨(¨±°ÍÉÙ¥Ìå½Ô½È¸ ¹ÑÉä¹Ìè(¨¥PÕ¹¥ÅÕÍ±Õ¡Í¹­µÍ½È­µÍ¤(¨¹µ´Í¡½Ý¸¥¸U$(¨Ñ½ÉäPÑ¥ÌÑ¼MIY%
-}
-Q=I%L¹¥(¨¥¹Ñ­AÑ PµÑ¡Ì%9Q-}AQ!L­ä(¨ÁÉ¥P¥ÍÁ±äÍÑÉ¥¹ ÌÀÀ½ÈÌÀÀ½µ¼°Ñ¸¤(¨ÁÉ¥9ÕµÉ¥P¹ÕµÈ¡Íµ½¹Ñ¡±ä½ÈÁÉ½©Ð½ÍÐ¥¸UM¤(¨¡­½ÕÑ¹±PÑÉÕô½½­¥¹±½ÜÑ¥Ù(¨¡­½ÕÑ
-Ñ½ÉäPÁÉ½©Ððµ½¹Ñ¡±äðÍÍÍ¥½¸(¨±¥ÙÉååÌP¡½ÁÑ¥½¹°¤¹ÕµÈ(¨ÉÙ¥Í¥½¹ÌP¡½ÁÑ¥½¹°¤¹ÕµÈ(¨¥¹±ÕÌP¡½ÁÑ¥½¹°¤ÍÑÉ¥¹mt(¨±ÕÉP¡½ÁÑ¥½¹°¤Í¡½ÉÐÍÉ¥ÁÑ¥½¸(¨ÑÉµÌ´¡½ÁÑ¥½¹°¤½Ý¹ÉÍ¡¥À¼±°¹½Ñ(¨ÑÕÉP¡½ÁÑ¥½¹°¤Í¡½Ü½¸¡½µÁ(¨¼)áÁ½ÉÐ½¹ÍÐ11}MIY%
-Lôl(ì(¥è¥¹Ñ¥ÑäµÁ­°(¹µè%¹Ñ¥ÑäA­°(Ñ½Éäè¥¹Ñ¥Ñä°(¥¹Ñ­AÑ è¥¹Ñ¥Ñä°(ÁÉ¥èÌÀÀ°(ÁÉ¥9ÕµÉ¥èÌÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(ÑÕÉèÑÉÕ°(±¥ÙÉååÌèÜ°(ÉÙ¥Í¥½¹ÌèÈ°(±ÕÉè1½¼°½±½ÉÌ°¹½¹ÐPÙÉåÑ¡¥¹å½Ô¹Ñ¼±½½¬±¥­É¹¸°(¥¹±ÕÌèl(1½¼Í¥¸¡ÁÉ¥µÉä¬ÙÉ¥¹ÑÌ¤°(
-½±½ÈÁ±ÑÑ°(QåÁ½ÉÁ¡äÍåÍÑ´°(	É¹Õ¥±¥¹ÌA°(t°(ô°(ì(¥èÝÍ¥ÑµÁ±Ñ½É´°(¹µè]Í¥ÑA±Ñ½É´°(Ñ½Éäè¥¹Ñ¥Ñä°(¥¹Ñ­AÑ èÝÍ¥Ñ°(ÁÉ¥èÔÀÀ°(ÁÉ¥9ÕµÉ¥èÔÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(ÑÕÉèÑÉÕ°(±¥ÙÉååÌèÄÐ°(ÉÙ¥Í¥½¹ÌèÈ°(±ÕÉèÕÍÑ½´Õ¥±ÐÝÍ¥Ñ°Í¥¹¹±Õ¹¡¸°(¥¹±ÕÌèl(UÀÑ¼ÔÁÌ°(5½¥±µÉÍÁ½¹Í¥ÙÍ¥¸°(	Í¥M<ÍÑÕÀ°(
-½¹ÑÐ½É´°(t°(ô°(ì(¥èÍ½¥°µ½¹Ñ¹Ðµ¥±ä°(¹µèM½¥°5¥P¥±ä
-½¹Ñ¹Ð°(Ñ½Éäè¥¹Ñ¥Ñä°(¥¹Ñ­AÑ èÍ½¥°°(ÁÉ¥èÈÀÀ½µ¼°(ÁÉ¥9ÕµÉ¥èÈÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½Éäèµ½¹Ñ¡±ä°(±ÕÉèe½ÕÈ½¹Ñ¹ÐÁÕÍ¡ÏLÔÑ¥µÌ¥±ä¸]¡¹±ÁÑ¥½¹Ì°¡Í¡ÑÌ°¹Í¡Õ±¥¹¸°(¥¹±ÕÌèl(Ì´ÔÁ½ÍÑÌÁÈä°(
-ÁÑ¥½¹Ì¬¡Í¡ÑÌ°(M¡Õ±ÅÕÕ°(5½¹Ñ¡±äÁÉ½Éµ¹ÉÁ½ÉÐ°(t°(ô°(ì(¥èÍ½¹µÁÉ½ÕÑ¥½¸µ¥¹ÑÉ¼°(¹µèM½¹AÉ½ÕÑ¥½¸°(Ñ½ÉäèáÕÑ¥½¸°(¥¹Ñ­AÑ èµÕÍ¥°(ÁÉ¥èÄ°ÀÀÀ°(ÁÉ¥9ÕµÉ¥èÄÀÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(ÑÕÉèÑÉÕ°(±¥ÙÉååÌèÄÐ°(ÉÙ¥Í¥½¹ÌèÈ°(±ÕÉè½µÁ±Ñ°É±ÍµÉä½É¥¥¹°Í½¹ÝÉ¥ÑÑ¸°ÁÉ½Õ°¹µ¥á½Èå½Ô¸°(¥¹±ÕÌèl(=É¥¥¹°½µÁ½Í¥Ñ¥½¸±åÉ¥Ì°(Õ±°ÁÉ½ÕÑ¥½¸¬µ¥à°(]Ø¬5@Ì±¥ÙÉ±Ì°(ÈÉÙ¥Í¥½¸É½Õ¹Ì°(t°(ÑÉµÌè]½É¬½È¡¥Éèe½Ô½Ý¸Ñ¡¥¹¥Í¡µÍÑÈ¸°(ô°(ì(¥èµÕÍ¥µÙ¥¼µ¥¹ÑÉ¼°(¹µè5ÕÍ¥Y¥¼°(Ñ½ÉäèáÕÑ¥½¸°(¥¹Ñ­AÑ èÙ¥¼°(ÁÉ¥èÄ°ÔÀÀ°(ÁÉ¥9ÕµÉ¥èÄÔÀÀ°(¡­½ÕÑ¹±èÑÉÕ°(¡­½ÕÑ
-Ñ½ÉäèÁÉ½©Ð°(ÑÕÉèÑÉÕ°(±¥ÙÉååÌèÈÄ°(ÉÙ¥Í¥½¹ÌèÈ°(±ÕÉèÕ±°Ìµ¥¹ÕÑµÕÍ¥Ù¥¼°Í¡½Ð°¥Ñ°½±½ÈµÉ°¹ÉäÑ¼ÕÁ±½¸°(¥¹±ÕÌèl(AÉµÁÉ½ÕÑ¥½¸Á±¹¹¥¹°(=¸µ±½Ñ¥½¸Í¡½½Ð°(AÉ½ÍÍ¥½¹°¥Ð¬½±½ÈÉ°(ÈÉÙ¥Í¥½¸É½Õ¹Ì°(t°(ô°(ì(¥èÍ½¹µÙ¥¼µÕ¹±°(¹µèM½¹¬Y¥¼	Õ¹±°(Ñ½ÉäèáÕÑ¥½¸°(¥¹Ñ­AÑ èµÕÍ¥°(ÁÉ¥èÈ°  previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC â Tax & Financial Services' },
+  // ── WEB & DIGITAL ────────────────────────────────────────────────────────
+  {
+    id: 'website-presence',
+    name: 'Website — The Presence ($300 Special)',
+    category: 'execution',
+    featured: true,
+    price: '$300',
+    priceNumeric: 300,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'The $300 special. Pick from 10 professionally designed template styles or go custom — we swap in your brand, your words, and your photos. Mobile-friendly. Domain + email setup included. Live in 5 days.',
+    deliveryDays: 5,
+    revisions: 1,
+    includes: ["Your choice of 10 template styles (or custom 3-page)", "Your brand colors, logo & content", "Mobile responsive design", "Contact form", "Basic SEO setup", "1 round of revisions", "Live in 5 days"],
+    notIncludes: ["E-commerce", "Booking system", "Custom animations"],
+    assetsNeeded: ["Logo (any format)", "Written copy for each page", "1-3 high quality photos or images", "Color preferences (if no branding exists yet)"],
+  },
+  {
+    id: 'website-platform',
+    name: 'Website — The Platform',
+    category: 'execution',
+    price: '$500',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Portfolio site plus the back end to sell products — Stripe checkout, booking integration, email capture, and content sections. Domain + email included. SEO audit at 3-6 months included. Live in 1 week.',
+    deliveryDays: 7,
+    revisions: 2,
+  },
+  {
+    id: 'website-ecosystem',
+    name: 'Website — The Ecosystem',
+    category: 'execution',
+    price: '$1,000',
+    priceNumeric: 1000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'A multifaceted digital home for solopreneurs who operate as a whole company. Custom-built — you won\'t find this anywhere else because we designed this concept. Vision-first: we get what\'s in your head out and into a digital space you can grow into over time. Your Roadmap drives every design decision. All the bells and whistles: full SEO, product selling, multiple pages, an AI chat assistant for your clients, and calendar + scheduling. Includes domain, email, SEO audit at 3-6 months. Live in 2 weeks.',
+    deliveryDays: 14,
+    revisions: 3,
+    includes: ["Full modular website", "Custom brand integration", "Mobile-first responsive design", "Booking or inquiry system", "Calendar & scheduling system", "AI chat assistant for your clients", "Blog or content hub", "E-commerce / product selling", "Full SEO optimization", "Brand Transmission section", "3 rounds of revisions", "SEO audit at 90 days"],
+    notIncludes: ["Monthly hosting fees (billed separately)", "Content writing (can be added)", "Custom photography (can be added)"],
+    assetsNeeded: ["Logo files (.svg, .png)", "Vision statement", "Mission statement", "Brand colors and fonts (if available)", "All written copy for each page", "Professional photos or imagery", "Video content", "Any existing domain/hosting login credentials"],
+  },
+  {
+    id: 'enterprise-ecosystem',
+    name: 'Enterprise Ecosystem',
+    category: 'execution',
+    price: 'From $5,000',
+    priceNumeric: 5000,
+    blurb: 'For those building something the size of Apple, Microsoft, or a full digital record label — with multiple divisions, offices, and operations under one digital roof. Multi-brand architecture, team portals, artist rosters, revenue streams, and expansive infrastructure. Vision-first, built to scale. Starts at $5,000, custom-quoted by scope.',
+    featured: true,
+  },
+  {
+    id: 'website-maintenance',
+    name: 'Website Maintenance — Self-Service',
+    category: 'execution',
+    price: '$30/month',
+    priceNumeric: 30,
+    blurb: 'Security updates, broken link fixes, and content updates monthly. You run the site — we keep it clean and current.',
+  },
+  {
+    id: 'website-management',
+    name: 'Website Management — Full Service',
+    category: 'execution',
+    price: '$125/month',
+    priceNumeric: 125,
+    blurb: 'We manage everything — security, updates, content, SEO monitoring, and performance optimization. No separate audit needed. Proactive, not reactive.',
+  },
+  {
+    id: 'fundraising-site',
+    name: 'Crowdfunding / Fundraising Site',
+    category: 'execution',
+    price: '$1,000',
+    priceNumeric: 1000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Campaign page, donation/payment flow, progress tracker, and supporter recognition — built to raise money. A GoFundMe alternative you actually own.',
+  },
+
+  // ── MUSIC & AUDIO ────────────────────────────────────────────────────────
+  {
+    id: 'music-production',
+    name: 'Full Song Production',
+    category: 'execution',
+    price: '$3,000',
+    priceNumeric: 3000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Complete song from concept to master — beat/instrumental creation, vocal recording, arranging, vocal production, vocal coaching, mixing, mastering, and final delivery. 5-day turnaround. Half the industry rate — same broadcast-ready quality.',
+    featured: true,
+    deliveryDays: 5,
+    revisions: 2,
+    includes: ["Custom beat/production", "Studio recording session", "Vocal coaching & direction", "Mixing", "Mastering", "Broadcast-ready stereo file (.wav)", "2 rounds of revisions"],
+    notIncludes: ["Lyric writing (can be added)", "Music video production"],
+    assetsNeeded: ["Written lyrics or concept notes", "Reference tracks for sound direction", "Any existing stems or recordings if building on prior work"],
+  },
+  {
+    id: 'mixing',
+    name: 'Mixing',
+    category: 'execution',
+    price: '$500',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Professional mixing for your finished recordings. Balances every element — levels, panning, EQ, compression, effects. Broadcast-ready output.',
+    deliveryDays: 3,
+    revisions: 2,
+    includes: ["Professional mix of 1 song", "Vocal balance, EQ, compression, effects", "Broadcast-ready stereo file (.wav)", "2 rounds of revisions"],
+    notIncludes: ["Mastering (separate service — bundle for savings)", "Beat production"],
+    assetsNeeded: ["All individual track files (stems) in .wav format", "Reference track for mix direction", "Tempo/key info if available"],
+  },
+  {
+    id: 'mastering',
+    name: 'Mastering',
+    category: 'execution',
+    price: '$500',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Final mastering to streaming and broadcast standards. Loudness normalization, stereo enhancement, and platform-optimized delivery.',
+  },
+  {
+    id: 'jingle',
+    name: 'Jingle / Brand Audio',
+    category: 'execution',
+    price: '$250',
+    priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Original brand jingle, sonic logo, or audio bumper. Custom-written and produced to live in your audience\'s head.',
+  },
+  {
+    id: 'voiceover',
+    name: 'Voiceover Recording & Production',
+    category: 'execution',
+    price: '$100/hr',
+    priceNumeric: 100,
+    blurb: 'Professional voiceover for ads, brand intros, audiobooks, or content. Over 25 years in the music business — you\'re paying for the mic, the ear, and the experience.',
+  },
+  {
+    id: 'audiobook',
+    name: 'Audiobook Production',
+    category: 'execution',
+    price: '$100/hr',
+    priceNumeric: 100,
+    blurb: 'Studio narration, noise cleanup, mastering, and ACX/Findaway-ready deliverables. Broadcast-ready. Every session managed with 25 years of production experience.',
+  },
+  {
+    id: 'live-recording',
+    name: 'Audio Recording & Production',
+    category: 'execution',
+    price: '$100/hr',
+    priceNumeric: 100,
+    blurb: 'Studio recording, vocal recording, vocal coaching, audiobook narration, and live session capture in broadcast-ready quality. Includes editing and production. 25+ years of music industry experience.',
+  },
+  {
+    id: 'audio-edit-alacarte',
+    name: 'Audio Editing',
+    category: 'execution',
+    price: '$100/hr',
+    priceNumeric: 100,
+    blurb: 'Scrubbing, noise cancellation, reverb, compression, effects, and mastering. You\'re not just paying for editing — you\'re paying for someone who\'s been in the music business for over 25 years, delivering broadcast-ready quality with meticulous attention to detail.',
+  },
+  {
+    id: 'podcast-launch',
+    intakePath: 'podcast',
+    name: 'Podcast Launch Kit',
+    category: 'execution',
+    price: '$100 + $50/hr',
+    priceNumeric: 100,
+    blurb: '$250 covers full strategy, branding, and tech setup — hosting, RSS, distribution on Spotify + Apple Podcasts. Recording sessions at $125/hr. Everything built around your voice and audience.',
+    deliveryDays: 7,
+    revisions: 1,
+    includes: ["Show concept consultation", "RSS feed setup", "Cover art design", "Submission to Spotify & Apple Podcasts", "Episode template", "Launch strategy doc"],
+    notIncludes: ["Ongoing episode editing (see Podcast Editing)", "Recording equipment"],
+    assetsNeeded: ["Show name and description", "Target audience description", "Host name and bio", "Headshot for cover art"],
+  },
+  {
+    id: 'podcast-editing',
+    intakePath: 'podcast',
+    name: 'Podcast Episode Production',
+    category: 'execution',
+    price: '$125/hr',
+    priceNumeric: 125,
+    blurb: 'Per-hour recording + editing, leveling, intro/outro integration, and delivery. Broadcast-ready every episode. Bulk sessions available.',
+  },
+
+  // ── LIVE PERFORMANCES ─────────────────────────────────────────────────────
+  {
+    id: 'live-performance',
+    intakePath: 'event',
+    name: 'Live Performance',
+    category: 'execution',
+    price: 'From $100/hr',
+    priceNumeric: 100,
+    blurb: 'Live performances tailored to your event. Coffee shop performances: $100/hr. Weddings: $500/person. Large events: $500/song. Pricing negotiable based on equipment needs and event complexity.',
+  },
+
+  // ── VIDEOGRAPHY ──────────────────────────────────────────────────────────
+  {
+    id: 'music-video',
+    name: 'Music Video (2:30–4 min)',
+    category: 'execution',
+    price: '$5,000',
+    priceNumeric: 5000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    liveExample: {
+      url: 'https://youtu.be/ScA8gsOkbrE',
+      label: 'See An Example Music Video →',
+      description: 'A real finished music video, shot and produced by SWRV — this is the quality and style you\'re booking.',
+    },
+    blurb: 'Full music video production — concept, 1-day shoot, 5-day post-production, unlimited premium effects and transitions, color grading, and 2 rounds of revisions. A third of what studios charge for the same finish.',
+    featured: true,
+    deliveryDays: 7,
+    revisions: 2,
+    includes: ["Concept development session", "1 full day of filming", "5-day professional edit", "Unlimited premium effects & transitions", "Color grading", "2 rounds of revisions", "Delivery in 4K + compressed web version"],
+    notIncludes: ["Song production (must be mixed & mastered)", "Talent casting fees", "Location permits"],
+    assetsNeeded: ["Finished, mastered audio file (.wav or .mp3)", "Creative concept or mood board (optional but helpful)", "Any specific wardrobe, props, or visual references"],
+  },
+  {
+    id: 'video-promo',
+    name: 'Promo Video (under 1 min)',
+    category: 'execution',
+    price: '$1,250',
+    priceNumeric: 1250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Complete 1-minute promo — concept to delivery in 1 day. Includes shoot, edit, color grading, and 2 revision rounds. Everything included, nothing recycled.',
+  },
+  // ── SWRV COVERAGE — event and brand content, sold as fixed on-site
+  // packages rather than an open-ended hourly quote. Fixed + one-time, so
+  // all three are self-serve checkoutable (category: 'event' collects the
+  // event date and auto-invoices the balance a few days out).
+  {
+    id: 'coverage-quick-stop',
+    name: 'On The Go',
+    category: 'execution',
+    price: '$500',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    blurb: 'A quick hour on-site — we capture the moment and you have edited reels the same day.',
+    deliveryDays: 1,
+    includes: ['1 hour on-site coverage', 'iPhone-shot content', 'Creative direction on-site', '6 edited reels', 'Reels delivered same day', 'Raw footage delivered'],
+  },
+  {
+    id: 'coverage-on-the-go-day',
+    name: 'The Drive-Through',
+    category: 'execution',
+    price: '$1,500',
+    priceNumeric: 1500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    featured: true,
+    blurb: 'Two hours with a plan behind it — mood board, content strategy, and your socials posting live while it happens.',
+    deliveryDays: 1,
+    includes: ['2 hours on-site', 'Pre-shoot questionnaire', 'Custom mood board', 'Content strategy + planning', 'Creative direction on-site', 'iPhone + video content', 'Gimbal-stabilized footage', 'Real-time story posting to your socials', '12 edited reels', 'Raw footage delivered'],
+  },
+  {
+    id: 'coverage-full-convoy',
+    name: 'The Pull-Up',
+    category: 'execution',
+    price: '$2,500',
+    priceNumeric: 2500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    blurb: 'Three hours of full production — a professional photographer, edited brand photos, and live posting while we take over your socials.',
+    deliveryDays: 1,
+    includes: ['3 hours on-site', 'Pre-shoot strategy call + concept', 'Mood board + shot list', 'Creative direction on-site', 'iPhone + video content', 'Gimbal-stabilized footage', 'Professional photographer', 'Edited brand photos', 'Up to 3 looks', 'Real-time story + reel posting throughout', '12 edited reels', 'Raw footage delivered'],
+  },
+  {
+    id: 'coverage-air-support',
+    name: 'Air Support',
+    category: 'execution',
+    price: '$3,500',
+    priceNumeric: 3500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    blurb: 'Everything in The Pull-Up, plus drone footage from above — the venue, the arrivals, and the whole crowd in one shot. Outdoor aerials, weather and airspace permitting.',
+    deliveryDays: 1,
+    includes: ['Everything in The Pull-Up', 'Drone footage by an FAA-licensed pilot', 'Aerial shots of the venue, arrivals and crowd', 'Aerial photos', '3 edited aerial reels (15 reels total)'],
+  },
+
+  // ── ZION VOCALS — Zion singing on other artists' tracks (and producing
+  // their vocals). Remote worldwide by default; in-studio in Atlanta.
+  {
+    id: 'vocal-live-event',
+    name: 'Zion Sings At Your Event',
+    category: 'execution',
+    intakePath: 'event',
+    skipQuestions: ['socials', 'metaAccess', 'otherAccess'],
+    price: 'From $500',
+    priceNumeric: 500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    options: [
+      { id: 'one-song-live', label: 'One Song Live', price: 500, description: 'One song performed live by Zion, with or without guitar.' },
+      { id: 'custom-song', label: 'Custom Song', price: 750, description: 'An original song written and produced for your event, performed live by Zion.' },
+      { id: 'two-songs-live', label: 'Two Songs Live', price: 1000, description: 'Two songs performed live by Zion, with or without guitar.' },
+    ],
+    terms: "Your investment is set by the song: One Song Live $500 · Custom Song $750 · Two Songs Live $1,000. A 50% deposit reserves your date; the balance is invoiced before your event. Zion performs in person, so there is no remote option. On-location travel in Atlanta is $50; travel beyond Atlanta is quoted.",
+    blurb: "A live vocal moment your guests will remember. Zion performs at your wedding, celebration, corporate event, church service or private event, with or without guitar. Booked by the song: One Song Live $500 · Custom Song $750, an original written and produced for your event · Two Songs Live $1,000.",
+    includes: ['Live vocal performance by Zion, with or without guitar', 'Song selection consultation', 'Custom Song: an original written and produced for your event', 'On-location travel in Atlanta: $50'],
+  },
+  {
+    id: 'vocal-hook',
+    name: 'The Hook',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$350',
+    priceNumeric: 350,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    addOns: ['songwriting', 'rush-48'],
+    terms: "Work for hire: you own the recording of Zion's vocal for your song. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: Zion SWRV Birdsong in the liner notes.",
+    blurb: "A hook that carries your record. Zion delivers up to 8 bars cut to your key and tempo, with doubles and ad libs, ready to drop into your session.",
+    deliveryDays: 3,
+    revisions: 1,
+    includes: ['Up to 8 bars performed by Zion', 'Doubles and ad libs', 'Matched to your key and tempo', 'Dry and processed WAV stems', '1 round of revisions', 'Liner-notes credit'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
+  {
+    id: 'vocal-feature',
+    name: 'The Feature',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$750',
+    priceNumeric: 750,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    featured: true,
+    addOns: ['songwriting', 'rush-48'],
+    terms: "Work for hire: you own the recording of Zion's vocal for your song. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: feat. Zion SWRV Birdsong.",
+    blurb: "A complete featured performance on your record: a 16-bar verse and the hook, with leads, doubles, harmonies and ad libs, comped and tuned, credited feat. Zion SWRV Birdsong.",
+    deliveryDays: 5,
+    revisions: 2,
+    includes: ['16-bar verse and hook', 'Lead vocals, doubles, harmonies and ad libs', 'Comped and tuned WAV stems', '"feat. Zion SWRV Birdsong" credit', '2 rounds of revisions'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
+  {
+    id: 'vocal-session-full',
+    name: 'Session Vocals — Full Song',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$1,200',
+    priceNumeric: 1200,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    addOns: ['songwriting', 'rush-48', 'on-location-atl'],
+    terms: "Work for hire: you own the recording of Zion's vocal for your song. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: Zion SWRV Birdsong in the liner notes.",
+    blurb: "Your whole song, sung and arranged. Zion delivers the lead vocal, the background arrangement and the harmony stacks, shaped in a live directed session.",
+    deliveryDays: 7,
+    revisions: 2,
+    includes: ['Full lead vocal', 'Background vocal arrangement', 'Harmony stacks', '1 live directed session, remote or in Atlanta', 'Comped and tuned WAV stems', '2 rounds of revisions', 'Liner-notes credit'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
+  {
+    id: 'vocal-production',
+    name: 'Vocal Production — Your Voice',
+    category: 'execution',
+    intakePath: 'vocals',
+    price: '$600',
+    priceNumeric: 600,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    addOns: ['songwriting', 'rush-48', 'on-location-atl'],
+    terms: "You own everything you record. If Zion writes any lyrics or melody, he keeps his writer share, registered with BMI. Remote from anywhere in the world by default; in-studio sessions available in Atlanta. Credit: Zion SWRV Birdsong (vocal production) in the liner notes.",
+    blurb: "Your own voice, produced at its best. Zion directs a 2-hour session in the Birdsong Method, then arranges your harmonies and comps and tunes your vocal into clean stems.",
+    deliveryDays: 5,
+    revisions: 2,
+    includes: ['2-hour directed session in the Birdsong Method', 'Harmony arrangement', 'Comping and tuning', 'Cleaned WAV stems', '2 rounds of revisions'],
+    notIncludes: ['Mixing and mastering of the full song'],
+    assetsNeeded: ['Beat or session file (with BPM and key)', 'Reference tracks', 'Lyrics or concept'],
+  },
+  {
+    id: 'live-streaming',
+    name: 'Live Streaming Setup & Production',
+    category: 'execution',
+    price: '$300/hr',
+    priceNumeric: 300,
+    blurb: 'Real-time multi-platform streaming to YouTube, Instagram, Facebook, or Twitch. Includes setup, camera switching, audio management, live chat monitoring, and audience engagement throughout the broadcast.',
+  },
+  {
+    id: 'short-form-content',
+    name: 'Reels / Short-Form Content',
+    category: 'execution',
+    price: '$100/batch',
+    priceNumeric: 100,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Batch of 5-10 short-form videos (TikTok, Instagram Reels, YouTube Shorts). Edited, captioned, and optimized for each platform.',
+  },
+  {
+    id: 'ai-motion-30',
+    name: 'AI Motion Graphics — 30 Seconds',
+    category: 'execution',
+    price: '$600',
+    priceNumeric: 600,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: '30-second AI-generated video — intro, animated collage, or branded content. 5 premium effects, 5 premium transitions, 2 revision rounds. 3-hour production time at $200/hr.',
+  },
+  {
+    id: 'ai-motion-60',
+    name: 'AI Motion Graphics — 60 Seconds',
+    category: 'execution',
+    price: '$800',
+    priceNumeric: 800,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: '60-second AI-generated video with 8-10 premium effects and transitions. 2 revision rounds. Built with cutting-edge AI tools and edited to broadcast standards.',
+  },
+  {
+    id: 'ai-motion-120',
+    name: 'AI Motion Graphics — Up to 2 Minutes',
+    category: 'execution',
+    price: '$1,200',
+    priceNumeric: 1200,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Up to 2-minute AI-generated video with 8-10 premium effects and transitions. 2 revision rounds. Cinematic quality at a fraction of traditional animation costs.',
+  },
+  {
+    id: 'video-edit-alacarte',
+    name: 'Video Editing',
+    category: 'execution',
+    price: '$250/hr',
+    priceNumeric: 250,
+    blurb: 'Professional video editing for existing footage — cuts, transitions, graphics, color, and delivery. Bring the footage, leave with finished cuts.',
+  },
+
+  // ── BUSINESS & CONTENT ───────────────────────────────────────────────────
+  {
+    id: 'pitch-deck',
+    name: 'Pitch Deck + Business Plan',
+    category: 'execution',
+    price: '$250',
+    priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Investor-ready pitch deck (up to 12 slides) plus a full business plan document. Narrative arc, design, financial overview, and ask slide — everything you need to walk into the room ready.',
+  },
+  {
+    id: 'keynote-slides',
+    name: 'Keynote / Speaking Slides',
+    category: 'execution',
+    price: '$250',
+    priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Custom slide deck for talks, workshops, or presentations. Visual storytelling that amplifies your message — inot generic templates.',
+  },
+  {
+    id: 'book-format',
+    name: 'Book Formatting + Marketing Launch',
+    category: 'execution',
+    price: '750',
+    priceNumeric: 750,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Professional interior formatting + cover layout for KDP, IngramSpark, or print — plus a full marketing launch strategy and social media rollout plan. Built for artists who need their book to sell, not just exist.',
+  },
+  {
+    id: 'llc-formation',
+    name: 'LLC Formation + Business Banking',
+    category: 'execution',
+    price: '$250',
+    priceNumeric: 250,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Done-for-you LLC paperwork, EIN setup, business banking connection, and account guidance — everything to make your brand legally operational. All-inclusive.',
+  },
+
+  // ── COACHING & MENTORsHIP ────────────────────────────────────────────────
+  {
+    id: 'vocal-training',
+    name: 'Vocal Training (Birdsong Method)',
+    category: 'experience',
+    price: '$700',
+    priceNumeric: 700,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: '4-session vocal coaching — projection, breath control, performance presence, and voice preservation. The Birdsong Method: developed from 25+ years in the music business.',
+  },
+  {
+    id: 'recording-booth',
+    name: 'Recording Booth Training',
+    category: 'experience',
+    price: '$875',
+    priceNumeric: 875,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    blurb: 'Studio etiquette, mic technique, producer language, and how to get the best out of every session. For artists who want to walk into any studio ready.',
+  },
+  {
+    id: 'artist-development',
+    name: 'Artist Development',
+    category: 'experience',
+    price: 'From $1,000',
+    priceNumeric: 1000,
+    blurb: 'Multi-week mentorship for artists at the inflection point. Sound, image, business, stage presence — built around your vision, not a formula. Proprietary. Personal. Results-driven.',
+  },
+  {
+    id: 'consulting-call',
+    name: 'Strategy Call',
+    category: 'experience',
+    price: '$375',
+    priceNumeric: 375,
+    blurb: '60-minute one-on-one call to map a specific decision, price a project, unblock the next move, or build a roadmap. 25 years of music business insight in one hour.',
+  },
+
+  // ── MUSIC & VIDEO PACKAGES ────────────────────────────────────────────────
+  // Relationship-building rates — full song, full video, or both together.
+  // These are the intro prices Swerve offers to new clients he's building
+  // a long-term working relationship with. Premium full-service rates are
+  // in the music-production and music-video entries above.
+  {
+    id: 'song-production-intro',
+    name: 'Song Production',
+    category: 'execution',
+    intakePath: 'music',
+    price: '$1,000',
+    priceNumeric: 1000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    featured: true,
+    deliveryDays: 14,
+    revisions: 2,
+    blurb: 'A complete, release-ready original song — custom instrumental, your vocals produced and directed, mixed, mastered, and delivered with everything you need to release it. 2-week turnaround. 50% to start, 50% on completion.',
+    includes: [
+      'Custom original instrumental/beat',
+      'Vocal production & direction (coaching included)',
+      'Mixing',
+      'Mastering',
+      'Session stems delivered (.wav)',
+      'Split sheet for sync licensing',
+      'Copyright & online distribution guidance',
+      '2 rounds of revisions',
+    ],
+    notIncludes: ['Music video (see Song + Video Bundle — $2,000)', 'Lyric writing (can be added)'],
+    terms: 'Work for hire: you own the finished master. 50% deposit secures your session; the balance is due on delivery. 2-week turnaround from deposit date. Credit: Produced by Zion SWRV Birdsong.',
+    assetsNeeded: ['Voice memo of your melody or concept (even rough)', 'Reference tracks for sound direction', 'Lyrics or concept notes'],
+  },
+  {
+    id: 'music-video-intro',
+    name: 'Music Video',
+    category: 'execution',
+    intakePath: 'video',
+    price: '$1,500',
+    priceNumeric: 1500,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    featured: true,
+    deliveryDays: 21,
+    revisions: 2,
+    blurb: 'A full 3-minute music video, shot and produced — plus behind-the-scenes footage for a documentary or Vlog, 10 4K edited photos for social, and 10 reels cut from your shoot. Everything you need to drop a project.',
+    includes: [
+      '3-minute music video, fully produced',
+      'Behind-the-scenes footage (documentary/vlog ready)',
+      '10 4K edited photos for social media',
+      '10 reels cut from your video shoot',
+      '2 rounds of revisions',
+    ],
+    notIncludes: ['Song production (see Song + Video Bundle — $2,000)', 'Song must be final mix/mastered before shoot day'],
+    terms: '50% deposit secures your shoot date; the balance is due on delivery. Final mixed and mastered song must be provided before production begins.',
+    assetsNeeded: ['Mastered song file (.wav or .mp3)', 'Concept or treatment ideas (even rough)', 'Location ideas or mood board', 'Artist reference photos'],
+  },
+  {
+    id: 'song-video-bundle',
+    name: 'Song + Video Bundle',
+    category: 'execution',
+    intakePath: 'music',
+    price: '$2,000',
+    priceNumeric: 2000,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    featured: true,
+    deliveryDays: 28,
+    revisions: 2,
+    blurb: 'The full package — original song produced and mastered, plus a full 3-minute music video, BTS footage, 10 4K photos, and 10 reels. $500 off when you book both together. This is the relationship-building price — for artists ready to build something real.',
+    includes: [
+      'Everything in Song Production ($1,000 value)',
+      'Everything in Music Video ($1,500 value)',
+      '$500 savings vs. booking separately',
+      'Custom instrumental, vocals produced & directed',
+      'Mixing & mastering',
+      'Session stems + split sheet',
+      'Copyright & distribution guidance',
+      '3-min music video, BTS footage',
+      '10 4K edited photos + 10 reels',
+    ],
+    notIncludes: ['Lyric writing (can be added)'],
+    terms: '50% deposit secures your project; the balance is due on delivery. Song is produced first (2 weeks), then the video shoots once the master is done. Total delivery: ~4 weeks. Credit: Produced by Zion SWRV Birdsong.',
+    assetsNeeded: ['Voice memo of your melody or concept', 'Reference tracks', 'Lyrics or concept notes'],
+  },
+  {
+    id: 'social-content-daily',
+    name: 'Social Media — Daily Content',
+    category: 'identity',
+    intakePath: 'social',
+    price: '$200/mo',
+    priceNumeric: 200,
+    checkoutEnabled: true,
+    checkoutCategory: 'monthly',
+    deliveryDays: 0,
+    blurb: 'Your content pushed 3–5 times daily at peak social traffic times. We handle the scheduling, captions, and consistency — you handle the business. Month-to-month, cancel anytime.',
+    includes: [
+      'Content posted 3–5x daily at peak traffic times',
+      'Captions and hashtag strategy',
+      'Instagram (primary platform)',
+      'Posting schedule built around your audience',
+      'Month-to-month — no long-term contract',
+    ],
+    notIncludes: ['Content creation (you provide the photos/videos)', 'Paid ad spend', 'Multiple platform management (see Social Brand Management — $500/mo)'],
+    terms: 'Month-to-month. First month billed at checkout; same date every month after. Cancel before your next billing date at info@swrvonthego.pro. Content must be provided by you — this plan handles scheduling and captions, not content creation.',
+    assetsNeeded: ['Your Instagram handle and access (via Meta Business Suite — no password sharing)', 'A library of existing photos/videos to start', 'Your brand voice and any do-not-post rules'],
+  },
+];
+
+// ── WHAT'S ON OFFER RIGHT NOW ─────────────────────────────
+// Only these services appear anywhere on the site (menus, Book & Pay,
+// the Roadmap's recommendations, the chat widget). Everything else in
+// ALL_SERVICES is kept, just hidden until its package is ready — add its
+// id here to bring it back everywhere at once. The Zion performance
+// booking page and the website packages section are separate and stay up.
+export const ACTIVE_SERVICE_IDS = new Set<string>([
+  'coverage-quick-stop',     // On The Go
+  'coverage-on-the-go-day',  // The Drive-Through
+  'coverage-full-convoy',    // The Pull-Up
+  'coverage-air-support',    // Air Support
+  'vocal-live-event',        // Zion Sings At Your Event
+  'vocal-production',        // Vocal Production — Your Voice
+  'brand-consultation',      // Brand Plan Consultation ($100, paid in full)
+  'social-brand-kit',        // Social Brand Kit
+  'social-management',       // Social Brand Management (monthly)
+  'website-presence',
+  'website-platform',
+  'website-ecosystem',
+  // ── Music & Video intro packages ──
+  'song-production-intro',   // Song Production ($1,000)
+  'music-video-intro',       // Music Video ($1,500)
+  'song-video-bundle',       // Song + Video Bundle ($2,000 — $500 off)
+  'social-content-daily',    // Social Media Daily Content ($200/mo)
+]);
+
+export const SERVICES: Service[] = ALL_SERVICES.filter((s) => ACTIVE_SERVICE_IDS.has(s.id));
+
+
+// ── NEED A WEBSITE? — template storefront section ───────────
+// videoUrl: set to your promo video URL (Cloudinary / R2 / CDN) to show
+// the video banner. Leave '' to show the styled CTA banner instead.
+export const NEED_A_WEBSITE = {
+  videoUrl: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/v15044gf0000d8gahu7og65l6v48v87g.mp4',
+  eyebrow: 'NEED A WEBSITE?',
+  headline: 'Pick a style. We make it yours.',
+  subline:
+    "Ten professionally built templates — every style of business covered. We swap in your brand, your words, your photos, and hand you a live website in days. One price, no surprises: $300 flat.",
+  price: '$300',
+} as const;
+
+export interface WebsiteTemplate {
+  id: string;
+  name: string;
+  style: string;        // one-line style descriptor
+  bestFor: string;      // who it's for
+  // Mini-mockup design tokens (CSS-generated preview card)
+  bg: string;           // preview background
+  ink: string;          // preview text color
+  accent: string;       // preview accent color
+  font: 'serif' | 'sans' | 'mono';
+  layout: 'hero' | 'grid' | 'split' | 'centered' | 'list';
+  // Real live-preview link — a portfolio site or /templates example
+  // that matches this style, so buyers can see a finished version
+  // instead of only the CSS thumbnail.
+  previewUrl: string;
+  previewLabel: string; // short caption for the "See Live Preview" link
+}
+
+export const WEBSITE_TEMPLATES: WebsiteTemplate[] = [
+  { id: 'tpl-clean-slate', name: 'The Clean Slate', style: 'Minimal, editorial, lots of air', bestFor: 'Consultants, writers, professionals', bg: '#faf9f6', ink: '#1a1a1a', accent: '#1a1a1a', font: 'serif', layout: 'centered',
+    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC — Tax & Financial Services' },
   { id: 'tpl-bold-drop',   name: 'The Bold Drop', style: 'Dark, loud, streetwear energy', bestFor: 'Brands, apparel, culture drops', bg: '#0d0d0d', ink: '#ffffff', accent: '#ff4d00', font: 'sans', layout: 'hero',
-    previewUrl: 'https://swrvonthego.pro', previewLabel: 'SWRV On The Go â Full brand experience' },
+    previewUrl: 'https://swrvonthego.pro', previewLabel: 'SWRV On The Go — Full brand experience' },
   { id: 'tpl-gallery',     name: 'The Gallery', style: 'Image-first grid, zero clutter', bestFor: 'Photographers, artists, models', bg: '#111111', ink: '#eeeeee', accent: '#c8a84b', font: 'sans', layout: 'grid',
-    previewUrl: '/templates/ecosystem-example.html', previewLabel: 'VANTA Creative â Roster + portfolio grid' },
+    previewUrl: '/templates/ecosystem-example.html', previewLabel: 'VANTA Creative — Roster + portfolio grid' },
   { id: 'tpl-storefront',  name: 'The Storefront', style: 'Product cards, clean checkout flow', bestFor: 'Shops, merch, small product lines', bg: '#ffffff', ink: '#222222', accent: '#2f7d5c', font: 'sans', layout: 'grid',
-    previewUrl: '/templates/platform-example.html', previewLabel: 'Kofi Ware Music â Beats & booking commerce' },
+    previewUrl: '/templates/platform-example.html', previewLabel: 'Kofi Ware Music — Beats & booking commerce' },
   { id: 'tpl-booking-pro', name: 'The Booking Pro', style: 'Services up top, calendar built in', bestFor: 'Barbers, coaches, trainers, studios', bg: '#f4f2ee', ink: '#20242c', accent: '#3d5a80', font: 'sans', layout: 'split',
-    previewUrl: 'https://trainbyob.me', previewLabel: 'TrainBYOB â Coaching site with booking' },
+    previewUrl: 'https://trainbyob.me', previewLabel: 'TrainBYOB — Coaching site with booking' },
   { id: 'tpl-stage',       name: 'The Stage', style: 'Full-bleed hero, music player ready', bestFor: 'Artists, bands, performers', bg: '#08060c', ink: '#f5f0ff', accent: '#9d4edd', font: 'sans', layout: 'hero',
-    previewUrl: '/apps/birdsong-method.html', previewLabel: 'The Birdsong Method â Artist platform' },
+    previewUrl: '/apps/birdsong-method.html', previewLabel: 'The Birdsong Method — Artist platform' },
   { id: 'tpl-table',       name: 'The Table', style: 'Warm tones, menu-forward', bestFor: 'Restaurants, food trucks, caterers', bg: '#fdf6ec', ink: '#3a2a1a', accent: '#c87941', font: 'serif', layout: 'list',
-    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC â Warm, list-driven layout' },
+    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC — Warm, list-driven layout' },
   { id: 'tpl-pulpit',      name: 'The Pulpit', style: 'Welcoming, community-centered', bestFor: 'Churches, ministries, nonprofits', bg: '#fffdf7', ink: '#2c2418', accent: '#8b6f3e', font: 'serif', layout: 'centered',
-    previewUrl: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/', previewLabel: 'The SWRV No BS Bible â Community-centered' },
+    previewUrl: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/', previewLabel: 'The SWRV No BS Bible — Community-centered' },
   { id: 'tpl-launchpad',   name: 'The Launchpad', style: 'One page, countdown, email capture', bestFor: 'Launches, events, pre-orders', bg: '#0a1128', ink: '#e8ecf4', accent: '#00d1b2', font: 'mono', layout: 'centered',
-    previewUrl: '/apps/byob-timer.html', previewLabel: 'BYOB Timer â Focused single-purpose page' },
+    previewUrl: '/apps/byob-timer.html', previewLabel: 'BYOB Timer — Focused single-purpose page' },
   { id: 'tpl-boss-card',   name: 'The Boss Card', style: 'One-page personal brand hub', bestFor: 'Creators, speakers, link-in-bio upgrade', bg: '#16121c', ink: '#f2eef8', accent: '#e8c96a', font: 'sans', layout: 'list',
-    previewUrl: 'https://spa-patrol.swrvonthego.workers.dev', previewLabel: 'MyPatrol â Personal branded hub' },
+    previewUrl: 'https://spa-patrol.swrvonthego.workers.dev', previewLabel: 'MyPatrol — Personal branded hub' },
 ];
 
 
-// ââ SERVICE SUB-CATEGORIES â premium organized taxonomy ââââ
-// Groups the Ã  la carte SERVICES catalog into shopper-friendly buckets
+// ── SERVICE SUB-CATEGORIES — premium organized taxonomy ─────
+// Groups the à la carte SERVICES catalog into shopper-friendly buckets
 // (video, audio, web, etc.) for display in the Marketplace and Services Menu.
 export interface SubCategory {
   id: string;
@@ -813,7 +1421,7 @@ export interface SubCategory {
   emoji: string;
   // Which intake question set (intake.config.ts) every service listed in
   // this category gets. Adding a service to serviceIds below is all it
-  // takes for it to get the right intake â no second list to update.
+  // takes for it to get the right intake — no second list to update.
   intakePath: IntakePath;
   serviceIds: string[];
   // Optional short note with a link, shown under the category header.
@@ -824,13 +1432,13 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   {
     id: 'music-video-packages',
     label: 'Music & Video',
-    tagline: 'From concept to release â song, video, or both.',
-    emoji: 'ð¬',
+    tagline: 'From concept to release — song, video, or both.',
+    emoji: '🎬',
     intakePath: 'music',
     serviceIds: ['song-production-intro', 'music-video-intro', 'song-video-bundle'],
     note: {
-      text: 'New to SWRV? These are relationship-building rates. Book a song and a video together and save $500. Affirm, Klarna, and Afterpay are all accepted at checkout â break it into payments with zero back-and-forth.',
-      linkLabel: 'Questions? Book a strategy call â',
+      text: 'New to SWRV? These are relationship-building rates. Book a song and a video together and save $500. Affirm, Klarna, and Afterpay are all accepted at checkout — break it into payments with zero back-and-forth.',
+      linkLabel: 'Questions? Book a strategy call →',
       to: '/about',
     },
   },
@@ -838,7 +1446,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     id: 'zion-vocals',
     label: 'Zion Vocals',
     tagline: 'Zion SWRV Birdsong, live at your event or producing your vocal.',
-    emoji: 'ðï¸',
+    emoji: '🎙️',
     intakePath: 'vocals',
     serviceIds: ['vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
   },
@@ -846,12 +1454,12 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     id: 'social-media',
     label: 'Social Media',
     tagline: 'Your brand, built and run in your voice.',
-    emoji: 'ð±',
+    emoji: '📱',
     intakePath: 'social',
     serviceIds: ['brand-consultation', 'social-brand-kit', 'social-content-daily', 'social-management'],
     note: {
       text: "Every brand we build starts with your long-term vision. Once you book, you'll take The Roadmap: we talk through your vision, you answer the questionnaire, and together we map where your brand is going before we build it.",
-      linkLabel: 'See how The Roadmap works â',
+      linkLabel: 'See how The Roadmap works →',
       to: '/roadmap',
     },
   },
@@ -860,7 +1468,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     intakePath: 'video',
     label: 'Videography',
     tagline: 'Moving picture, fully produced.',
-    emoji: 'ð¬',
+    emoji: '🎬',
     serviceIds: [
       'music-video',
       'video-promo',
@@ -878,7 +1486,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     intakePath: 'music',
     label: 'Audio Production',
     tagline: 'Music, voice, and everything between.',
-    emoji: 'ðµ',
+    emoji: '🎵',
     serviceIds: [
       'music-production',
       'mixing',
@@ -897,7 +1505,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     intakePath: 'website',
     label: 'Web & Digital',
     tagline: 'Vision-first. Custom-built. Yours alone.',
-    emoji: 'ð',
+    emoji: '🌐',
     serviceIds: [
       'website-presence',
       'website-platform',
@@ -913,7 +1521,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     intakePath: 'brand',
     label: 'Brand Identity',
     tagline: 'Define who you are before you put it anywhere.',
-    emoji: 'â¨',
+    emoji: '✨',
     serviceIds: [
       'brand-planning',
       'logo-design',
@@ -926,7 +1534,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     intakePath: 'other',
     label: 'Coaching & Mentorship',
     tagline: 'One-on-one development to level up.',
-    emoji: 'ð¯',
+    emoji: '🎯',
     serviceIds: [
       'vocal-training',
       'recording-booth',
@@ -938,8 +1546,8 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     id: 'content-business',
     intakePath: 'business',
     label: 'Content & Business',
-    tagline: 'Books, decks, LLCs â everything to operate.',
-    emoji: 'ð',
+    tagline: 'Books, decks, LLCs — everything to operate.',
+    emoji: '📚',
     serviceIds: [
       'book-format',
       'pitch-deck',
@@ -950,10 +1558,10 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
 ];
 
 
-// ââ WEB PACKAGES âââââââââââââââââââââââââââââââââââââââââââ
-// Removed â website tiers live in WEB_PACKAGE_TIERS (the one the site renders).
+// ── WEB PACKAGES ───────────────────────────────────────────
+// Removed — website tiers live in WEB_PACKAGE_TIERS (the one the site renders).
 
-// ââ FOOTER âââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── FOOTER ─────────────────────────────────────────────────
 export const FOOTER = {
   ecosystemLinks: [
     { label: 'Artist Development',    href: '#services' },
@@ -970,12 +1578,12 @@ export const FOOTER = {
     { label: 'Terms of Service', href: '/terms' },
   ],
   legalLinks: [{ label: 'Privacy Policy', href: '/privacy' }, { label: 'Terms of Service', href: '/terms' }],
-  copyright: `Â© ${new Date().getFullYear()} SWRV On The Go. All rights reserved.`,
+  copyright: `© ${new Date().getFullYear()} SWRV On The Go. All rights reserved.`,
 } as const;
 
-// ââ CONTACT / SCHEDULING âââââââââââââââââââââââââââââââââââ
+// ── CONTACT / SCHEDULING ───────────────────────────────────
 export const CONTACT = {
-  // Generic topics for the "let's talk" calendar â Roadmap and BYOB scheduling
+  // Generic topics for the "let's talk" calendar — Roadmap and BYOB scheduling
   // can override with their own topic lists.
   topics: [
     { id: 'roadmap', label: 'Roadmap / Brand Planning' },
@@ -987,10 +1595,10 @@ export const CONTACT = {
 } as const;
 
 
-// ââ HERO CAROUSEL ââââââââââââââââââââââââââââââââââââââââââ
+// ── HERO CAROUSEL ──────────────────────────────────────────
 // The two scrolling columns of cards in the Hero. Each card has an
 // image OR video, a title, and an optional subtitle (small label).
-// Add/remove cards freely â the component scales.
+// Add/remove cards freely — the component scales.
 export interface HeroCard {
   image?: string;
   video?: string;
@@ -1009,7 +1617,7 @@ export const HERO_CAROUSEL: {
   backgroundVideo:
     'https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_24fps.mp4',
   title: { line1: 'SWRV', line2: 'MEDIA STRATEGIST.' },
-  taglineHeading: '"Swrv On Roadblocks. Let Love GPS." â SWRV Birdsong',
+  taglineHeading: '"Swrv On Roadblocks. Let Love GPS." — SWRV Birdsong',
   taglineAccent: '',
   taglineBody:
     'When you\'re driven by your passion, we\'re the central hub for your content solutions.',
@@ -1030,7 +1638,7 @@ export const HERO_CAROUSEL: {
   ],
 };
 
-// ââ INTRO VIDEOS âââââââââââââââââââââââââââââââââââââââââââ
+// ── INTRO VIDEOS ───────────────────────────────────────────
 export const INTRO_VIDEOS = {
   // Full-screen takeover that plays before the page is interactive
   primary:
@@ -1040,7 +1648,7 @@ export const INTRO_VIDEOS = {
     'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov',
 } as const;
 
-// ââ SCHEDULING (Calendar / Contact form) âââââââââââââââââââ
+// ── SCHEDULING (Calendar / Contact form) ───────────────────
 export const SCHEDULING: {
   contactEmail: string;
   availableDays: number[];
@@ -1048,7 +1656,7 @@ export const SCHEDULING: {
   topics: string[];
 } = {
   contactEmail: 'info@swrvonthego.pro',
-  // Days you're available (0=Sun, 1=Mon, ... 6=Sat). Default MonâSat.
+  // Days you're available (0=Sun, 1=Mon, ... 6=Sat). Default Mon–Sat.
   availableDays: [1, 2, 3, 4, 5, 6],
   timeSlots: [
     '9:00 AM', '10:00 AM', '11:00 AM',
@@ -1065,56 +1673,209 @@ export const SCHEDULING: {
   ],
 };
 
-// ââ WEB PACKAGE NOTES (universal disclaimers shown under tiers) ââ
+// ── WEB PACKAGE NOTES (universal disclaimers shown under tiers) ──
 export const WEB_PACKAGE_NOTES = [
   'Every website needs: a logo, a vision statement, a mission statement, images, and video content',
-  'Don\'t have those yet? Tell us when you book â we\'ll help you pull them together',
-  'Domain & hosting not included â we walk you through setup (~$15/yr domain, ~$10â20/mo hosting)',
-  'You own your site 100% after delivery â no lock-in, no hidden fees',
-  '50% deposit required to begin Â· 50% due on final delivery',
+  'Don\'t have those yet? Tell us when you book — we\'ll help you pull them together',
+  'Domain & hosting not included — we walk you through setup (~$15/yr domain, ~$10–20/mo hosting)',
+  'You own your site 100% after delivery — no lock-in, no hidden fees',
+  '50% deposit required to begin · 50% due on final delivery',
 ] as const;
 
 
-// ââ WEB PACKAGE TIERS (rich tier data) ââââââââââââââââââââââ
+// ── WEB PACKAGE TIERS (rich tier data) ──────────────────────
 // The 3-tier comparison shown on the Web Packages section.
-// Icons are referenced by name (component maps name â lucide icon).
+// Icons are referenced by name (component maps name → lucide icon).
 // Available icon names: 'Globe', 'Zap', 'Rocket', 'Star', 'Compass', 'Sparkles'
 export interface WebPackageTier {
   id: string;
   name: string;
   price: number;
   iconName: 'Globe' | 'Zap' | 'Rocket' | 'Star' | 'Compass' | 'Sparkles';
-  tagline: stringì(èÍÑÉ¥¹ð¹Õ±°ì(ÍÑ½ÈèÍÑÉ¥¹ì(±¥ÙÉååÌèÍÑÉ¥¹ì(ÉÙ¥Í¥½¹ÌèÍÑÉ¥¹ì(¥¹±ÕÌèÍÑÉ¥¹mtì(=¹Ìèì±°èÍÑÉ¥¹ìÁÉ¥èÍÑÉ¥¹õmtð¹Õ±°ì(¹½ÑèÍÑÉ¥¹ì(½±½ÈèÍÑÉ¥¹ì¼¼Ñ¥±Ý¥¹½ÉÈ±ÍÌ(¹Ñ
-½±½ÈèÍÑÉ¥¹ì¼¼Ñ¥±Ý¥¹ÑáÐ±ÍÌ(	èÍÑÉ¥¹ì¼¼Ñ¥±Ý¥¹±ÍÌ(ÑèÍÑÉ¥¹ì(±¥ÙáµÁ±üèì¼¼½ÁÑ¥½¹°±¥Ùµ¼ÁÉÙ¥Ü(ÕÉ°èÍÑÉ¥¹ì¼¼¸áÑÉ¹°±¥¹¬½È½ÑµÁ±ÑÌ½ááà¹¡Ñµ°(±°èÍÑÉ¥¹ì¼¼M1¥ÙáµÁ±H(ÍÉ¥ÁÑ¥½¸èÍÑÉ¥¹ì¼¼±¥Ù11ÁÉÍ¹Á(ôì)ô()áÁ½ÉÐ½¹ÍÐ]	}A
--}Q%ILè]A­Q¥Émtôl(ì(¥èÁÉÍ¹°(¹µèQ!AIM9
-°(ÁÉ¥èÌÀÀ°(¥½¹9µè±½°(Ñ±¥¹èQ¡ÌÀÀÝÍ¥ÑÍÁ¥°¸1¥Ù¥¸ÔåÌ¸°(èQ!ÌÀÀMA
-%0°(ÍÑ½ÈèÉÑ¥ÍÑÌ°11¡½±ÉÌ°½¡Ì°¹ÉÑ¥ÙÌÝ¡¼¹±¸°ÁÉ½ÍÍ¥½¹°Á½ÈÕ¹¥¹ÁÁÌ°¥¹ÙÍÑ½È­Ì°Á½ÉÑ½±¥¼Í¡½ÝÍÌ°½ÈÁÉ½Ù¥¹å½Ôá¥ÍÐ½¹±¥¹¸°(±¥ÙÉååÌèÔµäÑÕÉ¹É½Õ¹°(ÉÙ¥Í¥½¹ÌèÄÉ½Õ¹°(¥¹±ÕÌèl(
-ÕÍÑ½´Í¥¹±µÁÉÍÁ½¹Í¥ÙÝÍ¥Ñ¡Í­Ñ½À¬µ½¥±¤°(	¥¼¼½ÕÐÍÑ¥½¸°(A½ÉÑ½±¥¼¼Ý½É¬Í¡½ÝÍ°(A¡½Ñ¼±±ÉäPÕÀÑ¼à¥µÌ¡å½ÔÁÉ½Ù¥¤°(±°Í½¥°µ¥ÁÉ½¥±±¥¹­Ì°(
-½¹ÑÐ½É´¡µ¥°µ±¥¹­°¹¼ÍÁ´¤°(M<ÍÑÕÀèÁÑ¥Ñ±°µÑÍÉ¥ÁÑ¥½¸°=Á¸ÉÁ ÑÌ°(½½±¹±åÑ¥Ì¥¹ÍÑ±±Ñ¥½¸°(e½ÕÈ±½¼É¹½±½ÉÌÁÁ±¥°(t°(=¹Ìè¹Õ±°°(¹½Ñèe½ÔÁÉ½Ù¥è±½¼°Ù¥Í¥½¸ÍÑÑµ¹Ð°µ¥ÍÍ¥½¸ÍÑÑµ¹Ð°¥µÌ°¹Í¡½ÉÐ¥¼¸9¼±½¼½ÈÙ¥Í¥½¸åÐüQ±°ÕÌÝ¡¸å½Ô½½¬¹Ýp±°¡±À¸°(½±½Èè½ÉÈµÝ¡¥Ñ¼ÄÀ°(¹Ñ
-½±½ÈèÑáÐµÝ¡¥Ñ°(	è°(ÑèÐQ¡AÉÍ¹°(±¥ÙáµÁ±èì(ÕÉ°è½ÑµÁ±ÑÌ½ÁÉÍ¹µáµÁ±¹¡Ñµ°°(±°èM1¥ÙAÉÍ¹áµÁ±H°(ÍÉ¥ÁÑ¥½¸èÉ°11ÁÉÍ¹ÁP±¸°ÁÉ½ÍÍ¥½¹°°Éä½ÈÕ¹¥¹ÁÁÌ½ÈÁ½ÉÑ½±¥¼±¥¹­Ì¸°(ô°(ô°(ì(¥èÁ±Ñ½É´°(¹µèQ!A1Q=I4°(ÁÉ¥èÔÀÀ°(¥½¹9µèiÀ°(Ñ±¥¹èM±°¸	½½¬¸Q±°å½ÕÈÍÑ½Éä¸°(è5=MPA=AU1H°(ÍÑ½Èè
-ÉÑ½ÉÌ°½¡Ì°ÍÉÙ¥ÁÉ½Ù¥ÉÌ°¹Íµ±°ÕÍ¥¹ÍÍÌÉäÑ¼Ñ­Áåµ¹ÑÌ°½½¬±¥¹ÑÌ°¹µ­¥¹µÑ¥¥ÉÍÐ¥µÁÉÍÍ¥½¸¸°(±¥ÙÉååÌèÄµÝ¬ÑÕÉ¹É½Õ¹°(ÉÙ¥Í¥½¹ÌèÈÉ½Õ¹Ì°(¥¹±ÕÌèl(ÙÉåÑ¡¥¹¥¸Q¡AÉÍ¹°(Õ±°Á½ÉÑ½±¥¼ÍÑ¥½¸°(MÑ½ÉÉ½¹Ð¬¹PÍ±°ÁÉ½ÕÑÌ½ÈÍÉÙ¥Ì¡ÕÀÑ¼Ì±¥ÍÑ¥¹Ì¤°(MÑÉ¥ÁÁåµ¹Ð¥¹ÑÉÑ¥½¸PÉÌ°ÁÁ±Aä°½½±Aä°Õäµ¹½ÜµÁäµ±ÑÈ°(	½½­¥¹¼¥¹ÅÕ¥Éä½É´Ý¥Ñ ÍÉÙ¥Ñ½ÉäÍ±Ñ¥½¸°(µ¥°±¥ÍÐÁÑÕÉ¡¹ÝÍ±ÑÑÈÍ¥¸µÕÀ¥¹ÑÉÑ¥½¸¤°(QÍÑ¥µ½¹¥±ÌÍ½¥°ÁÉ½½ÍÑ¥½¸°(ØÃLäÀÍ½¹ÕÍÑ½´É¹¥¹ÑÉ¼Ù¥¼P¥¹±ÕÌè°(
-ÜMÉ¥ÁÐÝÉ¥Ñ¥¹¡å½ÕÈÍÑ½Éä¬Ý¡Ðå½ÔÍÑ¹½È¤°(
-Ü
-¥¹µÑ¥Ù½¥½ÙÈ¡ÁÉ½ÍÍ¥½¹°°ÁÉ½ÕäM]IX¤°(
-Ü=É¥¥¹°­É½Õ¹µÕÍ¥°(
-Ü5½Ñ¥½¸ÉÁ¡¥Ì¬ÑáÐ¹¥µÑ¥½¹Ì°(Y¥¼µ¹½ÁÑ¥µ¥é½¸å½ÕÈÁ°(t°(=¹Ìè¹Õ±°°(¹½ÑèQ¡É¹Ù¥¼±½¹ÉÕ¹ÌÔÀÀ¬½¸Ñ¡½Á¸µÉ­Ð¸	Õ¹±¡ÉÐ¡±Ñ¡Ð¸°(½±½Èè½ÉÈµ±¥½¸µ½É¹°(¹Ñ
-½±½ÈèÑáÐµ±¥½¸µ½É¹°(	èµ±¥½¸µ½É¹°(ÑèÐQ¡A±Ñ½É´°(±¥ÙáµÁ±èì(ÕÉ°è½ÑµÁ±ÑÌ½Á±Ñ½É´µáµÁ±¹¡Ñµ°°(±°èM1¥ÙA±Ñ½É´áµÁ±H°(ÍÉ¥ÁÑ¥½¸è-½¤]É5ÕÍ¥PÑÌ½ÈÍ±°ÍÍÍ¥½¸½½­¥¹°Íå¹±¥¹Í¥¹¸ÉÑ½ÈÝ¡¼Í±±Ì¸°(ô°(ô°(ì(¥è½ÍåÍÑ´°(¹µèQ!
-=MeMQ4°(ÁÉ¥èÄÀÀÀ°(¥½¹9µèI½­Ð°(Ñ±¥¹èe½ÕÈÕ±°Ý½É±¸=¹ÍÑ¥¹Ñ¥½¸¸°(è¹Õ±°°(ÍÑ½ÈèÍÑ±¥Í¡É¹Ì°µ½Ùµ¹ÑÌ°µ¥¹¥ÍÑÉ¥Ì°¹ÕÍ¥¹ÍÍÌÉä½È½µÁ±ÑÕ±°µÍ±ÝÁÉÍ¹Õ¥±Ð¹Ñ¥É±äÉ½Õ¹Ñ¡¥ÈÙ¥Í¥½¸¸°(±¥ÙÉååÌèÈµÝ¬ÑÕÉ¹É½Õ¹°(ÉÙ¥Í¥½¹ÌèÌÉ½Õ¹Ì°(¥¹±ÕÌèl(ÙÉåÑ¡¥¹¥¸Q¡A±Ñ½É´°(Äµ¥¸Á¬ÕÀÑ¼Ô¥Ñ¥½¹°ÁÌ°(¡
-¡½½ÍÉ½´è½ÕÐ°MÉÙ¥Ì°M¡½À°A½ÉÑ½±¥¼°Ù¹ÑÌ°	±½°AÉÍÌ-¥Ð°
-½¹ÑÐ¤°(Õ±°Í¥Ñ¹Ù¥Ñ¥½¸PÍ­Ñ½Àµ¹Ô¬µ½¥±¡µÕÉÈ°(Õ±°M<½ÁÑ¥µ¥éÑ¥½¸É½ÍÌ±°ÁÌ°(UÀÑ¼ÄÀÁÉ½ÕÑÌ½ÈÍÉÙ¥Ì¥¸å½ÕÈÍ¡½À°(
-±¹ÈÍ¡Õ±¥¹ÍåÍÑ´P±¥¹ÑÌ½½¬å½Ô¥ÉÑ±ä°($¡ÐÍÍ¥ÍÑ¹Ð½Èå½ÕÈ±¥¹ÑÌP¹ÍÝÉÌÅÕÍÑ¥½¹ÌÉ½Õ¹Ñ¡±½¬°(	±½¼¹ÝÌÁ¡¥Í±ÑÌ½¹½å½ÕÈÔÁÌ¤°(M½¥°µ¥¥¹ÑÉÑ¥½¸°(	É¹ÍÑå±Õ¥½Õµ¹Ð¡½±½ÉÌ°½¹ÑÌ°±½¼ÕÍÉÕ±Ì¤°(µ¥°ÁÑÕÉ¬ÕÑ½µÑ½±±½ÜµÕÀ°(ÌÀåÌ½Á½ÍÐµ±Õ¹ ÍÕÁÁ½ÉÐµ¥¹½ÈÕÁÑÌ°(AÉ¥½É¥ÑäÉÍÁ½¹ÍÑ¥µ°(t°(=¹Ìèl(ì±°èáÑÉÁÌ¡å½¹Ô¤°ÁÉ¥è¬ÔÀ ô°(ì±°è5½¹Ñ¡±äµ¹µ¹Ð¡Õ±°ÍÉÙ¥¤°ÁÉ¥èÄÈÔ½µ¼ô°(ì±°è¥Ñ¥½¹°É¹Ù¥¼°ÁÉ¥è¬ÄÀÀô°(ì±°èÌ´Øµ½¹Ñ M<Õ¥Ð°ÁÉ¥è%¹±Õô°(t°(¹½Ñè5Õ±Ñ¤µÁÍ¥ÑÌÉÕ¸Ì°ÀÀÃLÄÔ°ÀÀÀ¬ÙÉåÝ¡É±Í¸Q¡¥Ì¥Ì¥¹Ñ¹Ñ¥½¹°¸°(½±½Èè½ÉÈµÝ¡¥Ñ¼ÈÀ°(¹Ñ
-½±½ÈèÑáÐµÝ¡¥Ñ°(	è°(ÑèÐQ¡½ÍåÍÑ´°(±¥ÙáµÁ±èì(ÕÉ°è½ÑµÁ±ÑÌ½½ÍåÍÑ´µáµÁ±¹¡Ñµ°°(±°èM1¥Ù½ÍåÍÑ´áµÁ±H°(ÍÉ¥ÁÑ¥½¸èY9Q
-ÉÑ¥ÙPÉÑ¥ÍÐÙ±½Áµ¹Ð¹ä¸5Õ±Ñ¤µÍÑ¥½¸°É½ÍÑÈ°Õ±°ÍÉÙ¥Ì°ÁÁ±¥Ñ¥½¸½½­¥¹¸°(ô°((ô°)tì(((¼¼RR !H¡Ñ½ÀÕÑ¥±¥ÑäÈ¬µ¥¸¹Ù¥Ñ¥½¸¤RRRRRRRRRRRRRR (¼¼Q¡Ñ½ÀÕÑ¥±¥ÑäÈ¡Íµ±°±¥¹­Ì½Ùµ¥¸¹Ø¤¹Ñ¡µ¥¸(¼¼¹Ø¸QÉ¥¸	e=ÍÑåÌ¥¹±¥¹¥¸Ñ¡½µÁ½¹¹ÐÍ¥¹¥ÐÌ(¼¼ÁÉµ¹¹Ð¥áÑÕÉÁ½¥¹Ñ¥¹Ñ¼Ñ¡½Õ¹ÈÌ½Ñ¡ÈÍ¥Ñ¸)áÁ½ÉÐ½¹ÍÐ!Hôì(¼¼Mµ±°±¥¹­ÌÍ¡½Ý¸¥¸Ñ¡ÕÑ¥±¥ÑäÈ¡É¥¡ÐÍ¥°¡¥Ì½¸ÍÉ½±°¤(ÕÑ¥±¥Ñå1¥¹­Ìèl(ì±°è	½½­Ì°¡Éè½½­Ì°áÑÉ¹°è±Íô°(ì±°èA½ÍÐ°¡ÉèÁ½ÍÐ°áÑÉ¹°è±Íô°(t°(¼¼5¥¸¹Ù¥Ñ¥½¸¥ÑµÌ(¹Ù%ÑµÌèl(ì±°èA=IQ=1%<°¡ÉèÁ½ÉÑ½±¥¼°áÑÉ¹°è±Íô°(ì±°èQ!M]IX
-=MeMQ4°¡Éè½ÍåÍÑ´°áÑÉ¹°è±Íô°(ì±°è	=UPM]IX=8Q!<°¡Éè½ÕÐµÍÝÉØ°áÑÉ¹°è±Íô°(ì±°èi%=8	%IM=9°¡ÉèµÐµé¥½¸°áÑÉ¹°è±Íô°(ì±°èQ!	%IM=95Q!=°¡Éè¥ÉÍ½¹µµÑ¡½°áÑÉ¹°è±Íô°(ì±°èQI%8	e=°¡Éèå½°áÑÉ¹°è±Íô°(ì±°èQ-Q!I=5@°¡Éè½É½µÀ°áÑÉ¹°è±Íô°(ì±°èIYY%9U@°¡ÉèÉÙÙ¥¹µÕÀ°áÑÉ¹°è±Íô°(ì±°è
-=9Q
-P°¡Éè½¹ÑÐ°áÑÉ¹°è±Íô°(t°(¼¼%¹±¥¹
-½¹¹ÐÕÑÑ½¸½Áä(½¹¹Ñ1°è
-½¹¹Ð°(¼¼I¥¡ÐµÍ¥ÁÉ¥µÉä
-QÌ(½½­9½Ý1°è	==,9=\°(Ñ%¹Q½Õ¡1°èP%8Q=U
- °)ôÌ½¹ÍÐì((¼¼RR MIY%
-
-Q=I%L¡Ñ½Àµ±Ù°MÉÙ¥ÌÑ¥±Ì¤RRRRRRRRRRR (¼¼Q¡ÍÉÑ¡	%Ñ½ÉäÑ¥±ÌÍ¡½Ý¸¥¸Ñ¡µ¥¸MÉÙ¥Ì½µÁ½¹¹Ð¸(¼¼Q¡ä¥ÈÉ½´Ñ¡ÁÉ¥MIY%
-LÑ±½£±ÉÑ½,
+  tagline: string;
+  badge: string | null;
+  bestFor: string;
+  deliveryDays: string;
+  revisions: string;
+  includes: string[];
+  addOns: { label: string; price: string }[] | null;
+  note: string;
+  color: string;          // tailwind border class
+  accentColor: string;    // tailwind text class
+  badgeBg: string;        // tailwind bg class
+  cta: string;
+  liveExample?: {         // optional live demo preview
+    url: string;          // can be external link or '/templates/xxx.html'
+    label: string;        // 'See Live Example →'
+    description: string;  // 'A live LLC presence page'
+  };
+}
+
+export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
+  {
+    id: 'presence',
+    name: 'THE PRESENCE',
+    price: 300,
+    iconName: 'Globe',
+    tagline: 'The $300 website special. Live in 5 days.',
+    badge: 'THE $300 SPECIAL',
+    bestFor: 'Artists, LLC holders, coaches, and creatives who need a clean, professional page for funding apps, investor decks, portfolio showcases, or proving you exist online.',
+    deliveryDays: '5-day turnaround',
+    revisions: '1 round',
+    includes: [
+      'Custom single-page responsive website (desktop + mobile)',
+      'Bio / About section',
+      'Portfolio / work showcase',
+      'Photo gallery — up to 8 images (you provide)',
+      'All social media profile links',
+      'Contact form (email-linked, no spam)',
+      'SEO setup: page title, meta description, Open Graph tags',
+      'Google Analytics installation',
+      'Your logo & brand colors applied',
+    ],
+    addOns: null,
+    note: 'You provide: logo, vision statement, mission statement, images, and a short bio. No logo or vision yet? Tell us when you book and we\'ll help.',
+    color: 'border-white/10',
+    accentColor: 'text-white',
+    badgeBg: '',
+    cta: 'Get The Presence',
+    liveExample: {
+      url: '/templates/presence-example.html',
+      label: 'See a Live Presence Example →',
+      description: 'A real LLC presence page — clean, professional, ready for funding apps or portfolio links.',
+    },
+  },
+  {
+    id: 'platform',
+    name: 'THE PLATFORM',
+    price: 500,
+    iconName: 'Zap',
+    tagline: 'Sell. Book. Tell your story.',
+    badge: 'MOST POPULAR',
+    bestFor: 'Creators, coaches, service providers, and small businesses ready to take payments, book clients, and make a cinematic first impression.',
+    deliveryDays: '1-week turnaround',
+    revisions: '2 rounds',
+    includes: [
+      'Everything in The Presence',
+      'Full portfolio section',
+      'Storefront back end — sell products or services (up to 3 listings)',
+      'Stripe payment integration — cards, Apple Pay, Google Pay, buy-now-pay-later',
+      'Booking / inquiry form with service category selection',
+      'Email list capture (newsletter sign-up integration)',
+      'Testimonials & social proof section',
+      '60–90 second custom brand intro video — includes:',
+      '   · Script writing (your story + what you stand for)',
+      '   · Cinematic voiceover (professional, produced by SWRV)',
+      '   · Original background music',
+      '   · Motion graphics + text animations',
+      'Video embedded and optimized on your page',
+    ],
+    addOns: null,
+    note: 'The brand video alone runs $500+ on the open market. Bundled here at half that.',
+    color: 'border-lion-orange',
+    accentColor: 'text-lion-orange',
+    badgeBg: 'bg-lion-orange',
+    cta: 'Get The Platform',
+    liveExample: {
+      url: '/templates/platform-example.html',
+      label: 'See a Live Platform Example →',
+      description: 'Kofi Ware Music — beats for sale, session booking, sync licensing. A creator who sells.',
+    },
+  },
+  {
+    id: 'ecosystem',
+    name: 'THE ECOSYSTEM',
+    price: 1000,
+    iconName: 'Rocket',
+    tagline: 'Your full world. One destination.',
+    badge: null,
+    bestFor: 'Established brands, movements, ministries, and businesses ready for a complete full-scale web presence built entirely around their vision.',
+    deliveryDays: '2-week turnaround',
+    revisions: '3 rounds',
+    includes: [
+      'Everything in The Platform',
+      '1 main page + up to 5 additional pages',
+      '   (Choose from: About, Services, Shop, Portfolio, Events, Blog, Press Kit, Contact)',
+      'Full site navigation — desktop menu + mobile hamburger',
+      'Full SEO optimization across all pages',
+      'Up to 10 products or services in your shop',
+      'Calendar & scheduling system — clients book you directly',
+      'AI chat assistant for your clients — answers questions around the clock',
+      'Blog / news page (if selected as one of your 5 pages)',
+      'Social media feed integration',
+      'Brand style guide document (colors, fonts, logo usage rules)',
+      'Email capture + automated follow-up',
+      '30 days of post-launch support & minor updates',
+      'Priority response time',
+    ],
+    addOns: [
+      { label: 'Extra pages (beyond 5)', price: '+$50 each' },
+      { label: 'Monthly management (full service)', price: '$125/mo' },
+      { label: 'Additional brand video', price: '+$100' },
+      { label: '3-6 month SEO audit', price: 'Included' },
+    ],
+    note: 'Multi-page sites run $3,000–$15,000+ everywhere else. This is intentional.',
+    color: 'border-white/20',
+    accentColor: 'text-white',
+    badgeBg: '',
+    cta: 'Get The Ecosystem',
+    liveExample: {
+      url: '/templates/ecosystem-example.html',
+      label: 'See a Live Ecosystem Example →',
+      description: 'VANTA Creative — artist development agency. Multi-section, roster, full services, application booking.',
+    },
+
+  },
+];
+
+
+// ── HEADER (top utility bar + main navigation) ──────────────
+// The top utility bar (small links above main nav) and the main
+// nav. Train BYOB stays inlined in the component since it's a
+// permanent fixture pointing to the founder's other site.
+export const HEADER = {
+  // Small links shown in the utility bar (right side, hides on scroll)
+  utilityLinks: [
+    { label: 'Books', href: '#books', external: false },
+    { label: 'Podcast', href: '#podcast', external: false },
+  ],
+  // Main navigation items
+  navItems: [
+    { label: 'PORTFOLIO', href: '#portfolio', external: false },
+    { label: 'THE SWRV ECOSYSTEM', href: '#ecosystem', external: false },
+    { label: 'ABOUT SWRV ON THE GO', href: '#about-swrv', external: false },
+    { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
+    { label: 'THE BIRDSONG METHOD', href: '#birdsong-method', external: false },
+    { label: 'TRAIN BYOB', href: '#byob', external: false },
+    { label: 'TAKE THE ROADMAP', href: '/roadmap', external: false },
+    { label: 'REVVING UP', href: '#revving-up', external: false },
+    { label: 'CONTACT', href: '#contact', external: false },
+  ],
+  // Inline "Connect" button copy
+  connectLabel: 'Connect',
+  // Right-side primary CTAs
+  bookNowLabel: 'BOOK NOW',
+  getInTouchLabel: 'GET IN TOUCH',
+} as const;
+
+// ── SERVICE CATEGORIES (top-level Services tiles) ───────────
+// These are the BIG category tiles shown in the main Services component.
+// They differ from the priced SERVICES catalog (à la carte items used by
+// the Roadmap recommendations) — these are the high-level "what we do".
+// Icons reference lucide-react component names; the Services component maps
+// the name to the actual icon.
+export interface ServiceCategory {
+  title: string;
+  description: string;
+  icon: 'Compass' | 'Globe' | 'CheckCircle' | 'FileText' | 'Database' | 'Briefcase' | 'Music';
+}
+
+export const SERVICE_CATEGORIES: ServiceCategory[] = [
+  {
+    title: 'Brand Planning',
+    description: 'Blueprint Your Vision — an interactive AI-powered experience that maps your gift, your work, your purpose, and your brand identity. Your Roadmap drives every service recommendation.',
+    icon: 'Compass',
+  },
   {
     title: 'Artist Development',
     description: 'The one-stop shop for your bigger vision. We handle the logistics so you can create the art.',
