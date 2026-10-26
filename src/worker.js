@@ -974,7 +974,7 @@ async function handleRoadmap(request, env) {
         Authorization: `Bearer ${env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         // Groq bills prompt + reserved output against a 12,000 tokens-per-
         // minute cap on this tier. The prompt runs ~6k, so anything much
         // above 5k here gets the whole request rejected ("Request too large")
@@ -2969,7 +2969,7 @@ async function handleChat(request, env) {
         Authorization: `Bearer ${env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         max_tokens: 300,
         temperature: 0.7,
         messages: [
@@ -3182,7 +3182,7 @@ async function handleIntakeAI(request, env) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.GROQ_API_KEY}` },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'openai/gpt-oss-120b',
           max_tokens: 400,
           temperature: 0.6,
           messages: [{ role: 'user', content: prompt }],
@@ -3211,7 +3211,7 @@ async function handleIntakeAI(request, env) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.GROQ_API_KEY}` },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'openai/gpt-oss-120b',
           max_tokens: 800,
           temperature: 0.4,
           messages: [{ role: 'user', content: prompt }],
