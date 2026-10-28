@@ -16,7 +16,7 @@ const DELIVERY_DAYS: Record<string, number> = {
   'jingle': 5, 'voiceover': 2, 'audiobook': 14, 'live-recording': 1,
   'audio-edit-alacarte': 2, 'podcast-launch': 7, 'podcast-editing': 2,
   'music-video': 7, 'video-promo': 2, 'on-site-video': 5, 'live-streaming': 1,
-  'short-form-content': 3, 'ai-motion-30': 2, 'ai-motion-60': 3, 'ai-motion-120': 5,
+  'short-form-content': 3, 'ai-video-short': 2, 'motivational-performance': 1, 'ai-motion-30': 2, 'ai-motion-60': 3, 'ai-motion-120': 5,
   'video-edit-alacarte': 3, 'pitch-deck': 3, 'keynote-slides': 3,
   'book-format': 7, 'llc-formation': 5, 'vocal-training': 1,
   'recording-booth': 1, 'artist-development': 30, 'consulting-call': 1,

@@ -113,6 +113,16 @@ const PATHS: Record<string, Question[]> = {
     { id: 'notes', question: "Anything else about the show or what you need from SWRV?", type: 'textarea', optional: true, placeholder: "Budget, sponsors, video component, social media strategy..." },
   ],
 
+  event: [
+    { id: 'eventType', question: "What kind of event is this?", type: 'single',
+      options: ['Corporate event / conference', 'School or youth event', 'Church / faith-based event', 'Community or nonprofit event', 'Private event', 'Other'] },
+    { id: 'format', question: "Which option fits best?", type: 'single',
+      options: ['Public Speaking (1 hr) — $2,500', 'Corporate Keynote (1 hr) — $5,000', 'Full Experience: talk + songs + book signing — $5,000 (travel at cost)', 'Not sure — help me decide'] },
+    { id: 'date', question: "Event date and location?", type: 'text', placeholder: "Date (or range), city / venue" },
+    { id: 'audience', question: "Who's the audience and how many people?", type: 'text', placeholder: "e.g. 300 employees, 80 students..." },
+    { id: 'notes', question: "Anything else — theme, goals, schedule?", type: 'textarea', optional: true, placeholder: "Theme, run of show, special requests..." },
+  ],
+
   other: [
     { id: 'describe', question: "Tell us what you\'re working on.", type: 'textarea', placeholder: "Describe your project, what you need, and what success looks like. The more detail the better — SWRV has seen a lot, nothing surprises us." },
     { id: 'urgency', question: "How urgent is this?", type: 'single',
@@ -135,12 +145,12 @@ const SERVICE_GROUP_MAP: Record<string, keyof typeof PATHS> = {
   'brand-planning': 'brand', 'logo-design': 'brand', 'photography': 'brand', 'content-system': 'brand',
   'pitch-deck': 'business', 'keynote-slides': 'business', 'book-format': 'business', 'llc-formation': 'business',
   'podcast-launch': 'podcast', 'podcast-editing': 'podcast',
-  'vocal-training': 'other', 'recording-booth': 'other', 'artist-development': 'other', 'consulting-call': 'other',
+  'motivational-performance': 'event', 'ai-video-short': 'video', 'vocal-training': 'other', 'recording-booth': 'other', 'artist-development': 'other', 'consulting-call': 'other',
 };
 
 const PATH_LABELS: Record<string, string> = {
   website: 'Website Project', video: 'Video Production', music: 'Music & Audio',
-  brand: 'Brand Identity', business: 'Business Documents', podcast: 'Podcast', other: 'Project',
+  brand: 'Brand Identity', business: 'Business Documents', podcast: 'Podcast', event: 'Speaking & Performance', other: 'Project',
 };
 
 // ── COMPONENT ─────────────────────────────────────────────────────────

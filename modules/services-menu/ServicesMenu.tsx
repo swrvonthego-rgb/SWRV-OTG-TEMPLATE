@@ -31,6 +31,7 @@ const SUB_CATEGORIES: SubCategory[] = [
       'on-site-video',
       'live-streaming',
       'short-form-content',
+      'ai-video-short',
       'ai-motion-30',
       'ai-motion-60',
       'ai-motion-120',
@@ -88,6 +89,7 @@ const SUB_CATEGORIES: SubCategory[] = [
     tagline: 'One-on-one development to level up.',
     emoji: '🎯',
     serviceIds: [
+      'motivational-performance',
       'vocal-training',
       'recording-booth',
       'artist-development',

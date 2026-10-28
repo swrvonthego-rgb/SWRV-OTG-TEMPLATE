@@ -859,6 +859,14 @@ export const SERVICES: Service[] = [
     blurb: 'Batch of 5-10 short-form videos (TikTok, Instagram Reels, YouTube Shorts). Edited, captioned, and optimized for each platform.',
   },
   {
+    id: 'ai-video-short',
+    name: 'AI Video',
+    category: 'execution',
+    price: 'From $200',
+    priceNumeric: 200,
+    blurb: 'Short AI-generated video, delivered fast. Options: 30 seconds — $200 · 1 minute — $300 · 2 minutes — $500.',
+  },
+  {
     id: 'ai-motion-30',
     name: 'AI Motion Graphics — 30 Seconds',
     category: 'execution',
@@ -926,6 +934,14 @@ export const SERVICES: Service[] = [
   },
 
   // ── COACHING & MENTORSHIP ────────────────────────────────────────────────
+  {
+    id: 'motivational-performance',
+    name: 'Motivational Performance',
+    category: 'execution',
+    price: 'From $2,500',
+    priceNumeric: 2500,
+    blurb: 'Live motivational speaking and performance. Options: Public Speaking (1 hr) — $2,500 · Corporate Keynote (1 hr) — $5,000 · Full Experience (talk + songs + book signing, travel at cost) — $5,000.',
+  },
   {
     id: 'vocal-training',
     name: 'Vocal Training (Birdsong Method)',
