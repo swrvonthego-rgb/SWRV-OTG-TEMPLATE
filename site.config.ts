@@ -989,6 +989,44 @@ export const ALL_SERVICES: Service[] = [
     includes: ['Everything in The Pull-Up', 'Drone footage by an FAA-licensed pilot', 'Aerial shots of the venue, arrivals and crowd', 'Aerial photos', '3 edited aerial reels (15 reels total)'],
   },
 
+  // ── MOTIVATIONAL PERFORMANCE — Zion speaking, keynotes, full experience.
+  {
+    id: 'motivational-performance',
+    name: 'Motivational Performance',
+    category: 'execution',
+    intakePath: 'event',
+    skipQuestions: ['socials', 'metaAccess', 'otherAccess'],
+    price: 'From $2,500',
+    priceNumeric: 2500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    options: [
+      { id: 'public-speaking', label: 'Public Speaking (1 hr)', price: 2500, description: 'A one-hour motivational talk for your audience.' },
+      { id: 'corporate-keynote', label: 'Corporate Keynote (1 hr)', price: 5000, description: 'A one-hour keynote tailored to your company or conference.' },
+      { id: 'full-experience', label: 'Full Experience', price: 5000, description: 'Talk + songs + book signing. Travel at cost.' },
+    ],
+    terms: 'Public Speaking (1 hr) $2,500 · Corporate Keynote (1 hr) $5,000 · Full Experience $5,000 (talk + songs + book signing, travel at cost). A 50% deposit reserves your date; the balance is invoiced before your event.',
+    blurb: 'Motivational speaking and performance for schools, churches, companies, and conferences. Book a one-hour talk, a corporate keynote, or the full experience: talk, live songs, and a book signing.',
+    includes: ['One-hour talk or keynote', 'Full Experience: talk + songs + book signing', 'Travel at cost'],
+  },
+
+  // ── AI VIDEO — short AI-generated video, priced by length.
+  {
+    id: 'ai-video-short',
+    name: 'AI Video',
+    category: 'execution',
+    price: 'From $200',
+    priceNumeric: 200,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    options: [
+      { id: '30s', label: '30 Seconds', price: 200, description: 'A 30-second AI-generated video.' },
+      { id: '1m', label: '1 Minute', price: 300, description: 'A 1-minute AI-generated video.' },
+      { id: '2m', label: '2 Minutes', price: 500, description: 'A 2-minute AI-generated video.' },
+    ],
+    blurb: 'Short AI-generated video, made fast: 30 seconds $200 · 1 minute $300 · 2 minutes $500.',
+  },
+
   // ── ZION VOCALS — Zion singing on other artists' tracks (and producing
   // their vocals). Remote worldwide by default; in-studio in Atlanta.
   {
@@ -1335,6 +1373,8 @@ export const ALL_SERVICES: Service[] = [
 // id here to bring it back everywhere at once. The Zion performance
 // booking page and the website packages section are separate and stay up.
 export const ACTIVE_SERVICE_IDS = new Set<string>([
+  'motivational-performance', // Motivational Performance (from $2,500)
+  'ai-video-short',          // AI Video (from $200)
   'coverage-quick-stop',     // On The Go
   'coverage-on-the-go-day',  // The Drive-Through
   'coverage-full-convoy',    // The Pull-Up
@@ -1443,14 +1483,6 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     },
   },
   {
-    id: 'zion-vocals',
-    label: 'Zion Vocals',
-    tagline: 'Zion SWRV Birdsong, live at your event or producing your vocal.',
-    emoji: '🎙️',
-    intakePath: 'vocals',
-    serviceIds: ['vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
-  },
-  {
     id: 'social-media',
     label: 'Social Media',
     tagline: 'Your brand, built and run in your voice.',
@@ -1464,6 +1496,14 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     },
   },
   {
+    id: 'zion-vocals',
+    label: 'Zion Vocals',
+    tagline: 'Zion SWRV Birdsong, live at your event or producing your vocal.',
+    emoji: '🎙️',
+    intakePath: 'vocals',
+    serviceIds: ['motivational-performance', 'vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
+  },
+  {
     id: 'videography',
     intakePath: 'video',
     label: 'Videography',
@@ -1475,6 +1515,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
       'on-site-video',
       'live-streaming',
       'short-form-content',
+      'ai-video-short',
       'ai-motion-30',
       'ai-motion-60',
       'ai-motion-120',
