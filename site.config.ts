@@ -1503,8 +1503,8 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   {
     id: 'videography',
     intakePath: 'video',
-    label: 'Videography',
-    tagline: 'Moving picture, fully produced.',
+    label: 'AI Video & Videography',
+    tagline: 'Short AI-generated video, made fast — and fully produced film.',
     emoji: '🎬',
     serviceIds: [
       'music-video',

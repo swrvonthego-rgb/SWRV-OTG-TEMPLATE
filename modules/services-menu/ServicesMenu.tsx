@@ -15,6 +15,17 @@ interface Props {
 const SERVICE_MAP: Record<string, typeof SERVICES[0]> = {};
 SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 
+// The poster's pixel size and the four tappable cards on it (source pixels).
+const POSTER = { w: 941, h: 1135 };
+const POSTER_HOTSPOTS = [
+  { x: 28,  y: 843, w: 444, hh: 124, target: 'sm-coverage',          label: 'Professional content filming — see event coverage' },
+  { x: 478, y: 843, w: 438, hh: 124, target: 'sm-cat-web-digital',   label: 'Websites and digital presence' },
+  { x: 28,  y: 988, w: 444, hh: 125, target: 'sm-cat-videography',   label: 'AI-powered content creation' },
+  { x: 478, y: 988, w: 438, hh: 125, target: 'sm-cat-social-media',  label: 'Brand and social media support' },
+];
+const scrollToId = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
 export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [roadmapRecs, setRoadmapRecs] = useState<string[]>([]);
@@ -95,17 +106,41 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
       >×</button>
 
       <div className="sm-inner">
-        {/* HERO IMAGE — Leader of the Revolution */}
-        <div className="sm-hero-image">
-          <img
-            src="https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/1752950982581945_2_kk3jt3_ui7upw.png"
-            alt="Leader of the Revolution — SWRV On The Go"
-            className="sm-hero-img"
-          />
-          <p className="sm-hero-caption">LEADER OF THE REVOLUTION</p>
+        {/* HERO POSTER — each card on the poster jumps to its section below */}
+        <div className="sm-poster">
+          <div className="sm-poster-frame" style={{ aspectRatio: `${POSTER.w} / ${POSTER.h}` }}>
+            <img
+              src="/images/content-hero.webp"
+              alt="SWRV On-The-Go. Your vision, our creative engine: professional content filming, websites and digital presence, AI-powered content creation, brand and social media support."
+              className="sm-poster-img"
+              width={POSTER.w}
+              height={POSTER.h}
+              fetchPriority="high"
+            />
+            {POSTER_HOTSPOTS.map((h) => (
+              <a
+                key={h.target}
+                href={`#${h.target}`}
+                aria-label={h.label}
+                className="sm-poster-hit"
+                style={{
+                  left: `${(h.x / POSTER.w) * 100}%`,
+                  top: `${(h.y / POSTER.h) * 100}%`,
+                  width: `${(h.w / POSTER.w) * 100}%`,
+                  height: `${(h.hh / POSTER.h) * 100}%`,
+                }}
+                onClick={(e) => { e.preventDefault(); scrollToId(h.target); }}
+              />
+            ))}
+          </div>
+          <p className="sm-poster-hint">Tap a card to jump straight to it</p>
+          <button type="button" className="sm-poster-cta" onClick={() => scrollToId('sm-jump')}>
+            See every service ↓
+          </button>
         </div>
 
         {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers */}
+        <div id="sm-coverage">
         <EventCoverage
           onBook={(svc) => setCheckoutService(svc)}
           onIntake={(id, name, path) => {
@@ -113,6 +148,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             onClose?.();
           }}
         />
+        </div>
 
         {/* ROADMAP RECOMMENDATIONS — shown only when coming from Roadmap CTA */}
         {roadmapRecs.length > 0 && (
@@ -174,7 +210,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
 
         {/* QUICK JUMP — one tap to any category, so phone visitors don't scroll blind */}
         {!q && (
-          <nav className="sm-jump" aria-label="Jump to a service category">
+          <nav id="sm-jump" className="sm-jump" aria-label="Jump to a service category">
             {SUB_CATEGORIES.filter((sub) => sub.serviceIds.some((id) => SERVICE_MAP[id])).map((sub) => (
               <a key={sub.id} href={`#sm-cat-${sub.id}`} className="sm-jump-chip"
                 onClick={(e) => { e.preventDefault(); document.getElementById(`sm-cat-${sub.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
