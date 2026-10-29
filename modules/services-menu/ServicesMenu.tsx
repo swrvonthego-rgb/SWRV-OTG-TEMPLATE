@@ -172,6 +172,18 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           />
         </header>
 
+        {/* QUICK JUMP — one tap to any category, so phone visitors don't scroll blind */}
+        {!q && (
+          <nav className="sm-jump" aria-label="Jump to a service category">
+            {SUB_CATEGORIES.filter((sub) => sub.serviceIds.some((id) => SERVICE_MAP[id])).map((sub) => (
+              <a key={sub.id} href={`#sm-cat-${sub.id}`} className="sm-jump-chip"
+                onClick={(e) => { e.preventDefault(); document.getElementById(`sm-cat-${sub.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+                <span aria-hidden="true">{sub.emoji}</span> {sub.label}
+              </a>
+            ))}
+          </nav>
+        )}
+
         {/* SUB-CATEGORIES */}
         {SUB_CATEGORIES.map((sub) => {
           const items = sub.serviceIds
@@ -180,7 +192,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             .filter(filterFn);
           if (items.length === 0) return null;
           return (
-            <section key={sub.id} className="sm-category">
+            <section key={sub.id} id={`sm-cat-${sub.id}`} className="sm-category">
               <div className="sm-cat-header">
                 <span className="sm-cat-emoji">{sub.emoji}</span>
                 <div className="sm-cat-text">
