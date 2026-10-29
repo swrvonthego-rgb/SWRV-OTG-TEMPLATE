@@ -890,3 +890,21 @@
 @media (max-width: 768px) {
   .services-menu .sm-poster-frame { border-radius: 16px; }
 }
+
+
+/* ── LOGO INTRO (video stage above the poster's lower half) ────────── */
+.services-menu .sm-stage {
+  position: relative;
+  aspect-ratio: 900 / 834;
+  background: #070c12;
+}
+.services-menu .sm-stage-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.services-menu .sm-poster-lower { position: relative; }
+/* Melt the dark stage into the poster's road so there is no visible seam. */
+.services-menu .sm-poster-lower::before {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 0; height: 11%;
+  background: linear-gradient(#070c12 0, #070c12 70%, rgba(7,12,18,0));
+  z-index: 1; pointer-events: none;
+}
+.services-menu .sm-poster-lower .sm-poster-hit { z-index: 2; }

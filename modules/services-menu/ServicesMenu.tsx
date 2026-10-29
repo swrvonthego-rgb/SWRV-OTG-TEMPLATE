@@ -16,12 +16,13 @@ const SERVICE_MAP: Record<string, typeof SERVICES[0]> = {};
 SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 
 // The poster's pixel size and the four tappable cards on it (source pixels).
-const POSTER = { w: 941, h: 1135 };
+// Poster's lower part (headline + cards), source pixels; the logo above it is the intro video.
+const POSTER = { w: 941, h: 535 };
 const POSTER_HOTSPOTS = [
-  { x: 28,  y: 843, w: 444, hh: 124, target: 'sm-coverage',          label: 'Professional content filming — see event coverage' },
-  { x: 478, y: 843, w: 438, hh: 124, target: 'sm-cat-web-digital',   label: 'Websites and digital presence' },
-  { x: 28,  y: 988, w: 444, hh: 125, target: 'sm-cat-videography',   label: 'AI-powered content creation' },
-  { x: 478, y: 988, w: 438, hh: 125, target: 'sm-cat-social-media',  label: 'Brand and social media support' },
+  { x: 28,  y: 243, w: 444, hh: 124, target: 'sm-coverage',          label: 'Professional content filming — see event coverage' },
+  { x: 478, y: 243, w: 438, hh: 124, target: 'sm-cat-web-digital',   label: 'Websites and digital presence' },
+  { x: 28,  y: 388, w: 444, hh: 125, target: 'sm-cat-videography',   label: 'AI-powered content creation' },
+  { x: 478, y: 388, w: 438, hh: 125, target: 'sm-cat-social-media',  label: 'Brand and social media support' },
 ];
 const scrollToId = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -30,6 +31,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [roadmapRecs, setRoadmapRecs] = useState<string[]>([]);
   const [checkoutService, setCheckoutService] = useState<CheckoutService | null>(null);
+  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   // Listen for Roadmap recommendations broadcast
   useEffect(() => {
@@ -108,14 +110,29 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
       <div className="sm-inner">
         {/* HERO POSTER — each card on the poster jumps to its section below */}
         <div className="sm-poster">
-          <div className="sm-poster-frame" style={{ aspectRatio: `${POSTER.w} / ${POSTER.h}` }}>
+          <div className="sm-poster-frame">
+            <div className="sm-stage">
+              {/* Final frame sits underneath: it's the still for reduced-motion users and while the video loads. */}
+              <img src="/images/logo-intro-final.webp" alt="SWRV On-The-Go logo" className="sm-stage-media" width={900} height={834} fetchPriority="high" />
+              {!reduceMotion && (
+                <video
+                  className="sm-stage-media sm-stage-video"
+                  src="/images/logo-intro.mp4"
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="auto"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+            <div className="sm-poster-lower" style={{ aspectRatio: `${POSTER.w} / ${POSTER.h}` }}>
             <img
-              src="/images/content-hero.webp"
-              alt="SWRV On-The-Go. Your vision, our creative engine: professional content filming, websites and digital presence, AI-powered content creation, brand and social media support."
+              src="/images/content-hero-bottom.webp"
+              alt="Your vision. Our creative engine: professional content filming, websites and digital presence, AI-powered content creation, brand and social media support."
               className="sm-poster-img"
               width={POSTER.w}
               height={POSTER.h}
-              fetchPriority="high"
             />
             {POSTER_HOTSPOTS.map((h) => (
               <a
@@ -132,6 +149,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
                 onClick={(e) => { e.preventDefault(); scrollToId(h.target); }}
               />
             ))}
+            </div>
           </div>
           <p className="sm-poster-hint">Tap a card to jump straight to it</p>
           <button type="button" className="sm-poster-cta" onClick={() => scrollToId('sm-jump')}>
