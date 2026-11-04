@@ -1011,3 +1011,12 @@
   .services-menu .sm-steps { gap: 8px; margin-bottom: 40px; }
   .services-menu .sm-steps li { padding: 14px 6px; font-size: 13px; }
 }
+
+/* Hovering a card must keep it solid dark: the base hover turned the
+   background translucent, so the yellow page showed through white text. */
+.services-menu .sm-card:hover,
+.services-menu .sm-card:focus-within {
+  background: #1f1a10;
+  color: #ede8dc;
+}
+.services-menu .ec-tier-card:hover { background: #1f1a10; }
