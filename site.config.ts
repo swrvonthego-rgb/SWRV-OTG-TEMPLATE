@@ -55,7 +55,7 @@ export const ROADMAP_PRICING = {
     price: 'Free',
     priceNumeric: 0,
     label: 'The Roadmap',
-    tagline: 'Step 1 of your consultation — your vision, mapped to the services that build it.',
+    tagline: 'Your vision, mapped to the services that build it.',
     bulletPoints: [
       'Deep evidence-based analysis of your vision',
       '7-part life blueprint (mindset, diet, fitness, community)',

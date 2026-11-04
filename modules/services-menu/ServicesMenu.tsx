@@ -321,13 +321,14 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
         {!q && (
           <section className="sm-panel sm-start">
             <p className="sm-footer-eyebrow">NOT SURE? START HERE</p>
-            <h2 className="sm-footer-title">Tell us where you're headed</h2>
+            <h2 className="sm-footer-title">Book a consultation</h2>
             <p className="sm-footer-body">
-              Step 1 (free): answer a short questionnaire. It takes about 10 minutes.
-              Step 2: once we know your plan, book a $100 one-on-one with SWRV.
+              Step 1: book and pay $100. Pick your date.
+              Step 2: right after you pay, answer a short questionnaire (about 10 minutes) so SWRV comes prepared.
+              Step 3: we talk and make your plan.
             </p>
-            <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}>
-              Start here →
+            <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => { const c = SERVICES.find((x) => x.id === 'brand-consultation'); if (c) setCheckoutService({ id: c.id, name: c.name, priceNumeric: c.priceNumeric, checkoutCategory: c.checkoutCategory }); }}>
+              Book consultation · $100 →
             </button>
           </section>
         )}
