@@ -8,6 +8,7 @@ import { PHASE_2_QUESTIONS } from './phase2-questions';
 import { isRoadmapStartIntent } from '../../deepLink';
 import { attributionSummary } from '../../attribution';
 import { RoadmapTour, TourStep } from './RoadmapTour';
+import { CheckoutModal, type CheckoutService } from '../services-menu/CheckoutModal';
 
 // ── Mic guide + live status ───────────────────────────────────────────
 // A small legend that shows the visitor how the voice button works — tap
@@ -1668,10 +1669,10 @@ const handleSave = useCallback(() => {
       <section id="screen-paywall" className={`screen ${screen === 'paywall' ? 'active' : ''}`}>
         <div className="grain" />
         <div className="paywall-wrap">
-          <p className="paywall-eyebrow">FREE · ABOUT 10 MINUTES</p>
-          <h2 className="paywall-title">Before You Begin</h2>
+          <p className="paywall-eyebrow">STEP 1 OF YOUR CONSULTATION · FREE · ABOUT 10 MINUTES</p>
+          <h2 className="paywall-title">Before We Talk</h2>
           <p className="paywall-sub">
-            The Roadmap maps your vision to your path — and to the exact services that build it.<br/>
+            Take The Roadmap first, so your consultation with Swerve starts from your vision instead of from scratch.<br/>
             Answer honestly and take your time. There are no wrong answers.
           </p>
 
@@ -2263,8 +2264,31 @@ const handleSave = useCallback(() => {
                 {emailSentMsg && <p className="email-sent-msg">✓ {emailSentMsg}</p>}
               </div>
 
+              {consultSvc && (
+                <div className="cta-block consult-block">
+                  <div className="cta-eyebrow">Step 2 · Your Consultation</div>
+                  <h3 className="consult-title">Walk through this with Swerve</h3>
+                  <p className="cta-body">
+                    You've done the hard part: your vision is on paper. Book a one-on-one session and we'll go through it together,
+                    turn it into your brand plan, and map the exact next steps. Your Roadmap comes with you.
+                  </p>
+                  <ul className="consult-list">
+                    <li>One-on-one with Swerve</li>
+                    <li>Your brand plan and next steps, in writing</li>
+                    <li>Pick your date at checkout</li>
+                  </ul>
+                  <button
+                    type="button"
+                    className="btn-cta"
+                    onClick={() => setConsultCheckout({ id: consultSvc.id, name: consultSvc.name, priceNumeric: consultSvc.priceNumeric, checkoutCategory: consultSvc.checkoutCategory })}
+                  >
+                    Book My Consultation · {consultSvc.price} →
+                  </button>
+                </div>
+              )}
+
               <div className="cta-block">
-                <div className="cta-eyebrow">What's Next</div>
+                <div className="cta-eyebrow">Or Explore On Your Own</div>
                 <p className="cta-body">{result.closing_word}</p>
                 {onOpenServices ? (
                   <button
@@ -2292,6 +2316,12 @@ const handleSave = useCallback(() => {
           </>
         ) : null}
       </section>
+
+      {consultCheckout && (
+        <div style={{ position: 'relative', zIndex: 10001 }}>
+          <CheckoutModal service={consultCheckout} onClose={() => setConsultCheckout(null)} />
+        </div>
+      )}
 
       {toast && <div id="toast" className="show">{toast}</div>}
     </div>

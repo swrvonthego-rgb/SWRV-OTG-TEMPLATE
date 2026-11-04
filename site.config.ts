@@ -55,12 +55,12 @@ export const ROADMAP_PRICING = {
     price: 'Free',
     priceNumeric: 0,
     label: 'The Roadmap',
-    tagline: 'Your complete blueprint — vision mapped to services.',
+    tagline: 'Step 1 of your consultation — your vision, mapped to the services that build it.',
     bulletPoints: [
       'Deep evidence-based analysis of your vision',
       '7-part life blueprint (mindset, diet, fitness, community)',
       'Every service you need, mapped to what you said',
-      'Yours to download, email, and bring to the booking',
+      'Yours to download, email, and bring to your consultation',
     ],
   },
 } as const;

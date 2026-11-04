@@ -105,7 +105,7 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
   ctaUrl: BRAND.ctaUrl,
 
   copy: {
-    introLogo: 'SWRV OTG · The Roadmap Experience',
+    introLogo: 'SWRV OTG · Your Discovery Consultation',
     introTitle: { line1: 'Your Vision.', emphasis: 'Your Vehicle.', line3: 'Your Roadmap.' },
     introSub: "Before you build a brand, a business, a plan —\nyou have to know where you're actually going.",
     videoLabel: 'A word from Swerve',
