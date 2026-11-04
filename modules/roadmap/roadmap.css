@@ -1630,3 +1630,9 @@ PRINT — hide new bottom CTA to keep printout clean
 .roadmap-experience .consult-title{font-family:inherit;font-size:clamp(22px,4vw,30px);margin:6px 0 14px;color:var(--ink-bright);}
 .roadmap-experience .consult-list{list-style:none;margin:0 auto 24px;padding:0;display:flex;flex-direction:column;gap:8px;max-width:360px;text-align:left;font-size:15px;color:var(--ink-mid);}
 .roadmap-experience .consult-list li::before{content:'✓';color:var(--accent-1);margin-right:10px;font-weight:700;}
+
+/* Opt-in intro video button */
+.roadmap-experience .video-help-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:360px;margin:0 auto 28px;padding:14px 18px;min-height:48px;
+  background:transparent;border:1px solid var(--accent-1);border-radius:12px;color:var(--ink-bright);font:inherit;font-size:15px;line-height:1.35;text-align:left;cursor:pointer;}
+.roadmap-experience .video-help-btn:hover{background:rgba(255,255,255,.06);}
+.roadmap-experience .video-help-btn span{color:var(--accent-1);font-size:18px;flex-shrink:0;}

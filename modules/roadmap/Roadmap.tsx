@@ -422,6 +422,8 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
   const skinToggleRef = useRef<HTMLButtonElement>(null);
   const musicPanelRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // The intro video is opt-in: it only appears (and plays) when someone asks for help.
+  const [showHelpVideo, setShowHelpVideo] = useState(false);
   const musicToggleRef = useRef<HTMLButtonElement>(null);
 
   // ── Speech recognition ───────────────────────────────────
@@ -906,29 +908,17 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
     return () => window.clearTimeout(t);
   }, [screen, timeRemaining, words, showToast]);
 
-  // ── Video autoplay: play intro video as soon as Roadmap opens ──
-  // Pause it when user navigates away from intro screen or closes Roadmap.
+  // ── Intro video: plays only after the visitor taps "Need help?" ──
+  // Paused again when they leave the intro screen or close the Roadmap.
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-
-    if (isOpen && screen === 'intro') {
-      // Try to play with sound; if blocked, fall back to muted autoplay
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Browser blocked autoplay with sound — try muted as fallback
-          video.muted = true;
-          video.play().catch(() => {
-            // Even muted failed; user will need to press play manually
-          });
-        });
-      }
+    if (isOpen && screen === 'intro' && showHelpVideo) {
+      video.play().catch(() => { /* they can press play on the controls */ });
     } else {
-      // Pause when leaving intro screen or closing Roadmap
       video.pause();
     }
-  }, [isOpen, screen]);
+  }, [isOpen, screen, showHelpVideo]);
 
 // ── Audio conflict: pause background music while video plays; resume after ──
 useEffect(() => {
@@ -957,7 +947,7 @@ useEffect(() => {
     video.removeEventListener('ended', handleVideoEnd);
     video.removeEventListener('pause', handleVideoPause);
   };
-}, [firstGestureDone, musicMuted]);
+}, [firstGestureDone, musicMuted, showHelpVideo]);
 
   // ── Persistence: save progress to localStorage on each major step ──
   // (If KV is configured on the worker, /api/save-progress will also persist
@@ -1471,16 +1461,23 @@ const handleSave = useCallback(() => {
           </p>
 
           {config.copy.videoUrl && (
-            <div className="video-wrap">
-              <video
-                ref={videoRef}
-                src={config.copy.videoUrl}
-                playsInline
-                controls
-                preload="metadata"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
+            showHelpVideo ? (
+              <div className="video-wrap">
+                <video
+                  ref={videoRef}
+                  src={config.copy.videoUrl}
+                  playsInline
+                  controls
+                  autoPlay
+                  preload="auto"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            ) : (
+              <button type="button" className="video-help-btn" onClick={() => setShowHelpVideo(true)}>
+                <span aria-hidden="true">▶</span> Need help shaping your vision? Tap to watch a short word from SWRV
+              </button>
+            )
           )}
 
           <div className="name-field-wrap">
