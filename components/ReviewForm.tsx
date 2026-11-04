@@ -41,7 +41,7 @@ export function ReviewForm({ token }: { token: string }) {
         <p className="text-white font-semibold">Thank you for sharing your experience.</p>
         <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
           {done && rating > 0 && rating <= 3
-            ? "We're sorry it wasn't perfect. Swerve will personally reach out to make it right."
+            ? "We're sorry it wasn't perfect. SWRV will personally reach out to make it right."
             : 'It means a great deal to our team.'}
         </p>
       </div>
@@ -84,7 +84,7 @@ export function ReviewForm({ token }: { token: string }) {
         </div>
         {rating > 0 && rating <= 3 && (
           <p className="text-xs mt-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            We're sorry it wasn't perfect. Tell us what happened below, and Swerve will personally reach out to make it right.
+            We're sorry it wasn't perfect. Tell us what happened below, and SWRV will personally reach out to make it right.
           </p>
         )}
       </div>
@@ -98,7 +98,7 @@ export function ReviewForm({ token }: { token: string }) {
 
       <div>
         <p className="text-white text-sm font-semibold mb-1">Suggestions for us <span className="font-normal text-xs" style={{ color: Gold }}>· private</span></p>
-        <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Only Swerve sees this. What could we do better next time?</p>
+        <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Only SWRV sees this. What could we do better next time?</p>
         <textarea value={suggestions} onChange={(e) => setSuggestions(e.target.value)} rows={3} maxLength={2000}
           placeholder="Anything we could improve…" className={input} style={FIELD_STYLE} />
       </div>

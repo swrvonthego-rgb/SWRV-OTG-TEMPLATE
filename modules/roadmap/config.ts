@@ -100,7 +100,7 @@ const SWRV_SERVICES: RoadmapService[] = SERVICES
 export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
   brandName: BRAND.name,
   brandUrl: BRAND.url.replace('https://', ''),
-  founderName: 'Swerve',
+  founderName: 'SWRV',
   founderTitle: 'Robert Birdsong',
   ctaUrl: BRAND.ctaUrl,
 
@@ -108,7 +108,7 @@ export const SWRV_ROADMAP_CONFIG: RoadmapConfig = {
     introLogo: 'SWRV OTG · Your Discovery Consultation',
     introTitle: { line1: 'Your Vision.', emphasis: 'Your Vehicle.', line3: 'Your Roadmap.' },
     introSub: "Before you build a brand, a business, a plan —\nyou have to know where you're actually going.",
-    videoLabel: 'A word from Swerve',
+    videoLabel: 'A word from SWRV',
     videoUrl: 'https://assets.swrvonthego.pro/The%20Roadmap%20App%20Assets/vcompress_1_j33pa2.mp4',
     nameFieldLabel: "What's your first name?",
     namePlaceholder: 'Your name',

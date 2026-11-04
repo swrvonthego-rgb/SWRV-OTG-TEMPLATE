@@ -4,7 +4,7 @@ import { SERVICES } from '../../site.config';
 import { CheckoutModal, type CheckoutService } from '../services-menu/CheckoutModal';
 
 // Zion Vocals packages — same catalog entries as the main services grid.
-const VOCAL_PACKAGE_IDS = ['vocal-live-event', 'vocal-production'];
+const VOCAL_PACKAGE_IDS = ['motivational-performance', 'vocal-live-event', 'vocal-production'];
 import React, { useState, useEffect, useRef } from 'react';
 
 interface ZionProps { isOpen: boolean; onClose: () => void; }

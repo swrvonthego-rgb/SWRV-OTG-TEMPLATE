@@ -973,3 +973,6 @@
 /* The page footer sits straight on the yellow: no dark box, dark text. */
 .services-menu .sm-footer { background: none; border: none; box-shadow: none; padding: 24px 0 0; margin-top: 40px; }
 .services-menu .sm-footer-copy { color: var(--sm-ink); opacity: 0.7; margin-top: 0; }
+
+.services-menu .sm-footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; margin-bottom: 18px; }
+.services-menu .sm-footer-links a { color: var(--sm-ink); font-size: 15px; font-weight: 600; text-decoration: underline; padding: 6px 0; }

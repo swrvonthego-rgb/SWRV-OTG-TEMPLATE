@@ -5,11 +5,14 @@ import { ClientReviews } from '../../components/ClientReviews';
 import { CheckoutModal, CheckoutService } from './CheckoutModal';
 import { EventCoverage } from './EventCoverage';
 import { ScrollHint } from './ScrollHint';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onBookStrategyCall?: () => void;
+  /** Rendered as the site's front page: no close button. */
+  isHome?: boolean;
 }
 
 // Build lookup map: serviceId → service
@@ -28,7 +31,12 @@ const POSTER_HOTSPOTS = [
 const scrollToId = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
+// Singing, live performance and speaking are booked on Zion's own page, so
+// they're not repeated here as a category — a single panel points there.
+const HOME_CATEGORIES = SUB_CATEGORIES.filter((c) => c.id !== 'zion-vocals');
+
+export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Props) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [roadmapRecs, setRoadmapRecs] = useState<string[]>([]);
   const [checkoutService, setCheckoutService] = useState<CheckoutService | null>(null);
@@ -101,12 +109,14 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
 
   return (
     <div className="services-menu" role="dialog" aria-modal="true">
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close services menu"
-        className="sm-close"
-      >×</button>
+      {!isHome && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close services menu"
+          className="sm-close"
+        >×</button>
+      )}
 
       <div className="sm-inner">
         {/* HERO POSTER — each card on the poster jumps to its section below */}
@@ -212,7 +222,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
 
         {/* HEADER */}
         <header className="sm-header">
-          <p className="sm-eyebrow">FULL SERVICE MENU</p>
+          <p className="sm-eyebrow">SWRV, YOUR CONTENT COACH</p>
           <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
           <p className="sm-intro">
             Social media content, websites, AI video, music production and more — pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
@@ -230,17 +240,20 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
         {/* QUICK JUMP — one tap to any category, so phone visitors don't scroll blind */}
         {!q && (
           <ScrollHint axis="x" id="sm-jump" role="navigation" aria-label="Jump to a service category" wrapperClassName="sm-jump-wrap" className="sm-jump" fadeColor="#f8bc0a" accentBg="#14100a" accentFg="#ffd23f" label="Scroll right for more categories">
-            {SUB_CATEGORIES.filter((sub) => sub.serviceIds.some((id) => SERVICE_MAP[id])).map((sub) => (
+            {HOME_CATEGORIES.filter((sub) => sub.serviceIds.some((id) => SERVICE_MAP[id])).map((sub) => (
               <a key={sub.id} href={`#sm-cat-${sub.id}`} className="sm-jump-chip"
                 onClick={(e) => { e.preventDefault(); document.getElementById(`sm-cat-${sub.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
                 <span aria-hidden="true">{sub.emoji}</span> {sub.label}
               </a>
             ))}
+            <a href="/zion" className="sm-jump-chip" onClick={(e) => { e.preventDefault(); navigate('/zion'); }}>
+              <span aria-hidden="true">🎤</span> Zion SWRV Birdsong
+            </a>
           </ScrollHint>
         )}
 
         {/* SUB-CATEGORIES */}
-        {SUB_CATEGORIES.map((sub) => {
+        {HOME_CATEGORIES.map((sub) => {
           const items = sub.serviceIds
             .map((id) => SERVICE_MAP[id])
             .filter(Boolean)
@@ -287,7 +300,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
         {!q && <ClientReviews />}
 
         {/* EMPTY STATE — shown when search returns nothing */}
-        {q && !SUB_CATEGORIES.some(sub =>
+        {q && !HOME_CATEGORIES.some(sub =>
           sub.serviceIds.map(id => SERVICE_MAP[id]).filter(Boolean).filter(filterFn).length > 0
         ) && (
           <div className="sm-empty-state">
@@ -304,7 +317,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             <h2 className="sm-footer-title">Start with a consultation</h2>
             <p className="sm-footer-body">
               Step 1 is free: take The Roadmap, about 10 minutes, and tell us where you want to go.
-              Once we know what you want to do, book your one-on-one consultation with Swerve for $100.
+              Once we know what you want to do, book your one-on-one consultation with SWRV for $100.
             </p>
             <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}>
               Start The Roadmap →
@@ -333,8 +346,29 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           </section>
         )}
 
+        {/* ZION SWRV BIRDSONG — singing, live performance, speaking */}
+        {!q && (
+          <section className="sm-panel sm-zion">
+            <p className="sm-footer-eyebrow">MUSIC, LIVE &amp; SPEAKING</p>
+            <h2 className="sm-footer-title">Zion SWRV Birdsong</h2>
+            <p className="sm-footer-body">
+              Want SWRV on your event or your record? Live vocals, studio vocal production, and motivational speaking are booked on his own page, with the books, the podcast and the music.
+            </p>
+            <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => navigate('/zion')}>
+              Meet Zion SWRV Birdsong →
+            </button>
+          </section>
+        )}
+
         {/* CTA FOOTER */}
         <footer className="sm-footer">
+          <nav className="sm-footer-links" aria-label="More from SWRV On The Go">
+            <a href="/about" onClick={(e) => { e.preventDefault(); navigate('/about'); }}>About, Shop &amp; Contact</a>
+            <a href="/family" onClick={(e) => { e.preventDefault(); navigate('/family'); }}>The SWRV Family</a>
+            <a href="https://instagram.com/swrvonthego" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="/privacy.html">Privacy</a>
+            <a href="/terms.html">Terms</a>
+          </nav>
           <p className="sm-footer-copy">© {new Date().getFullYear()} SWRV On The Go · swrvonthego.pro</p>
         </footer>
       </div>

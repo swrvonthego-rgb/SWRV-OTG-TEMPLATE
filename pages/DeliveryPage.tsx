@@ -120,7 +120,7 @@ export const DeliveryPage: React.FC = () => {
       {d.message && (
         <div className="rounded-2xl p-5 mb-6" style={{ ...card, borderColor: 'rgba(200,168,75,0.35)' }}>
           <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'rgba(255,255,255,0.8)' }}>{d.message}</p>
-          <p className="text-sm mt-3" style={{ color: Gold }}>— Swerve, SWRV On The Go</p>
+          <p className="text-sm mt-3" style={{ color: Gold }}>— SWRV, SWRV On The Go</p>
         </div>
       )}
 
@@ -144,7 +144,7 @@ export const DeliveryPage: React.FC = () => {
           <div className="text-center py-6">
             <CheckCircle2 size={36} color={Orange} className="mx-auto mb-3" />
             <p className="text-white font-semibold">Got it — thank you!</p>
-            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Swerve will get back to you shortly.</p>
+            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>SWRV will get back to you shortly.</p>
             <button type="button" onClick={() => setSent(false)} className="text-xs underline mt-3" style={{ color: 'rgba(255,255,255,0.45)' }}>Send something else</button>
           </div>
         ) : (

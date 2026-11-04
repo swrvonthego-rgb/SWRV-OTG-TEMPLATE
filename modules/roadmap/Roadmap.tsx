@@ -1675,7 +1675,7 @@ const handleSave = useCallback(() => {
           <p className="paywall-eyebrow">STEP 1 OF YOUR CONSULTATION · FREE · ABOUT 10 MINUTES</p>
           <h2 className="paywall-title">Before We Talk</h2>
           <p className="paywall-sub">
-            Take The Roadmap first, so your consultation with Swerve starts from your vision instead of from scratch.<br/>
+            Take The Roadmap first, so your consultation with SWRV starts from your vision instead of from scratch.<br/>
             Answer honestly and take your time. There are no wrong answers.
           </p>
 
@@ -2270,13 +2270,13 @@ const handleSave = useCallback(() => {
               {consultSvc && (
                 <div className="cta-block consult-block">
                   <div className="cta-eyebrow">Step 2 · Your Consultation</div>
-                  <h3 className="consult-title">Walk through this with Swerve</h3>
+                  <h3 className="consult-title">Walk through this with SWRV</h3>
                   <p className="cta-body">
                     You've done the hard part: your vision is on paper. Book a one-on-one session and we'll go through it together,
                     turn it into your brand plan, and map the exact next steps. Your Roadmap comes with you.
                   </p>
                   <ul className="consult-list">
-                    <li>One-on-one with Swerve</li>
+                    <li>One-on-one with SWRV</li>
                     <li>Your brand plan and next steps, in writing</li>
                     <li>Pick your date at checkout</li>
                   </ul>

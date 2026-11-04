@@ -89,7 +89,7 @@ export function ReviewsAdmin() {
           </div>
           <div className="mt-3 flex gap-2">
             <input value={replyDraft[r.id] ?? r.owner_reply ?? ''} onChange={(e) => setReplyDraft({ ...replyDraft, [r.id]: e.target.value })}
-              placeholder="Public reply from Swerve (optional)"
+              placeholder="Public reply from SWRV (optional)"
               className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/30" />
             <button onClick={() => act(r.id, { action: 'reply', reply: replyDraft[r.id] ?? r.owner_reply ?? '' })}
               className="px-3 py-1.5 rounded-lg border border-lion-orange/50 text-lion-orange text-xs">Save reply</button>

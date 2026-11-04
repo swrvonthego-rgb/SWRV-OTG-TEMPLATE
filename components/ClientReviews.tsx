@@ -40,7 +40,7 @@ export function ClientReviews() {
             </p>
             {r.owner_reply && (
               <p className="text-xs mt-3 pl-3" style={{ borderLeft: '2px solid rgba(200,168,75,0.5)', color: 'rgba(237,232,220,0.7)' }}>
-                <strong style={{ color: '#e8c96a' }}>Response from Swerve:</strong> {r.owner_reply}
+                <strong style={{ color: '#e8c96a' }}>Response from SWRV:</strong> {r.owner_reply}
               </p>
             )}
           </article>

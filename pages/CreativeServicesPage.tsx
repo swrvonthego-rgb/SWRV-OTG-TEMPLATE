@@ -11,6 +11,7 @@ export const CreativeServicesPage: React.FC = () => {
   return (
     <ServicesMenu
       isOpen={true}
+      isHome
       onClose={() => navigate('/')}
       onBookStrategyCall={() => {
         navigate('/about');

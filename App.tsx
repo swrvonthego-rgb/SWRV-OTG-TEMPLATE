@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 // ── Suite pages ──────────────────────────────────────────────
-import { Lobby } from './pages/Lobby';
 import { CreativeServicesPage } from './pages/CreativeServicesPage';
 import { WebsiteDesignPage } from './pages/WebsiteDesignPage';
 import { ZionSuitePage } from './pages/ZionSuitePage';
@@ -98,7 +97,7 @@ const AppShell: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const handler = () => navigate('/content');
+    const handler = () => navigate('/');
     window.addEventListener('swrv:open-services', handler);
     return () => window.removeEventListener('swrv:open-services', handler);
   }, [navigate]);
@@ -131,14 +130,14 @@ const AppShell: React.FC = () => {
     <>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
-        <Route path="/" element={<Lobby />} />
+        <Route path="/" element={<CreativeServicesPage />} />
         <Route
           path="/roadmap"
           element={
             <Roadmap
               isOpen={true}
               onClose={() => navigate('/')}
-              onOpenServices={() => navigate('/content')}
+              onOpenServices={() => navigate('/')}
               tenantSlug={visionTenantSlug()}
             />
           }
@@ -149,14 +148,14 @@ const AppShell: React.FC = () => {
             <Roadmap
               isOpen={true}
               onClose={() => navigate('/')}
-              onOpenServices={() => navigate('/content')}
+              onOpenServices={() => navigate('/')}
               tenantSlug={visionTenantSlug()}
             />
           }
         />
-        <Route path="/content" element={<CreativeServicesPage />} />
-        {/* Old address for the same page — sends visitors to /content */}
-        <Route path="/creative-services" element={<KeepQueryRedirect to="/content" />} />
+        <Route path="/content" element={<KeepQueryRedirect to="/" />} />
+        {/* The services page is now the front page; /content and old addresses land there */}
+        <Route path="/creative-services" element={<KeepQueryRedirect to="/" />} />
         <Route path="/website-design" element={<WebsiteDesignPage />} />
         <Route path="/zion" element={<ZionSuitePage />} />
         <Route path="/family" element={<FamilyPage />} />

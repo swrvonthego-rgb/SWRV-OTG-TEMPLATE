@@ -139,7 +139,7 @@ export const LiveChat: React.FC<{ onOpenBooking?: () => void }> = ({ onOpenBooki
         body: JSON.stringify({ messages: newHistory }),
       });
       const data = await res.json();
-      const reply = data.reply || "Let me connect you with Swerve at info@swrvonthego.pro";
+      const reply = data.reply || "Let me connect you with SWRV at info@swrvonthego.pro";
       setLoading(false);
       addBot(reply, undefined,
         reply.toLowerCase().includes('book') || reply.toLowerCase().includes('session')
@@ -194,7 +194,7 @@ For these packages, speak like a premium professional: confident, polished, conc
         body: JSON.stringify({ messages: chatMessages }),
       });
       const data = await res.json();
-      const text = data.reply || "Let me connect you with Swerve directly to get you exactly what you need.";
+      const text = data.reply || "Let me connect you with SWRV directly to get you exactly what you need.";
       setLoading(false);
       setDone(true);
       setTimeout(() => {
@@ -205,7 +205,7 @@ For these packages, speak like a premium professional: confident, polished, conc
     } catch {
       setLoading(false);
       setDone(true);
-      addBot("Something went off — let me connect you with Swerve directly.", undefined, { label: 'Book a Session →', action: 'book' });
+      addBot("Something went off — let me connect you with SWRV directly.", undefined, { label: 'Book a Session →', action: 'book' });
     }
   };
 
