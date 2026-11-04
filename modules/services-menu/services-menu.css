@@ -908,3 +908,41 @@
   z-index: 1; pointer-events: none;
 }
 .services-menu .sm-poster-lower .sm-poster-hit { z-index: 2; }
+
+/* ── YELLOW THEME — page background matches the logo's yellow ────────── */
+.services-menu {
+  --sm-yellow: #f8bc0a;
+  --sm-ink: #14100a;
+  background: radial-gradient(ellipse at top, #ffd23f 0%, var(--sm-yellow) 55%, #eaa800 100%);
+  color: var(--sm-ink);
+}
+/* Cards and panels stay dark so their cream text keeps its contrast. */
+.services-menu .sm-card,
+.services-menu .sm-recs,
+.services-menu .sm-custom-booking,
+.services-menu .sm-footer,
+.services-menu .sm-empty-state { background: #14100a; backdrop-filter: none; -webkit-backdrop-filter: none; color: #ede8dc; }
+/* Text that sits directly on the yellow turns dark. */
+.services-menu .sm-eyebrow,
+.services-menu .sm-title,
+.services-menu .sm-intro,
+.services-menu .sm-poster-hint,
+.services-menu .sm-cat-label,
+.services-menu .sm-cat-tagline,
+.services-menu .sm-cat-note,
+.services-menu .sm-footer-copy,
+.services-menu .ec-eyebrow,
+.services-menu .ec-title,
+.services-menu .ec-intro,
+.services-menu .ec-tiers-eyebrow { color: var(--sm-ink); }
+.services-menu .sm-title-accent { background: none; -webkit-text-fill-color: var(--sm-ink); color: var(--sm-ink); }
+.services-menu .sm-cat-note a { color: var(--sm-ink); text-decoration: underline; font-weight: 700; }
+.services-menu .sm-cat-count { background: rgba(20,16,10,0.12); border-color: rgba(20,16,10,0.35); color: var(--sm-ink); }
+.services-menu .sm-category { border-color: rgba(20,16,10,0.2); }
+.services-menu .sm-jump-chip { background: var(--sm-ink); color: #ffd23f; border-color: var(--sm-ink); }
+.services-menu .sm-search { background: rgba(255,255,255,0.55); color: var(--sm-ink); border-color: rgba(20,16,10,0.35); }
+.services-menu .sm-search::placeholder { color: rgba(20,16,10,0.6); }
+.services-menu .sm-poster-cta { background: var(--sm-ink); color: #ffd23f; }
+.services-menu .sm-poster-frame { box-shadow: 0 18px 44px rgba(20,16,10,0.45); }
+.services-menu .ec-tier-card { background: #14100a; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.services-menu .ec-tier-note { color: var(--sm-ink); }
