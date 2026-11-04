@@ -1474,13 +1474,13 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   {
     id: 'social-media',
     label: 'Social Media',
-    tagline: 'Your brand, built and run in your voice.',
+    tagline: 'We build your look and run your posts.',
     emoji: '📱',
     intakePath: 'social',
     serviceIds: ['brand-consultation', 'social-brand-kit', 'social-content-daily', 'social-management'],
     note: {
-      text: "Every brand we build starts with your long-term vision. Once you book, you'll take The Roadmap: we talk through your vision, you answer the questionnaire, and together we map where your brand is going before we build it.",
-      linkLabel: 'See how The Roadmap works →',
+      text: "Every brand starts with a plan. After you book, you'll answer a short questionnaire so we know where you're headed.",
+      linkLabel: 'See how it works →',
       to: '/roadmap',
     },
   },
@@ -1488,7 +1488,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     id: 'web-digital',
     intakePath: 'website',
     label: 'Web & Digital',
-    tagline: 'Vision-first. Custom-built. Yours alone.',
+    tagline: 'A website that looks great and goes live fast.',
     emoji: '🌐',
     serviceIds: [
       'website-presence',
@@ -1504,7 +1504,7 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     id: 'videography',
     intakePath: 'video',
     label: 'AI Video & Videography',
-    tagline: 'Short AI-generated video, made fast — and fully produced film.',
+    tagline: 'Short videos, made fast.',
     emoji: '🎬',
     serviceIds: [
       'music-video',
@@ -1569,13 +1569,13 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
   {
     id: 'music-video-packages',
     label: 'Music & Video',
-    tagline: 'From concept to release — song, video, or both.',
+    tagline: 'Make a song, a video, or both.',
     emoji: '🎬',
     intakePath: 'music',
     serviceIds: ['song-production-intro', 'music-video-intro', 'song-video-bundle'],
     note: {
-      text: 'New to SWRV? These are relationship-building rates. Book a song and a video together and save $500. Affirm, Klarna, and Afterpay are all accepted at checkout — break it into payments with zero back-and-forth.',
-      linkLabel: 'Questions? Book a strategy call →',
+      text: 'First-time prices. Book a song and a video together and save $500. Pay in installments with Affirm, Klarna or Afterpay.',
+      linkLabel: 'Questions? Talk to us →',
       to: '/about',
     },
   },

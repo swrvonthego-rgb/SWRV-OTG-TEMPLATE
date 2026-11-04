@@ -73,7 +73,7 @@ export function EventCoverage({ onBook, onIntake }: Props) {
       <div className="ec-header">
         <p className="ec-eyebrow">SWRV CONTENT</p>
         <h2 className="ec-title">We Show Up.<br />You Stay In The Moment.</h2>
-        <p className="ec-intro">Pick the content you need — for your event, your brand, or both.</p>
+        <p className="ec-intro">Pick what you need. We handle the rest.</p>
       </div>
 
       {/* CATEGORY PICKER */}
@@ -91,7 +91,7 @@ export function EventCoverage({ onBook, onIntake }: Props) {
 
       {/* TIERED PACKAGES */}
       <div id="swrv-coverage-tiers" className="ec-tiers-header">
-        <p className="ec-tiers-eyebrow">SOCIAL CONTENT — PICK YOUR PACKAGE</p>
+        <p className="ec-tiers-eyebrow">SOCIAL CONTENT — PICK A PACKAGE</p>
       </div>
       <div className="ec-tier-grid">
         {tiers.map((svc) => (
@@ -113,7 +113,7 @@ export function EventCoverage({ onBook, onIntake }: Props) {
               className="ec-tier-cta"
               onClick={() => onBook({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory })}
             >
-              Book & Pay 50% →
+              Book now · pay 50% today →
             </button>
           </article>
         ))}

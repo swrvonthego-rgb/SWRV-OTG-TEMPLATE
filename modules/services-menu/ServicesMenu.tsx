@@ -72,10 +72,10 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
       return (
         <div className="sm-card-cta-row">
           <button type="button" className="sm-book-btn" onClick={() => setCheckoutService({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory })}>
-            {svc.checkoutCategory === 'monthly' ? 'Start Monthly Plan →' : svc.payInFull ? `Book & Pay ${svc.price} →` : 'Book & Pay 50% →'}
+            {svc.checkoutCategory === 'monthly' ? 'Start monthly plan →' : svc.payInFull ? `Book now · ${svc.price} →` : 'Book now · pay 50% today →'}
           </button>
           <button type="button" className="sm-quote-link" onClick={openIntake}>
-            Questions first? Ask →
+            Have a question? Ask us →
           </button>
         </div>
       );
@@ -83,7 +83,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
     return (
       <div className="sm-card-cta-row">
         <button type="button" className="sm-intake-btn" onClick={openIntake}>
-          Request a Quote →
+          Get a quote →
         </button>
       </div>
     );
@@ -162,11 +162,18 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
             ))}
             </div>
           </div>
-          <p className="sm-poster-hint">Tap a card to jump straight to it</p>
+          <p className="sm-poster-hint">Tap a card to go straight to it</p>
           <button type="button" className="sm-poster-cta" onClick={() => scrollToId('sm-jump')}>
-            See every service ↓
+            See all packages ↓
           </button>
         </div>
+
+        {/* HOW IT WORKS — three plain steps */}
+        <ol className="sm-steps" aria-label="How it works">
+          <li><span className="sm-step-num">1</span><strong>Pick it</strong><span>Tap what you need.</span></li>
+          <li><span className="sm-step-num">2</span><strong>Book it</strong><span>Choose a date. Pay to lock it in.</span></li>
+          <li><span className="sm-step-num">3</span><strong>We deliver</strong><span>You're on the road. We do the rest.</span></li>
+        </ol>
 
         {/* SWRV CONTENT — category picker + fixed, bookable tiers */}
         <div id="sm-coverage">
@@ -222,14 +229,14 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
 
         {/* HEADER */}
         <header className="sm-header">
-          <p className="sm-eyebrow">SWRV, YOUR CONTENT COACH</p>
-          <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
+          <p className="sm-eyebrow">SWRV ON THE GO</p>
+          <h1 className="sm-title">What do you need?<br/><span className="sm-title-accent">Pick your lane.</span></h1>
           <p className="sm-intro">
-            Social media content, websites, AI video, music production and more — pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
+            Choose a package. Pick a date. Pay right here. We handle the rest. You can pay in installments with Affirm, Klarna or Afterpay.
           </p>
           <input
             type="search"
-            placeholder="Search services..."
+            placeholder="Search (try: website, video, posts)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="sm-search"
@@ -313,14 +320,14 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
         {/* START WITH THE ROADMAP — step 1 of a consultation; the $100 session comes after */}
         {!q && (
           <section className="sm-panel sm-start">
-            <p className="sm-footer-eyebrow">NOT SURE WHERE TO START?</p>
-            <h2 className="sm-footer-title">Start with a consultation</h2>
+            <p className="sm-footer-eyebrow">NOT SURE? START HERE</p>
+            <h2 className="sm-footer-title">Tell us where you're headed</h2>
             <p className="sm-footer-body">
-              Step 1 is free: take The Roadmap, about 10 minutes, and tell us where you want to go.
-              Once we know what you want to do, book your one-on-one consultation with SWRV for $100.
+              Step 1 (free): answer a short questionnaire. It takes about 10 minutes.
+              Step 2: once we know your plan, book a $100 one-on-one with SWRV.
             </p>
             <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}>
-              Start The Roadmap →
+              Start here →
             </button>
           </section>
         )}
@@ -328,10 +335,10 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
         {/* CUSTOM BOOKING CTA */}
         {!q && (
           <section className="sm-panel sm-custom-booking">
-            <p className="sm-footer-eyebrow">NEED SOMETHING CUSTOM?</p>
-            <h2 className="sm-footer-title">Don't see your exact package?</h2>
+            <p className="sm-footer-eyebrow">DON'T SEE IT?</p>
+            <h2 className="sm-footer-title">We'll build it for you</h2>
             <p className="sm-footer-body">
-              Working on something that doesn't fit a price sheet? Build a bundle, get a custom quote, or just tell us what you're working on. No back-and-forth — we'll put it together.
+              Tell us what you need. We'll send you a quote. No back-and-forth.
             </p>
             <button
               type="button"
@@ -349,13 +356,13 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
         {/* ZION SWRV BIRDSONG — singing, live performance, speaking */}
         {!q && (
           <section className="sm-panel sm-zion">
-            <p className="sm-footer-eyebrow">MUSIC, LIVE &amp; SPEAKING</p>
+            <p className="sm-footer-eyebrow">MUSIC &amp; LIVE</p>
             <h2 className="sm-footer-title">Zion SWRV Birdsong</h2>
             <p className="sm-footer-body">
-              Want SWRV on your event or your record? Live vocals, studio vocal production, and motivational speaking are booked on his own page, with the books, the podcast and the music.
+              Need live singing, vocals on your song, or a speaker for your event? Book him on his own page.
             </p>
             <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => navigate('/zion')}>
-              Meet Zion SWRV Birdsong →
+              Book Zion SWRV Birdsong →
             </button>
           </section>
         )}
