@@ -37,7 +37,7 @@ const CATEGORIES = [
     label: 'Videography',
     desc: 'Recap videos, testimonials, and promo-ready footage cut from your event.',
     action: 'intake' as const,
-    intakeName: 'Event Videography Coverage',
+    intakeName: 'Event Videography Content',
     intakePath: 'video' as IntakePath,
   },
   {
@@ -71,9 +71,9 @@ export function EventCoverage({ onBook, onIntake }: Props) {
   return (
     <section className="ec-section">
       <div className="ec-header">
-        <p className="ec-eyebrow">SWRV EVENT COVERAGE</p>
+        <p className="ec-eyebrow">SWRV CONTENT</p>
         <h2 className="ec-title">We Show Up.<br />You Stay In The Moment.</h2>
-        <p className="ec-intro">Select what your event needs.</p>
+        <p className="ec-intro">Pick the content you need — for your event, your brand, or both.</p>
       </div>
 
       {/* CATEGORY PICKER */}

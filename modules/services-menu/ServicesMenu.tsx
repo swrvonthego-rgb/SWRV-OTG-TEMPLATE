@@ -19,7 +19,7 @@ SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 // Poster's lower part (headline + cards), source pixels; the logo above it is the intro video.
 const POSTER = { w: 941, h: 535 };
 const POSTER_HOTSPOTS = [
-  { x: 28,  y: 243, w: 444, hh: 124, target: 'sm-coverage',          label: 'Professional content filming — see event coverage' },
+  { x: 28,  y: 243, w: 444, hh: 124, target: 'sm-coverage',          label: 'Professional content filming — see content packages' },
   { x: 478, y: 243, w: 438, hh: 124, target: 'sm-cat-web-digital',   label: 'Websites and digital presence' },
   { x: 28,  y: 388, w: 444, hh: 125, target: 'sm-cat-videography',   label: 'AI-powered content creation' },
   { x: 478, y: 388, w: 438, hh: 125, target: 'sm-cat-social-media',  label: 'Brand and social media support' },
@@ -157,7 +157,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           </button>
         </div>
 
-        {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers */}
+        {/* SWRV CONTENT — category picker + fixed, bookable tiers */}
         <div id="sm-coverage">
         <EventCoverage
           onBook={(svc) => setCheckoutService(svc)}
@@ -214,7 +214,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           <p className="sm-eyebrow">FULL SERVICE MENU</p>
           <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
           <p className="sm-intro">
-            Event coverage, music production, music videos, websites, social media and more — pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
+            Social media content, websites, AI video, music production and more — pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
           </p>
           <input
             type="search"
