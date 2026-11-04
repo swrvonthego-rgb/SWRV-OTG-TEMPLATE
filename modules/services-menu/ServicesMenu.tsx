@@ -4,6 +4,7 @@ import { SERVICES, SERVICE_SUBCATEGORIES as SUB_CATEGORIES } from '../../site.co
 import { ClientReviews } from '../../components/ClientReviews';
 import { CheckoutModal, CheckoutService } from './CheckoutModal';
 import { EventCoverage } from './EventCoverage';
+import { ScrollHint } from './ScrollHint';
 
 interface Props {
   isOpen: boolean;
@@ -228,14 +229,14 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
 
         {/* QUICK JUMP — one tap to any category, so phone visitors don't scroll blind */}
         {!q && (
-          <nav id="sm-jump" className="sm-jump" aria-label="Jump to a service category">
+          <ScrollHint axis="x" id="sm-jump" role="navigation" aria-label="Jump to a service category" wrapperClassName="sm-jump-wrap" className="sm-jump" fadeColor="#f8bc0a" accentBg="#14100a" accentFg="#ffd23f" label="Scroll right for more categories">
             {SUB_CATEGORIES.filter((sub) => sub.serviceIds.some((id) => SERVICE_MAP[id])).map((sub) => (
               <a key={sub.id} href={`#sm-cat-${sub.id}`} className="sm-jump-chip"
                 onClick={(e) => { e.preventDefault(); document.getElementById(`sm-cat-${sub.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
                 <span aria-hidden="true">{sub.emoji}</span> {sub.label}
               </a>
             ))}
-          </nav>
+          </ScrollHint>
         )}
 
         {/* SUB-CATEGORIES */}

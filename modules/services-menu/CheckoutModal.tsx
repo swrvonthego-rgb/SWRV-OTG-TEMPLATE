@@ -1,3 +1,4 @@
+import { ScrollHint } from './ScrollHint';
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
@@ -168,7 +169,7 @@ export function CheckoutModal({ service, onClose }: Props) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <ScrollHint axis="y" wrapperClassName="flex-1 min-h-0 flex flex-col" className="flex-1 overflow-y-auto px-6 py-6" fadeColor="rgba(10,8,4,0.98)" accentBg="#c8a84b" accentFg="#0a0804">
           {/* ── STEP 1: CALENDAR ── */}
           {step === 'date' && (
             <div>
@@ -393,7 +394,7 @@ export function CheckoutModal({ service, onClose }: Props) {
               </form>
             </div>
           )}
-        </div>
+        </ScrollHint>
       </div>
     </div>
   );
