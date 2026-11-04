@@ -1631,8 +1631,9 @@ PRINT — hide new bottom CTA to keep printout clean
 .roadmap-experience .consult-list{list-style:none;margin:0 auto 24px;padding:0;display:flex;flex-direction:column;gap:8px;max-width:360px;text-align:left;font-size:15px;color:var(--ink-mid);}
 .roadmap-experience .consult-list li::before{content:'✓';color:var(--accent-1);margin-right:10px;font-weight:700;}
 
-/* Opt-in intro video button */
-.roadmap-experience .video-help-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:360px;margin:0 auto 28px;padding:14px 18px;min-height:48px;
-  background:transparent;border:1px solid var(--accent-1);border-radius:12px;color:var(--ink-bright);font:inherit;font-size:15px;line-height:1.35;text-align:left;cursor:pointer;}
-.roadmap-experience .video-help-btn:hover{background:rgba(255,255,255,.06);}
-.roadmap-experience .video-help-btn span{color:var(--accent-1);font-size:18px;flex-shrink:0;}
+/* Opt-in intro video button — solid dark plate so it never blends into the map */
+.roadmap-experience .video-help-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:360px;margin:0 auto 28px;padding:14px 18px;min-height:56px;
+  background:rgba(8,12,20,.94);border:2px solid #e8c96a;border-radius:14px;color:#fff;font:inherit;font-size:16px;font-weight:600;line-height:1.35;text-align:left;cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,.55),0 0 0 4px rgba(8,12,20,.35);}
+.roadmap-experience .video-help-btn:hover{background:#000;box-shadow:0 8px 28px rgba(0,0,0,.7),0 0 18px rgba(232,201,106,.45);}
+.roadmap-experience .video-help-btn span{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#e8c96a;color:#0a0804;font-size:14px;flex-shrink:0;}
