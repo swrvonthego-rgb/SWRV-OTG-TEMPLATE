@@ -954,3 +954,22 @@
   .services-menu .sm-jump-wrap { margin: -24px -20px 40px; }
   .services-menu .sm-jump-wrap .sm-jump { margin: 0; padding: 0 20px 6px; }
 }
+
+/* ── BOTTOM PANELS (Roadmap start + custom package) — match the cards ── */
+.services-menu .sm-panel {
+  margin: 0 0 32px;
+  padding: 40px 28px;
+  background: #14100a;
+  color: #ede8dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+.services-menu .sm-panel .sm-footer-eyebrow { color: #ff7a2e; }
+.services-menu .sm-panel .sm-footer-title { color: #ede8dc; }
+.services-menu .sm-panel .sm-footer-body { color: rgba(237, 232, 220, 0.8); }
+.services-menu .sm-panel .sm-panel-btn { width: 100%; max-width: 360px; margin: 0 auto; }
+/* The page footer sits straight on the yellow: no dark box, dark text. */
+.services-menu .sm-footer { background: none; border: none; box-shadow: none; padding: 24px 0 0; margin-top: 40px; }
+.services-menu .sm-footer-copy { color: var(--sm-ink); opacity: 0.7; margin-top: 0; }

@@ -297,9 +297,24 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           </div>
         )}
 
+        {/* START WITH THE ROADMAP — step 1 of a consultation; the $100 session comes after */}
+        {!q && (
+          <section className="sm-panel sm-start">
+            <p className="sm-footer-eyebrow">NOT SURE WHERE TO START?</p>
+            <h2 className="sm-footer-title">Start with a consultation</h2>
+            <p className="sm-footer-body">
+              Step 1 is free: take The Roadmap, about 10 minutes, and tell us where you want to go.
+              Once we know what you want to do, book your one-on-one consultation with Swerve for $100.
+            </p>
+            <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => window.dispatchEvent(new CustomEvent('swrv:open-roadmap'))}>
+              Start The Roadmap →
+            </button>
+          </section>
+        )}
+
         {/* CUSTOM BOOKING CTA */}
         {!q && (
-          <section className="sm-custom-booking">
+          <section className="sm-panel sm-custom-booking">
             <p className="sm-footer-eyebrow">NEED SOMETHING CUSTOM?</p>
             <h2 className="sm-footer-title">Don't see your exact package?</h2>
             <p className="sm-footer-body">
@@ -307,7 +322,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             </p>
             <button
               type="button"
-              className="sm-cta-btn"
+              className="sm-book-btn sm-panel-btn"
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: 'custom', name: 'Custom Service Request' } }));
                 onClose?.();

@@ -244,6 +244,9 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   // ── First-run walkthrough (coach-marks) ─────────────────────────────
   const TOUR_KEY = 'swrv_rm_tour_v1';
   const [tourOpen, setTourOpen] = useState(false);
+  // Step 2 of the consultation: the $100 Brand Plan Consultation, booked from the results.
+  const [consultCheckout, setConsultCheckout] = useState<CheckoutService | null>(null);
+  const consultSvc = SERVICES.find((x) => x.id === 'brand-consultation');
   const TOUR_STEPS: TourStep[] = [
     {
       selector: '.music-toggle',
