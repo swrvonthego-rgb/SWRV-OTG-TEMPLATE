@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import './roadmap.css';
 import { RoadmapConfig, SWRV_ROADMAP_CONFIG, Theme } from './config';
 import { RoadmapResult, ScreenId } from './types';
@@ -8,6 +9,7 @@ import { PHASE_2_QUESTIONS } from './phase2-questions';
 import { isRoadmapStartIntent } from '../../deepLink';
 import { attributionSummary } from '../../attribution';
 import { RoadmapTour, TourStep } from './RoadmapTour';
+import { CheckoutModal, type CheckoutService } from '../services-menu/CheckoutModal';
 
 // ── Mic guide + live status ───────────────────────────────────────────
 // A small legend that shows the visitor how the voice button works — tap
@@ -177,6 +179,30 @@ const ls = {
 // ════════════════════════════════════════════════════════════
 // COMPONENT
 // ════════════════════════════════════════════════════════════
+// ── Match the AI's recommended service names to the real catalog ──────────
+// The AI sometimes varies punctuation or wording ("Website — The Ecosystem",
+// non-breaking hyphens, "Social Media — Daily Content"), so exact matching
+// misses. Normalize, then fall back to the best word overlap.
+const normName = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+function matchService(name: string): (typeof SERVICES)[number] | undefined {
+  const n = normName(name || '');
+  if (!n) return undefined;
+  const exact = SERVICES.find((x) => normName(x.name) === n);
+  if (exact) return exact;
+  const words = new Set(n.split(' ').filter((w) => w.length > 2));
+  let best: (typeof SERVICES)[number] | undefined;
+  let bestScore = 0;
+  for (const svc of SERVICES) {
+    const sw = new Set(normName(svc.name).split(' ').filter((w) => w.length > 2));
+    if (!sw.size || !words.size) continue;
+    let hit = 0;
+    sw.forEach((w) => { if (words.has(w)) hit++; });
+    const score = hit / Math.max(sw.size, words.size);
+    if (score > bestScore) { bestScore = score; best = svc; }
+  }
+  return bestScore >= 0.6 ? best : undefined;
+}
+
 export const Roadmap: React.FC<RoadmapProps> = ({
   isOpen,
   onClose,
@@ -243,6 +269,8 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   // ── First-run walkthrough (coach-marks) ─────────────────────────────
   const TOUR_KEY = 'swrv_rm_tour_v1';
   const [tourOpen, setTourOpen] = useState(false);
+  // A recommended package the visitor chose to book straight from their results.
+  const [bookService, setBookService] = useState<CheckoutService | null>(null);
   const TOUR_STEPS: TourStep[] = [
     {
       selector: '.music-toggle',
@@ -1273,6 +1301,31 @@ const handleSave = useCallback(() => {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  // Real catalog price + a booking button for one of the AI's recommended services.
+  const renderPriceAndBook = (name: string) => {
+    const svc = matchService(name);
+    if (!svc) return null;
+    return (
+      <>
+        <div className="svc-price">{svc.price}</div>
+        {svc.checkoutEnabled ? (
+          <button type="button" className="svc-book-btn"
+            onClick={() => setBookService({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory })}>
+            Book now →
+          </button>
+        ) : (
+          <button type="button" className="svc-book-btn svc-book-alt"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('swrv:roadmap-recommendations', { detail: [svc.name] }));
+              onOpenServices?.();
+            }}>
+            See details &amp; get a quote →
+          </button>
+        )}
+      </>
+    );
+  };
+
   return (
     <div
       className="roadmap-experience"
@@ -2058,6 +2111,8 @@ const handleSave = useCallback(() => {
               )}
 
               {/* ── SERVICE CHAIN ── */}
+              {/* Price + booking for a recommended service, from the real catalog */}
+
               <div className="r-card">
                 <div className="r-label">Your Full Roadmap to Reality — {config.brandName} Services</div>
                 <p className="svc-chain-intro">Ordered as you would actually use them — each one builds on or enables the next.</p>
@@ -2076,7 +2131,7 @@ const handleSave = useCallback(() => {
                             <div className="svc-content">
                               <div className="svc-name">{s.name}</div>
                               <div className="svc-why">{s.why}</div>
-                              <div className="svc-price">{s.price}</div>
+                              {renderPriceAndBook(s.name)}
                             </div>
                           </div>
                         ))}
@@ -2092,6 +2147,7 @@ const handleSave = useCallback(() => {
                         <div className="svc-content">
                           <div className="svc-name">{s.name}</div>
                           <div className="svc-why">{s.why}</div>
+                          {renderPriceAndBook(s.name)}
                           {/* Component breakdown */}
                           {(s as any).components?.length > 0 && (
                             <div className="svc-components">
@@ -2269,7 +2325,7 @@ const handleSave = useCallback(() => {
                     className="btn-cta"
                     onClick={() => {
                       // Broadcast recommended services so ServicesMenu highlights them
-                      const names = (result.recommended_services || []).map(s => s.name);
+                      const names = (result.recommended_services || []).map(s => matchService(s.name)?.name || s.name);
                       window.dispatchEvent(new CustomEvent('swrv:roadmap-recommendations', { detail: names }));
                       onOpenServices();
                     }}
@@ -2289,6 +2345,15 @@ const handleSave = useCallback(() => {
           </>
         ) : null}
       </section>
+
+      {/* Rendered at the page level (not inside .roadmap-experience) so the Roadmap's
+          CSS reset doesn't strip the checkout's spacing, and above the Roadmap overlay. */}
+      {bookService && createPortal(
+        <div style={{ position: 'relative', zIndex: 10001 }}>
+          <CheckoutModal service={bookService} onClose={() => setBookService(null)} />
+        </div>,
+        document.body,
+      )}
 
       {toast && <div id="toast" className="show">{toast}</div>}
     </div>

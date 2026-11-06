@@ -1644,3 +1644,8 @@ PRINT — hide new bottom CTA to keep printout clean
 .roadmap-experience .field-label{display:inline-block;opacity:1;color:#0a0804;background:#e8c96a;font-weight:800;font-size:13px;letter-spacing:.14em;padding:7px 14px;border-radius:999px;margin-bottom:14px;}
 .roadmap-experience .name-field-wrap .text-input{background:rgba(8,12,20,.96);border:2px solid #e8c96a;box-shadow:0 0 0 4px rgba(8,12,20,.45),0 0 24px rgba(232,201,106,.35);}
 .roadmap-experience .text-input::placeholder{color:rgba(255,255,255,.7);-webkit-text-fill-color:rgba(255,255,255,.7);}
+
+/* Book buttons on recommended services */
+.roadmap-experience .svc-book-btn{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 20px;border:none;border-radius:999px;
+  background:linear-gradient(135deg,#ff5a00,#ff7a2e);color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+.roadmap-experience .svc-book-alt{background:transparent;border:2px solid var(--accent-1);color:var(--ink-bright);}
