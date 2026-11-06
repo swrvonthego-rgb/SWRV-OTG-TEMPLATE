@@ -25,7 +25,7 @@ const MENU_GROUPS: MenuGroup[] = [
     items: [
       { label: 'Creative Services',        sub: 'Video, audio, content',       action: { kind: 'link', to: '/content' } },
       { label: 'Website Design',           sub: '$300 templates + custom',     action: { kind: 'link', to: '/website-design' } },
-      { label: 'Zion & Artist Development',sub: 'Book Zion + mentorship',      action: { kind: 'link', to: '/zion' } },
+      { label: 'Zion & Artist Development',sub: 'Book Zion + mentorship',      action: { kind: 'link', to: '/zionswrvbirdsong' } },
       { label: 'The SWRV Family',          sub: 'Bible, BYOB, Birdsong Method',action: { kind: 'link', to: '/family' } },
       { label: 'About, Shop & Contact',    sub: 'Our story, merch, booking',   action: { kind: 'link', to: '/about' } },
     ],
@@ -78,7 +78,7 @@ export const Header: React.FC = () => {
           navigate('/roadmap');
           break;
         case 'zionSection':
-          navigate('/zion');
+          navigate('/zionswrvbirdsong');
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: action.section }));
           }, 350);
