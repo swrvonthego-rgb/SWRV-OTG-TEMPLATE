@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 // ── Suite pages ──────────────────────────────────────────────
+import { Lobby } from './pages/Lobby';
 import { CreativeServicesPage } from './pages/CreativeServicesPage';
 import { WebsiteDesignPage } from './pages/WebsiteDesignPage';
 import { ZionSuitePage } from './pages/ZionSuitePage';
@@ -97,14 +98,14 @@ const AppShell: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const handler = () => navigate('/');
+    const handler = () => navigate('/content');
     window.addEventListener('swrv:open-services', handler);
     return () => window.removeEventListener('swrv:open-services', handler);
   }, [navigate]);
 
   useEffect(() => {
     const handler = () => {
-      navigate('/zion');
+      navigate('/zionswrvbirdsong');
       // Let Zion mount, then jump to #booking via its existing section listener.
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('swrv:zion-section', { detail: 'booking' }));
@@ -130,14 +131,14 @@ const AppShell: React.FC = () => {
     <>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
-        <Route path="/" element={<CreativeServicesPage />} />
+        <Route path="/" element={<Lobby />} />
         <Route
           path="/roadmap"
           element={
             <Roadmap
               isOpen={true}
               onClose={() => navigate('/')}
-              onOpenServices={() => navigate('/')}
+              onOpenServices={() => navigate('/content')}
               tenantSlug={visionTenantSlug()}
             />
           }
@@ -148,16 +149,16 @@ const AppShell: React.FC = () => {
             <Roadmap
               isOpen={true}
               onClose={() => navigate('/')}
-              onOpenServices={() => navigate('/')}
+              onOpenServices={() => navigate('/content')}
               tenantSlug={visionTenantSlug()}
             />
           }
         />
-        <Route path="/content" element={<KeepQueryRedirect to="/" />} />
-        {/* The services page is now the front page; /content and old addresses land there */}
-        <Route path="/creative-services" element={<KeepQueryRedirect to="/" />} />
+        <Route path="/content" element={<CreativeServicesPage />} />
+        {/* Old address for the same page — sends visitors to /content */}
+        <Route path="/creative-services" element={<KeepQueryRedirect to="/content" />} />
         <Route path="/website-design" element={<WebsiteDesignPage />} />
-        <Route path="/zion" element={<ZionSuitePage />} />
+        <Route path="/zionswrvbirdsong" element={<ZionSuitePage />} />
         <Route path="/family" element={<FamilyPage />} />
         <Route path="/family/byob" element={<Byob isOpen={true} onClose={() => navigate('/family')} />} />
         <Route path="/family/birdsong" element={<Birdsong isOpen={true} onClose={() => navigate('/family')} />} />
