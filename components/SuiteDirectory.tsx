@@ -41,7 +41,7 @@ const SUITES: Suite[] = [
     suiteNumber: 'Suite 3',
     name: 'Zion & Artist Development',
     blurb: "Book Zion SWRV Birdsong, or dig into the artist development curriculum.",
-    path: '/zion',
+    path: '/zionswrvbirdsong',
     icon: <Mic2 size={28} strokeWidth={1.5} />,
   },
   {
