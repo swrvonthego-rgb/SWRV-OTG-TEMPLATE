@@ -12,6 +12,13 @@ export const BookingConfirmedPage: React.FC = () => {
   const monthly = params.get('plan') === 'monthly';
   // Brand packages continue straight into The Roadmap (see /api/checkout).
   const roadmapNext = params.get('next') === 'roadmap';
+  // Name/email were saved at checkout so the Roadmap opens already filled in.
+  const prefill = new URLSearchParams();
+  const savedName = params.get('n') || '';
+  const savedEmail = params.get('e') || '';
+  if (savedName) prefill.set('name', savedName);
+  if (savedEmail) prefill.set('email', savedEmail);
+  const roadmapHref = prefill.toString() ? `/roadmap?${prefill.toString()}` : '/roadmap';
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#0a0804' }}>
       <div className="max-w-md w-full text-center py-16">
@@ -31,7 +38,7 @@ export const BookingConfirmedPage: React.FC = () => {
             <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
               We build your brand from where it's going, not just where it is. Take The Roadmap (about 10 minutes): walk through your vision and answer the questionnaire, and we'll plan everything we create around it.
             </p>
-            <Link to="/roadmap" className="inline-flex px-6 py-3 rounded-full font-bold text-sm"
+            <Link to={roadmapHref} className="inline-flex px-6 py-3 rounded-full font-bold text-sm"
               style={{ background: 'linear-gradient(135deg, #FF4D00, #ff7433)', color: '#fff' }}>
               Start The Roadmap →
             </Link>

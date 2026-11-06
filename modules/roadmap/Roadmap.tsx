@@ -365,8 +365,15 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [progress, setProgress] = useState(0);
 
   // ── User input ────────────────────────────────────────────
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  // The link sent after a paid consultation carries ?name= and ?email=, so
+  // they never retype it and their Roadmap is tied to their payment.
+  const linkParam = (k: string) => {
+    if (typeof window === 'undefined') return '';
+    const v = new URLSearchParams(window.location.search).get(k) || '';
+    return k === 'email' ? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? v : '') : v.slice(0, 60);
+  };
+  const [userName, setUserName] = useState(() => linkParam('name'));
+  const [userEmail, setUserEmail] = useState(() => linkParam('email'));
   const [nameError, setNameError] = useState(false);
   const [vision, setVision] = useState('');
   // Results screen email form

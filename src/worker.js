@@ -662,6 +662,40 @@ async function saveVisionSubmission(env, tenantSlug, { email, name, rawVision, r
   }
 }
 
+
+// When someone who has already paid for the Brand Plan Consultation finishes
+// their Roadmap, email the owner their answers and recommended packages, so
+// the call can start prepared with no chasing. Matched by checkout email.
+async function notifyOwnerPaidRoadmapDone(env, { email, name, rawVision, parsed }) {
+  try {
+    if (!email || !env.EMAIL_DB) return;
+    await ensureOrdersTable(env);
+    const order = await env.EMAIL_DB.prepare(
+      `SELECT * FROM orders WHERE lower(customer_email) = lower(?) AND service_id = 'brand-consultation'
+         AND status IN ('paid_in_full','deposit_paid') ORDER BY id DESC LIMIT 1`
+    ).bind(email).first();
+    if (!order) return;
+    const safe = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const recs = (parsed.recommended_services || [])
+      .map((s) => `<li><strong>${safe(s.name)}</strong> (${safe(s.phase || '')}) — ${safe(s.why || '')}</li>`).join('');
+    const notifyTo = env.NOTIFY_EMAIL || env.ZION_NOTIFY_EMAIL || 'info@swrvonthego.pro';
+    await resendPost(env, {
+      from: env.EMAIL_FROM || 'SWRV <hello@swrvonthego.pro>',
+      to: ownerInbox(env, notifyTo),
+      subject: `Roadmap finished: ${name || order.customer_name || email} (paid consultation)`,
+      html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1a1a1a;">
+        <h2 style="margin:0 0 8px">${safe(name || order.customer_name || 'A client')} finished their Roadmap</h2>
+        <p style="color:#555;font-size:14px;">Paid consultation · preferred date: <strong>${safe(order.start_date || 'not given')}</strong> · ${safe(order.customer_email)}</p>
+        <h3>Their vision</h3><p style="font-size:14px;line-height:1.6;">${safe(rawVision).replace(/\n/g, '<br>')}</p>
+        <h3>Gift / purpose</h3><p style="font-size:14px;line-height:1.6;">${safe(parsed.gift)}<br>${safe(parsed.purpose)}</p>
+        <h3>Packages the Roadmap recommended</h3><ul style="font-size:14px;line-height:1.6;">${recs || '<li>None</li>'}</ul>
+      </div>`,
+    });
+  } catch (err) {
+    console.error('notifyOwnerPaidRoadmapDone failed:', err);
+  }
+}
+
 // Notifies the tenant's human contact when the AI can't confidently match
 // the vision to their catalog — reuses the same hardened Resend path as
 // every other outbound email on this Worker.
@@ -1033,6 +1067,7 @@ async function handleRoadmap(request, env) {
       const name = body.name || null;
       const rawVision = body.rawVision || '';
       await saveVisionSubmission(env, tenantSlug, { email, name, rawVision, resultJson: text, confidenceScore, escalated });
+      await notifyOwnerPaidRoadmapDone(env, { email, name, rawVision, parsed });
       if (escalated) {
         await sendEscalationEmail(env, tenantConfig, { email, name, rawVision, confidenceScore });
       }
@@ -2138,7 +2173,7 @@ async function handleCheckout(request, env) {
 
     const safeOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://swrvonthego.pro';
     // Brand packages send the client on to The Roadmap after paying.
-    const nextStep = svc.roadmapAfterPurchase ? '&next=roadmap' : '';
+    const nextStep = svc.roadmapAfterPurchase ? `&next=roadmap&e=${encodeURIComponent(customerEmail || '')}&n=${encodeURIComponent((customerName || '').slice(0, 60))}` : '';
     const metadata = { service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(',') };
     const session = category === 'monthly' ? await stripeRequest(env, 'POST', 'checkout/sessions', {
       mode: 'subscription',
@@ -2688,7 +2723,7 @@ function roadmapStepHtml(order) {
   return `<div style="margin:20px 0;padding:16px;border-left:3px solid #c8a84b;background:#faf6ea;">
         <p style="margin:0 0 6px;font-size:14px;font-weight:600;">Your next step: The Roadmap</p>
         <p style="margin:0 0 10px;color:#555;font-size:13px;line-height:1.6;">We build your brand from your long-term vision. Take The Roadmap (about 10 minutes): walk through your vision and answer the questionnaire, and we'll use it to plan everything we create for you.</p>
-        <a href="https://swrvonthego.pro/roadmap" style="display:inline-block;padding:10px 18px;background:#FF4D00;color:#fff;text-decoration:none;border-radius:999px;font-size:13px;font-weight:600;">Start The Roadmap →</a>
+        <a href="https://swrvonthego.pro/roadmap?email=${encodeURIComponent(order.customer_email || '')}&name=${encodeURIComponent((order.customer_name || '').slice(0, 60))}" style="display:inline-block;padding:10px 18px;background:#FF4D00;color:#fff;text-decoration:none;border-radius:999px;font-size:13px;font-weight:600;">Start The Roadmap →</a>
       </div>`;
 }
 
