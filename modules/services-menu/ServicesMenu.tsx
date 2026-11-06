@@ -4,43 +4,21 @@ import { SERVICES, SERVICE_SUBCATEGORIES as SUB_CATEGORIES } from '../../site.co
 import { ClientReviews } from '../../components/ClientReviews';
 import { CheckoutModal, CheckoutService } from './CheckoutModal';
 import { EventCoverage } from './EventCoverage';
-import { ScrollHint } from './ScrollHint';
-import { useNavigate } from 'react-router-dom';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onBookStrategyCall?: () => void;
-  /** Rendered as the site's front page: no close button. */
-  isHome?: boolean;
 }
 
 // Build lookup map: serviceId → service
 const SERVICE_MAP: Record<string, typeof SERVICES[0]> = {};
 SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 
-// The poster's pixel size and the four tappable cards on it (source pixels).
-// Poster's lower part (headline + cards), source pixels; the logo above it is the intro video.
-const POSTER = { w: 941, h: 535 };
-const POSTER_HOTSPOTS = [
-  { x: 28,  y: 243, w: 444, hh: 124, target: 'sm-coverage',          label: 'Professional content filming — see content packages' },
-  { x: 478, y: 243, w: 438, hh: 124, target: 'sm-cat-web-digital',   label: 'Websites and digital presence' },
-  { x: 28,  y: 388, w: 444, hh: 125, target: 'sm-cat-videography',   label: 'AI-powered content creation' },
-  { x: 478, y: 388, w: 438, hh: 125, target: 'sm-cat-social-media',  label: 'Brand and social media support' },
-];
-const scrollToId = (id: string) =>
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-// Singing, live performance and speaking are booked on Zion's own page, so
-// they're not repeated here as a category — a single panel points there.
-const HOME_CATEGORIES = SUB_CATEGORIES.filter((c) => c.id !== 'zion-vocals');
-
-export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Props) {
-  const navigate = useNavigate();
+export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [roadmapRecs, setRoadmapRecs] = useState<string[]>([]);
   const [checkoutService, setCheckoutService] = useState<CheckoutService | null>(null);
-  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   // Listen for Roadmap recommendations broadcast
   useEffect(() => {
@@ -72,18 +50,21 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
       return (
         <div className="sm-card-cta-row">
           <button type="button" className="sm-book-btn" onClick={() => setCheckoutService({ id: svc.id, name: svc.name, priceNumeric: svc.priceNumeric, checkoutCategory: svc.checkoutCategory })}>
-            {svc.checkoutCategory === 'monthly' ? 'Start monthly plan →' : svc.payInFull ? `Book now · ${svc.price} →` : 'Book now · pay 50% today →'}
+            {svc.checkoutCategory === 'monthly' ? 'Start Monthly Plan →' : svc.payInFull ? `Book & Pay ${svc.price} →` : 'Book & Pay 50% →'}
           </button>
-          <button type="button" className="sm-quote-link" onClick={openIntake}>
+          <a
+            href={`mailto:info@swrvonthego.pro?subject=Question about ${encodeURIComponent(svc.name)}`}
+            className="sm-quote-link"
+          >
             Have a question? Ask us →
-          </button>
+          </a>
         </div>
       );
     }
     return (
       <div className="sm-card-cta-row">
         <button type="button" className="sm-intake-btn" onClick={openIntake}>
-          Get a quote →
+          Request a Quote →
         </button>
       </div>
     );
@@ -109,74 +90,25 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
 
   return (
     <div className="services-menu" role="dialog" aria-modal="true">
-      {!isHome && (
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close services menu"
-          className="sm-close"
-        >×</button>
-      )}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close services menu"
+        className="sm-close"
+      >×</button>
 
       <div className="sm-inner">
-        {/* HERO POSTER — each card on the poster jumps to its section below */}
-        <div className="sm-poster">
-          <div className="sm-poster-frame">
-            <div className="sm-stage">
-              {/* Final frame sits underneath: it's the still for reduced-motion users and while the video loads. */}
-              <img src="/images/logo-intro-final.webp" alt="SWRV On-The-Go logo" className="sm-stage-media" width={900} height={834} fetchPriority="high" />
-              {!reduceMotion && (
-                <video
-                  className="sm-stage-media sm-stage-video"
-                  src="/images/logo-intro.mp4"
-                  autoPlay
-                  muted
-                  playsInline
-                  preload="auto"
-                  aria-hidden="true"
-                />
-              )}
-            </div>
-            <div className="sm-poster-lower" style={{ aspectRatio: `${POSTER.w} / ${POSTER.h}` }}>
-            <img
-              src="/images/content-hero-bottom.webp"
-              alt="Your vision. Our creative engine: professional content filming, websites and digital presence, AI-powered content creation, brand and social media support."
-              className="sm-poster-img"
-              width={POSTER.w}
-              height={POSTER.h}
-            />
-            {POSTER_HOTSPOTS.map((h) => (
-              <a
-                key={h.target}
-                href={`#${h.target}`}
-                aria-label={h.label}
-                className="sm-poster-hit"
-                style={{
-                  left: `${(h.x / POSTER.w) * 100}%`,
-                  top: `${(h.y / POSTER.h) * 100}%`,
-                  width: `${(h.w / POSTER.w) * 100}%`,
-                  height: `${(h.hh / POSTER.h) * 100}%`,
-                }}
-                onClick={(e) => { e.preventDefault(); scrollToId(h.target); }}
-              />
-            ))}
-            </div>
-          </div>
-          <p className="sm-poster-hint">Tap a card to go straight to it</p>
-          <button type="button" className="sm-poster-cta" onClick={() => scrollToId('sm-jump')}>
-            See all packages ↓
-          </button>
+        {/* HERO IMAGE — Leader of the Revolution */}
+        <div className="sm-hero-image">
+          <img
+            src="https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/1752950982581945_2_kk3jt3_ui7upw.png"
+            alt="Leader of the Revolution — SWRV On The Go"
+            className="sm-hero-img"
+          />
+          <p className="sm-hero-caption">LEADER OF THE REVOLUTION</p>
         </div>
 
-        {/* HOW IT WORKS — three plain steps */}
-        <ol className="sm-steps" aria-label="How it works">
-          <li><span className="sm-step-num">1</span><strong>Pick it</strong><span>Tap what you need.</span></li>
-          <li><span className="sm-step-num">2</span><strong>Book it</strong><span>Choose a date. Pay to lock it in.</span></li>
-          <li><span className="sm-step-num">3</span><strong>We deliver</strong><span>You're on the road. We do the rest.</span></li>
-        </ol>
-
-        {/* SWRV CONTENT — category picker + fixed, bookable tiers */}
-        <div id="sm-coverage">
+        {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers */}
         <EventCoverage
           onBook={(svc) => setCheckoutService(svc)}
           onIntake={(id, name, path) => {
@@ -184,7 +116,6 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
             onClose?.();
           }}
         />
-        </div>
 
         {/* ROADMAP RECOMMENDATIONS — shown only when coming from Roadmap CTA */}
         {roadmapRecs.length > 0 && (
@@ -229,14 +160,14 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
 
         {/* HEADER */}
         <header className="sm-header">
-          <p className="sm-eyebrow">SWRV ON THE GO</p>
-          <h1 className="sm-title">What do you need?<br/><span className="sm-title-accent">Pick your lane.</span></h1>
+          <p className="sm-eyebrow">FULL SERVICE MENU</p>
+          <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
           <p className="sm-intro">
-            Choose a package. Pick a date. Pay right here. We handle the rest. You can pay in installments with Affirm, Klarna or Afterpay.
+            Event coverage, music production, music videos, websites, social media and more — pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
           </p>
           <input
             type="search"
-            placeholder="Search (try: website, video, posts)"
+            placeholder="Search services..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="sm-search"
@@ -244,30 +175,15 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
           />
         </header>
 
-        {/* QUICK JUMP — one tap to any category, so phone visitors don't scroll blind */}
-        {!q && (
-          <ScrollHint axis="x" id="sm-jump" role="navigation" aria-label="Jump to a service category" wrapperClassName="sm-jump-wrap" className="sm-jump" fadeColor="#f8bc0a" accentBg="#14100a" accentFg="#ffd23f" label="Scroll right for more categories">
-            {HOME_CATEGORIES.filter((sub) => sub.serviceIds.some((id) => SERVICE_MAP[id])).map((sub) => (
-              <a key={sub.id} href={`#sm-cat-${sub.id}`} className="sm-jump-chip"
-                onClick={(e) => { e.preventDefault(); document.getElementById(`sm-cat-${sub.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
-                <span aria-hidden="true">{sub.emoji}</span> {sub.label}
-              </a>
-            ))}
-            <a href="/zion" className="sm-jump-chip" onClick={(e) => { e.preventDefault(); navigate('/zion'); }}>
-              <span aria-hidden="true">🎤</span> Zion SWRV Birdsong
-            </a>
-          </ScrollHint>
-        )}
-
         {/* SUB-CATEGORIES */}
-        {HOME_CATEGORIES.map((sub) => {
+        {SUB_CATEGORIES.map((sub) => {
           const items = sub.serviceIds
             .map((id) => SERVICE_MAP[id])
             .filter(Boolean)
             .filter(filterFn);
           if (items.length === 0) return null;
           return (
-            <section key={sub.id} id={`sm-cat-${sub.id}`} className="sm-category">
+            <section key={sub.id} className="sm-category">
               <div className="sm-cat-header">
                 <span className="sm-cat-emoji">{sub.emoji}</span>
                 <div className="sm-cat-text">
@@ -307,7 +223,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
         {!q && <ClientReviews />}
 
         {/* EMPTY STATE — shown when search returns nothing */}
-        {q && !HOME_CATEGORIES.some(sub =>
+        {q && !SUB_CATEGORIES.some(sub =>
           sub.serviceIds.map(id => SERVICE_MAP[id]).filter(Boolean).filter(filterFn).length > 0
         ) && (
           <div className="sm-empty-state">
@@ -317,33 +233,17 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
           </div>
         )}
 
-        {/* START WITH THE ROADMAP — step 1 of a consultation; the $100 session comes after */}
-        {!q && (
-          <section className="sm-panel sm-start">
-            <p className="sm-footer-eyebrow">NOT SURE? START HERE</p>
-            <h2 className="sm-footer-title">Book a consultation</h2>
-            <p className="sm-footer-body">
-              Step 1: book and pay $100. Pick your date.
-              Step 2: right after you pay, answer a short questionnaire (about 10 minutes) so SWRV comes prepared.
-              Step 3: we talk and make your plan.
-            </p>
-            <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => { const c = SERVICES.find((x) => x.id === 'brand-consultation'); if (c) setCheckoutService({ id: c.id, name: c.name, priceNumeric: c.priceNumeric, checkoutCategory: c.checkoutCategory }); }}>
-              Book consultation · $100 →
-            </button>
-          </section>
-        )}
-
         {/* CUSTOM BOOKING CTA */}
         {!q && (
-          <section className="sm-panel sm-custom-booking">
-            <p className="sm-footer-eyebrow">DON'T SEE IT?</p>
-            <h2 className="sm-footer-title">We'll build it for you</h2>
+          <section className="sm-custom-booking">
+            <p className="sm-footer-eyebrow">NEED SOMETHING CUSTOM?</p>
+            <h2 className="sm-footer-title">Don't see your exact package?</h2>
             <p className="sm-footer-body">
-              Tell us what you need. We'll send you a quote. No back-and-forth.
+              Working on something that doesn't fit a price sheet? Build a bundle, get a custom quote, or just tell us what you're working on. No back-and-forth — we'll put it together.
             </p>
             <button
               type="button"
-              className="sm-book-btn sm-panel-btn"
+              className="sm-cta-btn"
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id: 'custom', name: 'Custom Service Request' } }));
                 onClose?.();
@@ -354,29 +254,8 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall, isHome }: Pr
           </section>
         )}
 
-        {/* ZION SWRV BIRDSONG — singing, live performance, speaking */}
-        {!q && (
-          <section className="sm-panel sm-zion">
-            <p className="sm-footer-eyebrow">MUSIC &amp; LIVE</p>
-            <h2 className="sm-footer-title">Zion SWRV Birdsong</h2>
-            <p className="sm-footer-body">
-              Need live singing, vocals on your song, or a speaker for your event? Book him on his own page.
-            </p>
-            <button type="button" className="sm-book-btn sm-panel-btn" onClick={() => navigate('/zion')}>
-              Book Zion SWRV Birdsong →
-            </button>
-          </section>
-        )}
-
         {/* CTA FOOTER */}
         <footer className="sm-footer">
-          <nav className="sm-footer-links" aria-label="More from SWRV On The Go">
-            <a href="/about" onClick={(e) => { e.preventDefault(); navigate('/about'); }}>About, Shop &amp; Contact</a>
-            <a href="/family" onClick={(e) => { e.preventDefault(); navigate('/family'); }}>The SWRV Family</a>
-            <a href="https://instagram.com/swrvonthego" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a href="/privacy.html">Privacy</a>
-            <a href="/terms.html">Terms</a>
-          </nav>
           <p className="sm-footer-copy">© {new Date().getFullYear()} SWRV On The Go · swrvonthego.pro</p>
         </footer>
       </div>
