@@ -288,7 +288,7 @@ export const ScrollLanding: React.FC = () => {
         <div className="sl2-panel sl2-reveal" ref={panelRef}>
           <p className="sl2-mono sl2-mono-light">NOT SURE WHERE TO START?</p>
           <h2>Book a consultation.</h2>
-          <p>Step 1: book and pay $100, and pick your date. Step 2: right after you pay, your Roadmap unlocks. It's a short questionnaire so SWRV comes prepared. Step 3: we talk and build your plan.</p>
+          <p>Step 1: book and pay $100, and pick your date. Step 2: right after you pay, your Roadmap unlocks. It's a short questionnaire so SWRV comes prepared. Step 3: we talk and build your plan. The $100 pays for SWRV's time. Projects are priced and paid for separately.</p>
           <Jewel onClick={openConsult} />
         </div>
       </section>

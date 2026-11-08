@@ -1389,7 +1389,7 @@ const handleSave = useCallback(() => {
               <p className="rm-gate-eyebrow">THE ROADMAP</p>
               <h2>Part of your consultation</h2>
               <p className="rm-gate-body">
-                The Roadmap unlocks the moment you book your $100 Brand Plan Consultation. Pay, pick your date, and you'll be sent straight in.
+                The Roadmap unlocks the moment you book your $100 Brand Plan Consultation. Pay, pick your date, and you'll be sent straight in. The $100 pays for SWRV's time; projects are separate.
               </p>
               <ol className="rm-gate-steps">
                 <li><b>1</b> Book and pay $100</li>

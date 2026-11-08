@@ -661,7 +661,7 @@ export const ALL_SERVICES: Service[] = [
     checkoutEnabled: true,
     checkoutCategory: 'project',
     payInFull: true,
-    terms: "Paid in full when you book. Pick your preferred date and we'll confirm the exact time with you. Before your session, take The Roadmap so we can start from your long-term vision.",
+    terms: "Paid in full when you book. Your $100 pays for your time with SWRV. It is not a deposit and it is not credited toward any project; projects are quoted and paid for separately. Pick your preferred date and we'll confirm the exact time with you. Once you pay, your Roadmap unlocks so we can start from your long-term vision.",
     blurb: 'Clarity on where your brand is going and how to get there. A one-on-one session with SWRV to shape your brand plan: your vision, your audience, your look, and the platforms and next steps that fit.',
     includes: ['One-on-one consultation with SWRV', 'Brand vision and audience review', 'Look, voice and platform recommendations', 'Your brand plan and next steps, in writing', 'The Roadmap, to start from your long-term vision'],
     notIncludes: ['Design work (see the Social Brand Kit)', 'Monthly management (see Social Brand Management)'],
