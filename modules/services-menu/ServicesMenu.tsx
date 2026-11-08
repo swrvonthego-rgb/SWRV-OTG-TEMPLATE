@@ -183,7 +183,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             .filter(filterFn);
           if (items.length === 0) return null;
           return (
-            <section key={sub.id} className="sm-category">
+            <section key={sub.id} id={`sm-cat-${sub.id}`} className="sm-category">
               <div className="sm-cat-header">
                 <span className="sm-cat-emoji">{sub.emoji}</span>
                 <div className="sm-cat-text">

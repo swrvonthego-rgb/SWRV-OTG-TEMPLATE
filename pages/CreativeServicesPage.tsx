@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ServicesMenu } from '../modules/services-menu/ServicesMenu';
 
@@ -8,6 +8,13 @@ import { ServicesMenu } from '../modules/services-menu/ServicesMenu';
 // body directly, full-bleed, exactly as it already looked as an overlay.
 export const CreativeServicesPage: React.FC = () => {
   const navigate = useNavigate();
+  // /content#sm-cat-web-digital etc. (from the landing page) scrolls to that section.
+  useEffect(() => {
+    const id = window.location.hash.replace('#', '');
+    if (!id) return;
+    const t = window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+    return () => window.clearTimeout(t);
+  }, []);
   return (
     <ServicesMenu
       isOpen={true}

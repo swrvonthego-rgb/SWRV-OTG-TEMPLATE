@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 
 // ── Suite pages ──────────────────────────────────────────────
 import { Lobby } from './pages/Lobby';
+import { ScrollLanding } from './pages/ScrollLanding';
 import { CreativeServicesPage } from './pages/CreativeServicesPage';
 import { WebsiteDesignPage } from './pages/WebsiteDesignPage';
 import { ZionSuitePage } from './pages/ZionSuitePage';
@@ -132,6 +133,7 @@ const AppShell: React.FC = () => {
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/" element={<Lobby />} />
+        <Route path="/3d" element={<ScrollLanding />} />
         <Route
           path="/roadmap"
           element={
