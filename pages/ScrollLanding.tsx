@@ -57,7 +57,7 @@ const Frame: React.FC<{ kind: 'desktop' | 'phone'; src?: string; alt?: string; c
 
 // The one button on the page that matters: the $100 consultation. Everything
 // else stays quiet so this is the thing the eye goes to.
-const Jewel: React.FC<{ onClick: () => void; main?: string; sub?: string; className?: string }> = ({ onClick, main = 'Book my consultation', sub = '$100 · your Roadmap unlocks instantly', className = '' }) => (
+const Jewel: React.FC<{ onClick: () => void; main?: string; sub?: string; className?: string }> = ({ onClick, main = 'Book live consultation', sub = '$100 · your Roadmap unlocks instantly', className = '' }) => (
   <span className={`sl2-jewel-wrap ${className}`}>
     <i className="sl2-spark s1" aria-hidden="true">✦</i>
     <i className="sl2-spark s2" aria-hidden="true">✦</i>
@@ -294,7 +294,7 @@ export const ScrollLanding: React.FC = () => {
       </section>
 
       <div className={`sl2-bar ${barOn && !panelSeen ? 'on' : ''}`}>
-        <Jewel onClick={openConsult} main="Book my consultation" sub="$100 · Roadmap unlocks instantly" className="sl2-jewel-bar" />
+        <Jewel onClick={openConsult} main="Book live consultation" sub="$100 · Roadmap unlocks instantly" className="sl2-jewel-bar" />
       </div>
 
       {book && createPortal(<CheckoutModal service={book} onClose={() => setBook(null)} />, document.body)}
