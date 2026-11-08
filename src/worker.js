@@ -844,6 +844,7 @@ export default {
     }
 
     if (url.pathname === '/api/roadmap')        return handleRoadmap(request, env);
+    if (url.pathname === '/api/roadmap-access') return handleRoadmapAccess(request, env);
     if (url.pathname === '/api/chat')           return handleChat(request, env);
     if (url.pathname === '/api/booking')        return handleBooking(request, env);
     if (url.pathname === '/api/intake-ai')      return handleIntakeAI(request, env);
@@ -965,6 +966,54 @@ export default {
 // ─────────────────────────────────────────────────────────
 // AI ROADMAP — Groq
 // ─────────────────────────────────────────────────────────
+
+// ── ROADMAP ACCESS — the Roadmap is only for people who paid ───────────────
+// Paying for the Brand Plan Consultation earns a personal link carrying
+// ?email=…&t=<token>. The token is an HMAC of the lowercase email, so it can't
+// be guessed; it only works while a PAID order exists for that email. The
+// generator (/api/roadmap) and the page both check it. Set ROADMAP_OPEN=1 as
+// a Cloudflare variable to switch the lock off. Other tenants' portals
+// (tenantSlug not 'swrv') are unaffected.
+async function roadmapToken(env, email) {
+  const secret = env.ROADMAP_SECRET || env.STRIPE_WEBHOOK_SECRET || env.STRIPE_SECRET_KEY;
+  if (!secret || !email) return '';
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode('roadmap:' + String(email).trim().toLowerCase()));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
+
+async function hasRoadmapAccess(env, email, token) {
+  try {
+    if (env.ROADMAP_OPEN === '1') return true;
+    if (!email || !token || !env.EMAIL_DB) return false;
+    const expected = await roadmapToken(env, email);
+    if (!expected || expected.length !== String(token).length) return false;
+    let diff = 0;
+    for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ String(token).charCodeAt(i);
+    if (diff !== 0) return false;
+    await ensureOrdersTable(env);
+    const ids = SERVICES.filter((s) => s.roadmapAfterPurchase).map((s) => s.id);
+    if (!ids.length) return false;
+    const marks = ids.map(() => '?').join(',');
+    const row = await env.EMAIL_DB.prepare(
+      `SELECT id FROM orders WHERE lower(customer_email) = lower(?) AND service_id IN (${marks})
+         AND status IN ('paid_in_full','deposit_paid','subscribed') LIMIT 1`
+    ).bind(email, ...ids).first();
+    return !!row;
+  } catch (err) {
+    console.error('hasRoadmapAccess failed:', err);
+    return false;
+  }
+}
+
+async function handleRoadmapAccess(request, env) {
+  const url = new URL(request.url);
+  const email = (url.searchParams.get('email') || '').trim();
+  const token = (url.searchParams.get('t') || '').trim();
+  const ok = await hasRoadmapAccess(env, email, token);
+  return new Response(JSON.stringify({ ok }), { headers: jsonHeaders(request) });
+}
+
 async function handleRoadmap(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
@@ -986,6 +1035,12 @@ async function handleRoadmap(request, env) {
     // slug and the visitor's answers.
     const tenantSlug = String(body.tenantSlug || 'swrv').trim().toLowerCase();
     const userMessage = body.userMessage || body.messages?.[0]?.content || '';
+
+    // The SWRV Roadmap is for paid consultations only (see ROADMAP ACCESS above).
+    if (tenantSlug === 'swrv' && !(await hasRoadmapAccess(env, body.accessEmail, body.accessToken))) {
+      return new Response(JSON.stringify({ error: 'roadmap_locked', message: 'The Roadmap is part of the $100 Brand Plan Consultation. Book yours to unlock it.' }),
+        { status: 403, headers: jsonHeaders(request) });
+    }
 
     const tenantConfig = await getTenantConfig(env, tenantSlug);
 
@@ -2173,7 +2228,8 @@ async function handleCheckout(request, env) {
 
     const safeOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://swrvonthego.pro';
     // Brand packages send the client on to The Roadmap after paying.
-    const nextStep = svc.roadmapAfterPurchase ? `&next=roadmap&e=${encodeURIComponent(customerEmail || '')}&n=${encodeURIComponent((customerName || '').slice(0, 60))}` : '';
+    const rmToken = svc.roadmapAfterPurchase ? await roadmapToken(env, customerEmail) : '';
+    const nextStep = svc.roadmapAfterPurchase ? `&next=roadmap&e=${encodeURIComponent(customerEmail || '')}&n=${encodeURIComponent((customerName || '').slice(0, 60))}&t=${rmToken}` : '';
     const metadata = { service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(',') };
     const session = category === 'monthly' ? await stripeRequest(env, 'POST', 'checkout/sessions', {
       mode: 'subscription',
@@ -2720,12 +2776,12 @@ function agreementLinkHtml(order, color) {
   return `<p style="font-size:13px;margin:12px 0;"><a style="color:${color};font-weight:600;" href="${agreementUrl(order.agreement_token)}">View the signed agreement →</a></p>`;
 }
 
-function roadmapStepHtml(order) {
+async function roadmapStepHtml(env, order) {
   if (!SERVICES.find((s) => s.id === order.service_id)?.roadmapAfterPurchase) return '';
   return `<div style="margin:20px 0;padding:16px;border-left:3px solid #c8a84b;background:#faf6ea;">
         <p style="margin:0 0 6px;font-size:14px;font-weight:600;">Your next step: The Roadmap</p>
         <p style="margin:0 0 10px;color:#555;font-size:13px;line-height:1.6;">We build your brand from your long-term vision. Take The Roadmap (about 10 minutes): walk through your vision and answer the questionnaire, and we'll use it to plan everything we create for you.</p>
-        <a href="https://swrvonthego.pro/roadmap?email=${encodeURIComponent(order.customer_email || '')}&name=${encodeURIComponent((order.customer_name || '').slice(0, 60))}" style="display:inline-block;padding:10px 18px;background:#FF4D00;color:#fff;text-decoration:none;border-radius:999px;font-size:13px;font-weight:600;">Start The Roadmap →</a>
+        <a href="https://swrvonthego.pro/roadmap?email=${encodeURIComponent(order.customer_email || '')}&name=${encodeURIComponent((order.customer_name || '').slice(0, 60))}&t=${await roadmapToken(env, order.customer_email)}" style="display:inline-block;padding:10px 18px;background:#FF4D00;color:#fff;text-decoration:none;border-radius:999px;font-size:13px;font-weight:600;">Start The Roadmap →</a>
       </div>`;
 }
 
@@ -2743,7 +2799,7 @@ async function sendDepositReceiptEmail(env, order) {
         <tr><td style="padding:6px 0;color:#777;">Paid today (first month)</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
       </table>
       ${agreementLinkHtml(order, '#FF4D00')}
-      ${roadmapStepHtml(order)}
+      ${await roadmapStepHtml(env, order)}
       <p style="color:#555;font-size:13px;line-height:1.6;">Stripe bills the same amount every month on this date and sends you a receipt each time. It's month to month: to cancel, email info@swrvonthego.pro before your next billing date.</p>
       <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
     </div>` : `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
@@ -2755,7 +2811,7 @@ async function sendDepositReceiptEmail(env, order) {
         ${order.balance_cents > 0 ? `<tr><td style="padding:6px 0;color:#777;">Balance due</td><td style="text-align:right;">$${(order.balance_cents / 100).toFixed(2)}</td></tr>` : ''}
       </table>
       ${agreementLinkHtml(order, '#FF4D00')}
-      ${roadmapStepHtml(order)}
+      ${await roadmapStepHtml(env, order)}
       <p style="color:#555;font-size:13px;line-height:1.6;">Stripe will send you a separate payment receipt for today's charge. ${order.balance_cents > 0 ? `The balance will be invoiced ${balanceWhen} — no need to follow up.` : "You're paid in full. We'll confirm your session time with you shortly."}</p>
       <p style="color:#999;font-size:12px;margin-top:24px;">Questions? Reply to info@swrvonthego.pro.</p>
     </div>`;

@@ -132,7 +132,7 @@ const AppShell: React.FC = () => {
     <>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
-        <Route path="/" element={<Lobby />} />
+        <Route path="/" element={<ScrollLanding />} />
         <Route path="/3d" element={<ScrollLanding />} />
         <Route
           path="/roadmap"

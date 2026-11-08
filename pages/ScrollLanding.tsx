@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { CheckoutModal, type CheckoutService } from '../modules/services-menu/CheckoutModal';
 import { SERVICES } from '../site.config';
 import './scroll-landing.css';
 
@@ -53,6 +55,21 @@ const Frame: React.FC<{ kind: 'desktop' | 'phone'; src?: string; alt?: string; c
   </div>
 );
 
+// The one button on the page that matters: the $100 consultation. Everything
+// else stays quiet so this is the thing the eye goes to.
+const Jewel: React.FC<{ onClick: () => void; main?: string; sub?: string; className?: string }> = ({ onClick, main = 'Book my consultation', sub = '$100 · your Roadmap unlocks instantly', className = '' }) => (
+  <span className={`sl2-jewel-wrap ${className}`}>
+    <i className="sl2-spark s1" aria-hidden="true">✦</i>
+    <i className="sl2-spark s2" aria-hidden="true">✦</i>
+    <i className="sl2-spark s3" aria-hidden="true">✦</i>
+    <button type="button" className="sl2-jewel" onClick={onClick}>
+      <span className="sl2-jewel-shine" aria-hidden="true" />
+      <span className="sl2-jewel-main">{main} <b>→</b></span>
+      <span className="sl2-jewel-sub">{sub}</span>
+    </button>
+  </span>
+);
+
 export const ScrollLanding: React.FC = () => {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
@@ -62,6 +79,25 @@ export const ScrollLanding: React.FC = () => {
   const featRef = useRef<HTMLDivElement>(null);
   const featStageRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  // The $100 consultation: every "Book" button opens checkout right here.
+  const [book, setBook] = useState<CheckoutService | null>(null);
+  const openConsult = () => {
+    const c = SERVICES.find((x) => x.id === 'brand-consultation');
+    if (c) setBook({ id: c.id, name: c.name, priceNumeric: c.priceNumeric, checkoutCategory: c.checkoutCategory });
+  };
+  // Sticky "Book" bar for phones: shows after the first scroll, hides at the consult panel.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [barOn, setBarOn] = useState(false);
+  const [panelSeen, setPanelSeen] = useState(false);
+  useEffect(() => {
+    const onS = () => setBarOn(window.scrollY > 140);
+    onS();
+    window.addEventListener('scroll', onS, { passive: true });
+    const el = panelRef.current;
+    const io = el ? new IntersectionObserver(([e]) => setPanelSeen(e.isIntersecting), { threshold: 0.25 }) : null;
+    if (el && io) io.observe(el);
+    return () => { window.removeEventListener('scroll', onS); io?.disconnect(); };
+  }, []);
   const [narrow, setNarrow] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
   const reduce = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const devs = narrow ? NARROW : WIDE;
@@ -165,7 +201,6 @@ export const ScrollLanding: React.FC = () => {
 
   const go = (to: string) => (e: React.MouseEvent) => { e.preventDefault(); navigate(to); };
   const price = (id: string) => SERVICES.find((s) => s.id === id)?.price || '';
-  const bookTo = '/content#sm-cat-social-media';
 
   return (
     <div className={`sl2 ${reduce ? 'sl2-static' : ''}`}>
@@ -176,7 +211,7 @@ export const ScrollLanding: React.FC = () => {
           <a href="#how">How it works</a>
           <a href="/zionswrvbirdsong" onClick={go('/zionswrvbirdsong')}>Zion SWRV Birdsong</a>
         </nav>
-        <a href="/content" className="sl2-pill sl2-pill-sm" onClick={go('/content')}>Get Started <b>→</b></a>
+        <button type="button" className="sl2-pill sl2-pill-sm sl2-pill-ghost" onClick={openConsult}>Book $100 <b>→</b></button>
       </header>
 
       {/* ═══ HERO — fly through the screens ═══ */}
@@ -197,8 +232,8 @@ export const ScrollLanding: React.FC = () => {
             <h1>Your vision.<br /><span>Our creative engine.</span></h1>
             <p>Content, websites and AI video, booked and paid in minutes. Pick it, book it, and we handle the rest.</p>
             <div className="sl2-actions">
-              <a href={bookTo} className="sl2-pill" onClick={go(bookTo)}>Book a consultation · $100 <b>→</b></a>
-              <a href="/content" className="sl2-pill sl2-pill-ghost" onClick={go('/content')}>See all packages</a>
+              <Jewel onClick={openConsult} />
+              <a href="/content" className="sl2-quiet" onClick={go('/content')}>or browse all packages</a>
             </div>
           </div>
           <div className="sl2-scroll" aria-hidden="true"><span>Scroll</span><i /></div>
@@ -250,13 +285,19 @@ export const ScrollLanding: React.FC = () => {
 
       {/* ═══ CONSULTATION ═══ */}
       <section className="sl2-section">
-        <div className="sl2-panel sl2-reveal">
+        <div className="sl2-panel sl2-reveal" ref={panelRef}>
           <p className="sl2-mono sl2-mono-light">NOT SURE WHERE TO START?</p>
           <h2>Book a consultation.</h2>
-          <p>Step 1: book and pay $100, and pick your date. Step 2: right after, answer a short questionnaire so SWRV comes prepared. Step 3: we talk and build your plan.</p>
-          <a href={bookTo} className="sl2-pill sl2-pill-light" onClick={go(bookTo)}>Book consultation · $100 <b>→</b></a>
+          <p>Step 1: book and pay $100, and pick your date. Step 2: right after you pay, your Roadmap unlocks. It's a short questionnaire so SWRV comes prepared. Step 3: we talk and build your plan.</p>
+          <Jewel onClick={openConsult} />
         </div>
       </section>
+
+      <div className={`sl2-bar ${barOn && !panelSeen ? 'on' : ''}`}>
+        <Jewel onClick={openConsult} main="Book my consultation" sub="$100 · Roadmap unlocks instantly" className="sl2-jewel-bar" />
+      </div>
+
+      {book && createPortal(<CheckoutModal service={book} onClose={() => setBook(null)} />, document.body)}
 
       <footer className="sl2-footer">
         <nav aria-label="More from SWRV On The Go">

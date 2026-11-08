@@ -271,6 +271,42 @@ export const Roadmap: React.FC<RoadmapProps> = ({
   const [tourOpen, setTourOpen] = useState(false);
   // A recommended package the visitor chose to book straight from their results.
   const [bookService, setBookService] = useState<CheckoutService | null>(null);
+  // ── Access lock: the SWRV Roadmap is only for paid consultations ───────
+  // A paid client arrives from their personal link (?email=…&t=…). The server
+  // checks it against a paid order; everyone else sees the booking gate.
+  const gatedTenant = !tenantSlug || tenantSlug === 'swrv';
+  const [access, setAccess] = useState<'checking' | 'ok' | 'denied'>(gatedTenant ? 'checking' : 'ok');
+  const accessRef = useRef<{ email: string; token: string }>({ email: '', token: '' });
+  useEffect(() => {
+    if (!gatedTenant) return;
+    const qp = new URLSearchParams(window.location.search);
+    let email = qp.get('email') || '';
+    let token = qp.get('t') || '';
+    if (!email || !token) {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem('swrv_rm_access') || 'null');
+        if (saved?.email && saved?.token) { email = saved.email; token = saved.token; }
+      } catch { /* ignore */ }
+    }
+    if (!email || !token) { setAccess('denied'); return; }
+    let cancelled = false;
+    fetch(`/api/roadmap-access?email=${encodeURIComponent(email)}&t=${encodeURIComponent(token)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        if (d?.ok) {
+          accessRef.current = { email, token };
+          try { sessionStorage.setItem('swrv_rm_access', JSON.stringify({ email, token })); sessionStorage.setItem('swrv_rm_paid', '1'); } catch { /* ignore */ }
+          setAccess('ok');
+          setScreen((cur) => (cur === 'paywall' ? 'intro' : cur));
+        } else {
+          try { sessionStorage.removeItem('swrv_rm_access'); } catch { /* ignore */ }
+          setAccess('denied');
+        }
+      })
+      .catch(() => { if (!cancelled) setAccess('denied'); });
+    return () => { cancelled = true; };
+  }, [gatedTenant]);
   const TOUR_STEPS: TourStep[] = [
     {
       selector: '.music-toggle',
@@ -844,6 +880,8 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
             tenantSlug: tenantSlug || 'swrv',
             name: userName,
             email: userEmail || undefined,
+            accessEmail: accessRef.current.email || undefined,
+            accessToken: accessRef.current.token || undefined,
             rawVision: visionText,
             userMessage: `Name: ${userName}\nEmail: ${userEmail || 'not provided'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 1 — THEIR VISION (told in their own words)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${visionText}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPHASE 2 — THE 16 GUIDED QUESTIONS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${phase2Block || '(no Phase 2 answers provided)'}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNow combine both phases into the final assessment. Phase 1 shows you what they see. Phase 2 shows you who they are. Weave them into one complete blueprint.`,
           }),
@@ -853,6 +891,7 @@ const [resultsCelebrated, setResultsCelebrated] = useState(false);
 
         if (!res.ok) {
           const errData = await res.json().catch(() => ({} as any));
+          if (res.status === 403 && errData.error === 'roadmap_locked') setAccess('denied');
           throw new Error(errData.error || `HTTP ${res.status}`);
         }
 
@@ -1341,6 +1380,32 @@ const handleSave = useCallback(() => {
       aria-modal="true"
       aria-label="The Roadmap Experience"
     >
+      {gatedTenant && access !== 'ok' && (
+        <div className="rm-gate">
+          {access === 'checking' ? (
+            <p className="rm-gate-wait">Checking your booking…</p>
+          ) : (
+            <div className="rm-gate-card">
+              <p className="rm-gate-eyebrow">THE ROADMAP</p>
+              <h2>Part of your consultation</h2>
+              <p className="rm-gate-body">
+                The Roadmap unlocks the moment you book your $100 Brand Plan Consultation. Pay, pick your date, and you'll be sent straight in.
+              </p>
+              <ol className="rm-gate-steps">
+                <li><b>1</b> Book and pay $100</li>
+                <li><b>2</b> Your Roadmap unlocks right away</li>
+                <li><b>3</b> We talk and build your plan</li>
+              </ol>
+              <button type="button" className="rm-gate-btn" onClick={() => {
+                const c = SERVICES.find((x) => x.id === 'brand-consultation');
+                if (c) setBookService({ id: c.id, name: c.name, priceNumeric: c.priceNumeric, checkoutCategory: c.checkoutCategory });
+              }}>Book consultation · $100 →</button>
+              <p className="rm-gate-small">Already booked? Use the link in your confirmation email.</p>
+              <button type="button" className="rm-gate-back" onClick={onClose}>← Back to the site</button>
+            </div>
+          )}
+        </div>
+      )}
       <div id="progress-bar" style={{ width: `${progress}%` }} />
 
       {/* Resume prompt — makes good on "your progress is saved" */}
@@ -1369,8 +1434,8 @@ const handleSave = useCallback(() => {
       )}
 
       {/* First-run walkthrough + replay button */}
-      <RoadmapTour open={tourOpen && !resumeSnap} steps={TOUR_STEPS} onClose={closeTour} />
-      {screen !== 'paywall' && !tourOpen && (
+      <RoadmapTour open={tourOpen && !resumeSnap && access === 'ok'} steps={TOUR_STEPS} onClose={closeTour} />
+      {screen !== 'paywall' && !tourOpen && access === 'ok' && (
         <button
           type="button"
           className="rm-tour-help"

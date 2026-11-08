@@ -129,3 +129,60 @@
 
 /* Feather the logo clip's edges so it melts into the page background. */
 .sl2-logo, .sl2-vid video { -webkit-mask-image: radial-gradient(ellipse 54% 52% at 50% 50%, #000 66%, transparent 100%); mask-image: radial-gradient(ellipse 54% 52% at 50% 50%, #000 66%, transparent 100%); }
+
+
+/* ── Buttons that act as pills ───────────────────────────────────────── */
+.sl2 button.sl2-pill { border: 0; font-family: inherit; cursor: pointer; }
+.sl2 button.sl2-pill-light { color: var(--ink); }
+
+/* ── Phone-first: shorter scroll, thumb-friendly sticky booking bar ──── */
+.sl2-bar { position: fixed; z-index: 60; left: 0; right: 0; bottom: 0; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 84px; display: flex; justify-content: center;
+  background: linear-gradient(rgba(244,242,237,0), rgba(244,242,237,.92) 45%); transform: translateY(110%); transition: transform .35s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+.sl2-bar.on { transform: none; }
+.sl2-bar .sl2-pill { width: 100%; max-width: 420px; pointer-events: auto; min-height: 56px; font-size: 17px; }
+@media (min-width: 900px) { .sl2-bar { display: none; } }
+@media (max-width: 899px) {
+  .sl2-hero { height: 205vh; }
+  .sl2-feat { height: 240vh; }
+  .sl2-footer { padding-bottom: 110px; }
+  .sl2-section { padding-top: 64px; }
+  .sl2-center { padding-top: 64px; }
+  .sl2-center p { margin-bottom: 18px; }
+  .sl2-actions { flex-direction: column; align-items: stretch; width: min(100%, 360px); }
+  .sl2-actions .sl2-pill { width: 100%; min-height: 56px; }
+}
+
+/* ════ THE JEWEL — the $100 consultation button ════ */
+.sl2-jewel-wrap { position: relative; display: inline-block; }
+.sl2 .sl2-jewel { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 68px; padding: 14px 38px; border: 0; border-radius: 999px; cursor: pointer; font-family: inherit; color: #2a1500;
+  background: linear-gradient(180deg, #fff0a8 0%, #ffd23f 28%, #f8bc0a 55%, #ff8a1f 100%);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.85), inset 0 -8px 14px rgba(170,70,0,.38), 0 0 0 3px rgba(255,255,255,.75), 0 14px 34px rgba(255,138,31,.55), 0 0 46px rgba(248,188,10,.6);
+  animation: jewel-breathe 2.8s ease-in-out infinite; transition: transform .2s; -webkit-tap-highlight-color: transparent; }
+.sl2 .sl2-jewel:active { transform: scale(.97); animation: none; }
+.sl2-jewel-main { position: relative; z-index: 2; font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
+.sl2-jewel-main b { display: inline-block; transition: transform .25s; }
+.sl2-jewel:hover .sl2-jewel-main b { transform: translateX(5px); }
+.sl2-jewel-sub { position: relative; z-index: 2; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: rgba(42,21,0,.78); }
+/* A bright glint that sweeps across the surface */
+.sl2-jewel-shine { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 1; }
+.sl2-jewel-shine::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: -40%; width: 34%; transform: skewX(-22deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.95), rgba(255,255,255,0)); animation: jewel-sheen 2.9s ease-in-out infinite; }
+/* A soft halo that pulses outward */
+.sl2-jewel-wrap::before { content: ''; position: absolute; inset: 0; border-radius: 999px; pointer-events: none; animation: jewel-halo 2.8s ease-out infinite; }
+/* Twinkling sparkles around the gem */
+.sl2-spark { position: absolute; z-index: 3; font-style: normal; color: #fff; text-shadow: 0 0 10px #ffd23f, 0 0 18px #ff8a1f; pointer-events: none; animation: jewel-twinkle 2.2s ease-in-out infinite; }
+.sl2-spark.s1 { top: -12px; left: 14%; font-size: 20px; }
+.sl2-spark.s2 { bottom: -10px; right: 12%; font-size: 15px; animation-delay: .7s; }
+.sl2-spark.s3 { top: 6px; right: -8px; font-size: 13px; animation-delay: 1.3s; }
+@keyframes jewel-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+@keyframes jewel-sheen { 0% { left: -40%; } 55%, 100% { left: 130%; } }
+@keyframes jewel-halo { 0% { box-shadow: 0 0 0 0 rgba(255,200,40,.65); } 70%, 100% { box-shadow: 0 0 0 26px rgba(255,200,40,0); } }
+@keyframes jewel-twinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(25deg); } }
+.sl2-quiet { display: block; margin-top: 14px; font-size: 14px; color: var(--mute); text-decoration: underline; text-underline-offset: 3px; }
+.sl2-actions { flex-direction: column; align-items: center; }
+.sl2-jewel-bar .sl2-jewel { min-height: 60px; padding: 10px 26px; width: 100%; }
+.sl2-jewel-bar { width: 100%; max-width: 420px; pointer-events: auto; }
+.sl2-jewel-bar .sl2-jewel-main { font-size: 17px; }
+@media (max-width: 899px) { .sl2-actions { width: min(100%, 380px); } .sl2-actions .sl2-jewel-wrap { width: 100%; } .sl2-actions .sl2-jewel { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .sl2 .sl2-jewel, .sl2-jewel-shine::before, .sl2-jewel-wrap::before, .sl2-spark { animation: none; } .sl2-spark { opacity: .9; } }
+.sl2-quiet { position: relative; z-index: 6; padding: 6px 12px; border-radius: 999px; background: rgba(244,242,237,.85); }

@@ -18,6 +18,8 @@ export const BookingConfirmedPage: React.FC = () => {
   const savedEmail = params.get('e') || '';
   if (savedName) prefill.set('name', savedName);
   if (savedEmail) prefill.set('email', savedEmail);
+  const savedToken = params.get('t') || '';
+  if (savedToken) prefill.set('t', savedToken);
   const roadmapHref = prefill.toString() ? `/roadmap?${prefill.toString()}` : '/roadmap';
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#0a0804' }}>
