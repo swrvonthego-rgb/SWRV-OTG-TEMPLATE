@@ -903,6 +903,66 @@ export const ALL_SERVICES: Service[] = [
     blurb: 'Live performances tailored to your event. Coffee shop performances: $100/hr. Weddings: $500/person. Large events: $500/song. Pricing negotiable based on equipment needs and event complexity.',
   },
 
+  // ââ MOTIVATIONAL PERFORMANCE âââââââââââââââââââââââââââââââââââââââââââââ
+  {
+    id: 'motivational-performance',
+    name: 'Motivational Performance',
+    category: 'execution',
+    intakePath: 'event',
+    skipQuestions: ['socials', 'metaAccess', 'otherAccess'],
+    price: 'From $2,500',
+    priceNumeric: 2500,
+    checkoutEnabled: true,
+    checkoutCategory: 'event',
+    featured: true,
+    options: [
+      { id: 'public-speaking', label: 'Public Speaking (1 hr)', price: 2500, description: 'A 1-hour live talk drawn from The Roadmap or Swerve In Your Gift. With or without guitar. Campus, church, nonprofit, or community event.' },
+      { id: 'corporate-keynote', label: 'Corporate Keynote (1 hr)', price: 5000, description: 'A 1-hour keynote for corporate events, conferences, or leadership summits. Original message, professional delivery, live performance woven in.' },
+      { id: 'full-experience', label: 'Full Experience', price: 5000, description: 'Talk + live songs + book signing + meet & greet. Travel expenses billed at cost â no markup. Quote provided after booking inquiry.' },
+    ],
+    terms: 'A 50% deposit reserves your date; balance is invoiced before your event. Travel within Atlanta: $50. Travel beyond Atlanta: billed at cost (flight, hotel, ground transport â no markup). Zion performs in person â no remote option.',
+    blurb: "A live hour your audience won't forget. Zion speaks from his own published books, performs original songs, and signs copies on the way out. Book as a talk, a keynote, or the full experience â all three work with or without guitar.",
+    deliveryDays: 0,
+    includes: [
+      '1-hour live talk drawn from The Roadmap or Swerve In Your Gift',
+      'Live vocal performance (with or without guitar)',
+      'Book signing and meet & greet',
+      'Setlist and topic consultation before your event',
+      'Travel in Atlanta: $50 Â· Beyond Atlanta: billed at cost',
+    ],
+    notIncludes: ['PA system or backline (venue-provided or quoted)', 'Multiple performances in one day (quoted separately)'],
+  },
+
+  // ââ AI VIDEO ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  {
+    id: 'ai-video-short',
+    name: 'AI Video',
+    category: 'execution',
+    intakePath: 'video',
+    price: 'From $200',
+    priceNumeric: 200,
+    checkoutEnabled: true,
+    checkoutCategory: 'project',
+    options: [
+      { id: 'ai-video-30s', label: '30 Seconds', price: 200, description: 'AI-generated 30-second video â social content, intros, branded clips.' },
+      { id: 'ai-video-60s', label: '1 Minute', price: 300, description: 'AI-generated 1-minute video â ads, promos, short-form content.' },
+      { id: 'ai-video-120s', label: '2 Minutes', price: 500, description: 'AI-generated 2-minute video â full mini-docs, extended promos, event recaps.' },
+    ],
+    terms: 'Work for hire â you own the delivered video. Remote by default, delivered as MP4. 1 round of revisions included. Rush delivery (24 hrs) available â add Rush 24-Hr Delivery at checkout.',
+    blurb: 'AI-generated video from a script or concept. Social clips, branded intros, promos â delivered as a finished MP4 ready to post.',
+    deliveryDays: 3,
+    revisions: 1,
+    includes: [
+      'Script consultation or your script used as-is',
+      'AI-generated visuals matched to your brand/concept',
+      'Music or audio sync (you provide or we source royalty-free)',
+      'Delivered as MP4 (1080p)',
+      '1 round of revisions',
+    ],
+    notIncludes: ['Live footage or on-location filming (see Videography)', 'Custom original music (see Song Production)'],
+    assetsNeeded: ['Script or creative brief', 'Brand colors, fonts, or logo (optional)', 'Any reference videos or mood board (optional)'],
+  },
+
   // ── VIDEOGRAPHY ──────────────────────────────────────────────────────────
   {
     id: 'music-video',
@@ -1373,139 +1433,67 @@ export const ALL_SERVICES: Service[] = [
 // id here to bring it back everywhere at once. The Zion performance
 // booking page and the website packages section are separate and stay up.
 export const ACTIVE_SERVICE_IDS = new Set<string>([
-  'motivational-performance', // Motivational Performance (from $2,500)
-  'ai-video-short',          // AI Video (from $200)
   'coverage-quick-stop',     // On The Go
   'coverage-on-the-go-day',  // The Drive-Through
   'coverage-full-convoy',    // The Pull-Up
   'coverage-air-support',    // Air Support
   'vocal-live-event',        // Zion Sings At Your Event
-  'vocal-production',        // Vocal Production — Your Voice
+  'vocal-production',        // Vocal Production â Your Voice
   'brand-consultation',      // Brand Plan Consultation ($100, paid in full)
   'social-brand-kit',        // Social Brand Kit
   'social-management',       // Social Brand Management (monthly)
   'website-presence',
   'website-platform',
   'website-ecosystem',
-  // ── Music & Video intro packages ──
+  // ââ Music & Video intro packages ââ
   'song-production-intro',   // Song Production ($1,000)
   'music-video-intro',       // Music Video ($1,500)
-  'song-video-bundle',       // Song + Video Bundle ($2,000 — $500 off)
+  'song-video-bundle',       // Song + Video Bundle ($2,000 â $500 off)
   'social-content-daily',    // Social Media Daily Content ($200/mo)
+  'motivational-performance', // Motivational Performance (speaking + songs, from $2,500)
+  'ai-video-short',           // AI Video (30s $200 Â· 1min $300 Â· 2min $500)
 ]);
 
-export const SERVICES: Service[] = ALL_SERVICES.filter((s) => ACTIVE_SERVICE_IDS.has(s.id));
-
-
-// ── NEED A WEBSITE? — template storefront section ───────────
-// videoUrl: set to your promo video URL (Cloudinary / R2 / CDN) to show
-// the video banner. Leave '' to show the styled CTA banner instead.
-export const NEED_A_WEBSITE = {
-  videoUrl: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/v15044gf0000d8gahu7og65l6v48v87g.mp4',
-  eyebrow: 'NEED A WEBSITE?',
-  headline: 'Pick a style. We make it yours.',
-  subline:
-    "Ten professionally built templates — every style of business covered. We swap in your brand, your words, your photos, and hand you a live website in days. One price, no surprises: $300 flat.",
-  price: '$300',
-} as const;
-
-export interface WebsiteTemplate {
-  id: string;
-  name: string;
-  style: string;        // one-line style descriptor
-  bestFor: string;      // who it's for
-  // Mini-mockup design tokens (CSS-generated preview card)
-  bg: string;           // preview background
-  ink: string;          // preview text color
-  accent: string;       // preview accent color
-  font: 'serif' | 'sans' | 'mono';
-  layout: 'hero' | 'grid' | 'split' | 'centered' | 'list';
-  // Real live-preview link — a portfolio site or /templates example
-  // that matches this style, so buyers can see a finished version
-  // instead of only the CSS thumbnail.
-  previewUrl: string;
-  previewLabel: string; // short caption for the "See Live Preview" link
-}
-
-export const WEBSITE_TEMPLATES: WebsiteTemplate[] = [
-  { id: 'tpl-clean-slate', name: 'The Clean Slate', style: 'Minimal, editorial, lots of air', bestFor: 'Consultants, writers, professionals', bg: '#faf9f6', ink: '#1a1a1a', accent: '#1a1a1a', font: 'serif', layout: 'centered',
-    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC — Tax & Financial Services' },
-  { id: 'tpl-bold-drop',   name: 'The Bold Drop', style: 'Dark, loud, streetwear energy', bestFor: 'Brands, apparel, culture drops', bg: '#0d0d0d', ink: '#ffffff', accent: '#ff4d00', font: 'sans', layout: 'hero',
-    previewUrl: 'https://swrvonthego.pro', previewLabel: 'SWRV On The Go — Full brand experience' },
-  { id: 'tpl-gallery',     name: 'The Gallery', style: 'Image-first grid, zero clutter', bestFor: 'Photographers, artists, models', bg: '#111111', ink: '#eeeeee', accent: '#c8a84b', font: 'sans', layout: 'grid',
-    previewUrl: '/templates/ecosystem-example.html', previewLabel: 'VANTA Creative — Roster + portfolio grid' },
-  { id: 'tpl-storefront',  name: 'The Storefront', style: 'Product cards, clean checkout flow', bestFor: 'Shops, merch, small product lines', bg: '#ffffff', ink: '#222222', accent: '#2f7d5c', font: 'sans', layout: 'grid',
-    previewUrl: '/templates/platform-example.html', previewLabel: 'Kofi Ware Music — Beats & booking commerce' },
-  { id: 'tpl-booking-pro', name: 'The Booking Pro', style: 'Services up top, calendar built in', bestFor: 'Barbers, coaches, trainers, studios', bg: '#f4f2ee', ink: '#20242c', accent: '#3d5a80', font: 'sans', layout: 'split',
-    previewUrl: 'https://trainbyob.me', previewLabel: 'TrainBYOB — Coaching site with booking' },
-  { id: 'tpl-stage',       name: 'The Stage', style: 'Full-bleed hero, music player ready', bestFor: 'Artists, bands, performers', bg: '#08060c', ink: '#f5f0ff', accent: '#9d4edd', font: 'sans', layout: 'hero',
-    previewUrl: '/apps/birdsong-method.html', previewLabel: 'The Birdsong Method — Artist platform' },
-  { id: 'tpl-table',       name: 'The Table', style: 'Warm tones, menu-forward', bestFor: 'Restaurants, food trucks, caterers', bg: '#fdf6ec', ink: '#3a2a1a', accent: '#c87941', font: 'serif', layout: 'list',
-    previewUrl: '/templates/presence-example.html', previewLabel: 'Marcus Hill, LLC — Warm, list-driven layout' },
-  { id: 'tpl-pulpit',      name: 'The Pulpit', style: 'Welcoming, community-centered', bestFor: 'Churches, ministries, nonprofits', bg: '#fffdf7', ink: '#2c2418', accent: '#8b6f3e', font: 'serif', layout: 'centered',
-    previewUrl: 'https://swrv-on-bs-bible.swrvonthego.workers.dev/', previewLabel: 'The SWRV No BS Bible — Community-centered' },
-  { id: 'tpl-launchpad',   name: 'The Launchpad', style: 'One page, countdown, email capture', bestFor: 'Launches, events, pre-orders', bg: '#0a1128', ink: '#e8ecf4', accent: '#00d1b2', font: 'mono', layout: 'centered',
-    previewUrl: '/apps/byob-timer.html', previewLabel: 'BYOB Timer — Focused single-purpose page' },
-  { id: 'tpl-boss-card',   name: 'The Boss Card', style: 'One-page personal brand hub', bestFor: 'Creators, speakers, link-in-bio upgrade', bg: '#16121c', ink: '#f2eef8', accent: '#e8c96a', font: 'sans', layout: 'list',
-    previewUrl: 'https://spa-patrol.swrvonthego.workers.dev', previewLabel: 'MyPatrol — Personal branded hub' },
-];
-
-
-// ── SERVICE SUB-CATEGORIES — premium organized taxonomy ─────
-// Groups the à la carte SERVICES catalog into shopper-friendly buckets
-// (video, audio, web, etc.) for display in the Marketplace and Services Menu.
-export interface SubCategory {
-  id: string;
-  label: string;
-  tagline: string;
-  emoji: string;
-  // Which intake question set (intake.config.ts) every service listed in
-  // this category gets. Adding a service to serviceIds below is all it
-  // takes for it to get the right intake — no second list to update.
-  intakePath: IntakePath;
-  serviceIds: string[];
-  // Optional short note with a link, shown under the category header.
-  note?: { text: string; linkLabel: string; to: string };
-}
-
-// Order = what a phone visitor sees first. Content creation leads, then
-// websites, then AI video, then brand/business/coaching, with music last.
 export const SERVICE_SUBCATEGORIES: SubCategory[] = [
+  {
+    id: 'music-video-packages',
+    label: 'Music & Video',
+    tagline: 'From concept to release â song, video, or both.',
+    emoji: 'ð¬',
+    intakePath: 'music',
+    serviceIds: ['song-production-intro', 'music-video-intro', 'song-video-bundle'],
+    note: {
+      text: 'New to SWRV? These are relationship-building rates. Book a song and a video together and save $500. Affirm, Klarna, and Afterpay are all accepted at checkout â break it into payments with zero back-and-forth.',
+      linkLabel: 'Questions? Book a strategy call â',
+      to: '/about',
+    },
+  },
+  {
+    id: 'zion-vocals',
+    label: 'Zion Vocals',
+    tagline: 'Zion SWRV Birdsong, live at your event or producing your vocal.',
+    emoji: 'ðï¸',
+    intakePath: 'vocals',t   serviceIds: ['motivational-performance', 'vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
+  },
   {
     id: 'social-media',
     label: 'Social Media',
-    tagline: 'We build your look and run your posts.',
-    emoji: '📱',
+    tagline: 'Your brand, built and run in your voice.',
+    emoji: 'ð±',
     intakePath: 'social',
     serviceIds: ['brand-consultation', 'social-brand-kit', 'social-content-daily', 'social-management'],
     note: {
-      text: "Every brand starts with a plan. After you book, you'll answer a short questionnaire so we know where you're headed.",
-      linkLabel: 'See how it works →',
+      text: "Every brand we build starts with your long-term vision. Once you book, you'll take The Roadmap: we talk through your vision, you answer the questionnaire, and together we map where your brand is going before we build it.",
+      linkLabel: 'See how The Roadmap works â',
       to: '/roadmap',
     },
   },
   {
-    id: 'web-digital',
-    intakePath: 'website',
-    label: 'Web & Digital',
-    tagline: 'A website that looks great and goes live fast.',
-    emoji: '🌐',
-    serviceIds: [
-      'website-presence',
-      'website-platform',
-      'website-ecosystem',
-      'enterprise-ecosystem',
-      'website-management',
-      'website-maintenance',
-      'fundraising-site',
-    ],
-  },
-  {
     id: 'videography',
     intakePath: 'video',
-    label: 'AI Video & Videography',
-    tagline: 'Short videos, made fast.',
-    emoji: '🎬',
+    label: 'Videography',
+    tagline: 'Moving picture, fully produced.',
+    emoji: 'ð¬',
     serviceIds: [
       'music-video',
       'video-promo',
@@ -1520,71 +1508,11 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
     ],
   },
   {
-    id: 'brand-identity',
-    intakePath: 'brand',
-    label: 'Brand Identity',
-    tagline: 'Define who you are before you put it anywhere.',
-    emoji: '✨',
-    serviceIds: [
-      'brand-planning',
-      'logo-design',
-      'photography',
-      'content-system',
-    ],
-  },
-  {
-    id: 'content-business',
-    intakePath: 'business',
-    label: 'Content & Business',
-    tagline: 'Books, decks, LLCs — everything to operate.',
-    emoji: '📚',
-    serviceIds: [
-      'book-format',
-      'pitch-deck',
-      'keynote-slides',
-      'llc-formation',
-    ],
-  },
-  {
-    id: 'coaching',
-    intakePath: 'other',
-    label: 'Coaching & Mentorship',
-    tagline: 'One-on-one development to level up.',
-    emoji: '🎯',
-    serviceIds: [
-      'vocal-training',
-      'recording-booth',
-      'artist-development',
-      'consulting-call',
-    ],
-  },
-  {
-    id: 'zion-vocals',
-    label: 'Zion Vocals',
-    tagline: 'Zion SWRV Birdsong, live at your event or producing your vocal.',
-    emoji: '🎙️',
-    intakePath: 'vocals',
-    serviceIds: ['motivational-performance', 'vocal-live-event', 'vocal-hook', 'vocal-feature', 'vocal-session-full', 'vocal-production'],
-  },
-  {
-    id: 'music-video-packages',
-    label: 'Music & Video',
-    tagline: 'Make a song, a video, or both.',
-    emoji: '🎬',
-    intakePath: 'music',
-    serviceIds: ['song-production-intro', 'music-video-intro', 'song-video-bundle'],
-    note: {
-      text: 'First-time prices. Book a song and a video together and save $500. Pay in installments with Affirm, Klarna or Afterpay.',
-      linkLabel: 'Questions? Talk to us →',
-      to: '/about',
-    },
-  },
-  {
     id: 'audio-production',
     intakePath: 'music',
     label: 'Audio Production',
     tagline: 'Music, voice, and everything between.',
-    emoji: '🎵',
+    emoji: 'ð­',
     serviceIds: [
       'music-production',
       'mixing',
@@ -1598,346 +1526,59 @@ export const SERVICE_SUBCATEGORIES: SubCategory[] = [
       'audio-edit-alacarte',
     ],
   },
-];
-
-
-// ── WEB PACKAGES ───────────────────────────────────────────
-// Removed — website tiers live in WEB_PACKAGE_TIERS (the one the site renders).
-
-// ── FOOTER ─────────────────────────────────────────────────
-export const FOOTER = {
-  ecosystemLinks: [
-    { label: 'Artist Development',    href: '#services' },
-    { label: 'Brand Planning & LLCs', href: '#services' },
-    { label: 'Web Design & Strategy', href: '#web-packages' },
-    { label: 'Books & Wisdom',        href: '#contact',   event: 'swrv:zion-section', detail: 'books' },
-    { label: 'Music & Podcast',       href: '#contact',   event: 'swrv:zion-section', detail: 'podcast' },
-  ],
-  resourceLinks: [
-    { label: 'About',        href: '#about-swrv' },
-    { label: 'Services',     href: '#services',  event: 'swrv:open-services' },
-    { label: 'Contact',      href: '#contact' },
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-  ],
-  legalLinks: [{ label: 'Privacy Policy', href: '/privacy' }, { label: 'Terms of Service', href: '/terms' }],
-  copyright: `© ${new Date().getFullYear()} SWRV On The Go. All rights reserved.`,
-} as const;
-
-// ── CONTACT / SCHEDULING ───────────────────────────────────
-export const CONTACT = {
-  // Generic topics for the "let's talk" calendar — Roadmap and BYOB scheduling
-  // can override with their own topic lists.
-  topics: [
-    { id: 'roadmap', label: 'Roadmap / Brand Planning' },
-    { id: 'website', label: 'Website Project' },
-    { id: 'consult', label: 'Strategy Call' },
-    { id: 'artist-dev', label: 'Artist Development' },
-    { id: 'other', label: 'Something Else' },
-  ],
-} as const;
-
-
-// ── HERO CAROUSEL ──────────────────────────────────────────
-// The two scrolling columns of cards in the Hero. Each card has an
-// image OR video, a title, and an optional subtitle (small label).
-// Add/remove cards freely — the component scales.
-export interface HeroCard {
-  image?: string;
-  video?: string;
-  title: string;
-  subtitle?: string;
-}
-export const HERO_CAROUSEL: {
-  backgroundVideo: string;
-  title: { line1: string; line2: string };
-  taglineHeading: string;
-  taglineAccent: string;
-  taglineBody: string;
-  column1: HeroCard[];
-  column2: HeroCard[];
-} = {
-  backgroundVideo:
-    'https://videos.pexels.com/video-files/3121459/3121459-hd_1920_1080_24fps.mp4',
-  title: { line1: 'SWRV', line2: 'MEDIA STRATEGIST.' },
-  taglineHeading: '"Swrv On Roadblocks. Let Love GPS." — SWRV Birdsong',
-  taglineAccent: '',
-  taglineBody:
-    'When you\'re driven by your passion, we\'re the central hub for your content solutions.',
-  column1: [
-    { image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop', title: 'FIGHTING ARTS', subtitle: 'MARTIAL ARTS' },
-    { image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=800&auto=format&fit=crop', title: 'CULINARY ARTS', subtitle: '' },
-    { image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop', title: 'REALTORS', subtitle: 'INTERIOR DESIGN' },
-    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/cld-sample_p72mk2.jpg', title: 'PET LOVERS', subtitle: 'COMMUNITY' },
-    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/shoe_e9qvna.jpg', title: 'TRAVELERS', subtitle: 'EXPLORATION' },
-    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/man-portrait_xykmg4.jpg', title: 'FASHION DESIGNERS', subtitle: 'STYLE' },
-  ],
-  column2: [
-    { image: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop', title: 'MUSICAL ARTISTS', subtitle: 'PRODUCTION' },
-    { image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop', title: 'FAN ENGAGEMENT', subtitle: 'COMMUNITY' },
-    { image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop', title: 'GRAPHIC DESIGNERS', subtitle: 'CREATIVE' },
-    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/1752950982581945_2_kk3jt3_ui7upw.png', title: 'CONTENT CREATORS', subtitle: 'DIGITAL MEDIA' },
-    { image: 'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/woman-on-a-football-field_agfcng.jpg', title: 'SUPER-DOPE PEOPLE', subtitle: 'LIFESTYLE' },
-  ],
-};
-
-// ── INTRO VIDEOS ───────────────────────────────────────────
-export const INTRO_VIDEOS = {
-  // Full-screen takeover that plays before the page is interactive
-  primary:
-    'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/SWRV_WEB_4k_gifq4n_u5zwta.mp4',
-  // Secondary intro that plays after the primary shrinks
-  secondary:
-    'https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/copy_506106AC-E7D2-4CDF-A553-6E2DC5A6894F_ckn5nm_cynppw.mov',
-} as const;
-
-// ── SCHEDULING (Calendar / Contact form) ───────────────────
-export const SCHEDULING: {
-  contactEmail: string;
-  availableDays: number[];
-  timeSlots: string[];
-  topics: string[];
-} = {
-  contactEmail: 'info@swrvonthego.pro',
-  // Days you're available (0=Sun, 1=Mon, ... 6=Sat). Default Mon–Sat.
-  availableDays: [1, 2, 3, 4, 5, 6],
-  timeSlots: [
-    '9:00 AM', '10:00 AM', '11:00 AM',
-    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-  ],
-  topics: [
-    'Website Package Inquiry',
-    'Monthly Care Plan',
-    'Brand Video / Commercial',
-    'Photography / Videography',
-    'Music / Jingle Production',
-    'Full Brand Strategy',
-    'Something Else',
-  ],
-};
-
-// ── WEB PACKAGE NOTES (universal disclaimers shown under tiers) ──
-export const WEB_PACKAGE_NOTES = [
-  'Every website needs: a logo, a vision statement, a mission statement, images, and video content',
-  'Don\'t have those yet? Tell us when you book — we\'ll help you pull them together',
-  'Domain & hosting not included — we walk you through setup (~$15/yr domain, ~$10–20/mo hosting)',
-  'You own your site 100% after delivery — no lock-in, no hidden fees',
-  '50% deposit required to begin · 50% due on final delivery',
-] as const;
-
-
-// ── WEB PACKAGE TIERS (rich tier data) ──────────────────────
-// The 3-tier comparison shown on the Web Packages section.
-// Icons are referenced by name (component maps name → lucide icon).
-// Available icon names: 'Globe', 'Zap', 'Rocket', 'Star', 'Compass', 'Sparkles'
-export interface WebPackageTier {
-  id: string;
-  name: string;
-  price: number;
-  iconName: 'Globe' | 'Zap' | 'Rocket' | 'Star' | 'Compass' | 'Sparkles';
-  tagline: string;
-  badge: string | null;
-  bestFor: string;
-  deliveryDays: string;
-  revisions: string;
-  includes: string[];
-  addOns: { label: string; price: string }[] | null;
-  note: string;
-  color: string;          // tailwind border class
-  accentColor: string;    // tailwind text class
-  badgeBg: string;        // tailwind bg class
-  cta: string;
-  liveExample?: {         // optional live demo preview
-    url: string;          // can be external link or '/templates/xxx.html'
-    label: string;        // 'See Live Example →'
-    description: string;  // 'A live LLC presence page'
-  };
-}
-
-export const WEB_PACKAGE_TIERS: WebPackageTier[] = [
   {
-    id: 'presence',
-    name: 'THE PRESENCE',
-    price: 300,
-    iconName: 'Globe',
-    tagline: 'The $300 website special. Live in 5 days.',
-    badge: 'THE $300 SPECIAL',
-    bestFor: 'Artists, LLC holders, coaches, and creatives who need a clean, professional page for funding apps, investor decks, portfolio showcases, or proving you exist online.',
-    deliveryDays: '5-day turnaround',
-    revisions: '1 round',
-    includes: [
-      'Custom single-page responsive website (desktop + mobile)',
-      'Bio / About section',
-      'Portfolio / work showcase',
-      'Photo gallery — up to 8 images (you provide)',
-      'All social media profile links',
-      'Contact form (email-linked, no spam)',
-      'SEO setup: page title, meta description, Open Graph tags',
-      'Google Analytics installation',
-      'Your logo & brand colors applied',
+    id: 'web-digital',
+    intakePath: 'website',
+    label: 'Web & Digital',
+    tagline: 'Vision-first. Custom-built. Yours alone.',
+    emoji: 'ð',
+    serviceIds: [
+      'website-presence',
+      'website-platform',
+      'website-ecosystem',
+      'enterprise-ecosystem',
+      'website-management',
+      'website-maintenance',
+      'fundraising-site',
     ],
-    addOns: null,
-    note: 'You provide: logo, vision statement, mission statement, images, and a short bio. No logo or vision yet? Tell us when you book and we\'ll help.',
-    color: 'border-white/10',
-    accentColor: 'text-white',
-    badgeBg: '',
-    cta: 'Get The Presence',
-    liveExample: {
-      url: '/templates/presence-example.html',
-      label: 'See a Live Presence Example →',
-      description: 'A real LLC presence page — clean, professional, ready for funding apps or portfolio links.',
-    },
   },
   {
-    id: 'platform',
-    name: 'THE PLATFORM',
-    price: 500,
-    iconName: 'Zap',
-    tagline: 'Sell. Book. Tell your story.',
-    badge: 'MOST POPULAR',
-    bestFor: 'Creators, coaches, service providers, and small businesses ready to take payments, book clients, and make a cinematic first impression.',
-    deliveryDays: '1-week turnaround',
-    revisions: '2 rounds',
-    includes: [
-      'Everything in The Presence',
-      'Full portfolio section',
-      'Storefront back end — sell products or services (up to 3 listings)',
-      'Stripe payment integration — cards, Apple Pay, Google Pay, buy-now-pay-later',
-      'Booking / inquiry form with service category selection',
-      'Email list capture (newsletter sign-up integration)',
-      'Testimonials & social proof section',
-      '60–90 second custom brand intro video — includes:',
-      '   · Script writing (your story + what you stand for)',
-      '   · Cinematic voiceover (professional, produced by SWRV)',
-      '   · Original background music',
-      '   · Motion graphics + text animations',
-      'Video embedded and optimized on your page',
+    id: 'brand-identity',
+    intakePath: 'brand',
+    label: 'Brand Identity',
+    tagline: 'Define who you are before you put it anywhere.',
+    emoji: 'â¨',
+    serviceIds: [
+      'brand-planning',
+      'logo-design',
+      'photography',
+      'content-system',
     ],
-    addOns: null,
-    note: 'The brand video alone runs $500+ on the open market. Bundled here at half that.',
-    color: 'border-lion-orange',
-    accentColor: 'text-lion-orange',
-    badgeBg: 'bg-lion-orange',
-    cta: 'Get The Platform',
-    liveExample: {
-      url: '/templates/platform-example.html',
-      label: 'See a Live Platform Example →',
-      description: 'Kofi Ware Music — beats for sale, session booking, sync licensing. A creator who sells.',
-    },
   },
   {
-    id: 'ecosystem',
-    name: 'THE ECOSYSTEM',
-    price: 1000,
-    iconName: 'Rocket',
-    tagline: 'Your full world. One destination.',
-    badge: null,
-    bestFor: 'Established brands, movements, ministries, and businesses ready for a complete full-scale web presence built entirely around their vision.',
-    deliveryDays: '2-week turnaround',
-    revisions: '3 rounds',
-    includes: [
-      'Everything in The Platform',
-      '1 main page + up to 5 additional pages',
-      '   (Choose from: About, Services, Shop, Portfolio, Events, Blog, Press Kit, Contact)',
-      'Full site navigation — desktop menu + mobile hamburger',
-      'Full SEO optimization across all pages',
-      'Up to 10 products or services in your shop',
-      'Calendar & scheduling system — clients book you directly',
-      'AI chat assistant for your clients — answers questions around the clock',
-      'Blog / news page (if selected as one of your 5 pages)',
-      'Social media feed integration',
-      'Brand style guide document (colors, fonts, logo usage rules)',
-      'Email capture + automated follow-up',
-      '30 days of post-launch support & minor updates',
-      'Priority response time',
+    id: 'coaching',
+    intakePath: 'other',
+    label: 'Coaching & Mentorship',
+    tagline: 'One-on-one development to level up.',
+    emoji: 'ð§',
+    serviceIds: [
+      'vocal-training',
+      'recording-booth',
+      'artist-development',
+      'consulting-call',
     ],
-    addOns: [
-      { label: 'Extra pages (beyond 5)', price: '+$50 each' },
-      { label: 'Monthly management (full service)', price: '$125/mo' },
-      { label: 'Additional brand video', price: '+$100' },
-      { label: '3-6 month SEO audit', price: 'Included' },
+  },
+  {
+    id: 'content-business',
+    intakePath: 'business',
+    label: 'Content & Business',
+    tagline: 'Books, decks, LLCs â everything to operate.',
+    emoji: 'ð',
+    serviceIds: [
+      'book-format',
+      'pitch-deck',
+      'keynote-slides',
+      'llc-formation',
     ],
-    note: 'Multi-page sites run $3,000–$15,000+ everywhere else. This is intentional.',
-    color: 'border-white/20',
-    accentColor: 'text-white',
-    badgeBg: '',
-    cta: 'Get The Ecosystem',
-    liveExample: {
-      url: '/templates/ecosystem-example.html',
-      label: 'See a Live Ecosystem Example →',
-      description: 'VANTA Creative — artist development agency. Multi-section, roster, full services, application booking.',
-    },
-
   },
 ];
-
-
-// ── HEADER (top utility bar + main navigation) ──────────────
-// The top utility bar (small links above main nav) and the main
-// nav. Train BYOB stays inlined in the component since it's a
-// permanent fixture pointing to the founder's other site.
-export const HEADER = {
-  // Small links shown in the utility bar (right side, hides on scroll)
-  utilityLinks: [
-    { label: 'Books', href: '#books', external: false },
-    { label: 'Podcast', href: '#podcast', external: false },
-  ],
-  // Main navigation items
-  navItems: [
-    { label: 'PORTFOLIO', href: '#portfolio', external: false },
-    { label: 'THE SWRV ECOSYSTEM', href: '#ecosystem', external: false },
-    { label: 'ABOUT SWRV ON THE GO', href: '#about-swrv', external: false },
-    { label: 'ZION BIRDSONG', href: '#meet-zion', external: false },
-    { label: 'THE BIRDSONG METHOD', href: '#birdsong-method', external: false },
-    { label: 'TRAIN BYOB', href: '#byob', external: false },
-    { label: 'TAKE THE ROADMAP', href: '/roadmap', external: false },
-    { label: 'REVVING UP', href: '#revving-up', external: false },
-    { label: 'CONTACT', href: '#contact', external: false },
-  ],
-  // Inline "Connect" button copy
-  connectLabel: 'Connect',
-  // Right-side primary CTAs
-  bookNowLabel: 'BOOK NOW',
-  getInTouchLabel: 'GET IN TOUCH',
-} as const;
-
-// ── SERVICE CATEGORIES (top-level Services tiles) ───────────
-// These are the BIG category tiles shown in the main Services component.
-// They differ from the priced SERVICES catalog (à la carte items used by
-// the Roadmap recommendations) — these are the high-level "what we do".
-// Icons reference lucide-react component names; the Services component maps
-// the name to the actual icon.
-export interface ServiceCategory {
-  title: string;
-  description: string;
-  icon: 'Compass' | 'Globe' | 'CheckCircle' | 'FileText' | 'Database' | 'Briefcase' | 'Music';
-}
-
-export const SERVICE_CATEGORIES: ServiceCategory[] = [
-  {
-    title: 'Brand Planning',
-    description: 'Blueprint Your Vision — an interactive AI-powered experience that maps your gift, your work, your purpose, and your brand identity. Your Roadmap drives every service recommendation.',
-    icon: 'Compass',
-  },
-  {
-    title: 'Artist Development',
-    description: 'The one-stop shop for your bigger vision. We handle the logistics so you can create the art.',
-    icon: 'Globe',
-  },
-  {
-    title: 'BYOB Training',
-    description: 'Fitness & Self-Defense Coaching. Train your body, protect your peace. Visit trainbyob.me.',
-    icon: 'CheckCircle',
-  },
-  {
-    title: 'Authorship',
-    description: "Books to guide your journey: 'SWRV In Your Gift' and 'The RoadMap (Blueprint Your Vision)'.",
-    icon: 'FileText',
-  },
-  {
-    title: 'SWRV Talk Podcast',
-    description: 'Wisdom, motivation, and behind-the-scenes stories from the journey. Tune in to the conversation.',
-    icon: 'Database',
-  },
-];
-
