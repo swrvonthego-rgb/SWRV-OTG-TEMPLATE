@@ -2456,7 +2456,7 @@ async function handleStripeWebhook(request, env) {
           await env.EMAIL_DB.prepare(
             `UPDATE orders SET status = 'subscribed', deposit_paid_at = datetime('now'), stripe_subscription_id = ? WHERE id = ?`
           ).bind(session.subscription || null, order.id).run();
-          await sendDepositReceiptEmail(env, order);
+          await sendDepositReceiptEmail(env, order, session.amount_total);
           await sendOwnerOrderEmail(env, order);
         }
       } else if (order) {
@@ -2466,7 +2466,7 @@ async function handleStripeWebhook(request, env) {
              balance_paid_at = CASE WHEN balance_cents = 0 THEN datetime('now') ELSE balance_paid_at END,
              deposit_paid_at = datetime('now'), stripe_payment_intent = ? WHERE id = ?`
         ).bind(session.payment_intent || null, order.id).run();
-        await sendDepositReceiptEmail(env, order);
+        await sendDepositReceiptEmail(env, order, session.amount_total);
         await sendOwnerOrderEmail(env, order);
       } else if (session.payment_link) {
         // The fixed $100 Zion/booking deposit Payment Link — no order row,
@@ -2814,9 +2814,31 @@ async function roadmapStepHtml(env, order) {
       </div>`;
 }
 
-async function sendDepositReceiptEmail(env, order) {
+// What the client actually bought, echoed back to them: quantity and any
+// bundle discount (intake 'order'), add-ons, and the delivery promise they
+// signed (intake 'turnaround'). Their other intake answers stay in the
+// owner's email, because those can be personal.
+function customerOrderDetails(order) {
+  const safe = (x) => String(x ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let answers = [];
+  try { answers = order.intake_json ? JSON.parse(order.intake_json) : []; } catch (_) {}
+  const pick = (id) => safe((answers.find((a) => a.id === id) || {}).answer || '').trim();
+  return {
+    rows: [['Booking', pick('order')], ['Extras', pick('addOns')]].filter(([, v]) => v),
+    turnaround: pick('turnaround'),
+  };
+}
+
+async function sendDepositReceiptEmail(env, order, paidCents) {
   try {
     const monthly = order.category === 'monthly';
+    // What Stripe actually collected (after any promotion code), so a
+    // discounted order doesn't claim they paid the list deposit.
+    const paidNow = typeof paidCents === 'number' && paidCents >= 0 ? paidCents : order.deposit_cents;
+    const details = customerOrderDetails(order);
+    const detailRows = details.rows
+      .map(([k, v]) => `        <tr><td style="padding:6px 0;color:#777;">${k}</td><td style="text-align:right;">${v}</td></tr>`)
+      .join('\n');
     const balanceWhen = order.category === 'event'
       ? `automatically about ${BALANCE_INVOICE_LEAD_DAYS} days before your event`
       : `as soon as your project is delivered`;
@@ -2835,10 +2857,13 @@ async function sendDepositReceiptEmail(env, order) {
       <h2 style="margin:0 0 8px">You're booked — thank you!</h2>
       <p style="color:#555;font-size:14px;line-height:1.6;">Your deposit for <strong>${order.service_name}</strong> is confirmed.</p>
       <table style="width:100%;font-size:14px;margin:16px 0;border-collapse:collapse;">
+${detailRows}
         <tr><td style="padding:6px 0;color:#777;">Total</td><td style="text-align:right;">$${(order.total_cents / 100).toFixed(2)}</td></tr>
-        <tr><td style="padding:6px 0;color:#777;">Paid today</td><td style="text-align:right;">$${(order.deposit_cents / 100).toFixed(2)}</td></tr>
+        <tr><td style="padding:6px 0;color:#777;">Paid today</td><td style="text-align:right;">$${(paidNow / 100).toFixed(2)}</td></tr>
+        ${paidNow < order.deposit_cents ? `<tr><td style="padding:6px 0;color:#0b7a46;">Promotion applied</td><td style="text-align:right;color:#0b7a46;">−$${((order.deposit_cents - paidNow) / 100).toFixed(2)}</td></tr>` : ''}
         ${order.balance_cents > 0 ? `<tr><td style="padding:6px 0;color:#777;">Balance due</td><td style="text-align:right;">$${(order.balance_cents / 100).toFixed(2)}</td></tr>` : ''}
       </table>
+      ${details.turnaround ? `<p style="color:#555;font-size:13px;line-height:1.6;"><strong>Delivery:</strong> ${details.turnaround}</p>` : ''}
       ${agreementLinkHtml(order, '#FF4D00')}
       ${await roadmapStepHtml(env, order)}
       <p style="color:#555;font-size:13px;line-height:1.6;">Stripe will send you a separate payment receipt for today's charge. ${order.balance_cents > 0 ? `The balance will be invoiced ${balanceWhen} — no need to follow up.` : "You're paid in full. We'll confirm your session time with you shortly."}</p>
