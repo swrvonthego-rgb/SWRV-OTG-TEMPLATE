@@ -71,7 +71,13 @@ export function SignaturePad({ onChange, height = 150, tone = 'dark' }: { onChan
 
   return (
     <div>
-      <div className="relative rounded-xl overflow-hidden" style={{ background: '#fff' }}>
+      <div
+        className="relative rounded-xl overflow-hidden"
+        style={{
+          background: '#fff',
+          border: tone === 'light' ? '1px solid #e5e5ea' : 'none',
+        }}
+      >
         <canvas
           ref={canvasRef}
           aria-label="Sign here with your finger or mouse"
