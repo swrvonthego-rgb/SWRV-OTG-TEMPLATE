@@ -930,7 +930,7 @@ export default {
     }
 
     // Static assets
-    return env.ASSETS.fetch(request);
+    return serveAssets(request, env);
   },
 
   // Cloudflare Cron Trigger (see wrangler.jsonc "triggers.crons") — the
@@ -3683,4 +3683,19 @@ async function handleSaveVision(request, env) {
       status: 500, headers: { ...corsH, 'Content-Type': 'application/json' },
     });
   }
+}
+
+// Static assets. HTML is the one thing that must never be replayed from a
+// cache: it names the hashed bundle, so a stale copy pins the whole site to
+// an old build (Safari does this even with max-age=0). Hashed assets are
+// immutable, so only the document is forced to revalidate.
+async function serveAssets(request, env) {
+  const res = await env.ASSETS.fetch(request);
+  const type = res.headers.get('content-type') || '';
+  if (!type.includes('text/html')) return res;
+  const headers = new Headers(res.headers);
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('Pragma', 'no-cache');
+  headers.delete('ETag');
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
