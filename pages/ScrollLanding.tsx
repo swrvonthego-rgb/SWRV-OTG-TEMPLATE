@@ -226,8 +226,8 @@ export const ScrollLanding: React.FC = () => {
           </div>
           <div className="sl2-center" ref={centerRef}>
             <div className="sl2-logo">
-              <img src="/images/3d/light-final-alpha.webp" alt="SWRV On The Go" width={720} height={667} fetchPriority="high" />
-              {!reduce && <video src="/images/3d/light-intro-alpha-lite.webm" poster="/images/3d/light-final-alpha.webp" autoPlay muted playsInline preload="auto" aria-hidden="true" />}
+              <img src="/images/3d/light-final-cut.webp" alt="SWRV On The Go" width={720} height={667} fetchPriority="high" />
+              {!reduce && <video src="/images/3d/light-intro-cut.webm" poster="/images/3d/light-final-cut.webp" autoPlay muted playsInline preload="auto" aria-hidden="true" />}
             </div>
             <h1>Your vision.<br /><span>Our creative engine.</span></h1>
             <p>Content, websites and AI video, booked and paid in minutes. Pick it, book it, and we handle the rest.</p>
