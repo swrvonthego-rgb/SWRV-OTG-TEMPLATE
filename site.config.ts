@@ -1419,6 +1419,10 @@ export const ALL_SERVICES: Service[] = [
     id: 'music-video-order',
     name: 'Songs & Music Videos',
     category: 'execution',
+    // Quantity-priced: /api/checkout rebuilds the total with quoteMusicOrder().
+    // Without this the Worker prices the flat $1,000 entry and the steppers
+    // are decorative — a 4-song order would be charged for one song.
+    units: 'music-video',
     intakePath: 'music',
     price: 'From $1,000',
     priceNumeric: 1000,

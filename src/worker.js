@@ -2200,7 +2200,11 @@ async function handleCheckout(request, env) {
     // Songs & music videos are sold by quantity. The client sends how many
     // of each; the price comes from quoteMusicOrder() in site.config.ts, so
     // a tampered request can't buy four songs for a dollar.
-    const musicOrder = svc.units === 'music-video'
+    // Belt and braces: price by quantity for the music-order entry even if
+    // its `units` flag is ever dropped from the catalog, because falling back
+    // to the flat price silently undercharges instead of failing loudly.
+    const sellsByQuantity = svc.units === 'music-video' || svc.id === 'music-video-order';
+    const musicOrder = sellsByQuantity
       ? quoteMusicOrder(Number(body.songs) || 0, Number(body.videos) || 0)
       : null;
     if (musicOrder && musicOrder.total <= 0) {
