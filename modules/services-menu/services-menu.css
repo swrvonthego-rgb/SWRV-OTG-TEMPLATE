@@ -133,20 +133,10 @@
   height: 100%;
   object-fit: contain;
 }
-/* The still is a real cut-out. The intro video was rendered on a white
-   card, so it's clipped to the mark's own silhouette — the white box
-   disappears while the animation still plays. Same 720x666 frame, so the
-   mask lines up with the footage. */
-.services-menu .sm-hero-logo video {
-  -webkit-mask-image: url('/images/3d/light-final-alpha.png');
-  mask-image: url('/images/3d/light-final-alpha.png');
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-}
+/* Both layers are true cut-outs now: the still is flood-filled, and the
+   intro is an alpha-keyed VP9 webm (the footage itself had white light
+   streaks baked into a white card). The poster is the cut-out still, so a
+   browser that can't decode alpha simply shows the logo, never a box. */
 @media (prefers-reduced-motion: reduce) {
   .services-menu .sm-hero-logo video { display: none; }
 }

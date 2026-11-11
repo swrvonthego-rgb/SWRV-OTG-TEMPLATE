@@ -127,7 +127,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             <img src="/images/3d/light-final-alpha.webp" alt="SWRV On The Go" />
             <video
               className="sm-hero-video"
-              src="/images/3d/light-intro.mp4"
+              src="/images/3d/light-intro-alpha.webm"
               poster="/images/3d/light-final-alpha.webp"
               autoPlay muted loop playsInline preload="auto" aria-hidden="true"
             />
