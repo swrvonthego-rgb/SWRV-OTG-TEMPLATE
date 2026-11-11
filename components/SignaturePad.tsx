@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 // dark on a white card (like paper) so the saved PNG reads anywhere.
 // onChange gets a PNG data URL once there's a real signature (enough ink
 // that a stray tap doesn't count), or null when cleared.
-export function SignaturePad({ onChange, height = 150 }: { onChange: (png: string | null) => void; height?: number }) {
+export function SignaturePad({ onChange, height = 150, tone = 'dark' }: { onChange: (png: string | null) => void; height?: number; tone?: 'dark' | 'light' }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
@@ -86,7 +86,7 @@ export function SignaturePad({ onChange, height = 150 }: { onChange: (png: strin
         <span className="absolute left-4 right-4 bottom-8 pointer-events-none" style={{ borderTop: '1px solid #d6d6d6' }} />
       </div>
       <div className="flex justify-end mt-1.5">
-        <button type="button" onClick={clear} className="text-xs underline" style={{ color: 'rgba(255,255,255,0.5)' }}>Clear</button>
+        <button type="button" onClick={clear} className="text-xs underline" style={{ color: tone === 'light' ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.5)' }}>Clear</button>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { SERVICES, ADD_ONS, checkoutTotal, MUSIC_VIDEO_PRICING, quoteMusicOrder 
 import { buildAgreement, AGREEMENT_VERSION } from '../../agreement.config';
 import { SignaturePad } from '../../components/SignaturePad';
 import { IntakeFields, FIELD_STYLE, firstMissing, toIntakePayload, type Answers } from '../../components/IntakeFields';
+import './checkout.css';
 
 export interface CheckoutService {
   id: string;
@@ -43,19 +44,17 @@ const Stepper: React.FC<{
   label: string; sub: string; value: number;
   onChange: (n: number) => void; min?: number; max?: number;
 }> = ({ label, sub, value, onChange, min = 0, max = MUSIC_VIDEO_PRICING.maxPerType }) => (
-  <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-    <div className="flex items-center justify-between gap-3">
-      <div>
-        <p className="text-sm font-semibold text-white">{label}</p>
-        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{sub}</p>
-      </div>
-      <div className="flex items-center gap-2">
-        <button type="button" aria-label={`One fewer ${label}`} disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-11 h-11 rounded-full text-lg font-bold disabled:opacity-30" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff' }}>−</button>
-        <span className="w-8 text-center text-xl font-black text-white" aria-live="polite">{value}</span>
-        <button type="button" aria-label={`One more ${label}`} disabled={value >= max} onClick={() => onChange(Math.min(max, value + 1))}
-          className="w-11 h-11 rounded-full text-lg font-bold disabled:opacity-30" style={{ background: Orange, color: '#fff' }}>+</button>
-      </div>
+  <div className="co-step">
+    <div>
+      <p className="co-step-label">{label}</p>
+      <p className="co-step-sub">{sub}</p>
+    </div>
+    <div className="co-step-controls">
+      <button type="button" aria-label={`One fewer ${label}`} disabled={value <= min}
+        onClick={() => onChange(Math.max(min, value - 1))} className="co-round co-round-less">−</button>
+      <span className="co-count" aria-live="polite">{value}</span>
+      <button type="button" aria-label={`One more ${label}`} disabled={value >= max}
+        onClick={() => onChange(Math.min(max, value + 1))} className="co-round co-round-more">+</button>
     </div>
   </div>
 );
@@ -135,125 +134,115 @@ function MusicOrderCheckout({ service, preset, onClose }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[9996] flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}>
-      <div className="relative w-full max-w-lg max-h-[92svh] flex flex-col rounded-3xl overflow-hidden"
-        style={{ background: 'rgba(10,8,4,0.98)', border: '1px solid rgba(200,168,75,0.2)', boxShadow: '0 32px 80px rgba(0,0,0,0.8)' }}>
-
-        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+    <div className="co-overlay" role="dialog" aria-modal="true" aria-label="Build your order">
+      <div className="co-sheet">
+        <header className="co-hero">
           <div>
-            <p className="text-xs font-bold tracking-[0.3em] uppercase" style={{ color: Gold }}>Book &amp; Pay · Build your order</p>
-            <p className="text-sm mt-0.5 text-white font-semibold">Songs &amp; music videos</p>
+            <p className="co-eyebrow">Book &amp; Pay</p>
+            <h2 className="co-title">Build your order</h2>
+            <p className="co-lede">Pick how many you need. The price moves with you.</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Close">
-            <X size={18} style={{ color: 'rgba(255,255,255,0.4)' }} />
-          </button>
-        </div>
+          <button onClick={onClose} className="co-close" aria-label="Close">✕</button>
+        </header>
 
-        <ScrollHint axis="y" wrapperClassName="flex-1 min-h-0 flex flex-col" className="flex-1 overflow-y-auto px-6 py-6" fadeColor="rgba(10,8,4,0.98)" accentBg="#c8a84b" accentFg="#0a0804">
-          <div className="space-y-3">
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              Pick how many you need — the price updates as you go. No questionnaire, no back-and-forth.
-            </p>
-
+        <ScrollHint axis="y" wrapperClassName="co-scroll-wrap" className="co-scroll"
+          fadeColor="#ffffff" accentBg="#1d1d1f" accentFg="#ffffff">
+          <div className="co-body">
             <Stepper label="Songs" sub="$1,000 each · 48-hour turnaround" value={songs} onChange={setSongs} />
-            <Stepper label="Music videos" sub="$1,500 each · $1,000 each when paired with a song" value={videos} onChange={setVideos} />
+            <Stepper label="Music videos" sub="$1,500 each · $1,000 when paired with a song" value={videos} onChange={setVideos} />
 
             {quote.discount > 0 && (
-              <div className="rounded-2xl px-4 py-3 flex items-center justify-between gap-3"
-                style={{ background: 'rgba(200,168,75,0.12)', border: '1px solid rgba(200,168,75,0.35)' }}>
-                <span className="text-sm font-bold" style={{ color: Gold }}>
-                  You&apos;re saving {money(quote.discount)} ({quote.discountPct}%)
-                </span>
-                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.5)' }}>bundle discount</span>
+              <div className="co-save">
+                <span className="co-save-badge">You&apos;re saving {money(quote.discount)}</span>
+                <span className="co-save-pct">{quote.discountPct}% bundle discount</span>
               </div>
             )}
 
-            <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              {["2 songs · 10% off", "3 songs · 15%", "4 songs · 20%", "5+ songs · 25%"].map((t) => (
-                <span key={t} className="px-2 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>{t}</span>
+            <div className="co-ladder">
+              {['2 songs · 10%', '3 songs · 15%', '4 songs · 20%', '5+ songs · 25%'].map((t) => (
+                <span key={t} className="co-chip">{t}</span>
               ))}
             </div>
 
-            <div className="rounded-2xl p-4" style={{ background: 'rgba(255,77,0,0.08)', border: '1px solid rgba(255,77,0,0.25)' }}>
-              {quote.lines.map((l) => (
-                <div key={l.label} className="flex justify-between text-sm mb-1.5">
-                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>{l.label}</span>
-                  <span className="text-white">{money(l.amount)}</span>
-                </div>
-              ))}
-              {quote.discount > 0 && (
-                <div className="flex justify-between text-sm mb-1.5">
-                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Bundle discount ({quote.discountPct}%)</span>
-                  <span style={{ color: Gold }}>−{money(quote.discount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm mb-1.5 pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                <span style={{ color: 'rgba(255,255,255,0.6)' }}>Total</span>
-                <span className="text-white font-semibold">{money(quote.total)}</span>
+            <div className="co-total">
+              <div className="co-total-hero">
+                <span className="co-total-label">Total</span>
+                <span className="co-amount">{money(quote.total)}</span>
               </div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span style={{ color: 'rgba(255,255,255,0.6)' }}>Due now (50%)</span>
-                <span className="font-bold" style={{ color: Orange }}>{money(quote.deposit)}</span>
-              </div>
-              <div className="flex justify-between text-xs pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
-                <span>Balance on completion</span><span>{money(quote.balance)}</span>
+              <ul className="co-lines">
+                {quote.lines.map((l) => (
+                  <li key={l.label}><span>{l.label}</span><span>{money(l.amount)}</span></li>
+                ))}
+                {quote.discount > 0 && (
+                  <li className="co-line-save">
+                    <span>Bundle discount ({quote.discountPct}%)</span>
+                    <span>−{money(quote.discount)}</span>
+                  </li>
+                )}
+              </ul>
+              <div className="co-split">
+                <div>
+                  <span className="co-split-label">Due now</span>
+                  <span className="co-split-value">{money(quote.deposit)}</span>
+                </div>
+                <div>
+                  <span className="co-split-label">On completion</span>
+                  <span className="co-split-value co-split-muted">{money(quote.balance)}</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
-              <span className="px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>🔒 50% now · 50% on delivery</span>
-              <span className="px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>⚡ 48-hour songs</span>
-              <span className="px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>💳 Card · Apple Pay · Klarna · Affirm</span>
+            <div className="co-trust">
+              <span>🔒 Secure by Stripe</span>
+              <span>⚡ 48-hour songs</span>
+              <span>💳 Apple Pay · Klarna · Affirm</span>
             </div>
 
-            <form onSubmit={submit} className="space-y-3 pt-1">
-              <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
-              <input type="email" placeholder="Email (your receipt goes here)" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
-              <input type="tel" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
+            <form onSubmit={submit} className="co-form">
+              <input className="co-field" type="text" placeholder="Your name"
+                value={name} onChange={(e) => setName(e.target.value)} />
+              <input className="co-field" type="email" placeholder="Email — your receipt goes here"
+                value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className="co-field" type="tel" placeholder="Phone (optional)"
+                value={phone} onChange={(e) => setPhone(e.target.value)} />
 
-              <div className="rounded-2xl p-4 mt-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,168,75,0.3)' }}>
-                <p className="text-xs font-bold tracking-[0.2em] uppercase mb-3" style={{ color: Gold }}>Your agreement</p>
-                <dl className="text-xs space-y-1 mb-3">
+              <div className="co-agree">
+                <p className="co-agree-label">Your agreement</p>
+                <dl className="co-agree-list">
                   {agreement.summary.map((l) => (
-                    <div key={l.label} className="flex justify-between gap-3">
-                      <dt style={{ color: 'rgba(255,255,255,0.45)' }}>{l.label}</dt>
-                      <dd className="text-right text-white">{l.value}</dd>
+                    <div key={l.label}>
+                      <dt>{l.label}</dt>
+                      <dd>{l.value}</dd>
                     </div>
                   ))}
                 </dl>
-                <button type="button" onClick={() => setShowFullAgreement((v) => !v)} className="text-xs underline mb-3" style={{ color: Gold }}>
+                <button type="button" className="co-link" onClick={() => setShowFullAgreement((v) => !v)}>
                   {showFullAgreement ? 'Hide full agreement' : 'Read the full agreement'}
                 </button>
                 {showFullAgreement && (
-                  <ol className="text-xs leading-relaxed space-y-2 mb-3 max-h-56 overflow-y-auto pr-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <ol className="co-clauses">
                     {agreement.clauses.map((c, i) => (
-                      <li key={c.heading}><strong className="text-white">{i + 1}. {c.heading}.</strong> {c.body}</li>
+                      <li key={c.heading}><strong>{i + 1}. {c.heading}.</strong> {c.body}</li>
                     ))}
                   </ol>
                 )}
-                <SignaturePad onChange={setSignature} />
-                <p className="text-[11px] leading-relaxed mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                  By signing, I{name.trim() ? `, ${name.trim()},` : ''} agree to this service agreement and the <a href="/terms" target="_blank" rel="noreferrer" className="underline">Terms of Service</a>, and agree that my electronic signature is as valid as a handwritten one.
+                <SignaturePad onChange={setSignature} tone="light" />
+                <p className="co-fine">
+                  By signing, I{name.trim() ? `, ${name.trim()},` : ''} agree to this service agreement and the{' '}
+                  <a href="/terms" target="_blank" rel="noreferrer">Terms of Service</a>, and that my electronic
+                  signature is as valid as a handwritten one.
                 </p>
               </div>
 
-              {error && <p className="text-sm" style={{ color: '#e5484d' }}>{error}</p>}
+              {error && <p className="co-error">{error}</p>}
 
-              <button type="submit" disabled={submitting || !signature || empty}
-                className="w-full py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60"
-                style={{ background: `linear-gradient(135deg, ${Orange}, #ff7433)`, color: '#fff', boxShadow: '0 8px 24px rgba(255,77,0,0.35)' }}>
-                {submitting ? 'Redirecting to secure checkout…'
-                  : empty ? 'Pick at least one song or video'
+              <button type="submit" className="co-pay" disabled={submitting || !signature || empty}>
+                {submitting ? 'Opening secure checkout…'
+                  : empty ? 'Pick a song or video to start'
                   : !signature ? 'Sign above to continue'
-                  : `Sign & Pay ${money(quote.deposit)} Deposit →`}
+                  : `Pay ${money(quote.deposit)} now →`}
               </button>
-              <p className="text-xs text-center flex items-center justify-center gap-1.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                <Lock size={11} /> Secure checkout by Stripe. Cards, Apple Pay, Google Pay.
-              </p>
+              <p className="co-secure">Half now, half when it&apos;s done. No hidden fees.</p>
             </form>
           </div>
         </ScrollHint>
