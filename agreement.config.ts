@@ -11,7 +11,7 @@ import type { Service } from './site.config';
 // whenever the wording below changes.
 // ════════════════════════════════════════════════════════════
 
-export const AGREEMENT_VERSION = '2026-09-27';
+export const AGREEMENT_VERSION = '2026-11-11';
 
 export interface AgreementInput {
   service: Service;
@@ -22,6 +22,11 @@ export interface AgreementInput {
   clientName: string;
   clientEmail: string;
   date?: string; // event date or preferred start date, yyyy-MM-dd
+  // Songs & music videos are sold by quantity: "4 songs + 4 music videos",
+  // how much the bundle ladder took off, and the turnaround promise.
+  quantityLabel?: string;
+  discountCents?: number;
+  turnaround?: string;
 }
 
 export interface Agreement {
@@ -39,13 +44,14 @@ export function buildAgreement(a: AgreementInput): Agreement {
   const monthly = s.checkoutCategory === 'monthly';
   const inFull = !!s.payInFull && !monthly;
   const event = s.checkoutCategory === 'event';
-  const pkg = [s.name, a.optionLabel].filter(Boolean).join(' — ') + (a.addOnLabels.length ? ` + ${a.addOnLabels.join(' + ')}` : '');
+  const pkg = [s.name, a.quantityLabel || a.optionLabel].filter(Boolean).join(' — ') + (a.addOnLabels.length ? ` + ${a.addOnLabels.join(' + ')}` : '');
 
   const summary = [
     { label: 'Client', value: `${a.clientName} (${a.clientEmail})` },
     { label: 'Package', value: pkg },
-    { label: event ? 'Event date' : 'Start date', value: a.date || 'To be confirmed' },
+    ...(event || a.date ? [{ label: event ? 'Event date' : 'Start date', value: a.date || 'To be confirmed' }] : []),
     { label: monthly ? 'Monthly investment' : 'Total investment', value: `${usd(a.totalCents)}${monthly ? '/month' : ''}` },
+    ...(a.discountCents ? [{ label: `Bundle discount (${Math.round((a.discountCents / Math.max(1, a.totalCents + a.discountCents)) * 100)}%)`, value: `−${usd(a.discountCents)}` }] : []),
     { label: monthly ? 'Due today (first month)' : inFull ? 'Due today (paid in full)' : 'Due today (50% deposit)', value: usd(a.dueTodayCents) },
   ];
   if (!monthly && !inFull) summary.push({ label: 'Balance', value: `${usd(a.totalCents - a.dueTodayCents)}, invoiced ${event ? 'before the event' : 'on delivery'}` });
@@ -66,6 +72,7 @@ export function buildAgreement(a: AgreementInput): Agreement {
   const clauses = [
     { heading: 'Services', body: `SWRV On The Go will provide ${pkg}. ${scope}` },
     { heading: 'Payment', body: payment },
+    ...(a.turnaround ? [{ heading: 'Turnaround', body: a.turnaround }] : []),
     ...(s.terms ? [{ heading: 'Package terms', body: s.terms }] : []),
     // Live performances have nothing to revise.
     ...(event && s.revisions == null ? [] : [{ heading: 'Revisions', body: s.revisions != null

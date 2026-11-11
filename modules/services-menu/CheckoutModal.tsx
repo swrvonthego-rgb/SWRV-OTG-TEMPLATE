@@ -6,7 +6,7 @@ import {
   eachDayOfInterval, isSameMonth, isSameDay, isBefore, startOfToday,
 } from 'date-fns';
 import { buildIntakeQuestions, type Question } from '../../intake.config';
-import { SERVICES, ADD_ONS, checkoutTotal } from '../../site.config';
+import { SERVICES, ADD_ONS, checkoutTotal, MUSIC_VIDEO_PRICING, quoteMusicOrder } from '../../site.config';
 import { buildAgreement, AGREEMENT_VERSION } from '../../agreement.config';
 import { SignaturePad } from '../../components/SignaturePad';
 import { IntakeFields, FIELD_STYLE, firstMissing, toIntakePayload, type Answers } from '../../components/IntakeFields';
@@ -27,6 +27,240 @@ const Gold = '#c8a84b';
 const Orange = '#FF4D00';
 
 type Step = 'date' | 'intake' | 'details';
+
+const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
+
+// Every music card opens the same one-screen order builder — only the
+// starting numbers change (song-only, video-only, or both).
+const MUSIC_PRESETS: Record<string, { songs: number; videos: number }> = {
+  'song-production-intro': { songs: 1, videos: 0 },
+  'music-video-intro': { songs: 0, videos: 1 },
+  'song-video-bundle': { songs: 1, videos: 1 },
+  'music-video-order': { songs: 1, videos: 0 },
+};
+
+const Stepper: React.FC<{
+  label: string; sub: string; value: number;
+  onChange: (n: number) => void; min?: number; max?: number;
+}> = ({ label, sub, value, onChange, min = 0, max = MUSIC_VIDEO_PRICING.maxPerType }) => (
+  <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <p className="text-sm font-semibold text-white">{label}</p>
+        <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{sub}</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <button type="button" aria-label={`One fewer ${label}`} disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))}
+          className="w-11 h-11 rounded-full text-lg font-bold disabled:opacity-30" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff' }}>−</button>
+        <span className="w-8 text-center text-xl font-black text-white" aria-live="polite">{value}</span>
+        <button type="button" aria-label={`One more ${label}`} disabled={value >= max} onClick={() => onChange(Math.min(max, value + 1))}
+          className="w-11 h-11 rounded-full text-lg font-bold disabled:opacity-30" style={{ background: Orange, color: '#fff' }}>+</button>
+      </div>
+    </div>
+  </div>
+);
+
+// Songs & music videos, priced by quantity. One screen: two steppers, the
+// live total, name/email, sign, pay 50%. Creative details come after
+// payment, so nothing slows the sale down.
+function MusicOrderCheckout({ service, preset, onClose }: {
+  service: (typeof SERVICES)[number];
+  preset: { songs: number; videos: number };
+  onClose: () => void;
+}) {
+  const [songs, setSongs] = useState(preset.songs);
+  const [videos, setVideos] = useState(preset.videos);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [signature, setSignature] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [showFullAgreement, setShowFullAgreement] = useState(false);
+
+  const quote = quoteMusicOrder(songs, videos);
+  const empty = quote.total <= 0;
+  const totalCents = Math.round(quote.total * 100);
+  const depositCents = Math.round(quote.deposit * 100);
+  const quantityLabel = [
+    songs ? `${songs} song${songs === 1 ? '' : 's'}` : '',
+    videos ? `${videos} music video${videos === 1 ? '' : 's'}` : '',
+  ].filter(Boolean).join(' + ');
+
+  // Same builder the Worker uses, so what the client signs is what's saved.
+  const agreement = buildAgreement({
+    service,
+    quantityLabel,
+    discountCents: Math.round(quote.discount * 100),
+    turnaround: `Each song is delivered 48 hours after it starts: 24 hours to write and build it, 24 hours to record and finish it. Songs are delivered in order, one 48-hour block at a time.`,
+    addOnLabels: [],
+    totalCents,
+    dueTodayCents: depositCents,
+    clientName: name.trim() || 'Your name',
+    clientEmail: email.trim() || 'your email',
+  });
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (empty) { setError('Pick at least one song or video.'); return; }
+    if (!name.trim() || !email.trim()) { setError('Name and email are required.'); return; }
+    if (!signature) { setError('Please sign the agreement to continue.'); return; }
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: 'music-video-order',
+          songs,
+          videos,
+          category: 'project',
+          customerName: name.trim(),
+          customerEmail: email.trim(),
+          customerPhone: phone.trim() || undefined,
+          intake: [],
+          signature,
+          agreementVersion: AGREEMENT_VERSION,
+          origin: window.location.origin,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.checkoutUrl) throw new Error(data?.error || `Checkout failed (${res.status})`);
+      window.location.href = data.checkoutUrl;
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong. Try again or email info@swrvonthego.pro directly.');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9996] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}>
+      <div className="relative w-full max-w-lg max-h-[92svh] flex flex-col rounded-3xl overflow-hidden"
+        style={{ background: 'rgba(10,8,4,0.98)', border: '1px solid rgba(200,168,75,0.2)', boxShadow: '0 32px 80px rgba(0,0,0,0.8)' }}>
+
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div>
+            <p className="text-xs font-bold tracking-[0.3em] uppercase" style={{ color: Gold }}>Book &amp; Pay · Build your order</p>
+            <p className="text-sm mt-0.5 text-white font-semibold">Songs &amp; music videos</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Close">
+            <X size={18} style={{ color: 'rgba(255,255,255,0.4)' }} />
+          </button>
+        </div>
+
+        <ScrollHint axis="y" wrapperClassName="flex-1 min-h-0 flex flex-col" className="flex-1 overflow-y-auto px-6 py-6" fadeColor="rgba(10,8,4,0.98)" accentBg="#c8a84b" accentFg="#0a0804">
+          <div className="space-y-3">
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Pick how many you need — the price updates as you go. No questionnaire, no back-and-forth.
+            </p>
+
+            <Stepper label="Songs" sub="$1,000 each · 48-hour turnaround" value={songs} onChange={setSongs} />
+            <Stepper label="Music videos" sub="$1,500 each · $1,000 each when paired with a song" value={videos} onChange={setVideos} />
+
+            {quote.discount > 0 && (
+              <div className="rounded-2xl px-4 py-3 flex items-center justify-between gap-3"
+                style={{ background: 'rgba(200,168,75,0.12)', border: '1px solid rgba(200,168,75,0.35)' }}>
+                <span className="text-sm font-bold" style={{ color: Gold }}>
+                  You&apos;re saving {money(quote.discount)} ({quote.discountPct}%)
+                </span>
+                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.5)' }}>bundle discount</span>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {["2 songs · 10% off", "3 songs · 15%", "4 songs · 20%", "5+ songs · 25%"].map((t) => (
+                <span key={t} className="px-2 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>{t}</span>
+              ))}
+            </div>
+
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(255,77,0,0.08)', border: '1px solid rgba(255,77,0,0.25)' }}>
+              {quote.lines.map((l) => (
+                <div key={l.label} className="flex justify-between text-sm mb-1.5">
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>{l.label}</span>
+                  <span className="text-white">{money(l.amount)}</span>
+                </div>
+              ))}
+              {quote.discount > 0 && (
+                <div className="flex justify-between text-sm mb-1.5">
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Bundle discount ({quote.discountPct}%)</span>
+                  <span style={{ color: Gold }}>−{money(quote.discount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm mb-1.5 pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ color: 'rgba(255,255,255,0.6)' }}>Total</span>
+                <span className="text-white font-semibold">{money(quote.total)}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-1.5">
+                <span style={{ color: 'rgba(255,255,255,0.6)' }}>Due now (50%)</span>
+                <span className="font-bold" style={{ color: Orange }}>{money(quote.deposit)}</span>
+              </div>
+              <div className="flex justify-between text-xs pt-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>
+                <span>Balance on completion</span><span>{money(quote.balance)}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              <span className="px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>🔒 50% now · 50% on delivery</span>
+              <span className="px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>⚡ 48-hour songs</span>
+              <span className="px-2.5 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>💳 Card · Apple Pay · Klarna · Affirm</span>
+            </div>
+
+            <form onSubmit={submit} className="space-y-3 pt-1">
+              <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
+              <input type="email" placeholder="Email (your receipt goes here)" value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
+              <input type="tel" placeholder="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 focus:outline-none" style={FIELD_STYLE} />
+
+              <div className="rounded-2xl p-4 mt-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(200,168,75,0.3)' }}>
+                <p className="text-xs font-bold tracking-[0.2em] uppercase mb-3" style={{ color: Gold }}>Your agreement</p>
+                <dl className="text-xs space-y-1 mb-3">
+                  {agreement.summary.map((l) => (
+                    <div key={l.label} className="flex justify-between gap-3">
+                      <dt style={{ color: 'rgba(255,255,255,0.45)' }}>{l.label}</dt>
+                      <dd className="text-right text-white">{l.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <button type="button" onClick={() => setShowFullAgreement((v) => !v)} className="text-xs underline mb-3" style={{ color: Gold }}>
+                  {showFullAgreement ? 'Hide full agreement' : 'Read the full agreement'}
+                </button>
+                {showFullAgreement && (
+                  <ol className="text-xs leading-relaxed space-y-2 mb-3 max-h-56 overflow-y-auto pr-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    {agreement.clauses.map((c, i) => (
+                      <li key={c.heading}><strong className="text-white">{i + 1}. {c.heading}.</strong> {c.body}</li>
+                    ))}
+                  </ol>
+                )}
+                <SignaturePad onChange={setSignature} />
+                <p className="text-[11px] leading-relaxed mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  By signing, I{name.trim() ? `, ${name.trim()},` : ''} agree to this service agreement and the <a href="/terms" target="_blank" rel="noreferrer" className="underline">Terms of Service</a>, and agree that my electronic signature is as valid as a handwritten one.
+                </p>
+              </div>
+
+              {error && <p className="text-sm" style={{ color: '#e5484d' }}>{error}</p>}
+
+              <button type="submit" disabled={submitting || !signature || empty}
+                className="w-full py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60"
+                style={{ background: `linear-gradient(135deg, ${Orange}, #ff7433)`, color: '#fff', boxShadow: '0 8px 24px rgba(255,77,0,0.35)' }}>
+                {submitting ? 'Redirecting to secure checkout…'
+                  : empty ? 'Pick at least one song or video'
+                  : !signature ? 'Sign above to continue'
+                  : `Sign & Pay ${money(quote.deposit)} Deposit →`}
+              </button>
+              <p className="text-xs text-center flex items-center justify-center gap-1.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                <Lock size={11} /> Secure checkout by Stripe. Cards, Apple Pay, Google Pay.
+              </p>
+            </form>
+          </div>
+        </ScrollHint>
+      </div>
+    </div>
+  );
+}
 
 // Book & Pay: pick a date on the calendar → answer the intake for this
 // service (questions come from intake.config.ts, which derives them from
@@ -67,6 +301,14 @@ export function CheckoutModal({ service, onClose }: Props) {
   }, [service]);
 
   if (!service) return null;
+
+  // Songs & music videos: every music card opens the one-screen order
+  // builder instead of the calendar + questionnaire.
+  const musicPreset = MUSIC_PRESETS[service.id];
+  const musicOrderService = SERVICES.find((s) => s.id === 'music-video-order');
+  if (musicPreset && musicOrderService) {
+    return <MusicOrderCheckout service={musicOrderService} preset={musicPreset} onClose={onClose} />;
+  }
 
   const isEvent = service.checkoutCategory === 'event';
   // Monthly plans: the first month is paid in full today, then Stripe

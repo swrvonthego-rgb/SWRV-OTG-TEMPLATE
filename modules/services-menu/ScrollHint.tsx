@@ -5,6 +5,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 // pill (up and down). Everything disappears when nothing is cut off, so
 // content that fits looks exactly as before.
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
+  // React 19 dropped `children` from HTMLAttributes, so both are declared
+  // explicitly here (this component wraps content and takes classes).
+  children?: React.ReactNode;
+  className?: string;
   axis: 'x' | 'y';
   /** Classes for the outer, positioned wrapper. */
   wrapperClassName?: string;

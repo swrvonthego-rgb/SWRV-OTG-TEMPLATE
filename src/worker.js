@@ -1,6 +1,6 @@
 import { renderRoadmapEmail } from './email-template.js';
 import { SWRV_ROADMAP_CONFIG } from '../modules/roadmap/config';
-import { SERVICES, checkoutTotal } from '../site.config';
+import { SERVICES, checkoutTotal, quoteMusicOrder, MUSIC_VIDEO_PRICING } from '../site.config';
 import { buildAgreement, agreementText, AGREEMENT_VERSION } from '../agreement.config';
 // src/worker.js — Cloudflare Worker entry point
 //
@@ -2197,12 +2197,33 @@ async function handleCheckout(request, env) {
     if (svc.options?.length && !priced.option) {
       return new Response(JSON.stringify({ error: 'Please pick an option for this booking.' }), { status: 400, headers: jsonHeaders(request) });
     }
-    const serviceName = priced.option ? `${svc.name} — ${priced.option.label}` : svc.name;
-    const priceCents = Math.round(priced.total * 100);
+    // Songs & music videos are sold by quantity. The client sends how many
+    // of each; the price comes from quoteMusicOrder() in site.config.ts, so
+    // a tampered request can't buy four songs for a dollar.
+    const musicOrder = svc.units === 'music-video'
+      ? quoteMusicOrder(Number(body.songs) || 0, Number(body.videos) || 0)
+      : null;
+    if (musicOrder && musicOrder.total <= 0) {
+      return new Response(JSON.stringify({ error: 'Pick at least one song or video.' }), { status: 400, headers: jsonHeaders(request) });
+    }
+    const quantityLabel = musicOrder
+      ? [
+          musicOrder.songs ? `${musicOrder.songs} song${musicOrder.songs === 1 ? '' : 's'}` : '',
+          musicOrder.videos ? `${musicOrder.videos} music video${musicOrder.videos === 1 ? '' : 's'}` : '',
+        ].filter(Boolean).join(' + ')
+      : '';
+    const serviceName = musicOrder
+      ? `${quantityLabel} — ${svc.name}`
+      : priced.option ? `${svc.name} — ${priced.option.label}` : svc.name;
+    const priceCents = Math.round((musicOrder ? musicOrder.total : priced.total) * 100);
 
     // The chosen option and add-ons travel with the intake answers, so they
     // show up in the owner's booking email and in /admin -> Orders.
     const extraAnswers = [
+      ...(musicOrder ? [
+        { id: 'order', question: 'Order', answer: `${quantityLabel}${musicOrder.discount ? ` — ${musicOrder.discountPct}% bundle discount (−$${musicOrder.discount})` : ''}` },
+        { id: 'turnaround', question: 'Turnaround', answer: `${MUSIC_VIDEO_PRICING.songHours} hours per song — ${MUSIC_VIDEO_PRICING.phases.writeAndBuild} to write and build, ${MUSIC_VIDEO_PRICING.phases.recordAndFinish} to record and finish` },
+      ] : []),
       ...(priced.option ? [{ id: 'option', question: 'Option', answer: `${priced.option.label} ($${priced.option.price})` }] : []),
       ...(priced.lines.length ? [{ id: 'addOns', question: 'Add-ons', answer: priced.lines.map((l) => `${l.label} (+$${l.amount})`).join(', ') }] : []),
     ];
@@ -2230,7 +2251,10 @@ async function handleCheckout(request, env) {
     // Brand packages send the client on to The Roadmap after paying.
     const rmToken = svc.roadmapAfterPurchase ? await roadmapToken(env, customerEmail) : '';
     const nextStep = svc.roadmapAfterPurchase ? `&next=roadmap&e=${encodeURIComponent(customerEmail || '')}&n=${encodeURIComponent((customerName || '').slice(0, 60))}&t=${rmToken}` : '';
-    const metadata = { service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(',') };
+    const metadata = {
+      service_id: serviceId, category, option: priced.option?.id || '', add_ons: priced.lines.map((l) => l.id).join(','),
+      ...(musicOrder ? { songs: String(musicOrder.songs), videos: String(musicOrder.videos), discount_cents: String(Math.round(musicOrder.discount * 100)) } : {}),
+    };
     const session = category === 'monthly' ? await stripeRequest(env, 'POST', 'checkout/sessions', {
       mode: 'subscription',
       customer: customerId,
@@ -2255,7 +2279,7 @@ async function handleCheckout(request, env) {
           unit_amount: depositCents,
           product_data: {
             name: `${serviceName}${priced.lines.length ? ' + ' + priced.lines.map((l) => l.label).join(' + ') : ''} — 50% deposit`,
-            description: `Total: $${(priceCents / 100).toFixed(2)} · Deposit due now: $${(depositCents / 100).toFixed(2)} · Balance invoiced ${category === 'event' ? 'before your event' : 'on delivery'}: $${(balanceCents / 100).toFixed(2)}`,
+            description: `${musicOrder && musicOrder.discount ? `List $${musicOrder.base.toFixed(2)} · bundle discount ${musicOrder.discountPct}% (−$${musicOrder.discount.toFixed(2)}) · ` : ''}Total: $${(priceCents / 100).toFixed(2)} · Deposit due now: $${(depositCents / 100).toFixed(2)} · Balance invoiced ${category === 'event' ? 'before your event' : 'on delivery'}: $${(balanceCents / 100).toFixed(2)}`,
           },
         },
       }],
@@ -2284,6 +2308,11 @@ async function handleCheckout(request, env) {
     const agreement = buildAgreement({
       service: svc,
       optionLabel: priced.option?.label,
+      quantityLabel: musicOrder ? quantityLabel : undefined,
+      discountCents: musicOrder ? Math.round(musicOrder.discount * 100) : undefined,
+      turnaround: musicOrder
+        ? 'Each song is delivered 48 hours after it starts: 24 hours to write and build it, 24 hours to record and finish it. Songs are delivered in order, one 48-hour block at a time.'
+        : undefined,
       addOnLabels: priced.lines.map((l) => l.label),
       totalCents: priceCents,
       dueTodayCents: depositCents,

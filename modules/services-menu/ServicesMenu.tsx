@@ -9,11 +9,33 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onBookStrategyCall?: () => void;
+  // The page renders this full-bleed; the overlay path leaves it unset.
+  isHome?: boolean;
 }
 
 // Build lookup map: serviceId → service
 const SERVICE_MAP: Record<string, typeof SERVICES[0]> = {};
 SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
+
+// What people actually come to buy leads. Music & video first (songs are
+// the most requested thing we sell, and the 48-hour promise is the hook),
+// then social/content, then AI video, then websites, then the rest.
+const CATEGORY_ORDER = [
+  'music-video-packages',
+  'social-media',
+  'videography',
+  'web-digital',
+  'zion-vocals',
+  'brand-identity',
+  'content-business',
+  'coaching',
+  'audio-production',
+];
+const ORDERED_CATEGORIES = [...SUB_CATEGORIES].sort((a, b) => {
+  const ia = CATEGORY_ORDER.indexOf(a.id);
+  const ib = CATEGORY_ORDER.indexOf(b.id);
+  return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+});
 
 export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -98,24 +120,15 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
       >×</button>
 
       <div className="sm-inner">
-        {/* HERO IMAGE — Leader of the Revolution */}
+        {/* HERO — the SWRV logo, with its animation. The still doubles as
+            the poster and the fallback for reduced-motion visitors. */}
         <div className="sm-hero-image">
-          <img
-            src="https://assets.swrvonthego.pro/SWRV%20OTG%20Assets/1752950982581945_2_kk3jt3_ui7upw.png"
-            alt="Leader of the Revolution — SWRV On The Go"
-            className="sm-hero-img"
-          />
+          <div className="sm-hero-logo">
+            <img src="/images/3d/light-final.webp" alt="SWRV On The Go" />
+            <video src="/images/3d/light-intro.mp4" autoPlay muted loop playsInline preload="auto" aria-hidden="true" />
+          </div>
           <p className="sm-hero-caption">LEADER OF THE REVOLUTION</p>
         </div>
-
-        {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers */}
-        <EventCoverage
-          onBook={(svc) => setCheckoutService(svc)}
-          onIntake={(id, name, path) => {
-            window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id, name, path } }));
-            onClose?.();
-          }}
-        />
 
         {/* ROADMAP RECOMMENDATIONS — shown only when coming from Roadmap CTA */}
         {roadmapRecs.length > 0 && (
@@ -176,7 +189,7 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
         </header>
 
         {/* SUB-CATEGORIES */}
-        {SUB_CATEGORIES.map((sub) => {
+        {ORDERED_CATEGORIES.map((sub) => {
           const items = sub.serviceIds
             .map((id) => SERVICE_MAP[id])
             .filter(Boolean)
@@ -218,6 +231,17 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             </section>
           );
         })}
+
+        {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers.
+            Kept below the core services so the first thing a visitor sees
+            is what people actually come to buy. */}
+        <EventCoverage
+          onBook={(svc) => setCheckoutService(svc)}
+          onIntake={(id, name, path) => {
+            window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id, name, path } }));
+            onClose?.();
+          }}
+        />
 
         {/* CLIENT REVIEWS — published reviews from verified paying clients */}
         {!q && <ClientReviews />}
