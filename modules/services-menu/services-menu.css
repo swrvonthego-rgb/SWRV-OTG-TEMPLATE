@@ -122,7 +122,7 @@
 .services-menu .sm-hero-logo {
   position: relative;
   width: min(460px, 78vw);
-  aspect-ratio: 720 / 667;
+  aspect-ratio: 720 / 590;
   margin: 0 auto 16px;
 }
 .services-menu .sm-hero-logo img,
