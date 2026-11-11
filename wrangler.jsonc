@@ -8,7 +8,12 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    // Page requests must reach the Worker, otherwise Cloudflare's asset
+    // layer answers them first and the document keeps its cacheable headers
+    // (a stale copy pins a visitor to an old build). Hashed build assets
+    // and images still bypass the Worker so they stay immutable-cacheable.
+    "run_worker_first": ["/*", "!/assets/*", "!/images/*", "!/favicon.ico", "!/robots.txt", "!/sitemap.xml", "!/sw.js"]
   },
   "r2_buckets": [
     { "binding": "UPLOADS", "bucket_name": "swrv-uploads" }
