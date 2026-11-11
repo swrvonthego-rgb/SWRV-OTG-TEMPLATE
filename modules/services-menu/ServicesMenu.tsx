@@ -124,8 +124,13 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             the poster and the fallback for reduced-motion visitors. */}
         <div className="sm-hero-image">
           <div className="sm-hero-logo">
-            <img src="/images/3d/light-final.webp" alt="SWRV On The Go" />
-            <video src="/images/3d/light-intro.mp4" autoPlay muted loop playsInline preload="auto" aria-hidden="true" />
+            <img src="/images/3d/light-final-alpha.webp" alt="SWRV On The Go" />
+            <video
+              className="sm-hero-video"
+              src="/images/3d/light-intro.mp4"
+              poster="/images/3d/light-final-alpha.webp"
+              autoPlay muted loop playsInline preload="auto" aria-hidden="true"
+            />
           </div>
           <p className="sm-hero-caption">LEADER OF THE REVOLUTION</p>
         </div>

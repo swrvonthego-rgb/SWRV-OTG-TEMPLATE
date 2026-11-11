@@ -133,6 +133,20 @@
   height: 100%;
   object-fit: contain;
 }
+/* The still is a real cut-out. The intro video was rendered on a white
+   card, so it's clipped to the mark's own silhouette — the white box
+   disappears while the animation still plays. Same 720x666 frame, so the
+   mask lines up with the footage. */
+.services-menu .sm-hero-logo video {
+  -webkit-mask-image: url('/images/3d/light-final-alpha.png');
+  mask-image: url('/images/3d/light-final-alpha.png');
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
 @media (prefers-reduced-motion: reduce) {
   .services-menu .sm-hero-logo video { display: none; }
 }
