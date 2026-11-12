@@ -877,6 +877,7 @@ export default {
     if (url.pathname === '/api/zion-booking')   return handleZionBooking(request, env);
     if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
     if (url.pathname === '/api/checkout')       return handleCheckout(request, env);
+    if (url.pathname === '/api/deposit')        return handleDeposit(request, env);
     if (url.pathname === '/api/agreement')      return handleAgreementView(request, env);
     if (url.pathname === '/api/delivery')       return handleDeliveryGet(request, env);
     if (url.pathname === '/api/delivery/respond') return handleDeliveryRespond(request, env);
@@ -2169,6 +2170,63 @@ async function handleAdminDeliveries(request, env) {
   return new Response(JSON.stringify({ deliveries: results }), { headers: jsonHeaders(request) });
 }
 
+
+// The booking deposit used to be a fixed Stripe Payment Link. A link's price
+// is immutable, so it sat there charging $50 while the site promised $100 —
+// and it belonged to an account the rest of the site doesn't use. This mints
+// a fresh $100 checkout in the SAME account every other order charges, so
+// every button, bookmark and printed QR that points at the site keeps
+// working and the amount can never drift from depositAmount again.
+async function handleDeposit(request, env) {
+  if (!env.STRIPE_SECRET_KEY) {
+    return new Response(JSON.stringify({ error: 'Checkout is not configured yet — email info@swrvonthego.pro to book directly.' }),
+      { status: 503, headers: jsonHeaders(request) });
+  }
+  const wantsJson = request.method === 'POST';
+  let email = '';
+  try {
+    if (wantsJson) {
+      const b = await request.json();
+      email = typeof b.email === 'string' ? b.email.trim().slice(0, 200) : '';
+    } else {
+      email = new URL(request.url).searchParams.get('email')?.slice(0, 200) || '';
+    }
+  } catch { email = ''; }
+
+  const origin = 'https://swrvonthego.pro';
+  const params = {
+    mode: 'payment',
+    submit_type: 'book',
+    allow_promotion_codes: true,
+    success_url: `${origin}/?deposit=paid`,
+    cancel_url: `${origin}/#contact`,
+    line_items: [{
+      quantity: 1,
+      price_data: {
+        currency: 'usd',
+        unit_amount: Math.round(PAYMENT_CONFIG.stripe.depositAmount * 100),
+        product_data: {
+          name: 'SWRV Booking Deposit',
+          description: 'Secure-your-date deposit for SWRV On The Go bookings. Applied to your final invoice.',
+        },
+      },
+    }],
+    metadata: { type: 'booking_deposit' },
+  };
+  if (email) params.customer_email = email;
+
+  try {
+    const session = await stripeRequest(env, 'POST', 'checkout/sessions', params);
+    if (wantsJson) {
+      return new Response(JSON.stringify({ url: session.url, id: session.id }), { headers: jsonHeaders(request) });
+    }
+    return Response.redirect(session.url, 302);
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err?.message || 'Could not start the deposit checkout.' }),
+      { status: 502, headers: jsonHeaders(request) });
+  }
+}
+
 async function handleCheckout(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
   if (request.method !== 'POST') {
@@ -2472,7 +2530,7 @@ async function handleStripeWebhook(request, env) {
         ).bind(session.payment_intent || null, order.id).run();
         await sendDepositReceiptEmail(env, order, session.amount_total);
         await sendOwnerOrderEmail(env, order);
-      } else if (session.payment_link) {
+      } else if (session.payment_link || session.metadata?.type === 'booking_deposit') {
         // The fixed $100 Zion/booking deposit Payment Link — no order row,
         // so match it to the payer's booking by email.
         await confirmPaymentLinkDeposit(env, session);
