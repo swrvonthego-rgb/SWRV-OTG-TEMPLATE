@@ -1,6 +1,6 @@
 import { renderRoadmapEmail } from './email-template.js';
 import { SWRV_ROADMAP_CONFIG } from '../modules/roadmap/config';
-import { SERVICES, checkoutTotal, quoteMusicOrder, MUSIC_VIDEO_PRICING } from '../site.config';
+import { SERVICES, checkoutTotal, quoteMusicOrder, MUSIC_VIDEO_PRICING, PAYMENT_CONFIG } from '../site.config';
 import { buildAgreement, agreementText, AGREEMENT_VERSION } from '../agreement.config';
 // src/worker.js — Cloudflare Worker entry point
 //
