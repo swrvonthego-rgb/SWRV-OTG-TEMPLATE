@@ -39,10 +39,12 @@ export const PAYMENT_CONFIG = {
     // A Stripe Payment Link's price cannot be edited after creation — changing
     // the deposit means creating a NEW link in Stripe and pasting it here.
     depositAmount: 100,
-    // SWRV's own Stripe account (the one the Worker's live key and webhook
-    // belong to). The previous link lived in a different Stripe account, so
-    // every booking and QR landed on the wrong business's checkout.
-    depositUrl: 'https://book.stripe.com/3cI14m72feyN6cA9jv6kg01',
+    // Lives in the Swrv On The Go Stripe account — the same one every other
+    // checkout on this site charges. ⚠ This link currently charges $50, not
+    // the $100 in depositAmount above: a Stripe Payment Link's price can't be
+    // edited, so a NEW $100 link must be created in that same account and
+    // pasted here. Do not swap in a link from a different Stripe account.
+    depositUrl: 'https://buy.stripe.com/14A4gydAO0HKdd20mPaEE01',
     // Built with "let customers choose what they pay": for a future full
     // pay-in-full flow. Not currently linked from anywhere.
     serviceUrl: '',
