@@ -878,7 +878,6 @@ export default {
     if (url.pathname === '/api/booked-dates')   return handleBookedDates(request, env);
     if (url.pathname === '/api/checkout')       return handleCheckout(request, env);
     if (url.pathname === '/api/deposit')        return handleDeposit(request, env);
-    if (url.pathname === '/api/_setup/promo')   return handleSetupPromo(request, env);
     if (url.pathname === '/api/agreement')      return handleAgreementView(request, env);
     if (url.pathname === '/api/delivery')       return handleDeliveryGet(request, env);
     if (url.pathname === '/api/delivery/respond') return handleDeliveryRespond(request, env);
@@ -2228,38 +2227,6 @@ async function handleDeposit(request, env) {
   }
 }
 
-
-// TEMPORARY one-shot setup helper: creates the 100%-off test promotion code
-// in whichever Stripe account the Worker's key belongs to, so the code can
-// never end up in the wrong account again. Removed once it has run.
-async function handleSetupPromo(request, env) {
-  if (request.method !== 'POST') return new Response('not found', { status: 404 });
-  if ((request.headers.get('x-setup-token') || '') !== 'swrvyl80y5sqY5JpBj5wJ9cgFO90E3l23AvV') {
-    return new Response('not found', { status: 404 });
-  }
-  try {
-    const list = await stripeRequest(env, 'GET', 'coupons?limit=100');
-    let coupon = (list.data || []).find((c) => c.percent_off === 100 && c.duration === 'once' && c.valid);
-    if (!coupon) {
-      coupon = await stripeRequest(env, 'POST', 'coupons', {
-        percent_off: 100, duration: 'once', max_redemptions: 5, name: 'Test — 100% off',
-      });
-    }
-    const found = await stripeRequest(env, 'GET', 'promotion_codes?limit=100&code=TEST100');
-    let promo = (found.data || [])[0];
-    if (!promo) {
-      promo = await stripeRequest(env, 'POST', 'promotion_codes', {
-        coupon: coupon.id, code: 'TEST100', max_redemptions: 5,
-      });
-    }
-    return new Response(JSON.stringify({
-      ok: true, coupon: coupon.id, code: promo.code, active: promo.active, promo_id: promo.id,
-    }), { headers: jsonHeaders(request) });
-  } catch (err) {
-    return new Response(JSON.stringify({ ok: false, error: err?.message || String(err) }),
-      { status: 500, headers: jsonHeaders(request) });
-  }
-}
 
 async function handleCheckout(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
