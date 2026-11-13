@@ -329,6 +329,9 @@ export function QuotePage() {
             <a className="q-btn-soft" href={appleCashUrl}>
               Pay with Apple Pay · {money(dueNow)}
             </a>
+            <p className="q-cta-note">
+              Opens Messages with {money(dueNow)} written in — tap Apple Cash there and send.
+            </p>
 
             {/* ── ADD MORE SONGS — the minimum is four, never a cap ── */}
             <section className="q-add">

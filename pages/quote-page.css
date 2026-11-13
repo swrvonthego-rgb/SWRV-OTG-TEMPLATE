@@ -557,6 +557,15 @@
   background: var(--q-hair);
 }
 
+/* one line under the Apple Pay button, so the tap is never a surprise */
+.q-cta-note {
+  margin: 8px 2px 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--q-grey, #6e6e73);
+}
+
 /* ── ACCORDIONS ──────────────────────────────────────────────────────── */
 .q-sec {
   border-bottom: 1px solid var(--q-hair);
