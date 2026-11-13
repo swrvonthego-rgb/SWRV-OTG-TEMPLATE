@@ -172,7 +172,7 @@ const AppShell: React.FC = () => {
         <Route path="/song" element={<SongDetailsPage />} />
         <Route path="/access" element={<AccessPage />} />
         {/* A client's private quote — shareable link, no app chrome */}
-        <Route path="/quote/debo" element={<QuotePage />} />
+        <Route path="/quote/deebeauxx" element={<QuotePage />} />
         <Route path="*" element={<LegacyRedirect />} />
       </Routes>
 

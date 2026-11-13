@@ -21,6 +21,19 @@ import './quote-page.css';
 // the balance.
 // ════════════════════════════════════════════════════════════════════════
 
+// ── PER-ARTIST BLOCK ─────────────────────────────────────────────────────
+// This quote is the template for every artist: everything that changes from
+// one client to the next lives here. The pricing, the sections, the payment
+// rules and the layout below stay as they are.
+const CLIENT = {
+  artist: 'DeeBeauxx',
+  project: 'Living the Dream',
+  quoteNo: 'Quote 001',
+  date: 'Nov 12, 2026',
+  format: 'EP recording',
+  audio: 'audio only',
+};
+
 const MIN_SONGS = 4;
 
 // Her quote runs on the standard ladder, then an extra courtesy comes off so
@@ -187,14 +200,14 @@ export function QuotePage() {
   // Cash App can. This opens Messages with the amount already written in it;
   // she taps the Apple Cash button there and sends it.
   const appleCashUrl = `sms:${PAY.phoneLink}&body=${encodeURIComponent(
-    `Apple Cash ${money(dueNow)} — Living the Dream EP (DeeBeauxx)`,
+    `Apple Cash ${money(dueNow)} — ${CLIENT.project} (${CLIENT.artist})`,
   )}`;
 
   const toggle = (id: string) => setOpen((cur) => ({ ...cur, [id]: !cur[id] }));
 
   useEffect(() => {
     const previous = document.title;
-    document.title = 'Your quote — Living the Dream · SWRV On The Go';
+    document.title = `Your quote — ${CLIENT.project} · SWRV On The Go`;
     return () => {
       document.title = previous;
     };
@@ -217,13 +230,17 @@ export function QuotePage() {
               <img className="q-badge" src={LOGO} alt="SWRV On The Go" />
               <div>
                 <p className="q-brand">SWRV On The Go</p>
-                <p className="q-meta-line">Quote 001 · Nov 12, 2026</p>
+                <p className="q-meta-line">
+                  {CLIENT.quoteNo} · {CLIENT.date}
+                </p>
               </div>
             </div>
 
-            <p className="q-eyebrow">Prepared for DeeBeauxx</p>
-            <h1 className="q-title">Living the Dream</h1>
-            <p className="q-lede">EP recording · {songs} songs · audio only</p>
+            <p className="q-eyebrow">Prepared for {CLIENT.artist}</p>
+            <h1 className="q-title">{CLIENT.project}</h1>
+            <p className="q-lede">
+              {CLIENT.format} · {songs} songs · {CLIENT.audio}
+            </p>
           </header>
 
           <div className="q-body">
@@ -376,7 +393,7 @@ export function QuotePage() {
             <Accordion
               id="vision"
               title="The vision"
-              meta="Living the Dream"
+              meta={CLIENT.project}
               open={!!open.vision}
               onToggle={() => toggle('vision')}
             >
