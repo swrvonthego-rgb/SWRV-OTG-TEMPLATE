@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { MUSIC_VIDEO_PRICING, quoteMusicOrder } from '../site.config';
+import { getQuote, type QuoteClient } from '../quotes';
 import './quote-page.css';
 
 // ════════════════════════════════════════════════════════════════════════
-// CLIENT QUOTE — DeeBeauxx / Living the Dream EP
+// CLIENT QUOTE — one page, one entry in quotes.ts per artist
 //
 // Styled as the SWRV Book & Pay checkout so a client reading a quote sees the
 // same design system they pay in: white sheet, system type, orange CTA,
@@ -21,28 +23,10 @@ import './quote-page.css';
 // the balance.
 // ════════════════════════════════════════════════════════════════════════
 
-// ── PER-ARTIST BLOCK ─────────────────────────────────────────────────────
-// This quote is the template for every artist: everything that changes from
-// one client to the next lives here. The pricing, the sections, the payment
-// rules and the layout below stay as they are.
-const CLIENT = {
-  artist: 'DeeBeauxx',
-  project: 'Living the Dream',
-  quoteNo: 'Quote 001',
-  date: 'Nov 12, 2026',
-  format: 'EP recording',
-  audio: 'audio only',
-};
-
-const MIN_SONGS = 4;
-
-// Her quote runs on the standard ladder, then an extra courtesy comes off so
-// she can see exactly what was given to her: the four-song bundle is $3,400
-// (15%) and the extra 5% is $200, so she pays $3,200. Taken off the list base
-// it stays a whole number at every count she picks.
-const COURTESY_PCT = 5;
-const courtesyFor = (base: number) => Math.round(base * COURTESY_PCT) / 100;
-
+// ── WHAT IS THE SAME FOR EVERY CLIENT ────────────────────────────────
+// Payment handles, the logo, and every section below. Anything that changes
+// from one artist to the next — name, project, deal, vision notes — comes
+// from quotes.ts, keyed by the slug in their link.
 const PAY = {
   cashTag: 'SwrvOnTheGo',
   phone: '404-272-0155',
@@ -52,34 +36,23 @@ const PAY = {
 
 const LOGO = 'https://res.cloudinary.com/dzqxce5hv/image/upload/v1772222265/Swerve_Badge_eow6m0.png';
 
-// She starts at four and can add from there; the pricing function clamps the
-// same ceiling the Book & Pay builder uses.
-const MAX_SONGS = MUSIC_VIDEO_PRICING.maxPerType;
-const SONG_STEPS = Array.from(
-  { length: MAX_SONGS - MIN_SONGS + 1 },
-  (_, i) => MIN_SONGS + i,
-);
-
 const money = (n: number) =>
   `$${n.toLocaleString('en-US', {
     minimumFractionDigits: n % 1 ? 2 : 0,
     maximumFractionDigits: 2,
   })}`;
 
-// The add-a-song ladder, priced by the same function the checkout uses:
-// four songs is the minimum, and the bundle percentage for the WHOLE order
-// steps up as songs are added, so the per-song price falls with the order.
-const SONG_LADDER = SONG_STEPS.map((n) => {
-  const row = quoteMusicOrder(n, 0);
-  const total = row.total - courtesyFor(row.base);
-  return {
-    songs: n,
-    pct: row.discountPct,
-    standard: row.total,
-    total,
-    perSong: total / n,
-  };
-});
+// **bold** and *italic* only — enough to mark a song title inside a vision
+// line without dragging JSX through the data file.
+const rich = (text: string): React.ReactNode[] =>
+  text
+    .split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
+    .filter(Boolean)
+    .map((part, i) => {
+      if (part.startsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>;
+      if (part.startsWith('*')) return <em key={i}>{part.slice(1, -1)}</em>;
+      return <React.Fragment key={i}>{part}</React.Fragment>;
+    });
 
 const INCLUDED: { name: string; text: string }[] = [
   {
@@ -179,39 +152,86 @@ const Accordion: React.FC<{
 );
 
 export function QuotePage() {
+  const { slug } = useParams();
+  const client = getQuote(slug);
+  if (!client) return <QuoteNotFound />;
+  // Keyed by slug so switching from one artist's link to another's starts the
+  // count from that client's floor instead of the previous one's.
+  return <QuoteSheet key={client.slug} client={client} />;
+}
+
+// A link that isn't on file yet — still a real page, so nobody gets a blank
+// screen or a redirect loop.
+const QuoteNotFound: React.FC = () => (
+  <main className="q-page">
+    <div className="q-wrap">
+      <article className="q-sheet">
+        <header className="q-hero">
+          <p className="q-eyebrow">Quote</p>
+          <h1 className="q-title">This link isn&rsquo;t active</h1>
+          <p className="q-lede">Quotes are per project, and this one isn&rsquo;t on file.</p>
+        </header>
+        <div className="q-body">
+          <p className="q-body-text">Ask Zion for a fresh link and it will open right here.</p>
+          <a className="q-btn-soft" href="mailto:info@swrvonthego.pro">
+            Email info@swrvonthego.pro
+          </a>
+        </div>
+      </article>
+    </div>
+  </main>
+);
+
+const QuoteSheet: React.FC<{ client: QuoteClient }> = ({ client }) => {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState<string | null>(null);
-  // Starts at four. Everything priced on the page — total, bundle percentage,
-  // per song, both payments, the Cash App amount and the sticky bar — is
-  // derived from this one number.
-  const [songs, setSongs] = useState(MIN_SONGS);
+  // Starts at the client's floor. Everything priced on the page — total,
+  // bundle percentage, per song, both payments, the Cash App amount and the
+  // sticky bar — is derived from this one number.
+  const minSongs = client.minSongs;
+  const maxSongs = Math.max(minSongs, MUSIC_VIDEO_PRICING.maxPerType);
+  const [songs, setSongs] = useState(minSongs);
 
   const quote = useMemo(() => quoteMusicOrder(songs, 0), [songs]);
-  // Standard ladder price, then her courtesy. Both payments read from this
-  // total, so the half is always exactly half of what she owes.
-  const courtesy = courtesyFor(quote.base);
+  // The list price, then the courtesy off the list base so it stays a whole
+  // number at every count they pick. Both payments read from this total, so
+  // the half is always exactly half of what they owe.
+  const courtesy = Math.round(quote.base * client.courtesyPct) / 100;
   const total = quote.total - courtesy;
   const dueNow = Math.round(total / 2);
   const balance = total - dueNow;
   const perSong = total / songs;
+
+  // The add-a-song ladder, priced by the same function the checkout uses: the
+  // bundle percentage for the WHOLE order steps up as songs are added, so the
+  // per-song price falls with the order.
+  const ladder = useMemo(
+    () =>
+      Array.from({ length: maxSongs - minSongs + 1 }, (_, i) => minSongs + i).map((n) => {
+        const row = quoteMusicOrder(n, 0);
+        const rowTotal = row.total - Math.round(row.base * client.courtesyPct) / 100;
+        return { songs: n, pct: row.discountPct, total: rowTotal, perSong: rowTotal / n };
+      }),
+    [minSongs, maxSongs, client.courtesyPct],
+  );
   // Half now only — the single payment link on the page, following the count.
   const cashAppHalfUrl = `https://cash.app/$${PAY.cashTag}/${dueNow}`;
   // Apple Cash is person-to-person, so no link can pre-fill the amount the way
   // Cash App can. This opens Messages with the amount already written in it;
   // she taps the Apple Cash button there and sends it.
   const appleCashUrl = `sms:${PAY.phoneLink}&body=${encodeURIComponent(
-    `Apple Cash ${money(dueNow)} — ${CLIENT.project} (${CLIENT.artist})`,
+    `Apple Cash ${money(dueNow)} — ${client.project} (${client.artist})`,
   )}`;
 
   const toggle = (id: string) => setOpen((cur) => ({ ...cur, [id]: !cur[id] }));
 
   useEffect(() => {
     const previous = document.title;
-    document.title = `Your quote — ${CLIENT.project} · SWRV On The Go`;
+    document.title = `Your quote — ${client.project} · SWRV On The Go`;
     return () => {
       document.title = previous;
     };
-  }, []);
+  }, [client.project]);
 
   const handleCopy = async (text: string, key: string) => {
     const ok = await copyText(text);
@@ -231,15 +251,15 @@ export function QuotePage() {
               <div>
                 <p className="q-brand">SWRV On The Go</p>
                 <p className="q-meta-line">
-                  {CLIENT.quoteNo} · {CLIENT.date}
+                  {client.quoteNo} · {client.date}
                 </p>
               </div>
             </div>
 
-            <p className="q-eyebrow">Prepared for {CLIENT.artist}</p>
-            <h1 className="q-title">{CLIENT.project}</h1>
+            <p className="q-eyebrow">Prepared for {client.artist}</p>
+            <h1 className="q-title">{client.project}</h1>
             <p className="q-lede">
-              {CLIENT.format} · {songs} songs · {CLIENT.audio}
+              {client.format} · {songs} songs · {client.audio}
             </p>
           </header>
 
@@ -255,8 +275,8 @@ export function QuotePage() {
                   type="button"
                   className="q-step-btn q-step-less"
                   aria-label="One fewer song"
-                  disabled={songs <= MIN_SONGS}
-                  onClick={() => setSongs((n) => Math.max(MIN_SONGS, n - 1))}
+                  disabled={songs <= minSongs}
+                  onClick={() => setSongs((n) => Math.max(minSongs, n - 1))}
                 >
                   −
                 </button>
@@ -267,8 +287,8 @@ export function QuotePage() {
                   type="button"
                   className="q-step-btn q-step-more"
                   aria-label="One more song"
-                  disabled={songs >= MAX_SONGS}
-                  onClick={() => setSongs((n) => Math.min(MAX_SONGS, n + 1))}
+                  disabled={songs >= maxSongs}
+                  onClick={() => setSongs((n) => Math.min(maxSongs, n + 1))}
                 >
                   +
                 </button>
@@ -302,15 +322,18 @@ export function QuotePage() {
                   </span>
                   <span>−{money(quote.discount)}</span>
                 </li>
-                <li className="q-line-save">
-                  <span>
-                    Your courtesy discount
-                    <span className="q-lines-sub">
-                      quoted at {money(quote.total)} · yours at {money(total)}
+                {/* Only clients with a courtesy in their deal see this line. */}
+                {courtesy > 0 && (
+                  <li className="q-line-save">
+                    <span>
+                      Your courtesy discount
+                      <span className="q-lines-sub">
+                        quoted at {money(quote.total)} · yours at {money(total)}
+                      </span>
                     </span>
-                  </span>
-                  <span>−{money(courtesy)}</span>
-                </li>
+                    <span>−{money(courtesy)}</span>
+                  </li>
+                )}
                 <li>
                   <span>
                     Per song after the bundle
@@ -352,7 +375,7 @@ export function QuotePage() {
             <Accordion
               id="adding"
               title="Adding songs"
-              meta="Up to 10 songs"
+              meta={`Up to ${maxSongs} songs`}
               open={!!open.adding}
               onToggle={() => toggle('adding')}
             >
@@ -361,7 +384,7 @@ export function QuotePage() {
                   Every song you add re-prices the whole order at the bundle rate.
                 </p>
               <ul className="q-add-rows">
-                {SONG_LADDER.map((row) => {
+                {ladder.map((row) => {
                   const current = row.songs === songs;
                   return (
                     <li key={row.songs}>
@@ -395,48 +418,15 @@ export function QuotePage() {
             <Accordion
               id="vision"
               title="The vision"
-              meta={CLIENT.project}
+              meta={client.project}
               open={!!open.vision}
               onToggle={() => toggle('vision')}
             >
-              <p className="q-body-text">
-                One EP, one mood, and a name you already had before any of this started.
-              </p>
+              <p className="q-body-text">{client.vision.lede}</p>
               <ul className="q-vision">
-                <li>
-                  <strong>Early-2000s glamour pop</strong> — the lane you and Zion already tapped on
-                  the last record. Janet, Toni, Britney, Beyoncé energy: big hooks, clean lines,
-                  expensive.
-                </li>
-                <li>
-                  <strong>A rap record with Buckhead Baddy energy</strong> — that{' '}
-                  <em>Bills, Bills, Bills</em> bounce and a ladies&rsquo; anthem in the spirit of{' '}
-                  <em>Nice For What</em>. For the girls who run their own everything.
-                </li>
-                <li>
-                  <strong>A &rsquo;90s R&amp;B / hip-hop soul moment</strong> — Mary, Lil Kim,{' '}
-                  <em>I Can Love You</em> and <em>Ladies Night</em> energy. The kind of record that
-                  makes a grown woman grab her purse and her friend.
-                </li>
-                <li>
-                  <strong>An &rsquo;80s funk record</strong> with that <em>Flashlight</em> feel — the
-                  groove that opens a City Girls song and never apologizes.
-                </li>
-                <li>
-                  <strong>A cover</strong>, because the girls don&rsquo;t do them anymore. Not
-                  reinvented — delivered, the way <em>Who Can I Run To</em> and{' '}
-                  <em>I&rsquo;m Every Woman</em> stayed the same song and still became somebody
-                  else&rsquo;s hit.
-                </li>
-                <li>
-                  <strong>Dancehall on that Fiesta riddim energy</strong> — the rhythm that carried{' '}
-                  <em>Dude</em> and a hundred other records, because that&rsquo;s how Jamaica does
-                  it: one riddim, everybody&rsquo;s story on it.
-                </li>
-                <li>
-                  <strong>A power ballad</strong> in the <em>Love On The Brain</em> lane, where the
-                  voice does the heavy lifting.
-                </li>
+                {client.vision.points.map((point, i) => (
+                  <li key={i}>{rich(point)}</li>
+                ))}
               </ul>
             </Accordion>
 

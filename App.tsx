@@ -171,8 +171,9 @@ const AppShell: React.FC = () => {
         <Route path="/review/:token" element={<ReviewPage />} />
         <Route path="/song" element={<SongDetailsPage />} />
         <Route path="/access" element={<AccessPage />} />
-        {/* A client's private quote — shareable link, no app chrome */}
-        <Route path="/quote/deebeauxx" element={<QuotePage />} />
+        {/* A client's private quote — shareable link, no app chrome.
+            /quote/<slug> renders the entry in quotes.ts with that slug. */}
+        <Route path="/quote/:slug" element={<QuotePage />} />
         <Route path="*" element={<LegacyRedirect />} />
       </Routes>
 
