@@ -1051,6 +1051,71 @@
   }
 }
 
+/* ── IPHONE LEGIBILITY ───────────────────────────────────────────────── */
+/* The base sizes are the phone sizes, so nothing a client actually has to
+   read sits under ~13px. Eyebrows, pills and badges stay small on purpose. */
+@media (max-width: 639px) {
+  .q-lede {
+    font-size: 16px;
+  }
+  .q-lines li {
+    font-size: 15px;
+  }
+  .q-lines-sub {
+    font-size: 12.5px;
+  }
+  .q-add-lede {
+    font-size: 15px;
+  }
+  .q-add-meta {
+    font-size: 12.5px;
+  }
+  .q-add-total {
+    font-size: 17px;
+  }
+  .q-step-sub {
+    font-size: 13.5px;
+  }
+  .q-body-text,
+  .q-vision li,
+  .q-deliv li,
+  .q-deliv strong,
+  .q-deliv-text,
+  .q-steps {
+    font-size: 15px;
+  }
+  .q-rights-text {
+    font-size: 14.5px;
+  }
+  .q-pay-note,
+  .q-cta-note {
+    font-size: 13px;
+  }
+  .q-copy-value {
+    font-size: 17px;
+  }
+  .q-sec-title {
+    font-size: 17.5px;
+  }
+  .q-sec-meta {
+    font-size: 12px;
+  }
+  .q-pay-title {
+    font-size: 28px;
+  }
+  .q-foot {
+    font-size: 13px;
+  }
+  /* the small caps labels: still quiet, but not squinting */
+  .q-total-label,
+  .q-split-label,
+  .q-eyebrow,
+  .q-save-pct,
+  .q-meta-line {
+    font-size: 11.5px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .q-panel,
   .q-pay-btn,
