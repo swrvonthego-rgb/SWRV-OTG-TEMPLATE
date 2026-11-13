@@ -79,22 +79,6 @@ export const QUOTES: Record<string, QuoteClient> = {
       ],
     },
   },
-  // TEMP CHECK — delete before committing. Proves a second project renders
-  // with its own floor, its own courtesy and its own vision notes.
-  templatetest: {
-    slug: 'templatetest',
-    artist: 'Template Test',
-    project: 'Second Client Check',
-    quoteNo: 'Quote 099',
-    date: 'Nov 13, 2026',
-    format: 'Single',
-    audio: 'audio only',
-    minSongs: 3,
-    courtesyPct: 0,
-    vision: {
-      lede: 'A template check, not a real quote.',
-      points: ['**One idea** — written from a *transcript* to prove the seam works.'],
-    },
   },
 };
 
