@@ -248,9 +248,7 @@ export function QuotePage() {
             <div className="q-step">
               <div>
                 <p className="q-step-label">Songs</p>
-                <p className="q-step-sub">
-                  {money(MUSIC_VIDEO_PRICING.song)} each · {MIN_SONGS}-song minimum
-                </p>
+                <p className="q-step-sub">{money(MUSIC_VIDEO_PRICING.song)} each</p>
               </div>
               <div className="q-step-controls">
                 <button
@@ -354,8 +352,8 @@ export function QuotePage() {
             <section className="q-add">
               <p className="q-add-title">Adding songs</p>
               <p className="q-add-lede">
-                Add songs any time — every one re-prices the whole order at the bundle rate, and
-                your courtesy is already off every row.
+                Four songs is the minimum, and you can add any time — every one re-prices the whole
+                order at the bundle rate.
               </p>
               <ul className="q-add-rows">
                 {SONG_LADDER.map((row) => {
