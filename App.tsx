@@ -14,6 +14,7 @@ import { DeliveryPage } from './pages/DeliveryPage';
 import { ReviewPage } from './pages/ReviewPage';
 import { SongDetailsPage } from './pages/SongDetailsPage';
 import { AccessPage } from './pages/AccessPage';
+import { QuotePage } from './pages/QuotePage';
 
 // ── Full-bleed, self-contained experiences (own close/back button) ──
 import { Roadmap } from './modules/roadmap/Roadmap';
@@ -170,6 +171,8 @@ const AppShell: React.FC = () => {
         <Route path="/review/:token" element={<ReviewPage />} />
         <Route path="/song" element={<SongDetailsPage />} />
         <Route path="/access" element={<AccessPage />} />
+        {/* A client's private quote — shareable link, no app chrome */}
+        <Route path="/quote/debo" element={<QuotePage />} />
         <Route path="*" element={<LegacyRedirect />} />
       </Routes>
 
@@ -184,7 +187,7 @@ const AppShell: React.FC = () => {
 
       {/* Live Chat — floating widget, on every page except a client's
           private delivery page */}
-      {!/^\/(delivered|review)\//.test(location.pathname) && <LiveChat
+      {!/^\/(delivered|review|quote)\//.test(location.pathname) && <LiveChat
         onOpenBooking={() => {
           navigate('/about');
           setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 200);

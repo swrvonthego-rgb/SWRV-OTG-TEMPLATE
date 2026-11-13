@@ -1,0 +1,1054 @@
+/* ════════════════════════════════════════════════════════════════════
+   CLIENT QUOTE — styled as the SWRV Book & Pay checkout.
+   Same white sheet, system type stack, tabular numerals, grey panels,
+   green savings line and orange gradient call to action as checkout.css,
+   so a client reading a quote sees the same design system they pay in.
+   Scoped to q-* so nothing else on the site changes.
+   ════════════════════════════════════════════════════════════════════ */
+
+.q-page {
+  --q-ink: #1d1d1f;
+  --q-grey: #6e6e73;
+  --q-faint: #86868b;
+  --q-hair: rgba(0, 0, 0, 0.06);
+  --q-panel: #f5f5f7;
+  --q-gold: #9a7b2e;
+  --q-orange: #ff4d00;
+  --q-green: #0b7a46;
+
+  min-height: 100svh;
+  background: radial-gradient(ellipse at top, #1a1610 0%, #0a0804 60%, #050402 100%);
+  padding: 18px 10px 104px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter',
+    system-ui, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.q-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ── THE SHEET ───────────────────────────────────────────────────────── */
+.q-sheet {
+  position: relative;
+  background: #fff;
+  color: var(--q-ink);
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+/* ── HERO ────────────────────────────────────────────────────────────── */
+.q-hero {
+  padding: 22px 20px 20px;
+  background:
+    radial-gradient(90% 120% at 0% 0%, rgba(255, 122, 26, 0.1), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(90% 120% at 100% 0%, rgba(200, 168, 75, 0.18), rgba(255, 255, 255, 0) 62%),
+    #fff;
+  border-bottom: 1px solid var(--q-hair);
+}
+
+.q-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 20px;
+}
+
+.q-badge {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.q-brand {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--q-gold);
+}
+
+.q-meta-line {
+  margin: 3px 0 0;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a1a1a6;
+  font-variant-numeric: tabular-nums;
+}
+
+.q-eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-gold);
+}
+
+.q-title {
+  margin: 0 0 8px;
+  font-size: clamp(30px, 9vw, 40px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  color: var(--q-ink);
+}
+
+.q-lede {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--q-grey);
+}
+
+/* ── BODY ────────────────────────────────────────────────────────────── */
+.q-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px 24px;
+}
+
+/* ── TOTAL CARD ──────────────────────────────────────────────────────── */
+.q-total {
+  padding: 20px;
+  border-radius: 22px;
+  background: #fbfbfd;
+  border: 1px solid rgba(0, 0, 0, 0.055);
+}
+
+.q-total-hero {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.q-total-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--q-faint);
+}
+
+/* her total, with the standard price struck through beside it */
+.q-total-hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.q-was {
+  font-size: 13px;
+  color: var(--q-grey, #6e6e73);
+  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+
+.q-amount {
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+  color: var(--q-ink);
+}
+
+.q-lines {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--q-hair);
+}
+
+.q-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13.5px;
+  color: var(--q-grey);
+  font-variant-numeric: tabular-nums;
+}
+
+.q-lines li > span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.q-lines li > span:last-child {
+  color: var(--q-ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.q-lines-sub {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #a1a1a6;
+}
+
+.q-lines .q-line-save > span:last-child {
+  color: var(--q-green);
+}
+
+/* the savings celebration — same treatment as checkout */
+.q-save {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #e9f9f0, #f2fbf6);
+  border: 1px solid rgba(11, 122, 70, 0.14);
+}
+
+.q-save-badge {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--q-green);
+}
+
+.q-save-pct {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(11, 122, 70, 0.72);
+}
+
+.q-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--q-hair);
+}
+
+.q-split > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.q-split-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--q-faint);
+}
+
+.q-split-value {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--q-orange);
+  font-variant-numeric: tabular-nums;
+}
+
+.q-split-muted {
+  color: var(--q-ink);
+}
+
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────── */
+.q-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 54px;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff8a2b 0%, #ff4d00 55%, #e83e00 100%);
+  box-shadow: 0 12px 28px rgba(255, 77, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.18s;
+}
+
+.q-pay-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 38px rgba(255, 77, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.q-pay-btn:active {
+  transform: scale(0.992);
+}
+
+.q-btn-soft {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 18px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 16px;
+  background: var(--q-panel);
+  color: var(--q-ink);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.q-btn-soft:hover {
+  background: #ececf0;
+}
+
+.q-pay-btn:focus-visible,
+.q-btn-soft:focus-visible,
+.q-sec-head:focus-visible,
+.q-copy-btn:focus-visible,
+.q-sticky-btn:focus-visible {
+  outline: 2px solid var(--q-orange);
+  outline-offset: 3px;
+}
+
+.q-split-note {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--q-faint);
+}
+
+/* ── SONG COUNT STEPPER (matches the checkout's builder) ──────────── */
+.q-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--q-panel);
+}
+
+.q-step-label {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--q-ink);
+}
+
+.q-step-sub {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--q-grey);
+}
+
+.q-step-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.q-step-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.16s, opacity 0.16s;
+}
+
+.q-step-less {
+  background: #fff;
+  color: var(--q-ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
+.q-step-more {
+  color: #fff;
+  background: linear-gradient(160deg, #ff9a3d, #ff4d00);
+  box-shadow: 0 6px 16px rgba(255, 77, 0, 0.3);
+}
+
+.q-step-btn:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.03);
+}
+
+.q-step-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.q-step-btn:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+
+.q-step-btn:focus-visible {
+  outline: 2px solid var(--q-orange);
+  outline-offset: 3px;
+}
+
+.q-step-count {
+  min-width: 34px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--q-ink);
+}
+
+/* ── ADDING SONGS ────────────────────────────────────────────────────── */
+.q-add {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--q-panel);
+}
+
+.q-add-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-gold);
+}
+
+.q-add-lede {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--q-grey);
+}
+
+.q-add-rows {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+/* Rows are buttons: tapping one sets the song count. */
+.q-add-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  font-family: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.q-add-rows li:last-child .q-add-row {
+  border-bottom: none;
+}
+
+.q-add-row:hover .q-add-songs {
+  color: var(--q-orange);
+}
+
+.q-add-row:focus-visible {
+  outline: 2px solid var(--q-orange);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.q-add-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.q-add-songs {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--q-ink);
+}
+
+.q-add-meta {
+  font-size: 11px;
+  color: var(--q-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.q-add-total {
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--q-ink);
+  white-space: nowrap;
+}
+
+.q-add-row.is-current .q-add-songs {
+  color: var(--q-orange);
+}
+
+/* ── COPYRIGHT & CREDITS ─────────────────────────────────────────────── */
+.q-rights {
+  margin-top: 6px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.q-rights-title {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-gold);
+}
+
+.q-rights-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--q-grey);
+}
+
+.q-dash {
+  height: 1px;
+  margin-top: 6px;
+  background: var(--q-hair);
+}
+
+/* ── ACCORDIONS ──────────────────────────────────────────────────────── */
+.q-sec {
+  border-bottom: 1px solid var(--q-hair);
+}
+
+.q-sec:last-of-type {
+  border-bottom: none;
+}
+
+.q-sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 0;
+  background: none;
+  border: none;
+  color: var(--q-ink);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.q-sec-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.q-sec-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.q-sec-meta {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #a1a1a6;
+}
+
+.q-plus {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--q-panel);
+  color: var(--q-ink);
+  font-size: 15px;
+  line-height: 1;
+  transition: background 0.2s ease;
+}
+
+.q-plus.is-open {
+  background: #ececf0;
+}
+
+.q-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.q-panel.is-open {
+  grid-template-rows: 1fr;
+}
+
+.q-panel > div {
+  overflow: hidden;
+  /* A collapsed panel is height 0, but its words stay in the accessibility
+     tree (and find-in-page) unless it is taken out. Hidden once the close
+     animation finishes; visible the instant it opens. */
+  visibility: hidden;
+  transition: visibility 0s linear 0.32s;
+}
+
+.q-panel.is-open > div {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.q-panel-inner {
+  padding: 0 0 18px;
+}
+
+.q-body-text {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--q-grey);
+}
+
+.q-body-text strong {
+  color: var(--q-ink);
+  font-weight: 600;
+}
+
+.q-body-last {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+/* vision */
+.q-vision {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.q-vision li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--q-grey);
+}
+
+.q-vision li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d2d2d7;
+}
+
+.q-vision strong {
+  display: inline;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--q-ink);
+}
+
+.q-vision em {
+  color: #48484a;
+}
+
+/* deliverables */
+.q-deliv {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.q-deliv li {
+  display: flex;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--q-grey);
+}
+
+.q-tick {
+  flex: 0 0 auto;
+  padding-top: 1px;
+  color: var(--q-orange);
+  font-size: 11px;
+}
+
+.q-deliv strong {
+  display: block;
+  margin-bottom: 1px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--q-ink);
+}
+
+.q-deliv-text {
+  display: block;
+}
+
+/* process */
+.q-steps {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--q-grey);
+}
+
+.q-steps strong {
+  color: var(--q-ink);
+  font-weight: 600;
+}
+
+.q-steps li::marker {
+  color: #a1a1a6;
+  font-size: 12px;
+}
+
+/* ── PAY ─────────────────────────────────────────────────────────────── */
+.q-pay {
+  padding-top: 8px;
+  scroll-margin-top: 16px;
+}
+
+.q-pay-title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  color: var(--q-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.q-pay-lede {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--q-grey);
+}
+
+.q-pay-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--q-panel);
+}
+
+.q-pay-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.q-pay-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-gold);
+}
+
+.q-pay-tag {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--q-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.q-pay-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--q-grey);
+}
+
+.q-copy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 54px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--q-hair);
+}
+
+.q-copy-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--q-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Last resort only: an email has no spaces, so it may break mid-address on
+     a narrow phone rather than be truncated. Never breaks while it fits. */
+  overflow-wrap: anywhere;
+}
+
+.q-copy-btn {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--q-ink);
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.q-copy-btn:hover {
+  background: var(--q-panel);
+}
+
+/* Every phone width: the Apple ID email cannot share a line with a
+   thumb-sized COPY button without clipping somewhere (320, 375, 414), so the
+   address takes the full row and the button sits underneath. Tablets and
+   desktop keep the single-line row, where there is real headroom. */
+@media (max-width: 430px) {
+  .q-copy-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .q-copy-value {
+    flex: 1 1 100%;
+    white-space: normal;
+    text-overflow: clip;
+  }
+  .q-copy-btn {
+    margin-left: auto;
+  }
+}
+
+.q-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  color: var(--q-grey);
+}
+
+.q-balance > span {
+  min-width: 0;
+}
+
+.q-balance strong {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--q-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.q-pay-foot {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--q-faint);
+}
+
+/* ── FOOTER ──────────────────────────────────────────────────────────── */
+.q-foot {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--q-hair);
+  text-align: center;
+}
+
+.q-foot p {
+  margin: 0 0 4px;
+  font-size: 11px;
+  line-height: 1.65;
+  color: #a1a1a6;
+}
+
+.q-foot a {
+  color: var(--q-orange);
+  text-decoration: none;
+}
+
+/* ── STICKY DUE-NOW BAR ──────────────────────────────────────────────── */
+.q-sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.q-sticky-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.q-sticky-label {
+  margin: 0 0 1px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--q-faint);
+}
+
+.q-sticky-amount {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--q-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.q-sticky-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 108px;
+  min-height: 46px;
+  padding: 12px 28px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ff8a2b 0%, #ff4d00 55%, #e83e00 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(255, 77, 0, 0.28);
+}
+
+/* ── DESKTOP ─────────────────────────────────────────────────────────── */
+@media (min-width: 640px) {
+  .q-page {
+    padding: 44px 20px 64px;
+  }
+  /* The checkout has no sticky bar, and a full-width one breaks the sheet on
+     a wide screen. The pay button is already in view at this size. */
+  .q-sticky {
+    display: none;
+  }
+  .q-hero {
+    padding: 28px 28px 24px;
+  }
+  .q-body {
+    padding: 20px 28px 28px;
+  }
+  .q-title {
+    font-size: 44px;
+  }
+  .q-amount {
+    font-size: 48px;
+  }
+  .q-sec-title {
+    font-size: 17px;
+  }
+  .q-body-text,
+  .q-vision li,
+  .q-deliv li,
+  .q-steps {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .q-panel,
+  .q-pay-btn,
+  .q-btn-soft,
+  .q-copy-btn,
+  .q-plus {
+    transition: none;
+  }
+  .q-panel > div {
+    transition: none;
+  }
+}

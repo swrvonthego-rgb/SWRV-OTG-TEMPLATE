@@ -534,17 +534,27 @@ export const MUSIC_VIDEO_PRICING = {
   pair: 2000,                 // a song + its video ($500 off the video)
   maxPerType: 10,
   // The bundle ladder, on the number of songs in the order (videos when
-  // it's video-only). Adding songs is what earns the discount.
+  // it's video-only). Small five-point steps: a jump in percentage is paid
+  // on the WHOLE order, so big rungs hand back too much on the song that
+  // triggers them. Adding songs is what earns the discount.
+  //
+  //   songs   off   total    a song
+  //   1       0%    $1,000   $1,000
+  //   2       5%    $1,900   $950
+  //   3       10%   $2,700   $900
+  //   4       15%   $3,400   $850
+  //   5+      20%   $4,000   $800
   tiers: [
-    { min: 5, pct: 25 },
-    { min: 4, pct: 20 },
-    { min: 3, pct: 15 },
-    { min: 2, pct: 10 },
+    { min: 5, pct: 20 },
+    { min: 4, pct: 15 },
+    { min: 3, pct: 10 },
+    { min: 2, pct: 5 },
     { min: 1, pct: 0 },
   ],
-  // 48 hours per song: 24 to write and build it, 24 to record and finish.
-  songHours: 48,
-  phases: { writeAndBuild: 24, recordAndFinish: 24 },
+  // One week per song: 3 days to write and build it, 4 to record, mix and
+  // finish it. Values below are days, not hours.
+  songDays: 7,
+  phases: { writeAndBuild: 3, recordAndFinish: 4 },
 } as const;
 
 export interface MusicOrderQuote {
@@ -1347,9 +1357,9 @@ export const ALL_SERVICES: Service[] = [
     checkoutEnabled: true,
     checkoutCategory: 'project',
     featured: true,
-    deliveryDays: 2,
+    deliveryDays: 7,
     revisions: 2,
-    blurb: 'A complete, release-ready original song — custom instrumental, your vocals produced and directed, mixed, mastered, and delivered with everything you need to release it. 48-hour turnaround. Half down, half on completion. Add more songs and the price drops.',
+    blurb: 'A complete, release-ready original song — custom instrumental, your vocals produced and directed, mixed, mastered, and delivered with everything you need to release it. One-week turnaround. Half down, half on completion. Add more songs and the price drops.',
     includes: [
       'Custom original instrumental/beat',
       'Vocal production & direction (coaching included)',
@@ -1361,7 +1371,7 @@ export const ALL_SERVICES: Service[] = [
       '2 rounds of revisions',
     ],
     notIncludes: ['Music video (see Song + Video Bundle — $2,000)', 'Lyric writing (can be added)'],
-    terms: 'Work for hire: you own the finished master. Half down secures your session, half is due on completion. Every song is delivered in 48 hours: 24 hours to write and build it, 24 hours to record and finish it. Songs are delivered in order, one 48-hour block at a time. Credit: Produced by Zion SWRV Birdsong.',
+    terms: 'Work for hire: you own the finished master. Half down secures your session, half is due on completion. Every song is delivered in one week: 3 days to write and build it, 4 days to record, mix and finish it. Songs are delivered in order, one week at a time. Credit: Produced by Zion SWRV Birdsong.',
     assetsNeeded: ['Voice memo of your melody or concept (even rough)', 'Reference tracks for sound direction', 'Lyrics or concept notes'],
   },
   {
@@ -1413,7 +1423,7 @@ export const ALL_SERVICES: Service[] = [
       '10 4K edited photos + 10 reels',
     ],
     notIncludes: ['Lyric writing (can be added)'],
-    terms: 'Half down secures your project, half is due on completion. The song is delivered in 48 hours (24 to write and build it, 24 to record and finish it); the video shoots once the master is done and its shoot date is confirmed with you. Credit: Produced by Zion SWRV Birdsong.',
+    terms: 'Half down secures your project, half is due on completion. The song is delivered in one week (3 days to write and build it, 4 to record and finish it); the video shoots once the master is done and its shoot date is confirmed with you. Credit: Produced by Zion SWRV Birdsong.',
     assetsNeeded: ['Voice memo of your melody or concept', 'Reference tracks', 'Lyrics or concept notes'],
   },
   // ── SONGS & MUSIC VIDEOS — the actual checkout entry ──────────────────
@@ -1433,21 +1443,21 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 1000,
     checkoutEnabled: true,
     checkoutCategory: 'project',
-    deliveryDays: 2,
+    deliveryDays: 7,
     revisions: 2,
-    blurb: 'Pick how many songs and music videos you need and the price updates as you go. $1,000 a song, $1,500 a video, $2,000 when you book a song and its video together. Add more songs and the order drops 10–25%. Half down, half on completion. Every song is delivered in 48 hours.',
+    blurb: 'Pick how many songs and music videos you need and the price updates as you go. $1,000 a song, $1,500 a video, $2,000 when you book a song and its video together. Add more songs and the order drops 5–20%. Half down, half on completion. Every song is delivered in one week.',
     includes: [
-      '48-hour turnaround per song (24 to write and build, 24 to record and finish)',
+      'One-week turnaround per song (3 days to write and build, 4 days to record and finish)',
       'Custom original instrumental/beat',
       'Vocal production & direction (coaching included)',
       'Mixing, mastering and session stems',
       'Split sheet, copyright and distribution guidance',
       'Music video: 3-minute video, BTS footage, 10 4K photos, 10 reels',
-      'Bundle discount from the second song (10% · 15% · 20% · 25%)',
+      'Bundle discount from the second song (5% · 10% · 15% · 20%)',
       '2 rounds of revisions',
     ],
     notIncludes: ['Lyric writing (can be added)', 'Talent casting fees or location permits'],
-    terms: 'Half down secures your session, half is due on completion. Every song is delivered in 48 hours: 24 hours to write and build it, 24 hours to record and finish it. Songs are delivered in order, one 48-hour block at a time. Bundle discount: 2 songs 10% · 3 songs 15% · 4 songs 20% · 5+ songs 25%. A music video shoots once the song is finished and its shoot date is confirmed with you. Credit: Produced by Zion SWRV Birdsong.',
+    terms: 'Half down secures your session, half is due on completion. Every song is delivered in one week: 3 days to write and build it, 4 days to record, mix and finish it. Songs are delivered in order, one week at a time. Bundle discount: 2 songs 5% · 3 songs 10% · 4 songs 15% · 5+ songs 20%. A music video shoots once the song is finished and its shoot date is confirmed with you. Credit: Produced by Zion SWRV Birdsong.',
     assetsNeeded: ['Voice memo of your melody or concept (even rough)', 'Reference tracks for sound direction', 'Lyrics or concept notes'],
   },
   {

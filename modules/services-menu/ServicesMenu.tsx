@@ -18,7 +18,7 @@ const SERVICE_MAP: Record<string, typeof SERVICES[0]> = {};
 SERVICES.forEach((s) => { SERVICE_MAP[s.id] = s; });
 
 // What people actually come to buy leads. Music & video first (songs are
-// the most requested thing we sell, and the 48-hour promise is the hook),
+// the most requested thing we sell, and the one-week-per-song promise is the hook),
 // then social/content, then AI video, then websites, then the rest.
 const CATEGORY_ORDER = [
   'music-video-packages',

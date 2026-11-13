@@ -88,10 +88,13 @@ function MusicOrderCheckout({ service, preset, onClose }: {
 
   // Same builder the Worker uses, so what the client signs is what's saved.
   const agreement = buildAgreement({
-    service,
+    // One week per song, so a multi-song order is quoted the weeks it needs.
+    service: songs > 0
+      ? { ...service, deliveryDays: MUSIC_VIDEO_PRICING.songDays * songs }
+      : service,
     quantityLabel,
     discountCents: Math.round(quote.discount * 100),
-    turnaround: `Each song is delivered 48 hours after it starts: 24 hours to write and build it, 24 hours to record and finish it. Songs are delivered in order, one 48-hour block at a time.`,
+    turnaround: `Each song is delivered one week after it starts: 3 days to write and build it, 4 days to record, mix and finish it. Songs are delivered in order, one week at a time.`,
     addOnLabels: [],
     totalCents,
     dueTodayCents: depositCents,
@@ -148,7 +151,7 @@ function MusicOrderCheckout({ service, preset, onClose }: {
         <ScrollHint axis="y" wrapperClassName="co-scroll-wrap" className="co-scroll"
           fadeColor="#ffffff" accentBg="#1d1d1f" accentFg="#ffffff">
           <div className="co-body">
-            <Stepper label="Songs" sub="$1,000 each · 48-hour turnaround" value={songs} onChange={setSongs} />
+            <Stepper label="Songs" sub="$1,000 each · one week each" value={songs} onChange={setSongs} />
             <Stepper label="Music videos" sub="$1,500 each · $1,000 when paired with a song" value={videos} onChange={setVideos} />
 
             {quote.discount > 0 && (
@@ -159,9 +162,19 @@ function MusicOrderCheckout({ service, preset, onClose }: {
             )}
 
             <div className="co-ladder">
-              {['2 songs · 10%', '3 songs · 15%', '4 songs · 20%', '5+ songs · 25%'].map((t) => (
-                <span key={t} className="co-chip">{t}</span>
-              ))}
+              {/* Derived from the one pricing ladder in site.config, so a
+                  change there can never leave stale percentages on screen. */}
+              {[...MUSIC_VIDEO_PRICING.tiers]
+                .filter((t) => t.pct > 0)
+                .sort((a, b) => a.min - b.min)
+                .map((t, i, all) => {
+                  const plus = i === all.length - 1;
+                  return (
+                    <span key={t.min} className="co-chip">
+                      {t.min}{plus ? '+' : ''} {t.min === 1 && !plus ? 'song' : 'songs'} · {t.pct}%
+                    </span>
+                  );
+                })}
             </div>
 
             <div className="co-total">
@@ -194,7 +207,7 @@ function MusicOrderCheckout({ service, preset, onClose }: {
 
             <div className="co-trust">
               <span>🔒 Secure by Stripe</span>
-              <span>⚡ 48-hour songs</span>
+              <span>⚡ One-week songs</span>
               <span>💳 Apple Pay · Klarna · Affirm</span>
             </div>
 

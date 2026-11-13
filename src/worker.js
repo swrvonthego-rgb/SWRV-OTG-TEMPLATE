@@ -2285,7 +2285,7 @@ async function handleCheckout(request, env) {
     const extraAnswers = [
       ...(musicOrder ? [
         { id: 'order', question: 'Order', answer: `${quantityLabel}${musicOrder.discount ? ` — ${musicOrder.discountPct}% bundle discount (−$${musicOrder.discount})` : ''}` },
-        { id: 'turnaround', question: 'Turnaround', answer: `${MUSIC_VIDEO_PRICING.songHours} hours per song — ${MUSIC_VIDEO_PRICING.phases.writeAndBuild} to write and build, ${MUSIC_VIDEO_PRICING.phases.recordAndFinish} to record and finish` },
+        { id: 'turnaround', question: 'Turnaround', answer: `${MUSIC_VIDEO_PRICING.songDays} days per song — ${MUSIC_VIDEO_PRICING.phases.writeAndBuild} days to write and build, ${MUSIC_VIDEO_PRICING.phases.recordAndFinish} days to record and finish` },
       ] : []),
       ...(priced.option ? [{ id: 'option', question: 'Option', answer: `${priced.option.label} ($${priced.option.price})` }] : []),
       ...(priced.lines.length ? [{ id: 'addOns', question: 'Add-ons', answer: priced.lines.map((l) => `${l.label} (+$${l.amount})`).join(', ') }] : []),
@@ -2369,12 +2369,15 @@ async function handleCheckout(request, env) {
     // The agreement text is rebuilt here from the catalog (never taken from
     // the browser) and stored with its fingerprint and the signature.
     const agreement = buildAgreement({
-      service: svc,
+      // One week per song, so a multi-song order quotes the weeks it needs.
+      service: musicOrder && musicOrder.songs > 0
+        ? { ...svc, deliveryDays: MUSIC_VIDEO_PRICING.songDays * musicOrder.songs }
+        : svc,
       optionLabel: priced.option?.label,
       quantityLabel: musicOrder ? quantityLabel : undefined,
       discountCents: musicOrder ? Math.round(musicOrder.discount * 100) : undefined,
       turnaround: musicOrder
-        ? 'Each song is delivered 48 hours after it starts: 24 hours to write and build it, 24 hours to record and finish it. Songs are delivered in order, one 48-hour block at a time.'
+        ? 'Each song is delivered one week after it starts: 3 days to write and build it, 4 days to record, mix and finish it. Songs are delivered in order, one week at a time.'
         : undefined,
       addOnLabels: priced.lines.map((l) => l.label),
       totalCents: priceCents,
