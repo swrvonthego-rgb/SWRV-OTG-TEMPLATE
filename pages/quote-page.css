@@ -557,6 +557,70 @@
   background: var(--q-hair);
 }
 
+/* ── OPEN SECTIONS — inclusions and process, always visible ──────────── */
+.q-block {
+  margin-top: 10px;
+  padding: 18px 0 6px;
+  border-top: 1px solid var(--q-hair, rgba(0, 0, 0, 0.08));
+}
+
+.q-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.q-block-eyebrow {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-gold, #9a7b2e);
+}
+
+.q-block-count {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--q-panel, #f5f5f7);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--q-grey, #6e6e73);
+  white-space: nowrap;
+}
+
+.q-block-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  color: var(--q-ink, #1d1d1f);
+}
+
+/* one column on phones, two once there is room. Two classes so these win
+   over the base .q-deliv rules, which are defined later in the sheet. */
+.q-deliv.q-deliv-open {
+  gap: 14px;
+}
+
+@media (min-width: 620px) {
+  .q-deliv.q-deliv-open {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+  }
+}
+
+.q-steps-open {
+  gap: 12px;
+}
+
 /* ── ACCORDIONS ──────────────────────────────────────────────────────── */
 .q-sec {
   border-bottom: 1px solid var(--q-hair);
@@ -745,8 +809,10 @@
 
 /* process */
 .q-steps {
+  /* Tailwind's reset removes list markers; the process needs its numbers. */
+  list-style: decimal;
   margin: 4px 0 0;
-  padding-left: 18px;
+  padding-left: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;

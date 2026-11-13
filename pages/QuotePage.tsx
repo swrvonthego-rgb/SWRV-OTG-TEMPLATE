@@ -412,14 +412,15 @@ export function QuotePage() {
               </ul>
             </Accordion>
 
-            <Accordion
-              id="included"
-              title="What every song includes"
-              meta="All eight · every song"
-              open={!!open.included}
-              onToggle={() => toggle('included')}
-            >
-              <ul className="q-deliv">
+            <section className="q-block" aria-labelledby="included-title">
+              <div className="q-block-head">
+                <p className="q-block-eyebrow">Included</p>
+                <span className="q-block-count">{INCLUDED.length} with every song</span>
+              </div>
+              <h2 className="q-block-title" id="included-title">
+                What every song includes
+              </h2>
+              <ul className="q-deliv q-deliv-open">
                 {INCLUDED.map((item) => (
                   <li key={item.name}>
                     <span className="q-tick" aria-hidden="true">
@@ -432,16 +433,17 @@ export function QuotePage() {
                   </li>
                 ))}
               </ul>
-            </Accordion>
+            </section>
 
-            <Accordion
-              id="how"
-              title="How we work it"
-              meta="Step by step"
-              open={!!open.how}
-              onToggle={() => toggle('how')}
-            >
-              <ol className="q-steps">
+            <section className="q-block" aria-labelledby="how-title">
+              <div className="q-block-head">
+                <p className="q-block-eyebrow">Process</p>
+                <span className="q-block-count">1 week a song</span>
+              </div>
+              <h2 className="q-block-title" id="how-title">
+                How we work it
+              </h2>
+              <ol className="q-steps q-steps-open">
                 <li>
                   <strong>Half down books the session.</strong> We need it at least 3 days (72
                   hours) before the session so we can make accommodations for the gig.
@@ -460,7 +462,7 @@ export function QuotePage() {
                   complete — that protects the record and the sound of it.
                 </li>
               </ol>
-            </Accordion>
+            </section>
 
             {/* ── PROTECTION — stated once, before any release talk ── */}
             <section className="q-rights">
