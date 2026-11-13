@@ -348,13 +348,18 @@ export function QuotePage() {
               Opens Messages with {money(dueNow)} written in — tap Apple Cash there and send.
             </p>
 
-            {/* ── ADD MORE SONGS — the minimum is four, never a cap ── */}
-            <section className="q-add">
-              <p className="q-add-title">Adding songs</p>
-              <p className="q-add-lede">
-                Four songs is the minimum, and you can add any time — every one re-prices the whole
-                order at the bundle rate.
-              </p>
+            {/* ── ADDING SONGS — collapsed with the rest of the detail ── */}
+            <Accordion
+              id="adding"
+              title="Adding songs"
+              meta="Up to 10 songs"
+              open={!!open.adding}
+              onToggle={() => toggle('adding')}
+            >
+              <div className="q-add q-add-plain">
+                <p className="q-add-lede">
+                  Every song you add re-prices the whole order at the bundle rate.
+                </p>
               <ul className="q-add-rows">
                 {SONG_LADDER.map((row) => {
                   const current = row.songs === songs;
@@ -380,12 +385,11 @@ export function QuotePage() {
                   );
                 })}
               </ul>
-              <a className="q-btn-soft" href={`sms:${PAY.phoneLink}`}>
-                Text Zion your final count
-              </a>
-            </section>
-
-            <div className="q-dash" />
+                <a className="q-btn-soft" href={`sms:${PAY.phoneLink}`}>
+                  Text Zion your final count
+                </a>
+              </div>
+            </Accordion>
 
             {/* ── DETAIL ── */}
             <Accordion
