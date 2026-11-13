@@ -549,8 +549,9 @@ export function QuotePage() {
                     {copied === 'email' ? 'Copied ✓' : 'Copy'}
                   </button>
                 </div>
-                <a className="q-btn-soft" href={appleCashUrl}>
+                <a className="q-pay-btn" href={appleCashUrl}>
                   Open Messages · send {money(dueNow)}
+                  <span aria-hidden="true">→</span>
                 </a>
                 <p className="q-pay-note">
                   One tap opens a text to Zion. Tap Apple Cash in Messages and send{' '}
