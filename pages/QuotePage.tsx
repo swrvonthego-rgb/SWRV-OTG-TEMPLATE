@@ -550,7 +550,7 @@ export function QuotePage() {
                   </button>
                 </div>
                 <a className="q-pay-btn" href={appleCashUrl}>
-                  Open Messages · send {money(dueNow)}
+                  Open Messages · {money(dueNow)}
                   <span aria-hidden="true">→</span>
                 </a>
                 <p className="q-pay-note">
