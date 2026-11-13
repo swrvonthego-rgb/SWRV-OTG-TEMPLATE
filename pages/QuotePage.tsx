@@ -183,6 +183,12 @@ export function QuotePage() {
   const perSong = total / songs;
   // Half now only — the single payment link on the page, following the count.
   const cashAppHalfUrl = `https://cash.app/$${PAY.cashTag}/${dueNow}`;
+  // Apple Cash is person-to-person, so no link can pre-fill the amount the way
+  // Cash App can. This opens Messages with the amount already written in it;
+  // she taps the Apple Cash button there and sends it.
+  const appleCashUrl = `sms:${PAY.phoneLink}&body=${encodeURIComponent(
+    `Apple Cash ${money(dueNow)} — Living the Dream EP (DeeBeauxx)`,
+  )}`;
 
   const toggle = (id: string) => setOpen((cur) => ({ ...cur, [id]: !cur[id] }));
 
@@ -320,8 +326,8 @@ export function QuotePage() {
               Pay {money(dueNow)} now with Cash App
               <span aria-hidden="true">→</span>
             </a>
-            <a className="q-btn-soft" href="#pay">
-              Apple Pay or another way
+            <a className="q-btn-soft" href={appleCashUrl}>
+              Pay with Apple Pay · {money(dueNow)}
             </a>
 
             {/* ── ADD MORE SONGS — the minimum is four, never a cap ── */}
@@ -412,15 +418,14 @@ export function QuotePage() {
               </ul>
             </Accordion>
 
-            <section className="q-block" aria-labelledby="included-title">
-              <div className="q-block-head">
-                <p className="q-block-eyebrow">Included</p>
-                <span className="q-block-count">{INCLUDED.length} with every song</span>
-              </div>
-              <h2 className="q-block-title" id="included-title">
-                What every song includes
-              </h2>
-              <ul className="q-deliv q-deliv-open">
+            <Accordion
+              id="included"
+              title="What every song includes"
+              meta={`${INCLUDED.length} · every song`}
+              open={!!open.included}
+              onToggle={() => toggle('included')}
+            >
+              <ul className="q-deliv">
                 {INCLUDED.map((item) => (
                   <li key={item.name}>
                     <span className="q-tick" aria-hidden="true">
@@ -433,17 +438,16 @@ export function QuotePage() {
                   </li>
                 ))}
               </ul>
-            </section>
+            </Accordion>
 
-            <section className="q-block" aria-labelledby="how-title">
-              <div className="q-block-head">
-                <p className="q-block-eyebrow">Process</p>
-                <span className="q-block-count">1 week a song</span>
-              </div>
-              <h2 className="q-block-title" id="how-title">
-                How we work it
-              </h2>
-              <ol className="q-steps q-steps-open">
+            <Accordion
+              id="how"
+              title="How we work it"
+              meta="1 week a song"
+              open={!!open.how}
+              onToggle={() => toggle('how')}
+            >
+              <ol className="q-steps">
                 <li>
                   <strong>Half down books the session.</strong> We need it at least 3 days (72
                   hours) before the session so we can make accommodations for the gig.
@@ -462,7 +466,7 @@ export function QuotePage() {
                   complete — that protects the record and the sound of it.
                 </li>
               </ol>
-            </section>
+            </Accordion>
 
             {/* ── PROTECTION — stated once, before any release talk ── */}
             <section className="q-rights">
@@ -523,8 +527,8 @@ export function QuotePage() {
                     {copied === 'email' ? 'Copied ✓' : 'Copy'}
                   </button>
                 </div>
-                <a className="q-btn-soft" href={`sms:${PAY.phoneLink}`}>
-                  Text Zion · Apple Pay
+                <a className="q-btn-soft" href={appleCashUrl}>
+                  Open Messages · send {money(dueNow)}
                 </a>
                 <p className="q-pay-note">
                   One tap opens a text to Zion. Tap Apple Cash in Messages and send{' '}
