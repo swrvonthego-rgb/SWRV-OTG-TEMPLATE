@@ -79,7 +79,6 @@ export const QUOTES: Record<string, QuoteClient> = {
       ],
     },
   },
-  },
 };
 
 /** Slug lookup — case-insensitive so a link typed in caps still opens. */
