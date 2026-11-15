@@ -1,11 +1,12 @@
-/* ── SWRV EVENT COVERAGE ─────────────────────────────────────────────── */
+/* ── SWRV CONTENT PACKAGES — the on-location shoot packages ─────────── */
 .ec-section {
   margin: 0 0 72px;
 }
 
 .ec-header {
   text-align: center;
-  margin-bottom: 32px;
+  max-width: 760px;
+  margin: 0 auto 32px;
 }
 .ec-eyebrow {
   font-size: 11px;
@@ -23,78 +24,67 @@
   color: #ede8dc;
   margin: 0 0 14px;
 }
-.ec-intro {
+.ec-lede {
   font-size: 15px;
-  color: rgba(237, 232, 220, 0.55);
+  line-height: 1.65;
+  color: rgba(237, 232, 220, 0.65);
   margin: 0;
 }
 
-/* CATEGORY PICKER — bold color-block cards */
-.ec-cat-grid {
+/* HOW IT WORKS — shows the visit, not just the deliverable */
+.ec-steps {
+  list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  margin-bottom: 56px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 0 0 44px;
+  padding: 0;
 }
-.ec-cat-card {
-  position: relative;
+.ec-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
   text-align: left;
-  padding: 24px;
-  border-radius: 16px;
-  border: 2px solid #FF4D00;
-  background: linear-gradient(135deg, #FF4D00 0%, #ff6b1f 100%);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 24px rgba(255, 77, 0, 0.25);
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.ec-cat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 36px rgba(255, 77, 0, 0.4);
-}
-.ec-cat-top {
+.ec-step-num {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #FF4D00;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 10px;
+  justify-content: center;
 }
-.ec-cat-label {
-  font-family: 'Bebas Neue', system-ui, sans-serif;
-  font-size: 20px;
-  letter-spacing: 0.02em;
-  color: #0a0804;
+.ec-step-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ede8dc;
 }
-.ec-cat-badge {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: #0a0804;
-  color: #fff;
-  white-space: nowrap;
-}
-.ec-cat-desc {
-  font-size: 13px;
-  line-height: 1.5;
-  color: rgba(10, 8, 4, 0.8);
+.ec-step-body {
   margin: 0;
-  font-weight: 500;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(237, 232, 220, 0.6);
 }
 
-/* TIERED PACKAGES */
-.ec-tiers-header {
+/* PACKAGES */
+.ec-pick-label {
   text-align: center;
-  margin-bottom: 24px;
-  scroll-margin-top: 100px;
-}
-.ec-tiers-eyebrow {
   font-size: 11px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(237, 232, 220, 0.4);
-  font-weight: 700;
-  margin: 0;
+  color: #FF4D00;
+  font-weight: 800;
+  margin: 0 0 18px;
 }
 .ec-tier-grid {
   display: grid;
@@ -119,6 +109,11 @@
 .ec-tier-featured {
   border-color: #FF4D00;
   background: linear-gradient(180deg, rgba(255, 77, 0, 0.1) 0%, rgba(255, 77, 0, 0.03) 100%);
+}
+.ec-tier-on {
+  border-color: #FF4D00;
+  box-shadow: 0 0 0 1px #FF4D00, 0 14px 34px rgba(255, 77, 0, 0.2);
+  background: linear-gradient(180deg, rgba(255, 77, 0, 0.16) 0%, rgba(255, 77, 0, 0.05) 100%);
 }
 .ec-tier-badge {
   position: absolute;
@@ -147,17 +142,23 @@
 }
 .ec-tier-duration {
   font-size: 11px;
-  color: rgba(237, 232, 220, 0.4);
+  color: rgba(237, 232, 220, 0.45);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  white-space: nowrap;
+  text-align: right;
 }
 .ec-tier-price {
   font-family: 'Bebas Neue', system-ui, sans-serif;
   font-size: 34px;
   color: #FF4D00;
-  margin: 4px 0 12px;
+  margin: 4px 0 2px;
   line-height: 1;
+}
+.ec-tier-split {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(237, 232, 220, 0.8);
+  margin: 0 0 14px;
 }
 .ec-tier-blurb {
   font-size: 13px;
@@ -206,12 +207,77 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 26px rgba(255, 77, 0, 0.45);
 }
+.ec-tier-on .ec-tier-cta {
+  background: #ede8dc;
+  color: #0a0804;
+  box-shadow: none;
+}
+
+/* THE PICK — confirm the selected package, then hand off to Book & Pay */
+.ec-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+  margin: 0 0 14px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+}
+.ec-confirm-live {
+  border-style: solid;
+  border-color: #FF4D00;
+  background: linear-gradient(135deg, rgba(255, 77, 0, 0.16) 0%, rgba(255, 77, 0, 0.05) 100%);
+}
+.ec-confirm-hint {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(237, 232, 220, 0.6);
+}
+.ec-confirm-label {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #FF4D00;
+}
+.ec-confirm-name {
+  margin: 3px 0 2px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ede8dc;
+}
+.ec-confirm-split {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(237, 232, 220, 0.65);
+}
+.ec-confirm-cta {
+  padding: 14px 22px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FF4D00 0%, #ff7433 100%);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(255, 77, 0, 0.35);
+  transition: all 0.2s;
+}
+.ec-confirm-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255, 77, 0, 0.45);
+}
 
 .ec-tier-note {
   text-align: center;
   font-size: 13px;
   color: rgba(237, 232, 220, 0.4);
-  margin: 0;
+  margin: 0 0 44px;
 }
 .ec-tier-note-link {
   background: none;
@@ -223,7 +289,68 @@
   padding: 0;
 }
 
+/* EXTRAS — the rest of what an event can add */
+.ec-extras-label {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(237, 232, 220, 0.4);
+  font-weight: 700;
+  margin: 0 0 18px;
+}
+.ec-extras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+.ec-extra-card {
+  display: block;
+  text-align: left;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: #ede8dc;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ec-extra-card:hover {
+  border-color: rgba(255, 77, 0, 0.5);
+  transform: translateY(-2px);
+}
+.ec-extra-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ec-extra-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+.ec-extra-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #FF4D00;
+  color: #fff;
+  white-space: nowrap;
+}
+.ec-extra-desc {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(237, 232, 220, 0.6);
+}
+
 @media (max-width: 640px) {
-  .ec-cat-grid { grid-template-columns: 1fr; }
+  .ec-steps { grid-template-columns: 1fr; }
   .ec-tier-grid { grid-template-columns: 1fr; }
+  .ec-extras-grid { grid-template-columns: 1fr; }
+  .ec-confirm-cta { width: 100%; }
 }

@@ -1643,7 +1643,10 @@ async function handleZionBooking(request, env) {
 // an invoice:
 //   - 'event'   orders (a booked date): a daily cron finds orders whose
 //     event_date is BALANCE_INVOICE_LEAD_DAYS away and invoices them then,
-//     so the balance is realistically paid before the event happens.
+//     so the balance is realistically paid before the event happens —
+//     except on-location content packages (site.config.ts
+//     `balanceOnDelivery`), which are delivered the day they're shot, so
+//     their balance is invoiced the day after the shoot instead.
 //   - 'project' orders (a website, branding, etc. — "done" is a judgment
 //     call, not a date): the invoice fires when an admin clicks "Mark
 //     Delivered", never on a timer, so a client is never billed for
@@ -1653,6 +1656,9 @@ async function handleZionBooking(request, env) {
 
 const BALANCE_INVOICE_LEAD_DAYS = 3;
 const HOURLY_CRON = '17 * * * *'; // must match wrangler.jsonc triggers.crons
+// On-location content packages deliver on the shoot day, so the second half
+// is due then — never before the client has their content.
+const isBalanceOnDelivery = (serviceId) => SERVICES.find((s) => s.id === serviceId)?.balanceOnDelivery === true;
 let __ordersTableReady = false;
 
 async function ensureOrdersTable(env) {
@@ -2295,6 +2301,17 @@ async function handleCheckout(request, env) {
     if (category === 'event' && !eventDate) {
       return new Response(JSON.stringify({ error: 'An event date is required for this service.' }), { status: 400, headers: jsonHeaders(request) });
     }
+    // Minimum notice (site.config.ts `minLeadDays`) — content shoots book
+    // 48 hours ahead. The calendar greys out earlier dates; never trust the
+    // browser to be the only thing enforcing it.
+    if (svc.minLeadDays) {
+      const earliest = new Date();
+      earliest.setUTCDate(earliest.getUTCDate() + svc.minLeadDays);
+      const earliestDate = earliest.toISOString().slice(0, 10);
+      if (eventDate && String(eventDate) < earliestDate) {
+        return new Response(JSON.stringify({ error: `${svc.name} needs at least ${svc.minLeadDays * 24} hours' notice. Pick a later date.` }), { status: 400, headers: jsonHeaders(request) });
+      }
+    }
     // No signed agreement, no payment. The signature is a small PNG drawn
     // on the client's screen.
     const signature = typeof body.signature === 'string' ? body.signature : '';
@@ -2342,7 +2359,7 @@ async function handleCheckout(request, env) {
           unit_amount: depositCents,
           product_data: {
             name: `${serviceName}${priced.lines.length ? ' + ' + priced.lines.map((l) => l.label).join(' + ') : ''} — 50% deposit`,
-            description: `${musicOrder && musicOrder.discount ? `List $${musicOrder.base.toFixed(2)} · bundle discount ${musicOrder.discountPct}% (−$${musicOrder.discount.toFixed(2)}) · ` : ''}Total: $${(priceCents / 100).toFixed(2)} · Deposit due now: $${(depositCents / 100).toFixed(2)} · Balance invoiced ${category === 'event' ? 'before your event' : 'on delivery'}: $${(balanceCents / 100).toFixed(2)}`,
+            description: `${musicOrder && musicOrder.discount ? `List $${musicOrder.base.toFixed(2)} · bundle discount ${musicOrder.discountPct}% (−$${musicOrder.discount.toFixed(2)}) · ` : ''}Total: $${(priceCents / 100).toFixed(2)} · Deposit due now: $${(depositCents / 100).toFixed(2)} · Balance invoiced ${isBalanceOnDelivery(serviceId) ? 'after the shoot' : category === 'event' ? 'before your event' : 'on delivery'}: $${(balanceCents / 100).toFixed(2)}`,
           },
         },
       }],
@@ -2905,7 +2922,9 @@ async function sendDepositReceiptEmail(env, order, paidCents) {
     const detailRows = details.rows
       .map(([k, v]) => `        <tr><td style="padding:6px 0;color:#777;">${k}</td><td style="text-align:right;">${v}</td></tr>`)
       .join('\n');
-    const balanceWhen = order.category === 'event'
+    const balanceWhen = isBalanceOnDelivery(order.service_id)
+      ? `as soon as your content is delivered`
+      : order.category === 'event'
       ? `automatically about ${BALANCE_INVOICE_LEAD_DAYS} days before your event`
       : `as soon as your project is delivered`;
     const html = monthly ? `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a;">
@@ -2970,7 +2989,9 @@ async function sendOwnerOrderEmail(env, order) {
     const when = order.category === 'monthly'
       ? `Monthly plan — preferred start: <strong>${safe(order.start_date || 'not given')}</strong>. Stripe bills $${(order.total_cents / 100).toFixed(2)} every month automatically; nothing to invoice.`
       : order.category === 'event'
-      ? `Event date: <strong>${safe(order.event_date)}</strong> — balance auto-invoices ${BALANCE_INVOICE_LEAD_DAYS} days before.`
+      ? isBalanceOnDelivery(order.service_id)
+        ? `Event date: <strong>${safe(order.event_date)}</strong> — content package, balance invoices after the shoot.`
+        : `Event date: <strong>${safe(order.event_date)}</strong> — balance auto-invoices ${BALANCE_INVOICE_LEAD_DAYS} days before.`
       : order.balance_cents === 0
       ? `Preferred date: <strong>${safe(order.start_date || 'not given')}</strong> — paid in full. Confirm the exact time with them.`
       : `Preferred start: <strong>${safe(order.start_date || 'not given')}</strong> — send the balance from /admin → Orders → Mark Delivered.`;
@@ -3088,16 +3109,26 @@ async function runBalanceInvoiceSweep(env) {
   target.setUTCDate(target.getUTCDate() + BALANCE_INVOICE_LEAD_DAYS);
   const targetDate = target.toISOString().slice(0, 10);
 
+  // The day after a shoot: on-location content packages are delivered on
+  // the day itself, so their balance bills then, never before.
+  const delivered = new Date();
+  delivered.setUTCDate(delivered.getUTCDate() - 1);
+  const deliveredDate = delivered.toISOString().slice(0, 10);
+
   // Everything due within the window, not just the exact lead day: a sweep
   // that fails one morning retries the next, and a booking made inside the
   // window (event in 2 days) still gets its balance. invoiceBalance moves
   // the order to 'balance_invoiced', so nothing is billed twice.
   const { results } = await env.EMAIL_DB.prepare(
     `SELECT * FROM orders WHERE category = 'event' AND status = 'deposit_paid'
-       AND event_date >= ? AND event_date <= ?`
-  ).bind(today, targetDate).all();
+       AND event_date <= ?`
+  ).bind(targetDate).all();
 
   for (const order of results || []) {
+    // Content packages bill after the shoot; every other event booking bills
+    // inside the lead window. Past-date orders stay in the result set so a
+    // missed sweep bills the next morning, never twice.
+    if (isBalanceOnDelivery(order.service_id) ? order.event_date > deliveredDate : order.event_date < today) continue;
     try {
       await invoiceBalance(env, order);
     } catch (err) {
@@ -3117,7 +3148,7 @@ Your job: Help potential clients understand which SWRV services are right for th
 
 WHAT SWRV OFFERS RIGHT NOW (nothing else is on offer at the moment):
 
-SWRV Coverage — event and brand content, fixed packages, booked and paid right on the site (swrvonthego.pro/content). SWRV's team comes to the event, captures the content, edits it, and posts it to the client's account before the event is over. Posting access is given through Meta Business Suite — never a password.
+SWRV Coverage — event and brand content, fixed packages, booked and paid right on the site (swrvonthego.pro/content). SWRV's team comes to the event, captures the content, edits it, and posts it to the client's account before the event is over. Half is paid today, half on delivery. Posting access is given through Meta Business Suite — never a password.
   - On The Go — $500 (1 hour on-site, 6 edited reels delivered same day)
   - The Drive-Through — $1,500 (2 hours on-site, pre-shoot questionnaire, custom mood board, content strategy, creative direction, iPhone + video, gimbal-stabilized footage, real-time posting, 12 edited reels, raw footage — most popular)
   - The Pull-Up — $2,500 (3 hours on-site, strategy call + concept, mood board + shot list, gimbal-stabilized footage, professional photographer, edited brand photos, up to 3 looks, real-time posting throughout, 12 edited reels, raw footage)

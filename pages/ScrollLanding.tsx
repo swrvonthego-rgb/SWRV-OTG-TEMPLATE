@@ -36,7 +36,7 @@ const NARROW: Dev[] = [
 ];
 
 const FEATURES = [
-  { key: 'content', title: 'Content', body: 'Reels, photos and posts that make your brand impossible to scroll past. We show up, capture it, and post it.', to: '/content#sm-cat-social-media', svc: 'social-content-daily' },
+  { key: 'content', title: 'Content', body: 'Reels, photos and posts that make your brand impossible to scroll past. We show up, capture it, and post it.', to: '/content#content-packages', svc: 'social-content-daily' },
   { key: 'web', title: 'Websites', body: 'A site that looks great and goes live fast. Pick a style and we make it yours, with booking and checkout built in.', to: '/content#sm-cat-web-digital', svc: 'website-presence' },
   { key: 'ai', title: 'AI Video', body: 'Short, scroll-stopping videos made fast. 30 seconds, 1 minute or 2 minutes, ready to post.', to: '/content#sm-cat-videography', svc: 'ai-video-short' },
 ];

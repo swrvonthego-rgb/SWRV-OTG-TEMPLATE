@@ -2,7 +2,7 @@ import { ScrollHint } from './ScrollHint';
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
-  format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
+  format, addDays, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, isSameMonth, isSameDay, isBefore, startOfToday,
 } from 'date-fns';
 import { buildIntakeQuestions, type Question } from '../../intake.config';
@@ -320,6 +320,9 @@ export function CheckoutModal({ service, onClose }: Props) {
   // Worker uses, and the same cent rounding, so the numbers shown here are
   // exactly what Stripe charges.
   const full = SERVICES.find((s) => s.id === service.id);
+  // On-location content is delivered on the shoot day, so its balance is
+  // invoiced after the shoot rather than before the date.
+  const balanceOnDelivery = !!full?.balanceOnDelivery;
   const available = (full?.addOns || []).map((id) => ADD_ONS[id]).filter(Boolean);
   const options = full?.options || [];
   const priced = checkoutTotal(full || service, addOnIds, optionId);
@@ -332,6 +335,10 @@ export function CheckoutModal({ service, onClose }: Props) {
   const per = isMonthly ? '/mo' : '';
   const toggleAddOn = (id: string) => setAddOnIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
   const today = startOfToday();
+  // Minimum notice for this package (content shoots book 48 hours ahead):
+  // anything sooner is unselectable here, and the Worker rejects it too.
+  const leadDays = full?.minLeadDays || 0;
+  const earliest = leadDays ? addDays(today, leadDays) : today;
   const days = eachDayOfInterval({ start: startOfWeek(startOfMonth(month)), end: endOfWeek(endOfMonth(month)) });
   const dateKey = (d: Date) => format(d, 'yyyy-MM-dd');
   // Only event bookings block on a taken date — a website kickoff doesn't
@@ -419,7 +426,9 @@ export function CheckoutModal({ service, onClose }: Props) {
             <div>
               <h3 className="text-white font-bold text-lg mb-1">{isEvent ? 'Pick your event date' : payInFull ? 'Pick your preferred date' : 'Pick your preferred start date'}</h3>
               <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                {isEvent ? 'Dates already booked are crossed out.' : isMonthly ? "We'll start managing your brand on or around this date. Your first month is billed today." : payInFull ? "We'll confirm the exact time with you after you book." : "We'll kick off your project on or around this date."}
+                {isEvent
+                  ? `${leadDays ? `We book at least ${leadDays * 24} hours ahead, so the earliest date is ${format(earliest, 'MMMM d')}. ` : ''}Dates already booked are crossed out.`
+                  : isMonthly ? "We'll start managing your brand on or around this date. Your first month is billed today." : payInFull ? "We'll confirm the exact time with you after you book." : "We'll kick off your project on or around this date."}
               </p>
               <div className="flex items-center justify-between mb-3">
                 <button type="button" onClick={() => setMonth(subMonths(month, 1))} disabled={!isBefore(today, startOfMonth(month))}
@@ -439,7 +448,7 @@ export function CheckoutModal({ service, onClose }: Props) {
               <div className="grid grid-cols-7 gap-1">
                 {days.map((d) => {
                   const inMonth = isSameMonth(d, month);
-                  const past = isBefore(d, today);
+                  const past = isBefore(d, earliest);
                   const taken = isTaken(d);
                   const disabled = !inMonth || past || taken;
                   const selected = date && isSameDay(d, date);
@@ -578,7 +587,7 @@ export function CheckoutModal({ service, onClose }: Props) {
                   ) : isMonthly ? (
                     <><span>Then billed monthly · cancel anytime</span><span>{money(priced.total)}/mo</span></>
                   ) : (
-                    <><span>Balance (auto-invoiced {isEvent ? 'before your event' : 'when your project is delivered'})</span><span>{money(balance)}</span></>
+                    <><span>Balance ({isEvent && !balanceOnDelivery ? 'auto-invoiced before your event' : balanceOnDelivery ? 'invoiced after your shoot, on delivery' : 'auto-invoiced when your project is delivered'})</span><span>{money(balance)}</span></>
                   )}
                 </div>
               </div>

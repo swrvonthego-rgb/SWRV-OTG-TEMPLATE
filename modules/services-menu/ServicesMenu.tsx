@@ -120,6 +120,20 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
       >×</button>
 
       <div className="sm-inner">
+        {/* SWRV CONTENT PACKAGES — the first thing on the page. What the
+            on-location shoot is, what happens on the day, and a package the
+            client selects before Book & Pay takes over. Hidden while a
+            search is running, so results aren't buried under it. */}
+        {!q && (
+          <EventCoverage
+            onBook={(svc) => setCheckoutService(svc)}
+            onIntake={(id, name, path) => {
+              window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id, name, path } }));
+              onClose?.();
+            }}
+          />
+        )}
+
         {/* HERO — the SWRV logo, with its animation. The still doubles as
             the poster and the fallback for reduced-motion visitors. */}
         <div className="sm-hero-image">
@@ -181,7 +195,8 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
           <p className="sm-eyebrow">FULL SERVICE MENU</p>
           <h1 className="sm-title">SWRV ON THE GO<br/><span className="sm-title-accent">Service</span></h1>
           <p className="sm-intro">
-            Event coverage, music production, music videos, websites, social media and more — pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
+            The rest of the menu: music production, music videos, websites, social media and more —
+            pick a package, book it, and pay right here. Affirm, Klarna, and Afterpay accepted.
           </p>
           <input
             type="search"
@@ -236,17 +251,6 @@ export function ServicesMenu({ isOpen, onClose, onBookStrategyCall }: Props) {
             </section>
           );
         })}
-
-        {/* SWRV EVENT COVERAGE — category picker + fixed, bookable tiers.
-            Kept below the core services so the first thing a visitor sees
-            is what people actually come to buy. */}
-        <EventCoverage
-          onBook={(svc) => setCheckoutService(svc)}
-          onIntake={(id, name, path) => {
-            window.dispatchEvent(new CustomEvent('swrv:open-intake', { detail: { id, name, path } }));
-            onClose?.();
-          }}
-        />
 
         {/* CLIENT REVIEWS — published reviews from verified paying clients */}
         {!q && <ClientReviews />}

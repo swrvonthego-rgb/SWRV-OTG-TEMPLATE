@@ -645,6 +645,15 @@ export interface Service {
   // Charge the whole price at checkout instead of a 50% deposit (small,
   // one-sitting services like a consultation). No balance invoice.
   payInFull?: boolean;
+  // The work is delivered on the day it's done, so the second half is due
+  // then: the balance is invoiced the day after the shoot instead of before
+  // the booked date (see runBalanceInvoiceSweep in src/worker.js). Used by
+  // the on-location content packages.
+  balanceOnDelivery?: boolean;
+  // Minimum notice before the booked date, in days. The calendar greys out
+  // anything sooner and the Worker rejects an earlier date. The content
+  // packages need 48 hours to put a shooter on the calendar.
+  minLeadDays?: number;
   // After payment, send the client to The Roadmap (vision + questionnaire)
   // — shown on the confirmation page and in the welcome email.
   roadmapAfterPurchase?: boolean;
@@ -1031,7 +1040,10 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 500,
     checkoutEnabled: true,
     checkoutCategory: 'event',
-    blurb: 'A quick hour on-site — we capture the moment and you have edited reels the same day.',
+    balanceOnDelivery: true,
+    minLeadDays: 2,
+    terms: 'On location: we come to you and shoot the on-site hours in this package wherever your event or shoot is happening. Half is paid today to lock your date; the other half is invoiced after the shoot, once your content has been delivered. Content shoots book at least 48 hours in advance. Reels go live on your accounts the same day through access you give us in Meta Business Suite — never a password.',
+    blurb: 'We pull up for one hour, shoot the moment on location, and you have edited reels the same day.',
     deliveryDays: 1,
     includes: ['1 hour on-site coverage', 'iPhone-shot content', 'Creative direction on-site', '6 edited reels', 'Reels delivered same day', 'Raw footage delivered'],
   },
@@ -1043,8 +1055,11 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 1500,
     checkoutEnabled: true,
     checkoutCategory: 'event',
+    balanceOnDelivery: true,
+    minLeadDays: 2,
     featured: true,
-    blurb: 'Two hours with a plan behind it — mood board, content strategy, and your socials posting live while it happens.',
+    terms: 'On location: we come to you and shoot the on-site hours in this package wherever your event or shoot is happening. Half is paid today to lock your date; the other half is invoiced after the shoot, once your content has been delivered. Content shoots book at least 48 hours in advance. Reels go live on your accounts the same day through access you give us in Meta Business Suite — never a password.',
+    blurb: 'Two hours on location with a plan behind it — mood board, content strategy, and your socials posting live while it happens.',
     deliveryDays: 1,
     includes: ['2 hours on-site', 'Pre-shoot questionnaire', 'Custom mood board', 'Content strategy + planning', 'Creative direction on-site', 'iPhone + video content', 'Gimbal-stabilized footage', 'Real-time story posting to your socials', '12 edited reels', 'Raw footage delivered'],
   },
@@ -1056,7 +1071,10 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 2500,
     checkoutEnabled: true,
     checkoutCategory: 'event',
-    blurb: 'Three hours of full production — a professional photographer, edited brand photos, and live posting while we take over your socials.',
+    balanceOnDelivery: true,
+    minLeadDays: 2,
+    terms: 'On location: we come to you and shoot the on-site hours in this package wherever your event or shoot is happening. Half is paid today to lock your date; the other half is invoiced after the shoot, once your content has been delivered. Content shoots book at least 48 hours in advance. Reels go live on your accounts the same day through access you give us in Meta Business Suite — never a password.',
+    blurb: 'Three hours of full production on location — a professional photographer, edited brand photos, and live posting while we take over your socials.',
     deliveryDays: 1,
     includes: ['3 hours on-site', 'Pre-shoot strategy call + concept', 'Mood board + shot list', 'Creative direction on-site', 'iPhone + video content', 'Gimbal-stabilized footage', 'Professional photographer', 'Edited brand photos', 'Up to 3 looks', 'Real-time story + reel posting throughout', '12 edited reels', 'Raw footage delivered'],
   },
@@ -1068,6 +1086,8 @@ export const ALL_SERVICES: Service[] = [
     priceNumeric: 3500,
     checkoutEnabled: true,
     checkoutCategory: 'event',
+    balanceOnDelivery: true,
+    terms: 'On location: we come to you and shoot the on-site hours in this package wherever your event or shoot is happening. Half is paid today to lock your date; the other half is invoiced after the shoot, once your content has been delivered. Content shoots book at least 48 hours in advance. Reels go live on your accounts the same day through access you give us in Meta Business Suite — never a password. Drone footage is outdoor aerials, weather and airspace permitting.',
     blurb: 'Everything in The Pull-Up, plus drone footage from above — the venue, the arrivals, and the whole crowd in one shot. Outdoor aerials, weather and airspace permitting.',
     deliveryDays: 1,
     includes: ['Everything in The Pull-Up', 'Drone footage by an FAA-licensed pilot', 'Aerial shots of the venue, arrivals and crowd', 'Aerial photos', '3 edited aerial reels (15 reels total)'],
