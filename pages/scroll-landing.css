@@ -46,15 +46,15 @@
 .sl2-hero { height: 300vh; position: relative; }
 .sl2-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 1200px; perspective-origin: 50% 46%; background: radial-gradient(ellipse at top, #ffd23f 0%, #f8bc0a 55%, #eaa800 100%); }
 .sl2-world { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
-.sl2-dev { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform, opacity; }
+.sl2-dev { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform, opacity; opacity: 0; }
 .sl2-dev-desktop { width: min(27vw, 400px); aspect-ratio: 16 / 10; margin: calc(min(27vw, 400px) * -0.3125) 0 0 calc(min(27vw, 400px) * -0.5); }
 .sl2-dev-phone { width: min(13vw, 190px); aspect-ratio: 9 / 19; margin: calc(min(13vw, 190px) * -1.055) 0 0 calc(min(13vw, 190px) * -0.5); }
 @media (max-width: 899px) {
   .sl2-dev-desktop { width: 58vw; margin: calc(58vw * -0.3125) 0 0 calc(58vw * -0.5); }
   .sl2-dev-phone { width: 27vw; margin: calc(27vw * -1.055) 0 0 calc(27vw * -0.5); }
 }
-.sl2-center { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 70px 20px 40px; will-change: transform, opacity; }
-.sl2-logo { position: relative; width: clamp(260px, 42vw, 440px); aspect-ratio: 720 / 667; margin-bottom: 4px; animation: sl2-float 3.5s ease-in-out infinite; }
+.sl2-center { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 70px 20px 40px; will-change: transform, opacity; opacity: 0; }
+.sl2-logo { position: relative; width: clamp(300px, 55vw, 580px); aspect-ratio: 720 / 667; margin-bottom: 4px; animation: sl2-float 3.5s ease-in-out infinite; }
 .sl2-logo img, .sl2-logo video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .sl2-center h1 { margin: 6px 0 14px; font-size: clamp(40px, 6.6vw, 84px); line-height: .98; font-weight: 700; letter-spacing: -.045em; color: #14100a; }
 .sl2-center h1 span { color: #14100a; -webkit-text-fill-color: #14100a; }
