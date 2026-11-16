@@ -9,7 +9,7 @@
 
 /* ── Nav ─────────────────────────────────────────────────────────────── */
 .sl2-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 14px clamp(16px, 3vw, 32px);
-  background: linear-gradient(var(--bg), rgba(244,242,237,0)); }
+  background: linear-gradient(rgba(248,188,10,0.6), rgba(248,188,10,0)); }
 .sl2-brand { font-weight: 800; font-size: 20px; letter-spacing: -.02em; }
 .sl2-brand span { font-weight: 500; color: var(--mute); }
 .sl2-links { display: flex; gap: 28px; font-weight: 500; font-size: 15px; }
@@ -44,7 +44,7 @@
 
 /* ── Hero ────────────────────────────────────────────────────────────── */
 .sl2-hero { height: 300vh; position: relative; }
-.sl2-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 1200px; perspective-origin: 50% 46%; }
+.sl2-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; perspective: 1200px; perspective-origin: 50% 46%; background: radial-gradient(ellipse at top, #ffd23f 0%, #f8bc0a 55%, #eaa800 100%); }
 .sl2-world { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
 .sl2-dev { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform, opacity; }
 .sl2-dev-desktop { width: min(27vw, 400px); aspect-ratio: 16 / 10; margin: calc(min(27vw, 400px) * -0.3125) 0 0 calc(min(27vw, 400px) * -0.5); }
