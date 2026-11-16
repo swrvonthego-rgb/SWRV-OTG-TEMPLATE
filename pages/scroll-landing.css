@@ -10,7 +10,7 @@
 /* ── Nav ─────────────────────────────────────────────────────────────── */
 .sl2-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 14px clamp(16px, 3vw, 32px);
   background: linear-gradient(rgba(248,188,10,0.6), rgba(248,188,10,0)); }
-.sl2-brand { font-weight: 800; font-size: 20px; letter-spacing: -.02em; }
+.sl2-brand { font-weight: 800; font-size: 20px; letter-spacing: -.02em; color: #14100a; }
 .sl2-brand span { font-weight: 500; color: var(--mute); }
 .sl2-links { display: flex; gap: 28px; font-weight: 500; font-size: 15px; }
 .sl2-links a:hover { opacity: .6; }
@@ -56,9 +56,9 @@
 .sl2-center { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 70px 20px 40px; will-change: transform, opacity; }
 .sl2-logo { position: relative; width: clamp(260px, 42vw, 440px); aspect-ratio: 720 / 667; margin-bottom: 4px; animation: sl2-float 3.5s ease-in-out infinite; }
 .sl2-logo img, .sl2-logo video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.sl2-center h1 { margin: 6px 0 14px; font-size: clamp(40px, 6.6vw, 84px); line-height: .98; font-weight: 700; letter-spacing: -.045em; }
-.sl2-center h1 span { background: linear-gradient(95deg, var(--y1), var(--y2) 70%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.sl2-center p { max-width: 560px; margin: 0 0 24px; font-size: clamp(16px, 2.4vw, 19px); line-height: 1.5; color: var(--mute); }
+.sl2-center h1 { margin: 6px 0 14px; font-size: clamp(40px, 6.6vw, 84px); line-height: .98; font-weight: 700; letter-spacing: -.045em; color: #14100a; }
+.sl2-center h1 span { color: #14100a; -webkit-text-fill-color: #14100a; }
+.sl2-center p { max-width: 560px; margin: 0 0 24px; font-size: clamp(16px, 2.4vw, 19px); line-height: 1.5; color: rgba(20,16,10,0.75); }
 .sl2-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .sl2-scroll { position: absolute; left: 0; right: 0; bottom: 18px; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: .25em; text-transform: uppercase; color: var(--mute); }
 .sl2-scroll i { width: 1px; height: 28px; background: linear-gradient(var(--mute), transparent); animation: sl2-drop 1.6s ease-in-out infinite; transform-origin: top; }
