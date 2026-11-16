@@ -23,15 +23,15 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 type Dev = { id: string; kind: 'desktop' | 'phone'; img: string; alt: string; x: number; y: number; z: number; rx: number; ry: number; rz: number; bob: number };
 
 const WIDE: Dev[] = [
-  { id: 'eco',  kind: 'desktop', img: 'web-ecosystem', alt: 'Custom website example', x: -38, y: -29, z: -240, rx: 5,  ry: 24,  rz: -4, bob: 0 },
-  { id: 'ph1',  kind: 'phone',   img: 'phone-services', alt: 'SWRV services on a phone', x: 41,  y: -22, z: -100, rx: 4,  ry: -22, rz: 5,  bob: 1.2 },
-  { id: 'plat', kind: 'desktop', img: 'web-platform',  alt: 'Booking website example', x: 42,  y: 36,  z: -420, rx: -4, ry: -26, rz: -3, bob: 2.1 },
-  { id: 'ph2',  kind: 'phone',   img: 'phone-roadmap', alt: 'The Roadmap on a phone', x: -41, y: 25,  z: -60,  rx: -3, ry: 20,  rz: -6, bob: 3.3 },
+  { id: 'eco',  kind: 'desktop', img: 'web-ecosystem', alt: 'Custom website example', x: -38, y: 8,  z: -240, rx: 5,  ry: 24,  rz: -4, bob: 0 },
+  { id: 'ph1',  kind: 'phone',   img: 'phone-services', alt: 'SWRV services on a phone', x: 41,  y: 15, z: -100, rx: 4,  ry: -22, rz: 5,  bob: 1.2 },
+  { id: 'plat', kind: 'desktop', img: 'web-platform',  alt: 'Booking website example', x: 42,  y: 60, z: -420, rx: -4, ry: -26, rz: -3, bob: 2.1 },
+  { id: 'ph2',  kind: 'phone',   img: 'phone-roadmap', alt: 'The Roadmap on a phone', x: -41, y: 50, z: -60,  rx: -3, ry: 20,  rz: -6, bob: 3.3 },
 ];
 const NARROW: Dev[] = [
-  { id: 'eco',  kind: 'desktop', img: 'web-ecosystem', alt: 'Custom website example', x: -30, y: -39, z: -300, rx: 8,  ry: 28,  rz: -7, bob: 0 },
-  { id: 'ph1',  kind: 'phone',   img: 'phone-services', alt: 'SWRV services on a phone', x: 36,  y: -33, z: -150, rx: 5,  ry: -24, rz: 8,  bob: 1.2 },
-  { id: 'plat', kind: 'desktop', img: 'web-platform',  alt: 'Booking website example', x: 30,  y: 47,  z: -380, rx: -6, ry: -30, rz: -5, bob: 2.1 },
+  { id: 'eco',  kind: 'desktop', img: 'web-ecosystem', alt: 'Custom website example', x: -30, y: -5, z: -300, rx: 8,  ry: 28,  rz: -7, bob: 0 },
+  { id: 'ph1',  kind: 'phone',   img: 'phone-services', alt: 'SWRV services on a phone', x: 36,  y: 5,  z: -150, rx: 5,  ry: -24, rz: 8,  bob: 1.2 },
+  { id: 'plat', kind: 'desktop', img: 'web-platform',  alt: 'Booking website example', x: 30,  y: 75, z: -380, rx: -6, ry: -30, rz: -5, bob: 2.1 },
   { id: 'ph2',  kind: 'phone',   img: 'phone-roadmap', alt: 'The Roadmap on a phone', x: -30, y: 45,  z: -120, rx: -4, ry: 24,  rz: 6,  bob: 3.3 },
 ];
 
