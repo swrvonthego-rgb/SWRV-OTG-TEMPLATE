@@ -1325,44 +1325,58 @@ function setupCanvasOverlay(){
   overlayCanvas.width=640;
   overlayCanvas.height=480;
   overlayCtx=overlayCanvas.getContext('2d');
-  startCanvasRecording();
-  drawOverlayLoop();
+
+  const video=document.getElementById('recordingCamera');
+  const waitForVideo=setInterval(()=>{
+    if(video.videoWidth>0&&video.videoHeight>0){
+      clearInterval(waitForVideo);
+      startCanvasRecording();
+      drawOverlayLoop();
+    }
+  },50);
+
+  setTimeout(()=>clearInterval(waitForVideo),5000);
 }
 
 function drawOverlayLoop(){
   const video=document.getElementById('recordingCamera');
-  if(video.videoWidth>0){
-    overlayCtx.drawImage(video,0,0,overlayCanvas.width,overlayCanvas.height);
 
-    const nl=document.getElementById('timerNum');
-    const pl=document.getElementById('phaseLabel');
-    const ps=document.getElementById('phaseSub');
-    const bs=document.getElementById('bigSetNum');
+  try{
+    if(video.videoWidth>0&&video.videoHeight>0){
+      overlayCtx.drawImage(video,0,0,overlayCanvas.width,overlayCanvas.height);
 
-    overlayCtx.fillStyle='rgba(0,0,0,0.4)';
-    overlayCtx.fillRect(0,0,overlayCanvas.width,100);
-    overlayCtx.fillRect(0,overlayCanvas.height-140,overlayCanvas.width,140);
+      const nl=document.getElementById('timerNum');
+      const pl=document.getElementById('phaseLabel');
+      const ps=document.getElementById('phaseSub');
+      const bs=document.getElementById('bigSetNum');
 
-    overlayCtx.font='28px Bebas Neue';
-    overlayCtx.fillStyle='#ff2d2d';
-    overlayCtx.textAlign='left';
-    overlayCtx.fillText('SET '+bs.textContent+' / '+TOTAL_SETS,20,40);
+      overlayCtx.fillStyle='rgba(0,0,0,0.4)';
+      overlayCtx.fillRect(0,0,overlayCanvas.width,100);
+      overlayCtx.fillRect(0,overlayCanvas.height-140,overlayCanvas.width,140);
 
-    overlayCtx.font='20px Bebas Neue';
-    overlayCtx.fillStyle='#aaa';
-    overlayCtx.fillText(pl.textContent,20,70);
+      overlayCtx.font='28px Bebas Neue';
+      overlayCtx.fillStyle='#ff2d2d';
+      overlayCtx.textAlign='left';
+      overlayCtx.fillText('SET '+bs.textContent+' / '+TOTAL_SETS,20,40);
 
-    overlayCtx.font='bold 80px Bebas Neue';
-    overlayCtx.fillStyle='#fff';
-    overlayCtx.textAlign='center';
-    overlayCtx.fillText(nl.textContent,overlayCanvas.width/2,overlayCanvas.height-40);
+      overlayCtx.font='20px Bebas Neue';
+      overlayCtx.fillStyle='#aaa';
+      overlayCtx.fillText(pl.textContent,20,70);
 
-    overlayCtx.font='18px Bebas Neue';
-    overlayCtx.fillStyle='#999';
-    overlayCtx.fillText(ps.textContent,overlayCanvas.width/2,overlayCanvas.height-10);
+      overlayCtx.font='bold 80px Bebas Neue';
+      overlayCtx.fillStyle='#fff';
+      overlayCtx.textAlign='center';
+      overlayCtx.fillText(nl.textContent,overlayCanvas.width/2,overlayCanvas.height-40);
+
+      overlayCtx.font='18px Bebas Neue';
+      overlayCtx.fillStyle='#999';
+      overlayCtx.fillText(ps.textContent,overlayCanvas.width/2,overlayCanvas.height-10);
+    }
+  }catch(e){
+    console.error('Canvas draw error:',e);
   }
 
-  if(isRecordingMode&&canvasRecorder&&canvasRecorder.state==='recording'){
+  if(isRecordingMode){
     canvasAnimationId=requestAnimationFrame(drawOverlayLoop);
   }
 }
