@@ -59,7 +59,9 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 .timer-main::-webkit-scrollbar{display:none;}
 .camera-side{display:none;background:#000;position:relative;overflow:hidden;min-height:0;order:1;}
 #recordingCamera{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
-.timer-layout.recording-mode .camera-side{display:block;flex:1 1 0;}
+.timer-layout.recording-mode .camera-side{display:flex;align-items:center;justify-content:center;flex:1 1 0;}
+.cam-frame{position:relative;aspect-ratio:9/16;height:100%;max-width:100%;overflow:hidden;background:#000;}
+.cam-frame video{position:absolute;inset:0;}
 .timer-layout.recording-mode .timer-main{order:2;flex:0 0 auto;overflow:hidden;padding-bottom:52px;border-top:3px solid rgba(255,45,45,0.5);background:rgba(0,0,0,0.55);}
 .rec-overlay-badge{position:absolute;top:10px;left:10px;background:rgba(255,45,45,0.95);color:#fff;padding:6px 12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.1em;z-index:40;animation:badgePulse 1s infinite;box-shadow:0 0 20px rgba(255,45,45,0.6);}
 @keyframes badgePulse{0%,100%{opacity:1;}50%{opacity:0.65;}}
@@ -394,7 +396,7 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
   .music-drawer-handle{border-bottom:1px solid var(--border);}
 }
 /* RECORDING MODE: give the camera the screen */
-body.rec-on .header,body.rec-on .mode-bar,body.rec-on .music-drawer{display:none;}
+body.rec-on .header,body.rec-on .mode-bar,body.rec-on .music-drawer,body.rec-on .bottom-nav,body.rec-on .timer-layout.recording-mode .ring-area{display:none;}
 body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
 body.rec-on .btn-cam-flip{bottom:auto;top:52px;}
 @media (orientation:landscape) and (max-height:520px){
@@ -512,14 +514,16 @@ body.rec-on .btn-cam-flip{bottom:auto;top:52px;}
     <div class="timer-layout">
       <!-- LIVE CAMERA PREVIEW (recording mode) -->
       <div class="camera-side">
-        <video id="recordingCamera" autoplay playsinline muted webkit-playsinline></video>
-        <div class="rec-overlay-badge">&#128308; FILMING</div>
-        <div class="rec-time-overlay" id="recTimeOverlay">00:00</div>
-        <div class="cam-hud" id="camHud">
+        <div class="cam-frame" id="camFrame">
+          <video id="recordingCamera" autoplay playsinline muted webkit-playsinline></video>
+          <div class="cam-hud" id="camHud">
           <div class="cam-hud-set" id="hudSet">SET 1 / 10</div>
           <div class="cam-hud-num" id="hudNum">10</div>
           <div class="cam-hud-phase" id="hudPhase">GET READY</div>
         </div>
+        </div>
+        <div class="rec-overlay-badge">&#128308; FILMING</div>
+        <div class="rec-time-overlay" id="recTimeOverlay">00:00</div>
         <button class="btn-cam-flip" onclick="flipCamera()">&#8634; FLIP</button>
       </div>
       <div class="timer-main">
@@ -1326,9 +1330,18 @@ let recMime='';
 const REC_W=720,REC_H=1280;
 
 function pickMime(){
-  const c=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
-  for(const t of c){try{if(MediaRecorder.isTypeSupported(t))return t;}catch(e){}}
-  return '';
+  const h264=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1.4D401E,mp4a.40.2','video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1,mp4a.40.2','video/mp4;codecs=avc1.42E01E','video/mp4;codecs=avc1'];
+  for(const t of h264){try{if(MediaRecorder.isTypeSupported(t))return {type:t,h264:true};}catch(e){}}
+  for(const t of ['video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']){try{if(MediaRecorder.isTypeSupported(t))return {type:t,h264:false};}catch(e){}}
+  return {type:'',h264:false};
+}
+
+async function blobIsH264(blob){
+  try{
+    const buf=new Uint8Array(await blob.slice(0,262144).arrayBuffer());
+    const find=w=>{const n=[w.charCodeAt(0),w.charCodeAt(1),w.charCodeAt(2),w.charCodeAt(3)];for(let i=0;i<buf.length-4;i++){if(buf[i]===n[0]&&buf[i+1]===n[1]&&buf[i+2]===n[2]&&buf[i+3]===n[3])return true;}return false;};
+    return find('avc1')&&!find('vp09')&&!find('av01');
+  }catch(e){return false;}
 }
 
 let wakeLock=null;
@@ -1350,6 +1363,7 @@ async function openCamera(){
   });
   const video=document.getElementById('recordingCamera');
   video.muted=true;
+  video.style.transform=camFacing==='user'?'scaleX(-1)':'none';
   video.srcObject=recordingStream;
   await video.play().catch(()=>{});
 }
@@ -1380,6 +1394,7 @@ async function flipCamera(){
     const old=recordingStream;
     const fresh=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFacing,width:{ideal:1280},height:{ideal:720}},audio:true});
     const video=document.getElementById('recordingCamera');
+    video.style.transform=camFacing==='user'?'scaleX(-1)':'none';
     video.srcObject=fresh;
     recordingStream=fresh;
     await video.play().catch(()=>{});
@@ -1474,7 +1489,8 @@ function startCanvasRecording(){
 
   const out=overlayCanvas.captureStream(30);
   recordingStream.getAudioTracks().forEach(t=>out.addTrack(t));
-  recMime=pickMime();
+  const pick=pickMime();
+  recMime=pick.type;
   try{
     canvasRecorder=recMime?new MediaRecorder(out,{mimeType:recMime,videoBitsPerSecond:5000000}):new MediaRecorder(out);
   }catch(e){
@@ -1485,7 +1501,7 @@ function startCanvasRecording(){
   canvasRecorder.onstop=()=>{
     clearInterval(recordingInterval);
     const blob=new Blob(recordedChunks,{type:recMime.split(';')[0]});
-    if(blob.size>0)showSaveSheet(blob);
+    if(blob.size>0)blobIsH264(blob).then(ok=>showSaveSheet(blob,ok&&blob.type.indexOf('mp4')>-1));
   };
   canvasRecorder.start(1000);
 }
@@ -1509,7 +1525,7 @@ function recFileName(blob){
   return 'byob-workout-'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.'+ext;
 }
 
-function showSaveSheet(blob){
+function showSaveSheet(blob,photosOk){
   const old=document.getElementById('saveSheet');if(old)old.remove();
   const url=URL.createObjectURL(blob);
   const name=recFileName(blob);
@@ -1521,6 +1537,12 @@ function showSaveSheet(blob){
   vid.style.cssText='max-height:60vh;max-width:90vw;border-radius:12px;border:2px solid rgba(255,45,45,0.5);background:#000;';
   const mk=(label,bg,fn)=>{const b=document.createElement('button');b.textContent=label;b.style.cssText='width:min(320px,86vw);padding:16px;border:none;border-radius:12px;font-family:inherit;font-size:1.4rem;letter-spacing:0.15em;color:#fff;background:'+bg+';';b.onclick=fn;return b;};
   const file=new File([blob],name,{type:blob.type});
+  if(!photosOk){
+    const w=document.createElement('div');
+    w.textContent='This browser recorded a format iPhone Photos cannot play. Open this page in Safari to record a Photos-ready MP4.';
+    w.style.cssText='max-width:86vw;text-align:center;color:#ffd600;font-size:1.1rem;letter-spacing:0.05em;line-height:1.3;';
+    sheet.append(w);
+  }
   const canShare=navigator.canShare&&navigator.canShare({files:[file]});
   if(canShare){
     sheet.append(vid,mk('SAVE TO PHOTOS','linear-gradient(160deg,#ff3d3d,#cc1111)',async()=>{
