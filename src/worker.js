@@ -63,7 +63,7 @@ const SECURITY_HEADERS = {
   'X-Content-Type-Options':  'nosniff',
   'X-Frame-Options':         'SAMEORIGIN',
   'Referrer-Policy':         'strict-origin-when-cross-origin',
-  'Permissions-Policy':      'camera=(), microphone=(self), geolocation=(), payment=(self)',
+  'Permissions-Policy':      'camera=(self), microphone=(self), geolocation=(), payment=(self)',
   'X-XSS-Protection':        '1; mode=block',
 };
 

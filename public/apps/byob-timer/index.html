@@ -393,6 +393,20 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
   .music-drawer{position:relative;border-top:none;border-left:1px solid var(--border);flex:0.8;max-height:none!important;height:100%;overflow-y:auto!important;}
   .music-drawer-handle{border-bottom:1px solid var(--border);}
 }
+/* RECORDING MODE: give the camera the screen */
+body.rec-on .header,body.rec-on .mode-bar,body.rec-on .music-drawer{display:none;}
+body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
+body.rec-on .btn-cam-flip{bottom:auto;top:52px;}
+@media (orientation:landscape) and (max-height:520px){
+  body.rec-on .timer-layout.recording-mode{flex-direction:row;}
+  body.rec-on .timer-layout.recording-mode .camera-side{order:1;flex:1 1 0;}
+  body.rec-on .timer-layout.recording-mode .timer-main{order:2;flex:0 0 220px;height:auto;border-top:none;border-left:3px solid rgba(255,45,45,0.5);justify-content:center;}
+  body.rec-on .timer-layout.recording-mode .controls{flex-wrap:wrap;margin-top:0;padding:8px;gap:6px;}
+  body.rec-on .timer-layout.recording-mode .btn-start{flex:1 1 100%;font-size:1.3rem;padding:10px 0;}
+  body.rec-on .timer-layout.recording-mode .btn-reset{flex:1;padding:8px;}
+  body.rec-on .timer-layout.recording-mode .btn-rec-toggle{flex:1;}
+  body.rec-on .cam-hud-num{font-size:3rem;}
+}
 </style>
 </head>
 <body>
@@ -1317,6 +1331,13 @@ function pickMime(){
   return '';
 }
 
+let wakeLock=null;
+async function holdAwake(){
+  try{if('wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}}catch(e){}
+}
+function releaseAwake(){try{if(wakeLock)wakeLock.release();}catch(e){}wakeLock=null;}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&isRecordingMode)holdAwake();});
+
 function toggleRecordingMode(){
   if(isRecordingMode)stopRecordingMode();else startRecordingMode();
 }
@@ -1345,9 +1366,11 @@ async function startRecordingMode(){
     return;
   }
   document.querySelector('.timer-layout').classList.add('recording-mode');
+  document.body.classList.add('rec-on');
   const btn=document.getElementById('btnRecMode');
   btn.classList.add('active');btn.textContent='⏹ STOP';
   isRecordingMode=true;
+  holdAwake();
   setupCanvasOverlay();
 }
 
@@ -1469,12 +1492,14 @@ function startCanvasRecording(){
 
 function stopRecordingMode(){
   isRecordingMode=false;
+  releaseAwake();
   if(canvasAnimationId)cancelAnimationFrame(canvasAnimationId);
   if(canvasRecorder&&canvasRecorder.state!=='inactive')canvasRecorder.stop();
   if(recordingStream){recordingStream.getTracks().forEach(t=>t.stop());recordingStream=null;}
   const video=document.getElementById('recordingCamera');
   if(video)video.srcObject=null;
   document.querySelector('.timer-layout').classList.remove('recording-mode');
+  document.body.classList.remove('rec-on');
   const btn=document.getElementById('btnRecMode');
   btn.classList.remove('active');btn.textContent='🎥 SPLIT';
 }
