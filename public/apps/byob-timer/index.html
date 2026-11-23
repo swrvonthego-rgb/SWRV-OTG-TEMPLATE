@@ -1292,6 +1292,9 @@ let recordingChunks=[];
 let recordingStartTime=null;
 let recordingInterval=null;
 let isRecordingMode=false;
+let overlayCanvas=null;
+let overlayCtx=null;
+let canvasAnimationId=null;
 
 async function toggleRecordingMode(){
   if(isRecordingMode){
@@ -1310,10 +1313,57 @@ async function startRecordingMode(){
     document.getElementById('btnRecMode').classList.add('active');
     document.getElementById('btnRecMode').textContent='⏹ STOP';
     isRecordingMode=true;
-    startCanvasRecording();
+    setupCanvasOverlay();
   }catch(err){
     console.error('Camera access denied:',err);
     alert('Camera access required for split-screen recording');
+  }
+}
+
+function setupCanvasOverlay(){
+  overlayCanvas=document.createElement('canvas');
+  overlayCanvas.width=640;
+  overlayCanvas.height=480;
+  overlayCtx=overlayCanvas.getContext('2d');
+  startCanvasRecording();
+  drawOverlayLoop();
+}
+
+function drawOverlayLoop(){
+  const video=document.getElementById('recordingCamera');
+  if(video.videoWidth>0){
+    overlayCtx.drawImage(video,0,0,overlayCanvas.width,overlayCanvas.height);
+
+    const nl=document.getElementById('timerNum');
+    const pl=document.getElementById('phaseLabel');
+    const ps=document.getElementById('phaseSub');
+    const bs=document.getElementById('bigSetNum');
+
+    overlayCtx.fillStyle='rgba(0,0,0,0.4)';
+    overlayCtx.fillRect(0,0,overlayCanvas.width,100);
+    overlayCtx.fillRect(0,overlayCanvas.height-140,overlayCanvas.width,140);
+
+    overlayCtx.font='28px Bebas Neue';
+    overlayCtx.fillStyle='#ff2d2d';
+    overlayCtx.textAlign='left';
+    overlayCtx.fillText('SET '+bs.textContent+' / '+TOTAL_SETS,20,40);
+
+    overlayCtx.font='20px Bebas Neue';
+    overlayCtx.fillStyle='#aaa';
+    overlayCtx.fillText(pl.textContent,20,70);
+
+    overlayCtx.font='bold 80px Bebas Neue';
+    overlayCtx.fillStyle='#fff';
+    overlayCtx.textAlign='center';
+    overlayCtx.fillText(nl.textContent,overlayCanvas.width/2,overlayCanvas.height-40);
+
+    overlayCtx.font='18px Bebas Neue';
+    overlayCtx.fillStyle='#999';
+    overlayCtx.fillText(ps.textContent,overlayCanvas.width/2,overlayCanvas.height-10);
+  }
+
+  if(isRecordingMode&&canvasRecorder&&canvasRecorder.state==='recording'){
+    canvasAnimationId=requestAnimationFrame(drawOverlayLoop);
   }
 }
 
@@ -1321,6 +1371,9 @@ function stopRecordingMode(){
   if(recordingStream){
     recordingStream.getTracks().forEach(t=>t.stop());
     recordingStream=null;
+  }
+  if(canvasAnimationId){
+    cancelAnimationFrame(canvasAnimationId);
   }
   document.querySelector('.timer-layout').classList.remove('recording-mode');
   document.getElementById('btnRecMode').classList.remove('active');
@@ -1344,7 +1397,9 @@ function startCanvasRecording(){
   if(!MediaRecorder.isTypeSupported(opts.mimeType)){
     opts.mimeType='video/webm';
   }
-  canvasRecorder=new MediaRecorder(recordingStream,opts);
+
+  const canvasStream=overlayCanvas.captureStream(30);
+  canvasRecorder=new MediaRecorder(canvasStream,opts);
   canvasRecorder.ondataavailable=e=>{if(e.data.size)recordedChunks.push(e.data);};
   canvasRecorder.onstop=()=>{
     clearInterval(recordingInterval);
