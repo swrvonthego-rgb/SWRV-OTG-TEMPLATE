@@ -1333,7 +1333,6 @@ function stopRecordingMode(){
 
 function startCanvasRecording(){
   recordedChunks=[];
-  const canvas=document.querySelector('.timer-layout');
   recordingStartTime=Date.now();
   recordingInterval=setInterval(()=>{
     const elapsed=Math.floor((Date.now()-recordingStartTime)/1000);
@@ -1341,24 +1340,18 @@ function startCanvasRecording(){
     document.getElementById('recTimeOverlay').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
   },100);
 
-  if(navigator.mediaDevices.getDisplayMedia){
-    navigator.mediaDevices.getDisplayMedia({video:{mediaSource:'screen'},audio:false})
-      .then(screenStream=>{
-        const ctx=canvas.getContext('2d');
-        const video=document.getElementById('recordingCamera');
-        const opts={mimeType:'video/webm;codecs=vp8,opus'};
-        canvasRecorder=new MediaRecorder(screenStream,opts);
-        canvasRecorder.ondataavailable=e=>{if(e.data.size)recordedChunks.push(e.data);};
-        canvasRecorder.onstop=()=>{
-          clearInterval(recordingInterval);
-          const blob=new Blob(recordedChunks,{type:'video/webm'});
-          downloadRecording(blob);
-          screenStream.getTracks().forEach(t=>t.stop());
-        };
-        canvasRecorder.start();
-      })
-      .catch(err=>console.error('Screen capture denied',err));
+  const opts={mimeType:'video/webm;codecs=vp8,opus'};
+  if(!MediaRecorder.isTypeSupported(opts.mimeType)){
+    opts.mimeType='video/webm';
   }
+  canvasRecorder=new MediaRecorder(recordingStream,opts);
+  canvasRecorder.ondataavailable=e=>{if(e.data.size)recordedChunks.push(e.data);};
+  canvasRecorder.onstop=()=>{
+    clearInterval(recordingInterval);
+    const blob=new Blob(recordedChunks,{type:'video/webm'});
+    downloadRecording(blob);
+  };
+  canvasRecorder.start();
 }
 
 function downloadRecording(blob){
