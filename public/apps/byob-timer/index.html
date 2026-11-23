@@ -55,28 +55,36 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 
 /* TIMER LAYOUT */
 .timer-layout{display:flex;flex-direction:column;flex:1;min-height:0;position:relative;}
-.timer-layout.recording-mode{flex-direction:row;gap:0;}
 .timer-main{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;padding-bottom:60px;scrollbar-width:none;}
 .timer-main::-webkit-scrollbar{display:none;}
-.timer-layout.recording-mode .timer-main{padding-bottom:0;flex:0 0 35%;border-right:3px solid rgba(255,45,45,0.4);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:rgba(0,0,0,0.3);}
-.camera-side{display:none;flex:1;min-height:0;background:#000;position:relative;overflow:hidden;}
-.timer-layout.recording-mode .camera-side{display:flex;flex-direction:column;flex:1;}
-#recordingCamera{width:100%;height:100%;object-fit:cover;display:block;}
-.rec-overlay-badge{position:absolute;top:10px;left:10px;background:rgba(255,45,45,0.95);color:white;padding:8px 14px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.1em;display:none;z-index:40;animation:badgePulse 1s infinite;box-shadow:0 0 20px rgba(255,45,45,0.6);}
-.timer-layout.recording-mode .rec-overlay-badge{display:block;}
-@keyframes badgePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.7;transform:scale(0.98);}}
-.rec-time-overlay{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.85);color:var(--red);padding:10px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.1em;display:none;z-index:40;border:2px solid rgba(255,45,45,0.5);font-weight:700;}
-.timer-layout.recording-mode .rec-time-overlay{display:block;}
+.camera-side{display:none;background:#000;position:relative;overflow:hidden;min-height:0;order:1;}
+#recordingCamera{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
+.timer-layout.recording-mode .camera-side{display:block;flex:1 1 0;}
+.timer-layout.recording-mode .timer-main{order:2;flex:0 0 auto;overflow:hidden;padding-bottom:52px;border-top:3px solid rgba(255,45,45,0.5);background:rgba(0,0,0,0.55);}
+.rec-overlay-badge{position:absolute;top:10px;left:10px;background:rgba(255,45,45,0.95);color:#fff;padding:6px 12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.1em;z-index:40;animation:badgePulse 1s infinite;box-shadow:0 0 20px rgba(255,45,45,0.6);}
+@keyframes badgePulse{0%,100%{opacity:1;}50%{opacity:0.65;}}
+.rec-time-overlay{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.75);color:#fff;padding:6px 12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;z-index:40;border:1px solid rgba(255,45,45,0.5);}
+.cam-hud{position:absolute;left:0;right:0;bottom:0;padding:34px 12px 10px;text-align:center;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.75));font-family:'Bebas Neue',sans-serif;z-index:30;pointer-events:none;}
+.cam-hud-set{font-size:1rem;letter-spacing:0.2em;color:var(--red);}
+.cam-hud-num{font-size:4.5rem;line-height:0.95;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.9);}
+.cam-hud-phase{font-size:1rem;letter-spacing:0.3em;color:#ddd;}
+.btn-cam-flip{position:absolute;right:10px;bottom:112px;z-index:45;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:6px 10px;border-radius:8px;font-family:'Bebas Neue',sans-serif;letter-spacing:0.1em;}
+.timer-layout.recording-mode .ring-area{flex:0 0 auto;padding:6px 0 2px;}
+.timer-layout.recording-mode .ring-wrap{width:92px;height:92px;}
+.timer-layout.recording-mode .ring-inner{width:80px;height:80px;}
+.timer-layout.recording-mode .phase-label{font-size:0.45rem;}
+.timer-layout.recording-mode .timer-num{font-size:2.2rem;}
+.timer-layout.recording-mode .set-badge,.timer-layout.recording-mode .round-track,.timer-layout.recording-mode .phase-sub,.timer-layout.recording-mode .total-time,.timer-layout.recording-mode .phase-btns,.timer-layout.recording-mode .moto{display:none;}
+.timer-layout.recording-mode .controls{padding:8px 12px;gap:8px;}
+.timer-layout.recording-mode .btn-start{padding:12px 0;font-size:1.4rem;}
+.timer-layout.recording-mode .btn-reset{padding:10px 12px;font-size:0.7rem;}
 
 /* RING AREA */
 .ring-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:0;}
-.timer-layout.recording-mode .ring-area{flex:1;justify-content:center;padding:20px 0;}
 .set-badge{position:absolute;top:16px;left:16px;font-family:'Bebas Neue',sans-serif;display:flex;flex-direction:column;align-items:flex-start;}
-.timer-layout.recording-mode .set-badge{display:none;}
 .set-badge-num{font-size:3.5rem;line-height:0.85;color:var(--white);text-shadow:0 4px 12px rgba(0,0,0,0.9);opacity:0.9;}
 .set-badge-lbl{font-size:0.8rem;color:var(--dim);letter-spacing:0.2em;margin-left:2px;}
 .round-track{position:absolute;top:16px;right:16px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
-.timer-layout.recording-mode .round-track{display:none;}
 .round-dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:80px;}
 .rdot{width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);transition:all 0.3s;}
 .rdot.done{background:var(--red);border-color:var(--red);box-shadow:0 0 5px rgba(255,45,45,0.5);}
@@ -86,21 +94,15 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 .moto.show{animation:motoAnim 0.8s ease forwards;}
 @keyframes motoAnim{0%{transform:translate(-50%,-50%) scale(0.3);opacity:0;}25%{transform:translate(-50%,-50%) scale(1.2);opacity:1;}60%{transform:translate(-50%,-50%) scale(0.95);opacity:1;}100%{transform:translate(-50%,-50%) scale(1);opacity:0;}}
 .ring-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:min(240px,60vw,40vh);height:min(240px,60vw,40vh);}
-.timer-layout.recording-mode .ring-wrap{width:140px;height:140px;}
 .ring-svg{position:absolute;top:0;left:0;width:100%;height:100%;filter:drop-shadow(0 0 12px rgba(0,0,0,0.8));}
 .ring-track-el{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:10;}
 .ring-glow{fill:none;stroke-width:14;stroke-linecap:round;opacity:0.15;transition:stroke 0.4s;}
 .ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 0.3s linear,stroke 0.4s;}
 .ring-inner{width:220px;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:1;}
-.timer-layout.recording-mode .ring-inner{width:120px;height:120px;}
 .phase-label{font-size:0.6rem;letter-spacing:0.45em;text-transform:uppercase;margin-bottom:2px;transition:color 0.4s;}
-.timer-layout.recording-mode .phase-label{font-size:0.5rem;margin-bottom:0;}
 .timer-num{font-family:'Bebas Neue',sans-serif;font-size:5.8rem;line-height:0.88;letter-spacing:-0.02em;transition:color 0.4s;}
-.timer-layout.recording-mode .timer-num{font-size:3rem;line-height:1;}
 .phase-sub{font-size:0.7rem;letter-spacing:0.18em;margin-top:16px;text-align:center;padding:0 20px;font-weight:600;text-transform:uppercase;transition:color 0.4s;min-height:1.2em;}
-.timer-layout.recording-mode .phase-sub{font-size:0.55rem;margin-top:4px;padding:0 10px;}
 .total-time{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.12em;color:rgba(255,255,255,0.3);margin-top:6px;}
-.timer-layout.recording-mode .total-time{font-size:0.7rem;margin-top:4px;}
 
 /* PHASE COLORS */
 .c-warmup{color:var(--blue);}
@@ -111,7 +113,6 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 
 /* PHASE BUTTONS */
 .phase-btns{display:flex;gap:8px;padding:10px 16px;background:rgba(0,0,0,0.4);flex-shrink:0;}
-.timer-layout.recording-mode .phase-btns{display:none;}
 .btn-phase{flex:1;padding:11px 0;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--dim);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.12em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.2s;position:relative;overflow:hidden;}
 .btn-phase::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.05) 0%,transparent 100%);pointer-events:none;}
 .btn-phase:active{transform:scale(0.96);}
@@ -122,9 +123,7 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 
 /* START / RESET CONTROLS */
 .controls{padding:12px 16px 14px;display:flex;gap:10px;background:rgba(0,0,0,0.5);border-top:1px solid var(--border);flex-shrink:0;}
-.timer-layout.recording-mode .controls{padding:8px 12px 10px;gap:6px;border-top:2px solid rgba(255,45,45,0.3);background:rgba(0,0,0,0.6);}
 .btn-start{flex:1;padding:20px 0;border:none;border-radius:14px;font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.2em;cursor:pointer;transition:all 0.2s var(--ease);-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;}
-.timer-layout.recording-mode .btn-start{padding:12px 0;font-size:1.3rem;}
 .btn-start::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.18) 0%,transparent 50%);pointer-events:none;border-radius:inherit;}
 .btn-start::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,0.3);border-radius:0 0 14px 14px;pointer-events:none;}
 .btn-start.s-start{background:linear-gradient(160deg,#ff3d3d,#cc1111);color:white;box-shadow:0 8px 30px rgba(255,45,45,0.45),0 2px 6px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.2);}
@@ -132,7 +131,6 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 .btn-start.s-resume{background:linear-gradient(160deg,#ff7a00,#cc5500);color:white;box-shadow:0 8px 25px rgba(255,122,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);}
 .btn-start:active{transform:scale(0.96) translateY(1px);box-shadow:0 3px 10px rgba(0,0,0,0.4)!important;}
 .btn-reset{padding:20px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:var(--dim);font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.1em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.2s;line-height:1.4;text-align:center;}
-.timer-layout.recording-mode .btn-reset{padding:12px 10px;font-size:0.65rem;line-height:1.2;}
 .btn-reset:active{background:rgba(255,255,255,0.14);color:var(--white);transform:scale(0.96);}
 
 /* MUSIC DRAWER */
@@ -235,11 +233,6 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 .settings-btn-cancel:active{background:rgba(255,255,255,0.15);}
 
 /* CAMERA / VIDEO RECORDING */
-.camera-side{display:none;flex:1;min-height:0;background:#000;position:relative;overflow:hidden;}
-#recordingCamera{width:100%;height:100%;object-fit:cover;background:#000;}
-.rec-overlay-badge{position:absolute;top:10px;left:10px;background:rgba(255,45,45,0.9);color:white;padding:6px 12px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:0.75rem;letter-spacing:0.1em;display:none;z-index:40;animation:badgePulse 1s infinite;}
-@keyframes badgePulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
-.rec-time-overlay{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);color:var(--red);padding:8px 14px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.1em;display:none;z-index:40;border:1px solid rgba(255,45,45,0.4);}
 .btn-rec-toggle{background:linear-gradient(135deg,rgba(64,196,255,0.3),rgba(64,196,255,0.1));border:1px solid rgba(64,196,255,0.4);color:var(--blue);padding:10px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.1em;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
 .btn-rec-toggle:active{transform:scale(0.95);}
 .btn-rec-toggle.active{background:linear-gradient(135deg,rgba(255,45,45,0.4),rgba(255,45,45,0.15));border-color:rgba(255,45,45,0.6);color:var(--red);}
@@ -503,6 +496,18 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
   <!-- TIMER TAB -->
   <div class="app-tabs active" id="tab-timer">
     <div class="timer-layout">
+      <!-- LIVE CAMERA PREVIEW (recording mode) -->
+      <div class="camera-side">
+        <video id="recordingCamera" autoplay playsinline muted webkit-playsinline></video>
+        <div class="rec-overlay-badge">&#128308; FILMING</div>
+        <div class="rec-time-overlay" id="recTimeOverlay">00:00</div>
+        <div class="cam-hud" id="camHud">
+          <div class="cam-hud-set" id="hudSet">SET 1 / 10</div>
+          <div class="cam-hud-num" id="hudNum">10</div>
+          <div class="cam-hud-phase" id="hudPhase">GET READY</div>
+        </div>
+        <button class="btn-cam-flip" onclick="flipCamera()">&#8634; FLIP</button>
+      </div>
       <div class="timer-main">
         <!-- RING AREA -->
         <div class="ring-area">
@@ -644,12 +649,6 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
       </div>
     </div>
 
-    <!-- CAMERA SIDE FOR SPLIT RECORDING MODE -->
-    <div class="camera-side">
-      <video id="recordingCamera" playsinline muted></video>
-      <div class="rec-overlay-badge">🔴 FILMING</div>
-      <div class="rec-time-overlay" id="recTimeOverlay">0:00</div>
-    </div>
   </div>
 
   <!-- VIDEOS TAB -->
@@ -1301,150 +1300,214 @@ function applySettings(){
 // --- CAMERA / FILMING ------------------------------------------
 let recordingStream=null;
 let canvasRecorder=null;
-let recordingChunks=[];
+let recordedChunks=[];
 let recordingStartTime=null;
 let recordingInterval=null;
 let isRecordingMode=false;
 let overlayCanvas=null;
 let overlayCtx=null;
 let canvasAnimationId=null;
+let camFacing='user';
+let recMime='';
+const REC_W=720,REC_H=1280;
 
-async function toggleRecordingMode(){
-  if(isRecordingMode){
-    stopRecordingMode();
-  }else{
-    startRecordingMode();
-  }
+function pickMime(){
+  const c=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+  for(const t of c){try{if(MediaRecorder.isTypeSupported(t))return t;}catch(e){}}
+  return '';
+}
+
+function toggleRecordingMode(){
+  if(isRecordingMode)stopRecordingMode();else startRecordingMode();
+}
+
+async function openCamera(){
+  if(recordingStream)recordingStream.getTracks().forEach(t=>t.stop());
+  recordingStream=await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:camFacing,width:{ideal:1280},height:{ideal:720}},
+    audio:true
+  });
+  const video=document.getElementById('recordingCamera');
+  video.muted=true;
+  video.srcObject=recordingStream;
+  await video.play().catch(()=>{});
 }
 
 async function startRecordingMode(){
-  try{
-    recordingStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:true});
-    const video=document.getElementById('recordingCamera');
-    video.srcObject=recordingStream;
-    document.querySelector('.timer-layout').classList.add('recording-mode');
-    document.getElementById('btnRecMode').classList.add('active');
-    document.getElementById('btnRecMode').textContent='⏹ STOP';
-    isRecordingMode=true;
-    setupCanvasOverlay();
-  }catch(err){
-    console.error('Camera access denied:',err);
-    alert('Camera access required for split-screen recording');
+  if(!navigator.mediaDevices||!window.MediaRecorder){
+    alert('Recording is not supported in this browser.');return;
   }
+  try{
+    await openCamera();
+  }catch(err){
+    console.error('Camera error:',err);
+    alert('Camera and microphone access is required to film. Allow it in your browser settings and try again.');
+    return;
+  }
+  document.querySelector('.timer-layout').classList.add('recording-mode');
+  const btn=document.getElementById('btnRecMode');
+  btn.classList.add('active');btn.textContent='⏹ STOP';
+  isRecordingMode=true;
+  setupCanvasOverlay();
+}
+
+async function flipCamera(){
+  camFacing=camFacing==='user'?'environment':'user';
+  try{
+    const old=recordingStream;
+    const fresh=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFacing,width:{ideal:1280},height:{ideal:720}},audio:true});
+    const video=document.getElementById('recordingCamera');
+    video.srcObject=fresh;
+    recordingStream=fresh;
+    await video.play().catch(()=>{});
+    if(old)old.getVideoTracks().forEach(t=>t.stop());
+    if(canvasRecorder&&canvasRecorder.stream){
+      const a=fresh.getAudioTracks()[0];
+      if(a){
+        canvasRecorder.stream.getAudioTracks().forEach(t=>canvasRecorder.stream.removeTrack(t));
+        canvasRecorder.stream.addTrack(a);
+      }
+    }
+  }catch(e){console.error('Flip failed',e);camFacing=camFacing==='user'?'environment':'user';}
 }
 
 function setupCanvasOverlay(){
   overlayCanvas=document.createElement('canvas');
-  overlayCanvas.width=640;
-  overlayCanvas.height=480;
+  overlayCanvas.width=REC_W;
+  overlayCanvas.height=REC_H;
   overlayCtx=overlayCanvas.getContext('2d');
-
-  const video=document.getElementById('recordingCamera');
-  const waitForVideo=setInterval(()=>{
-    if(video.videoWidth>0&&video.videoHeight>0){
-      clearInterval(waitForVideo);
-      startCanvasRecording();
-      drawOverlayLoop();
-    }
-  },50);
-
-  setTimeout(()=>clearInterval(waitForVideo),5000);
+  drawOverlayLoop();
+  startCanvasRecording();
 }
+
+function txt(id){const e=document.getElementById(id);return e?e.textContent:'';}
 
 function drawOverlayLoop(){
+  if(!isRecordingMode)return;
   const video=document.getElementById('recordingCamera');
-
+  const W=overlayCanvas.width,H=overlayCanvas.height,ctx=overlayCtx;
   try{
-    if(video.videoWidth>0&&video.videoHeight>0){
-      overlayCtx.drawImage(video,0,0,overlayCanvas.width,overlayCanvas.height);
-
-      const nl=document.getElementById('timerNum');
-      const pl=document.getElementById('phaseLabel');
-      const ps=document.getElementById('phaseSub');
-      const bs=document.getElementById('bigSetNum');
-
-      overlayCtx.fillStyle='rgba(0,0,0,0.4)';
-      overlayCtx.fillRect(0,0,overlayCanvas.width,100);
-      overlayCtx.fillRect(0,overlayCanvas.height-140,overlayCanvas.width,140);
-
-      overlayCtx.font='28px Bebas Neue';
-      overlayCtx.fillStyle='#ff2d2d';
-      overlayCtx.textAlign='left';
-      overlayCtx.fillText('SET '+bs.textContent+' / '+TOTAL_SETS,20,40);
-
-      overlayCtx.font='20px Bebas Neue';
-      overlayCtx.fillStyle='#aaa';
-      overlayCtx.fillText(pl.textContent,20,70);
-
-      overlayCtx.font='bold 80px Bebas Neue';
-      overlayCtx.fillStyle='#fff';
-      overlayCtx.textAlign='center';
-      overlayCtx.fillText(nl.textContent,overlayCanvas.width/2,overlayCanvas.height-40);
-
-      overlayCtx.font='18px Bebas Neue';
-      overlayCtx.fillStyle='#999';
-      overlayCtx.fillText(ps.textContent,overlayCanvas.width/2,overlayCanvas.height-10);
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    if(video.videoWidth>0&&video.readyState>=2){
+      const vw=video.videoWidth,vh=video.videoHeight;
+      const scale=Math.max(W/vw,H/vh);
+      const dw=vw*scale,dh=vh*scale;
+      ctx.save();
+      if(camFacing==='user'){ctx.translate(W,0);ctx.scale(-1,1);}
+      ctx.drawImage(video,(W-dw)/2,(H-dh)/2,dw,dh);
+      ctx.restore();
     }
-  }catch(e){
-    console.error('Canvas draw error:',e);
-  }
+    const setTxt='SET '+txt('bigSetNum')+' / '+TOTAL_SETS;
+    const num=txt('timerNum'),phase=txt('phaseLabel'),sub=txt('phaseSub');
+    const phaseColor=getComputedStyle(document.getElementById('timerNum')).color||'#fff';
 
-  if(isRecordingMode){
-    canvasAnimationId=requestAnimationFrame(drawOverlayLoop);
-  }
-}
+    const top=ctx.createLinearGradient(0,0,0,220);
+    top.addColorStop(0,'rgba(0,0,0,0.7)');top.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=top;ctx.fillRect(0,0,W,220);
+    const bot=ctx.createLinearGradient(0,H-520,0,H);
+    bot.addColorStop(0,'rgba(0,0,0,0)');bot.addColorStop(1,'rgba(0,0,0,0.8)');
+    ctx.fillStyle=bot;ctx.fillRect(0,H-520,W,520);
 
-function stopRecordingMode(){
-  if(recordingStream){
-    recordingStream.getTracks().forEach(t=>t.stop());
-    recordingStream=null;
-  }
-  if(canvasAnimationId){
-    cancelAnimationFrame(canvasAnimationId);
-  }
-  document.querySelector('.timer-layout').classList.remove('recording-mode');
-  document.getElementById('btnRecMode').classList.remove('active');
-  document.getElementById('btnRecMode').textContent='🎥 SPLIT';
-  isRecordingMode=false;
-  if(canvasRecorder&&canvasRecorder.state==='recording'){
-    canvasRecorder.stop();
-  }
+    ctx.textBaseline='alphabetic';
+    ctx.textAlign='left';
+    ctx.font='72px "Bebas Neue",Impact,sans-serif';
+    ctx.fillStyle='#ff2d2d';
+    ctx.fillText('BYOB',40,100);
+    ctx.font='34px "Bebas Neue",Impact,sans-serif';
+    ctx.fillStyle='#f5f0e8';
+    ctx.fillText('BE YOUR OWN BODYGUARD',40,145);
+    ctx.textAlign='right';
+    ctx.font='54px "Bebas Neue",Impact,sans-serif';
+    ctx.fillText(setTxt,W-40,100);
+
+    ctx.textAlign='center';
+    ctx.font='44px "Bebas Neue",Impact,sans-serif';
+    ctx.fillStyle='#f5f0e8';
+    ctx.fillText(phase,W/2,H-330);
+    ctx.font='360px "Bebas Neue",Impact,sans-serif';
+    ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=24;
+    ctx.fillStyle=phaseColor;
+    ctx.fillText(num,W/2,H-90);
+    ctx.shadowBlur=0;
+    ctx.font='36px "Bebas Neue",Impact,sans-serif';
+    ctx.fillStyle='#cfcfcf';
+    ctx.fillText(sub,W/2,H-40);
+
+    const hs=document.getElementById('hudSet'),hn=document.getElementById('hudNum'),hp=document.getElementById('hudPhase');
+    if(hs){hs.textContent=setTxt;hn.textContent=num;hn.style.color=phaseColor;hp.textContent=phase;}
+  }catch(e){console.error('Canvas draw error:',e);}
+  canvasAnimationId=requestAnimationFrame(drawOverlayLoop);
 }
 
 function startCanvasRecording(){
   recordedChunks=[];
   recordingStartTime=Date.now();
+  clearInterval(recordingInterval);
   recordingInterval=setInterval(()=>{
     const elapsed=Math.floor((Date.now()-recordingStartTime)/1000);
     const m=Math.floor(elapsed/60),s=elapsed%60;
     document.getElementById('recTimeOverlay').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
-  },100);
+  },250);
 
-  const opts={mimeType:'video/webm;codecs=vp8,opus'};
-  if(!MediaRecorder.isTypeSupported(opts.mimeType)){
-    opts.mimeType='video/webm';
+  const out=overlayCanvas.captureStream(30);
+  recordingStream.getAudioTracks().forEach(t=>out.addTrack(t));
+  recMime=pickMime();
+  try{
+    canvasRecorder=recMime?new MediaRecorder(out,{mimeType:recMime,videoBitsPerSecond:5000000}):new MediaRecorder(out);
+  }catch(e){
+    canvasRecorder=new MediaRecorder(out);
   }
-
-  const canvasStream=overlayCanvas.captureStream(30);
-  canvasRecorder=new MediaRecorder(canvasStream,opts);
-  canvasRecorder.ondataavailable=e=>{if(e.data.size)recordedChunks.push(e.data);};
+  recMime=canvasRecorder.mimeType||recMime||'video/webm';
+  canvasRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordedChunks.push(e.data);};
   canvasRecorder.onstop=()=>{
     clearInterval(recordingInterval);
-    const blob=new Blob(recordedChunks,{type:'video/webm'});
-    downloadRecording(blob);
+    const blob=new Blob(recordedChunks,{type:recMime.split(';')[0]});
+    if(blob.size>0)showSaveSheet(blob);
   };
-  canvasRecorder.start();
+  canvasRecorder.start(1000);
 }
 
-function downloadRecording(blob){
+function stopRecordingMode(){
+  isRecordingMode=false;
+  if(canvasAnimationId)cancelAnimationFrame(canvasAnimationId);
+  if(canvasRecorder&&canvasRecorder.state!=='inactive')canvasRecorder.stop();
+  if(recordingStream){recordingStream.getTracks().forEach(t=>t.stop());recordingStream=null;}
+  const video=document.getElementById('recordingCamera');
+  if(video)video.srcObject=null;
+  document.querySelector('.timer-layout').classList.remove('recording-mode');
+  const btn=document.getElementById('btnRecMode');
+  btn.classList.remove('active');btn.textContent='🎥 SPLIT';
+}
+
+function recFileName(blob){
+  const ext=blob.type.indexOf('mp4')>-1?'mp4':'webm';
+  return 'byob-workout-'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.'+ext;
+}
+
+function showSaveSheet(blob){
+  const old=document.getElementById('saveSheet');if(old)old.remove();
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='byob-workout-'+new Date().toISOString().slice(0,10)+'.webm';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const name=recFileName(blob);
+  const sheet=document.createElement('div');
+  sheet.id='saveSheet';
+  sheet.style.cssText='position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;font-family:"Bebas Neue",sans-serif;';
+  const vid=document.createElement('video');
+  vid.src=url;vid.controls=true;vid.playsInline=true;vid.muted=true;
+  vid.style.cssText='max-height:60vh;max-width:90vw;border-radius:12px;border:2px solid rgba(255,45,45,0.5);background:#000;';
+  const mk=(label,bg,fn)=>{const b=document.createElement('button');b.textContent=label;b.style.cssText='width:min(320px,86vw);padding:16px;border:none;border-radius:12px;font-family:inherit;font-size:1.4rem;letter-spacing:0.15em;color:#fff;background:'+bg+';';b.onclick=fn;return b;};
+  const file=new File([blob],name,{type:blob.type});
+  const canShare=navigator.canShare&&navigator.canShare({files:[file]});
+  if(canShare){
+    sheet.append(vid,mk('SAVE TO PHOTOS','linear-gradient(160deg,#ff3d3d,#cc1111)',async()=>{
+      try{await navigator.share({files:[file],title:'BYOB Workout'});}catch(e){}
+    }));
+  }else{
+    sheet.append(vid);
+  }
+  sheet.append(mk('DOWNLOAD','rgba(255,255,255,0.12)',()=>{
+    const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  }),mk('CLOSE','rgba(255,255,255,0.06)',()=>{sheet.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}));
+  document.body.appendChild(sheet);
 }
 
 // --- MUSIC ---------------------------------------------------
