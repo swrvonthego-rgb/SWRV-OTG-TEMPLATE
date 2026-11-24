@@ -3022,7 +3022,7 @@ async function groqDiscoverModels(env, kind) {
     if (!res.ok) return [];
     const j = await res.json();
     const ids = (j.data || []).map((m) => m.id).filter((id) => typeof id === 'string' && !/whisper|tts|guard|embed|orpheus|playai|safeguard/i.test(id));
-    __groqAllIds = ids; // TEMP-DEBUG
+    __groqAllIds = ids;
     if (kind === 'vision') return ids.filter((id) => /llama-4|vision|scout|maverick|-vl|gemma-3|pixtral/i.test(id));
     const txt = ids.filter((id) => /llama|gpt-oss|qwen|kimi|gemma|deepseek/i.test(id));
     return txt.length ? txt : ids;
@@ -3191,7 +3191,7 @@ async function handleMealScan(request, env) {
     if (!out.data) {
       console.error('Meal scan Groq error:', out.last && out.last.status, out.last && out.last.text);
       const f = groqFailure(out, 'analysis');
-      return new Response(JSON.stringify({ error: f.error, code: f.code, debug: request.headers.get('X-BYOB-Debug') ? { tried: out.tried, available: __groqAllIds, last: out.last && String(out.last.text).slice(0, 200) } : undefined }), { status: 502, headers: jsonHeaders(request) });
+      return new Response(JSON.stringify({ error: f.error, code: f.code }), { status: 502, headers: jsonHeaders(request) });
     }
     const parsed = out.parsed;
     const meal = normalizeMeal(parsed);
@@ -3234,7 +3234,7 @@ async function handleNutritionCoach(request, env) {
     if (!out.data) {
       console.error('Nutrition coach Groq error:', out.last && out.last.status, out.last && out.last.text);
       const f = groqFailure(out, 'coach');
-      return new Response(JSON.stringify({ error: f.error, code: f.code, debug: request.headers.get('X-BYOB-Debug') ? { tried: out.tried, last: out.last && String(out.last.text).slice(0, 200) } : undefined }), { status: 502, headers: jsonHeaders(request) });
+      return new Response(JSON.stringify({ error: f.error, code: f.code }), { status: 502, headers: jsonHeaders(request) });
     }
     const p = out.parsed;
     return new Response(JSON.stringify({ ok: true, coach: {
