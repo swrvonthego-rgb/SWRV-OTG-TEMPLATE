@@ -811,6 +811,8 @@ export default {
 
     if (url.pathname === '/api/roadmap')        return handleRoadmap(request, env);
     if (url.pathname === '/api/chat')           return handleChat(request, env);
+    if (url.pathname === '/api/meal-scan')      return handleMealScan(request, env);
+    if (url.pathname === '/api/nutrition-coach') return handleNutritionCoach(request, env);
     if (url.pathname === '/api/booking')        return handleBooking(request, env);
     if (url.pathname === '/api/intake-ai')      return handleIntakeAI(request, env);
     if (url.pathname === '/api/intake-submit')  return handleIntakeSubmit(request, env);
@@ -2997,6 +2999,180 @@ async function handleChat(request, env) {
     return new Response(JSON.stringify({
       reply: "Something went off on my end. Email info@swrvonthego.pro and we'll sort you out."
     }), { status: 500, headers: jsonHeaders(request) });
+  }
+}
+
+// ───────────────────────────────────────────────────────
+// NUTRITION — meal photo scan + daily coach (BYOB Timer app)
+// Uses Groq (same key as Roadmap). A vision model reads the photo;
+// totals are recomputed server-side so the numbers always add up.
+// ───────────────────────────────────────────────────────
+const NUTRITION_RATE = new Map(); // ip -> recent request timestamps (per isolate)
+function nutritionRateLimited(request) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'anon';
+  const now = Date.now();
+  const recent = (NUTRITION_RATE.get(ip) || []).filter((t) => now - t < 60000);
+  if (recent.length >= 12) { NUTRITION_RATE.set(ip, recent); return true; }
+  recent.push(now);
+  NUTRITION_RATE.set(ip, recent);
+  if (NUTRITION_RATE.size > 5000) NUTRITION_RATE.clear();
+  return false;
+}
+
+function nNum(v, max) {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.round(Math.min(n, max || 10000) * 10) / 10;
+}
+function nStr(v, len) { return String(v == null ? '' : v).replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, len || 200); }
+function nList(v, n, len) { return (Array.isArray(v) ? v : []).slice(0, n).map((x) => nStr(x, len || 140)).filter(Boolean); }
+
+function parseJsonLoose(text) {
+  if (!text) return null;
+  try { return JSON.parse(text); } catch (_) {}
+  const a = text.indexOf('{'), b = text.lastIndexOf('}');
+  if (a >= 0 && b > a) { try { return JSON.parse(text.slice(a, b + 1)); } catch (_) {} }
+  return null;
+}
+
+function normalizeMeal(raw) {
+  const items = (Array.isArray(raw && raw.items) ? raw.items : []).slice(0, 14).map((it) => {
+    const protein = nNum(it.protein_g, 400), carbs = nNum(it.carbs_g, 800), fat = nNum(it.fat_g, 400);
+    let cal = nNum(it.calories, 4000);
+    const derived = protein * 4 + carbs * 4 + fat * 9;
+    if (derived > 0 && (cal === 0 || Math.abs(cal - derived) / derived > 0.3)) cal = Math.round(derived);
+    return {
+      name: nStr(it.name, 60) || 'Food item',
+      portion: nStr(it.portion, 60),
+      calories: Math.round(cal), protein_g: protein, carbs_g: carbs, fat_g: fat,
+      fiber_g: nNum(it.fiber_g, 200), sugar_g: nNum(it.sugar_g, 400),
+    };
+  });
+  const sum = (k) => Math.round(items.reduce((t, i) => t + i[k], 0) * 10) / 10;
+  const conf = ['low', 'medium', 'high'].includes(raw && raw.confidence) ? raw.confidence : 'medium';
+  return {
+    is_food: raw && raw.is_food !== false && items.length > 0,
+    meal_name: nStr(raw && raw.meal_name, 60) || 'Meal',
+    items,
+    totals: {
+      calories: Math.round(sum('calories')), protein_g: sum('protein_g'), carbs_g: sum('carbs_g'),
+      fat_g: sum('fat_g'), fiber_g: sum('fiber_g'), sugar_g: sum('sugar_g'),
+    },
+    confidence: conf,
+    score: Math.max(0, Math.min(10, Math.round(nNum(raw && raw.score, 10)))),
+    assessment: nStr(raw && raw.assessment, 400),
+    pros: nList(raw && raw.pros, 4), cons: nList(raw && raw.cons, 4), swap_tips: nList(raw && raw.swap_tips, 3),
+    fits_goal: nStr(raw && raw.fits_goal, 240),
+  };
+}
+
+const MEAL_SCAN_PROMPT = `You are a sports-nutrition assistant inside a combat-fitness app. The user sends a photo of a meal.
+Identify every distinct food and drink you can see, estimate each portion (grams, cups, pieces) from visual cues such as plate size, utensils and packaging, then estimate calories, protein, carbs, fat, fiber and sugar for each item. Be realistic rather than optimistic: include cooking oils, sauces and dressings you can reasonably infer. These are estimates, so set "confidence" honestly (low when the portion or ingredients are hard to see).
+If the photo does not contain food or drink, return {"is_food": false, "items": []}.
+Respond with ONLY one JSON object, no markdown, in exactly this shape:
+{"is_food":true,"meal_name":"short name","items":[{"name":"","portion":"","calories":0,"protein_g":0,"carbs_g":0,"fat_g":0,"fiber_g":0,"sugar_g":0}],"confidence":"low|medium|high","score":0,"assessment":"max 45 words: an honest read of this meal for someone training hard","pros":["max 3"],"cons":["max 3"],"swap_tips":["max 3 practical swaps or additions"],"fits_goal":"one sentence on how it fits the user's day"}
+"score" is 0-10 for how well the meal supports performance and recovery.`;
+
+async function handleMealScan(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
+  if (!env.GROQ_API_KEY) return new Response(JSON.stringify({ error: 'Meal scanning is not configured yet.', code: 'not_configured' }), { status: 503, headers: jsonHeaders(request) });
+  if (nutritionRateLimited(request)) return new Response(JSON.stringify({ error: 'Too many scans. Wait a minute and try again.', code: 'rate_limited' }), { status: 429, headers: jsonHeaders(request) });
+  try {
+    const raw = await request.text();
+    if (raw.length > 4_000_000) return new Response(JSON.stringify({ error: 'Photo is too large.', code: 'too_large' }), { status: 413, headers: jsonHeaders(request) });
+    const body = JSON.parse(raw);
+    const image = typeof body.image === 'string' ? body.image : '';
+    if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(image)) {
+      return new Response(JSON.stringify({ error: 'Send the meal photo as a JPEG, PNG or WebP.', code: 'bad_image' }), { status: 400, headers: jsonHeaders(request) });
+    }
+    const note = nStr(body.note, 200);
+    const t = body.targets || {}, e = body.eaten || {};
+    const ctx = [];
+    if (nStr(body.goal, 60)) ctx.push('Goal: ' + nStr(body.goal, 60));
+    if (t.kcal) ctx.push(`Daily targets: ${nNum(t.kcal)} kcal, ${nNum(t.protein)}g protein, ${nNum(t.carbs)}g carbs, ${nNum(t.fat)}g fat.`);
+    if (e.kcal != null) ctx.push(`Already eaten today: ${nNum(e.kcal)} kcal, ${nNum(e.protein)}g protein, ${nNum(e.carbs)}g carbs, ${nNum(e.fat)}g fat.`);
+    if (note) ctx.push('User note about the meal: ' + note);
+    const base = (env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/$/, '');
+    const res = await fetch(base + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: env.MEAL_VISION_MODEL || 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 900,
+        temperature: 0.2,
+        messages: [
+          { role: 'system', content: MEAL_SCAN_PROMPT },
+          { role: 'user', content: [
+            { type: 'text', text: ctx.length ? ctx.join('\n') : 'Analyze this meal.' },
+            { type: 'image_url', image_url: { url: image } },
+          ] },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      console.error('Meal scan Groq error:', res.status, await res.text());
+      return new Response(JSON.stringify({ error: 'The meal analyzer is busy. Try again in a moment.', code: 'upstream' }), { status: 502, headers: jsonHeaders(request) });
+    }
+    const data = await res.json();
+    const parsed = parseJsonLoose(data.choices?.[0]?.message?.content || '');
+    if (!parsed) return new Response(JSON.stringify({ error: 'Could not read the analysis. Try another photo.', code: 'unparseable' }), { status: 502, headers: jsonHeaders(request) });
+    const meal = normalizeMeal(parsed);
+    if (!meal.is_food) return new Response(JSON.stringify({ error: 'No food found in that photo. Try again with the meal in frame.', code: 'no_food' }), { status: 422, headers: jsonHeaders(request) });
+    return new Response(JSON.stringify({ ok: true, meal }), { headers: jsonHeaders(request) });
+  } catch (err) {
+    console.error('Meal scan error:', err);
+    return new Response(JSON.stringify({ error: 'Something went wrong analyzing that photo.', code: 'server' }), { status: 500, headers: jsonHeaders(request) });
+  }
+}
+
+const NUTRITION_COACH_PROMPT = `You are a direct, encouraging sports-nutrition coach for a combat-fitness app (BYOB, Be Your Own Bodyguard). You get the user's goal, daily targets, what they have logged today, and their weight trend. Give a short, specific, honest assessment. Never diagnose, never prescribe extreme restriction, and never suggest going below 1,200 kcal/day. Remind them estimates are approximate only if it matters.
+Respond with ONLY one JSON object:
+{"summary":"max 50 words","wins":["max 3"],"fixes":["max 3 specific adjustments"],"next_meal":"one concrete suggestion for the next meal that closes the remaining macro gap","weight_note":"one sentence on the weight trend, or empty if no weight data"}`;
+
+async function handleNutritionCoach(request, env) {
+  if (request.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(request) });
+  if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: jsonHeaders(request) });
+  if (!env.GROQ_API_KEY) return new Response(JSON.stringify({ error: 'Coach is not configured yet.', code: 'not_configured' }), { status: 503, headers: jsonHeaders(request) });
+  if (nutritionRateLimited(request)) return new Response(JSON.stringify({ error: 'Too many requests. Wait a minute.', code: 'rate_limited' }), { status: 429, headers: jsonHeaders(request) });
+  try {
+    const raw = await request.text();
+    if (raw.length > 60_000) return new Response(JSON.stringify({ error: 'Request too large.' }), { status: 413, headers: jsonHeaders(request) });
+    const b = JSON.parse(raw);
+    const t = b.targets || {}, tot = b.totals || {}, w = b.weight || {};
+    const meals = (Array.isArray(b.meals) ? b.meals : []).slice(0, 12).map((m) =>
+      `- ${nStr(m.name, 50)}: ${nNum(m.calories)} kcal, P${nNum(m.protein_g)} C${nNum(m.carbs_g)} F${nNum(m.fat_g)}`);
+    const facts = [
+      `Goal: ${nStr(b.goal, 60) || 'general fitness'}`,
+      `Targets: ${nNum(t.kcal)} kcal, ${nNum(t.protein)}g protein, ${nNum(t.carbs)}g carbs, ${nNum(t.fat)}g fat`,
+      `Eaten so far: ${nNum(tot.calories)} kcal, ${nNum(tot.protein_g)}g protein, ${nNum(tot.carbs_g)}g carbs, ${nNum(tot.fat_g)}g fat`,
+      meals.length ? 'Meals logged:\n' + meals.join('\n') : 'No meals logged yet today.',
+      w.current ? `Weight: now ${nNum(w.current)} ${nStr(w.unit, 3) || 'kg'}, start ${nNum(w.start)}, goal ${nNum(w.goal)}, trend ${Number(w.weekly_change) || 0} per week` : 'No weight data.',
+      Number.isFinite(Number(b.workouts_week)) ? `Workouts this week: ${nNum(b.workouts_week, 30)}` : '',
+    ].filter(Boolean).join('\n');
+    const base = (env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/$/, '');
+    const res = await fetch(base + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile', max_tokens: 500, temperature: 0.4,
+        messages: [{ role: 'system', content: NUTRITION_COACH_PROMPT }, { role: 'user', content: facts }],
+      }),
+    });
+    if (!res.ok) {
+      console.error('Nutrition coach Groq error:', res.status, await res.text());
+      return new Response(JSON.stringify({ error: 'The coach is busy. Try again shortly.', code: 'upstream' }), { status: 502, headers: jsonHeaders(request) });
+    }
+    const data = await res.json();
+    const p = parseJsonLoose(data.choices?.[0]?.message?.content || '');
+    if (!p) return new Response(JSON.stringify({ error: 'Could not read the coach reply.', code: 'unparseable' }), { status: 502, headers: jsonHeaders(request) });
+    return new Response(JSON.stringify({ ok: true, coach: {
+      summary: nStr(p.summary, 400), wins: nList(p.wins, 3), fixes: nList(p.fixes, 3),
+      next_meal: nStr(p.next_meal, 300), weight_note: nStr(p.weight_note, 240),
+    } }), { headers: jsonHeaders(request) });
+  } catch (err) {
+    console.error('Nutrition coach error:', err);
+    return new Response(JSON.stringify({ error: 'Something went wrong.', code: 'server' }), { status: 500, headers: jsonHeaders(request) });
   }
 }
 

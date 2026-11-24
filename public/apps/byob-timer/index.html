@@ -410,6 +410,102 @@ body.rec-live .cam-tools .q,body.rec-live .cam-tools .f,body.rec-live #chipAuto,
 .btn-record.live{background:#fff;color:#c00;animation:badgePulse 1s infinite;}
 .timer-layout.recording-mode .btn-record{display:block;padding:10px 12px;font-size:0.95rem;}
 .timer-layout.recording-mode .btn-rec-toggle{flex:0 0 auto;padding:10px 10px;font-size:0.85rem!important;}
+
+/* NUTRITION & HEALTH */
+.nx-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;}
+.nx-today{display:flex;gap:14px;align-items:center;}
+.nx-ringwrap{position:relative;width:112px;height:112px;flex:0 0 auto;}
+.nx-ringsvg{width:100%;height:100%;}
+#nxRing{transition:stroke-dashoffset 0.5s ease,stroke 0.3s;}
+.nx-ringc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;}
+.nx-ringc #nxLeft{font-size:2rem;line-height:1;color:var(--white);}
+.nx-ringc #nxLeftLbl{font-size:0.6rem;letter-spacing:0.18em;color:var(--dim);}
+.nx-bars{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;}
+.nx-bar-h{display:flex;justify-content:space-between;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.12em;color:var(--dim);margin-bottom:3px;}
+.nx-bar-h span:last-child{color:var(--white);}
+.nx-bar-t{height:7px;border-radius:5px;background:rgba(255,255,255,0.08);overflow:hidden;}
+.nx-bar-f{height:100%;width:0;border-radius:5px;transition:width 0.5s ease;}
+.nx-bar-f.p{background:var(--red);}.nx-bar-f.c{background:var(--gold);}.nx-bar-f.f{background:var(--blue);}
+.nx-eatline{display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:var(--dim);letter-spacing:0.05em;margin:-4px 2px 12px;}
+.nx-link{background:none;border:none;color:var(--blue);font-family:'Bebas Neue',sans-serif;letter-spacing:0.12em;font-size:0.85rem;padding:6px 4px;-webkit-tap-highlight-color:transparent;}
+.nx-scan{width:100%;padding:18px;border:none;border-radius:14px;background:linear-gradient(160deg,#00c853,#009624);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.18em;box-shadow:0 8px 24px rgba(0,200,83,0.3),inset 0 1px 0 rgba(255,255,255,0.25);-webkit-tap-highlight-color:transparent;}
+.nx-scan:active{transform:scale(0.98);}
+.nx-subrow{display:flex;justify-content:center;gap:18px;margin:2px 0 14px;}
+.nx-empty{padding:14px;text-align:center;color:var(--dim);font-size:0.9rem;background:var(--card);border:1px dashed var(--border);border-radius:12px;margin-bottom:12px;}
+.nx-meal{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;}
+.nx-meal img,.nx-meal-ph{width:52px;height:52px;border-radius:9px;object-fit:cover;flex:0 0 auto;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+.nx-meal-info{flex:1;min-width:0;}
+.nx-meal-name{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:0.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nx-meal-sub{font-size:0.72rem;color:var(--dim);letter-spacing:0.04em;}
+.nx-x{background:none;border:none;color:var(--dim);font-size:1.4rem;line-height:1;padding:6px 10px;-webkit-tap-highlight-color:transparent;}
+.nx-x:active{color:var(--red);}
+.nx-coachbtn{width:100%;padding:12px;margin:4px 0 12px;background:rgba(64,196,255,0.12);border:1px solid rgba(64,196,255,0.4);border-radius:12px;color:var(--blue);font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.15em;}
+.nx-coach-h{font-family:'Bebas Neue',sans-serif;letter-spacing:0.15em;color:var(--blue);margin-bottom:6px;}
+.nx-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;text-align:center;}
+.nx-stats b{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;line-height:1;color:var(--white);}
+.nx-stats b.dn{color:var(--green);}.nx-stats b.up{color:var(--orange);}
+.nx-stats span{font-size:0.55rem;letter-spacing:0.1em;color:var(--dim);}
+.nx-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0;}
+.nx-chip{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:6px 11px;border-radius:9px;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.1em;-webkit-tap-highlight-color:transparent;}
+.nx-chip.on{background:rgba(0,230,118,0.18);border-color:rgba(0,230,118,0.6);color:var(--green);}
+.nx-grow{flex:1;}
+.nx-chart{width:100%;height:auto;display:block;margin:4px 0 2px;}
+.nx-legend{display:flex;gap:14px;font-size:0.65rem;color:var(--dim);letter-spacing:0.08em;margin-bottom:8px;}
+.nx-legend .g::before,.nx-legend .o::before,.nx-legend .y::before{content:'';display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;}
+.nx-legend .g::before{background:var(--green);}.nx-legend .o::before{background:var(--orange);}.nx-legend .y::before{background:var(--gold);}
+.nx-logrow{display:flex;gap:6px;align-items:stretch;margin:6px 0;}
+.nx-logrow input,.nx-f input,.nx-f select{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;color:var(--white);padding:10px;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;min-width:0;}
+.nx-logrow input{text-align:center;flex:1;}
+.nx-step{width:42px;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:9px;color:var(--white);font-size:1.3rem;}
+.nx-goalline{font-size:0.85rem;color:var(--dim);margin:4px 0 6px;}
+.nx-wlist .nx-wrow{display:flex;align-items:center;gap:8px;font-size:0.85rem;padding:5px 0;border-bottom:1px solid var(--border);}
+.nx-wrow span{color:var(--dim);flex:0 0 84px;}.nx-wrow b{flex:1;font-weight:600;}.nx-wrow em{font-style:normal;color:var(--dim);font-size:0.7rem;letter-spacing:0.06em;}
+.nx-hrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.nx-hrow b{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.08em;}
+.nx-hrow span{font-size:0.72rem;color:var(--dim);}
+.nx-hbtns{display:flex;gap:6px;}
+.nx-btn{padding:13px 16px;border:none;border-radius:11px;background:linear-gradient(160deg,#ff3d3d,#cc1111);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.12em;-webkit-tap-highlight-color:transparent;}
+.nx-btn.ghost{background:rgba(255,255,255,0.08);border:1px solid var(--border);}
+.nx-btn.sm{padding:9px 12px;font-size:0.9rem;}
+.nx-btnrow{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.nx-logrow .nx-btn.sm{flex:0 0 auto;}
+.nx-fine{font-size:0.7rem;color:var(--dim);margin-top:8px;line-height:1.3;}
+.nx-sheet{position:fixed;inset:0;z-index:15000;background:rgba(0,0,0,0.82);display:flex;align-items:flex-end;justify-content:center;}
+.nx-sheet-panel{width:100%;max-width:430px;max-height:92dvh;overflow-y:auto;background:#0f0f0f;border-top:2px solid rgba(255,45,45,0.5);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;}
+.nx-res-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.nx-res-head img{width:64px;height:64px;border-radius:12px;object-fit:cover;}
+.nx-res-head>div:nth-child(2){flex:1;min-width:0;}
+.nx-res-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.1em;color:var(--white);}
+.nx-conf{font-size:0.65rem;letter-spacing:0.1em;color:var(--dim);}
+.nx-score{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--green);line-height:1;}
+.nx-score small{font-size:0.8rem;color:var(--dim);}
+.nx-macros{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 4px;margin:8px 0;}
+.nx-macros b{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;line-height:1;}
+.nx-macros span{font-size:0.55rem;letter-spacing:0.1em;color:var(--dim);}
+.nx-lbl{font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.18em;color:var(--dim);margin:12px 0 4px;}
+.nx-assess{font-size:0.95rem;line-height:1.35;margin:6px 0;}
+.nx-assess.fits{color:var(--gold);}
+.nx-tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.nx-tag{font-size:0.75rem;padding:4px 9px;border-radius:8px;}
+.nx-tag.pro{background:rgba(0,230,118,0.14);color:var(--green);}.nx-tag.con{background:rgba(255,45,45,0.14);color:#ff8a8a;}
+.nx-tips{margin:4px 0 4px 18px;font-size:0.9rem;line-height:1.35;}
+.nx-tips.ok{color:var(--green);}
+.nx-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.9rem;}
+.nx-item span{display:block;color:var(--dim);font-size:0.72rem;}
+.nx-item-k{white-space:nowrap;display:flex;align-items:center;}
+.nx-note{font-size:0.95rem;line-height:1.35;margin:8px 0;}
+.nx-steps{margin:8px 0 8px 20px;font-size:0.92rem;line-height:1.4;}
+.nx-steps li{margin-bottom:5px;}
+.nx-code{background:#000;border:1px solid var(--border);border-radius:9px;padding:10px;font-family:ui-monospace,Menlo,monospace;font-size:0.72rem;word-break:break-all;color:var(--green);margin:8px 0;}
+.nx-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
+.nx-f{display:block;font-size:0.7rem;letter-spacing:0.08em;color:var(--dim);margin:6px 0;}
+.nx-f input,.nx-f select{margin-top:3px;}
+.nx-busy{display:flex;flex-direction:column;align-items:center;gap:14px;padding:28px 10px;font-family:'Bebas Neue',sans-serif;letter-spacing:0.12em;font-size:1.1rem;text-align:center;}
+.nx-busy.inline{padding:14px 10px;}
+.nx-spin{width:34px;height:34px;border-radius:50%;border:4px solid rgba(255,255,255,0.15);border-top-color:var(--green);animation:nxspin 0.8s linear infinite;}
+@keyframes nxspin{to{transform:rotate(360deg);}}
+#nxToast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:16000;background:rgba(0,0,0,0.92);border:1px solid rgba(0,230,118,0.5);color:#fff;padding:10px 16px;border-radius:12px;font-size:0.95rem;max-width:88vw;text-align:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+#nxToast.show{opacity:1;}
 /* RECORDING MODE: give the camera the screen */
 body.rec-on .header,body.rec-on .mode-bar,body.rec-on .music-drawer,body.rec-on .bottom-nav,body.rec-on .timer-layout.recording-mode .ring-area{display:none;}
 body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
@@ -859,12 +955,38 @@ body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
   <div class="app-tabs" id="tab-diet">
     <div class="tab-header" style="color:var(--green);">BODYGUARD DIET</div>
     <div class="tab-sub">Fuel your body like a weapon. Daily macros and recipes.</div>
-    <div class="macro-row">
-      <div class="macro-card protein"><div class="macro-label">Protein</div><div class="macro-val">180g</div></div>
-      <div class="macro-card carbs"><div class="macro-label">Carbs</div><div class="macro-val">220g</div></div>
-      <div class="macro-card fats"><div class="macro-label">Fats</div><div class="macro-val">65g</div></div>
+    <div class="nx-card nx-today">
+      <div class="nx-ringwrap">
+        <svg viewBox="0 0 120 120" class="nx-ringsvg" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="9"/><circle id="nxRing" cx="60" cy="60" r="52" fill="none" stroke="var(--green)" stroke-width="9" stroke-linecap="round" transform="rotate(-90 60 60)"/></svg>
+        <div class="nx-ringc"><div id="nxLeft">0</div><div id="nxLeftLbl">KCAL LEFT</div></div>
+      </div>
+      <div class="nx-bars">
+        <div class="nx-bar"><div class="nx-bar-h"><span>PROTEIN</span><span id="nxValP"></span></div><div class="nx-bar-t"><div id="nxBarP" class="nx-bar-f p"></div></div></div>
+        <div class="nx-bar"><div class="nx-bar-h"><span>CARBS</span><span id="nxValC"></span></div><div class="nx-bar-t"><div id="nxBarC" class="nx-bar-f c"></div></div></div>
+        <div class="nx-bar"><div class="nx-bar-h"><span>FAT</span><span id="nxValF"></span></div><div class="nx-bar-t"><div id="nxBarF" class="nx-bar-f f"></div></div></div>
+      </div>
     </div>
-    <div class="section-lbl">TODAY'S RECIPES</div>
+    <div class="nx-eatline"><span id="nxEaten"></span><button class="nx-link" onclick="openGoals()">EDIT GOALS</button></div>
+    <button class="nx-scan" onclick="scanMeal()"><span aria-hidden="true">&#128247;</span> SCAN MY MEAL</button>
+    <div class="nx-subrow"><button class="nx-link" onclick="pickMeal()">CHOOSE FROM PHOTOS</button><button class="nx-link" onclick="manualMeal()">ADD MANUALLY</button></div>
+    <input type="file" id="nxFileCam" accept="image/*" capture="environment" hidden onchange="nxFileChosen(this)">
+    <input type="file" id="nxFileLib" accept="image/*" hidden onchange="nxFileChosen(this)">
+    <div class="section-lbl">TODAY'S MEALS</div>
+    <div id="nxMeals"></div>
+    <button class="nx-coachbtn" onclick="coachMe()">ASSESS MY DAY</button>
+    <div class="nx-card" id="nxCoach" style="display:none"></div>
+    <div class="section-lbl">WEIGHT &amp; PROGRESS</div>
+    <div class="nx-card" id="nxWeightBody"></div>
+    <div class="section-lbl">CONNECT YOUR HEALTH APP</div>
+    <div class="nx-card">
+      <div class="nx-hrow"><div><b>Apple Health</b><span>iPhone</span></div><div class="nx-hbtns"><button class="nx-btn sm" onclick="openAppleImportHelp()">IMPORT</button><button class="nx-btn sm ghost" onclick="openShortcutHelp()">AUTO-SYNC</button></div></div>
+      <div class="nx-hrow"><div><b>Android Health</b><span>Samsung, Fitbit, Google</span></div><div class="nx-hbtns"><button class="nx-btn sm" onclick="openAndroidHelp()">CONNECT</button></div></div>
+      <div class="nx-fine" id="nxHealthMeta"></div>
+      <div class="nx-fine">Health data stays on this device. Meal photos are analyzed by AI and are not stored.</div>
+      <input type="file" id="nxFileHealth" accept=".zip,.xml,application/zip,text/xml,application/xml" hidden onchange="nxHealthFileChosen(this)">
+      <input type="file" id="nxFileCsv" accept=".csv,text/csv,text/plain" hidden onchange="nxCsvFileChosen(this)">
+    </div>
+    <div class="section-lbl">RECIPE IDEAS</div>
     <div class="recipe-card">
       <img class="recipe-thumb" src="https://res.cloudinary.com/dzqxce5hv/image/upload/v1777141264/IMG_0190_mpkuxg.png" alt="Warrior Bowl"/>
       <div><div class="recipe-name">WARRIOR BOWL</div><div class="recipe-desc">Chicken, quinoa, broccoli • 650 kcal</div></div>
@@ -1261,6 +1383,7 @@ function workoutDone(){
   const doneSetsEl=document.querySelector('.done-stats .done-stat:last-child .done-stat-val');
   if(doneSetsEl)doneSetsEl.textContent=TOTAL_SETS;
   document.getElementById('doneScreen').classList.add('show');
+  try{if(typeof logWorkoutDone==='function')logWorkoutDone(Math.round(totalElapsed/60));}catch(e){}
   if(typeof isRecording!=='undefined'&&isRecording)setTimeout(()=>{if(isRecording)stopRecording();},4000);
   vib([200,100,200,100,400]);setTimeout(()=>bellSound(3),300);setTimeout(()=>speak('Workout complete. You are your own bodyguard. Great work!'),3200);
 }
@@ -1938,6 +2061,611 @@ function showSaveSheet(blob,info){
   }),mk('CLOSE','rgba(255,255,255,0.06)',()=>{sheet.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}));
   document.body.appendChild(sheet);
 }
+
+// --- NUTRITION & HEALTH ------------------------------------------
+const NX_DEFAULT_TARGETS={kcal:2185,protein:180,carbs:220,fat:65};
+const KG_PER_LB=0.45359237;
+function nxLoad(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}}
+function nxSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function pad2(n){return (n<10?'0':'')+n;}
+function dayKey(d){d=d||new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function r1(n){return Math.round(n*10)/10;}
+
+function nxProfile(){
+  const p=nxLoad('byob_profile',null)||{};
+  return Object.assign({goal:'maintain',unit:/^en-US/i.test(navigator.language||'')?'lb':'kg',targets:Object.assign({},NX_DEFAULT_TARGETS),goalKg:null,heightCm:null,age:null,sex:null,activity:1.55},p,{targets:Object.assign({},NX_DEFAULT_TARGETS,p.targets||{})});
+}
+function nxSaveProfile(p){nxSave('byob_profile',p);}
+function nxMealsAll(){return nxLoad('byob_meals',{});}
+function nxMealsOn(d){return nxMealsAll()[d||dayKey()]||[];}
+function nxWeights(){const w=nxLoad('byob_weights',[]);return Array.isArray(w)?w.filter(x=>x&&x.d&&x.kg>0).sort((a,b)=>a.d<b.d?-1:1):[];}
+function nxWorkouts(){return nxLoad('byob_workouts',{});}
+
+function toDisp(kg,unit){return unit==='lb'?kg/KG_PER_LB:kg;}
+function fromDisp(v,unit){return unit==='lb'?v*KG_PER_LB:v;}
+function fmtW(kg,unit){return r1(toDisp(kg,unit)).toFixed(1);}
+
+let nxToastTimer=null;
+function nxToast(t,ms){
+  let e=document.getElementById('nxToast');
+  if(!e){e=document.createElement('div');e.id='nxToast';document.body.appendChild(e);}
+  e.textContent=t;e.classList.add('show');
+  clearTimeout(nxToastTimer);nxToastTimer=setTimeout(()=>e.classList.remove('show'),ms||3500);
+}
+
+// ----- sheets -----
+function nxSheet(html,id){
+  nxCloseSheet(id||'nxSheet');
+  const s=document.createElement('div');
+  s.className='nx-sheet';s.id=id||'nxSheet';
+  s.innerHTML='<div class="nx-sheet-panel">'+html+'</div>';
+  s.addEventListener('click',e=>{if(e.target===s&&!s.hasAttribute('data-sticky'))nxCloseSheet(s.id);});
+  document.body.appendChild(s);
+  return s;
+}
+function nxCloseSheet(id){const s=document.getElementById(id||'nxSheet');if(s)s.remove();}
+
+// ----- targets -----
+function calcTargets(p,kg){
+  if(!(p.heightCm&&p.age&&p.sex&&kg))return null;
+  const bmr=10*kg+6.25*p.heightCm-5*p.age+(p.sex==='female'?-161:5);
+  const tdee=bmr*(p.activity||1.55);
+  const kcal=Math.round((tdee+(p.goal==='lose'?-450:p.goal==='gain'?300:0))/5)*5;
+  const protein=Math.round(kg*(p.goal==='lose'?2.2:1.9));
+  const fat=Math.round(kcal*0.27/9);
+  const carbs=Math.max(0,Math.round((kcal-protein*4-fat*9)/4));
+  return {kcal:Math.max(1200,kcal),protein,carbs,fat};
+}
+
+// ----- today -----
+function nxTotals(list){
+  return list.reduce((t,m)=>({calories:t.calories+(m.calories||0),protein_g:t.protein_g+(m.protein_g||0),carbs_g:t.carbs_g+(m.carbs_g||0),fat_g:t.fat_g+(m.fat_g||0),fiber_g:t.fiber_g+(m.fiber_g||0)}),{calories:0,protein_g:0,carbs_g:0,fat_g:0,fiber_g:0});
+}
+function renderToday(){
+  const p=nxProfile(),t=p.targets,tot=nxTotals(nxMealsOn());
+  const left=Math.round(t.kcal-tot.calories);
+  const ring=document.getElementById('nxRing');
+  if(ring){const C=2*Math.PI*52;const frac=Math.max(0,Math.min(1,tot.calories/t.kcal));ring.style.strokeDasharray=C.toFixed(1);ring.style.strokeDashoffset=(C*(1-frac)).toFixed(1);ring.style.stroke=tot.calories>t.kcal*1.05?'var(--red)':'var(--green)';}
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('nxLeft',Math.abs(left));set('nxLeftLbl',left>=0?'KCAL LEFT':'KCAL OVER');
+  set('nxEaten',Math.round(tot.calories)+' eaten of '+t.kcal+' kcal');
+  const bar=(id,v,max)=>{const e=document.getElementById(id);if(e)e.style.width=Math.min(100,max?v/max*100:0)+'%';};
+  bar('nxBarP',tot.protein_g,t.protein);bar('nxBarC',tot.carbs_g,t.carbs);bar('nxBarF',tot.fat_g,t.fat);
+  set('nxValP',Math.round(tot.protein_g)+' / '+t.protein+' g');set('nxValC',Math.round(tot.carbs_g)+' / '+t.carbs+' g');set('nxValF',Math.round(tot.fat_g)+' / '+t.fat+' g');
+  renderMealList();
+}
+function renderMealList(){
+  const el=document.getElementById('nxMeals');if(!el)return;
+  const list=nxMealsOn();
+  if(!list.length){el.innerHTML='<div class="nx-empty">No meals logged yet today. Scan one to start.</div>';return;}
+  el.innerHTML=list.map(m=>'<div class="nx-meal">'+(m.thumb?'<img src="'+esc(m.thumb)+'" alt="">':'<div class="nx-meal-ph">&#127869;</div>')+
+    '<div class="nx-meal-info"><div class="nx-meal-name">'+esc(m.name)+'</div><div class="nx-meal-sub">'+esc((m.type||'meal').toUpperCase())+' &middot; '+Math.round(m.calories)+' kcal &middot; P'+Math.round(m.protein_g)+' C'+Math.round(m.carbs_g)+' F'+Math.round(m.fat_g)+(m.score!=null?' &middot; '+m.score+'/10':'')+'</div></div>'+
+    '<button class="nx-x" aria-label="Delete meal" onclick="nxDeleteMeal(\''+esc(m.id)+'\')">&times;</button></div>').join('');
+}
+function nxDeleteMeal(id){
+  const all=nxMealsAll(),d=dayKey();
+  all[d]=(all[d]||[]).filter(m=>m.id!==id);
+  nxSave('byob_meals',all);renderToday();
+}
+function nxMealType(){const h=new Date().getHours();return h<10?'breakfast':h<15?'lunch':h<21?'dinner':'snack';}
+function nxApi(path){return(location.protocol==='file:'||!/(swrvonthego\.pro|workers\.dev)$/i.test(location.hostname))?'https://swrvonthego.pro'+path:path;}
+
+// ----- scan -----
+function scanMeal(){const i=document.getElementById('nxFileCam');if(i){i.value='';i.click();}}
+function pickMeal(){const i=document.getElementById('nxFileLib');if(i){i.value='';i.click();}}
+function nxFileChosen(inp){const f=inp.files&&inp.files[0];inp.value='';if(f)nxAnalyze(f);}
+
+async function nxPrepImage(file){
+  let bmp=null;
+  try{bmp=await createImageBitmap(file);}catch(e){}
+  if(!bmp){
+    bmp=await new Promise((res,rej)=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{res(img);};img.onerror=()=>rej(new Error('bad image'));img.src=u;});
+  }
+  const w=bmp.width||bmp.naturalWidth,h=bmp.height||bmp.naturalHeight;
+  const draw=(max,q)=>{const s=Math.min(1,max/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*s));c.height=Math.max(1,Math.round(h*s));c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q);};
+  let dataUrl=draw(1024,0.82);
+  if(dataUrl.length>2800000)dataUrl=draw(768,0.7);
+  const thumb=draw(128,0.6);
+  if(bmp.close)bmp.close();
+  return {dataUrl,thumb};
+}
+
+function nxBusy(msg){
+  nxSheet('<div class="nx-busy"><div class="nx-spin"></div><div>'+esc(msg)+'</div></div>','nxBusy').setAttribute('data-sticky','1');
+}
+async function nxAnalyze(file){
+  nxBusy('Analyzing your meal…');
+  let prep=null;
+  try{
+    prep=await nxPrepImage(file);
+    const p=nxProfile(),tot=nxTotals(nxMealsOn());
+    const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),50000);
+    let res;
+    try{
+      res=await fetch(nxApi('/api/meal-scan'),{method:'POST',headers:{'Content-Type':'application/json'},signal:ctrl.signal,body:JSON.stringify({image:prep.dataUrl,goal:p.goal,targets:p.targets,eaten:{kcal:Math.round(tot.calories),protein:Math.round(tot.protein_g),carbs:Math.round(tot.carbs_g),fat:Math.round(tot.fat_g)}})});
+    }finally{clearTimeout(to);}
+    let j={};try{j=await res.json();}catch(e){}
+    if(!res.ok||!j.meal)throw {msg:j.error||'The meal analyzer could not read that photo.',code:j.code||'http'};
+    nxCloseSheet('nxBusy');
+    nxShowResult(j.meal,prep.thumb);
+  }catch(e){
+    nxCloseSheet('nxBusy');
+    const msg=e&&e.name==='AbortError'?'That took too long. Check your connection and try again.':(e&&e.msg)||'Could not analyze that photo. Check your connection and try again.';
+    nxSheet('<div class="nx-res-title">COULD NOT SCAN</div><div class="nx-note">'+esc(msg)+'</div><div class="nx-btnrow"><button class="nx-btn" onclick="nxCloseSheet();scanMeal()">TRY AGAIN</button><button class="nx-btn ghost" onclick="nxCloseSheet();manualMeal('+(prep?"'"+'__thumb'+"'":'')+')">ADD MANUALLY</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>');
+    window.__nxLastThumb=prep?prep.thumb:null;
+  }
+}
+
+let nxCur=null;
+function nxShowResult(meal,thumb){
+  nxCur={meal:JSON.parse(JSON.stringify(meal)),thumb:thumb,scale:1,type:nxMealType()};
+  nxRenderResult();
+}
+function nxScaled(){
+  const m=nxCur.meal,k=nxCur.scale;
+  const sc=x=>Math.round(x*k*10)/10;
+  return {name:m.meal_name,calories:Math.round(m.totals.calories*k),protein_g:sc(m.totals.protein_g),carbs_g:sc(m.totals.carbs_g),fat_g:sc(m.totals.fat_g),fiber_g:sc(m.totals.fiber_g),score:m.score};
+}
+function nxRenderResult(){
+  const c=nxCur,m=c.meal,s=nxScaled(),p=nxProfile(),tot=nxTotals(nxMealsOn()),t=p.targets;
+  const afterK=Math.round(t.kcal-tot.calories-s.calories),afterP=Math.round(t.protein-tot.protein_g-s.protein_g);
+  const fits=(afterK>=0?afterK+' kcal':Math.abs(afterK)+' kcal over')+' and '+(afterP>0?afterP+'g protein':'protein goal hit')+' left after this meal.';
+  const chips=[0.5,0.75,1,1.25,1.5,2].map(k=>'<button class="nx-chip'+(c.scale===k?' on':'')+'" onclick="nxSetScale('+k+')">'+(k===1?'1x':k+'x')+'</button>').join('');
+  const types=['breakfast','lunch','dinner','snack'].map(k=>'<button class="nx-chip'+(c.type===k?' on':'')+'" onclick="nxSetType(\''+k+'\')">'+k.toUpperCase()+'</button>').join('');
+  const items=m.items.map((it,i)=>'<div class="nx-item"><div><b>'+esc(it.name)+'</b><span>'+esc(it.portion)+'</span></div><div class="nx-item-k">'+Math.round(it.calories*c.scale)+' kcal<button class="nx-x" aria-label="Remove item" onclick="nxDropItem('+i+')">&times;</button></div></div>').join('');
+  const tags=(arr,cls)=>arr.map(x=>'<span class="nx-tag '+cls+'">'+esc(x)+'</span>').join('');
+  nxSheet(
+    '<div class="nx-res-head">'+(c.thumb?'<img src="'+esc(c.thumb)+'" alt="">':'')+'<div><div class="nx-res-title">'+esc(m.meal_name)+'</div><div class="nx-conf">'+esc((m.confidence||'medium').toUpperCase())+' CONFIDENCE &middot; ESTIMATE</div></div><div class="nx-score" title="Performance score">'+m.score+'<small>/10</small></div></div>'+
+    '<div class="nx-macros"><div><b>'+s.calories+'</b><span>KCAL</span></div><div><b>'+Math.round(s.protein_g)+'g</b><span>PROTEIN</span></div><div><b>'+Math.round(s.carbs_g)+'g</b><span>CARBS</span></div><div><b>'+Math.round(s.fat_g)+'g</b><span>FAT</span></div><div><b>'+Math.round(s.fiber_g)+'g</b><span>FIBER</span></div></div>'+
+    '<div class="nx-lbl">PORTION SIZE</div><div class="nx-chips">'+chips+'</div>'+
+    (m.assessment?'<div class="nx-assess">'+esc(m.assessment)+'</div>':'')+
+    '<div class="nx-assess fits">'+esc(m.fits_goal?m.fits_goal+' ':'')+esc(fits)+'</div>'+
+    ((m.pros.length||m.cons.length)?'<div class="nx-tags">'+tags(m.pros,'pro')+tags(m.cons,'con')+'</div>':'')+
+    (m.swap_tips.length?'<div class="nx-lbl">SMARTER SWAPS</div><ul class="nx-tips">'+m.swap_tips.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'')+
+    '<div class="nx-lbl">WHAT I SEE</div><div class="nx-items">'+items+'</div>'+
+    '<div class="nx-lbl">LOG AS</div><div class="nx-chips">'+types+'</div>'+
+    '<div class="nx-btnrow"><button class="nx-btn" onclick="nxLogCurrent()">LOG THIS MEAL</button><button class="nx-btn ghost" onclick="nxCloseSheet();scanMeal()">RETAKE</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CANCEL</button></div>'+
+    '<div class="nx-fine">Estimated from the photo by AI. Adjust the portion size if it looks off.</div>');
+}
+function nxSetScale(k){if(nxCur){nxCur.scale=k;nxRenderResult();}}
+function nxSetType(k){if(nxCur){nxCur.type=k;nxRenderResult();}}
+function nxDropItem(i){
+  if(!nxCur)return;
+  const m=nxCur.meal;m.items.splice(i,1);
+  if(!m.items.length){nxCloseSheet();return;}
+  const sum=k=>Math.round(m.items.reduce((t,x)=>t+(x[k]||0),0)*10)/10;
+  m.totals={calories:Math.round(sum('calories')),protein_g:sum('protein_g'),carbs_g:sum('carbs_g'),fat_g:sum('fat_g'),fiber_g:sum('fiber_g'),sugar_g:sum('sugar_g')};
+  nxRenderResult();
+}
+function nxLogCurrent(){
+  if(!nxCur)return;
+  const s=nxScaled();
+  nxAddMeal({name:s.name,type:nxCur.type,calories:s.calories,protein_g:s.protein_g,carbs_g:s.carbs_g,fat_g:s.fat_g,fiber_g:s.fiber_g,score:s.score,assessment:nxCur.meal.assessment||'',thumb:nxCur.thumb||''});
+  nxCloseSheet();nxCur=null;
+  nxToast('Meal logged');
+}
+function nxAddMeal(m){
+  const all=nxMealsAll(),d=dayKey();
+  const entry=Object.assign({id:'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now()},m);
+  (all[d]=all[d]||[]).push(entry);
+  const keep=new Date();keep.setDate(keep.getDate()-60);const kk=dayKey(keep);
+  Object.keys(all).forEach(k=>{if(k<kk)delete all[k];});
+  if(!nxSave('byob_meals',all)){
+    Object.keys(all).forEach(k=>all[k].forEach(x=>{x.thumb='';}));
+    if(!nxSave('byob_meals',all))nxToast('Storage is full. Could not save this meal.',5000);
+  }
+  renderToday();
+}
+function manualMeal(useThumb){
+  const thumb=useThumb?window.__nxLastThumb:'';
+  nxSheet('<div class="nx-res-title">ADD A MEAL</div>'+
+    '<label class="nx-f">Name<input id="nxMName" type="text" maxlength="60" placeholder="e.g. Chicken and rice"></label>'+
+    '<div class="nx-grid2"><label class="nx-f">Calories<input id="nxMK" type="number" inputmode="decimal" min="0" max="5000"></label><label class="nx-f">Protein g<input id="nxMP" type="number" inputmode="decimal" min="0" max="400"></label><label class="nx-f">Carbs g<input id="nxMC" type="number" inputmode="decimal" min="0" max="800"></label><label class="nx-f">Fat g<input id="nxMF" type="number" inputmode="decimal" min="0" max="400"></label></div>'+
+    '<div class="nx-btnrow"><button class="nx-btn" onclick="nxSaveManual(\''+(thumb?'1':'')+'\')">LOG MEAL</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CANCEL</button></div>');
+}
+function nxSaveManual(useThumb){
+  const g=id=>Math.max(0,parseFloat(document.getElementById(id).value)||0);
+  const name=(document.getElementById('nxMName').value||'').trim()||'Meal';
+  const p=g('nxMP'),c=g('nxMC'),f=g('nxMF');let k=g('nxMK');
+  if(!k)k=Math.round(p*4+c*4+f*9);
+  if(!k){nxToast('Enter calories or macros');return;}
+  nxAddMeal({name,type:nxMealType(),calories:Math.round(k),protein_g:p,carbs_g:c,fat_g:f,fiber_g:0,score:null,assessment:'',thumb:useThumb?(window.__nxLastThumb||''):''});
+  nxCloseSheet();nxToast('Meal logged');
+}
+
+// ----- goals -----
+function openGoals(){
+  const p=nxProfile(),w=nxWeights(),last=w.length?w[w.length-1].kg:null;
+  const t=p.targets,u=p.unit;
+  nxSheet('<div class="nx-res-title">YOUR GOALS</div>'+
+    '<div class="nx-lbl">GOAL</div><div class="nx-chips" id="nxGoalChips">'+['lose','maintain','gain'].map(k=>'<button class="nx-chip'+(p.goal===k?' on':'')+'" data-g="'+k+'" onclick="nxPickGoal(this)">'+(k==='lose'?'LOSE FAT':k==='gain'?'BUILD':'MAINTAIN')+'</button>').join('')+'</div>'+
+    '<div class="nx-grid2"><label class="nx-f">Sex<select id="nxGSex"><option value="">--</option><option value="male"'+(p.sex==='male'?' selected':'')+'>Male</option><option value="female"'+(p.sex==='female'?' selected':'')+'>Female</option></select></label>'+
+    '<label class="nx-f">Age<input id="nxGAge" type="number" inputmode="numeric" min="14" max="100" value="'+(p.age||'')+'"></label>'+
+    '<label class="nx-f">Height (cm)<input id="nxGH" type="number" inputmode="decimal" min="120" max="230" value="'+(p.heightCm?Math.round(p.heightCm):'')+'"></label>'+
+    '<label class="nx-f">Goal weight ('+u+')<input id="nxGGW" type="number" inputmode="decimal" step="0.1" value="'+(p.goalKg?fmtW(p.goalKg,u):'')+'"></label></div>'+
+    '<label class="nx-f">Activity<select id="nxGAct">'+[[1.2,'Desk job, little exercise'],[1.375,'Light (1-3 workouts/wk)'],[1.55,'Active (3-5 workouts/wk)'],[1.725,'Very active (6-7/wk)']].map(a=>'<option value="'+a[0]+'"'+(Math.abs((p.activity||1.55)-a[0])<0.01?' selected':'')+'>'+a[1]+'</option>').join('')+'</select></label>'+
+    '<button class="nx-btn ghost" onclick="nxAutoTargets('+(last||0)+')">AUTO-CALCULATE TARGETS</button>'+
+    '<div class="nx-lbl">DAILY TARGETS</div><div class="nx-grid2"><label class="nx-f">Calories<input id="nxTK" type="number" inputmode="numeric" value="'+t.kcal+'"></label><label class="nx-f">Protein g<input id="nxTP" type="number" inputmode="numeric" value="'+t.protein+'"></label><label class="nx-f">Carbs g<input id="nxTC" type="number" inputmode="numeric" value="'+t.carbs+'"></label><label class="nx-f">Fat g<input id="nxTF" type="number" inputmode="numeric" value="'+t.fat+'"></label></div>'+
+    '<div class="nx-btnrow"><button class="nx-btn" onclick="nxSaveGoals()">SAVE</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CANCEL</button></div>'+
+    '<div class="nx-fine">Targets are estimates from a standard formula. Not medical advice.</div>');
+}
+function nxPickGoal(b){document.querySelectorAll('#nxGoalChips .nx-chip').forEach(x=>x.classList.toggle('on',x===b));}
+function nxReadGoalForm(){
+  const p=nxProfile();
+  const on=document.querySelector('#nxGoalChips .nx-chip.on');p.goal=on?on.getAttribute('data-g'):p.goal;
+  p.sex=document.getElementById('nxGSex').value||null;
+  p.age=parseInt(document.getElementById('nxGAge').value,10)||null;
+  p.heightCm=parseFloat(document.getElementById('nxGH').value)||null;
+  p.activity=parseFloat(document.getElementById('nxGAct').value)||1.55;
+  const gw=parseFloat(document.getElementById('nxGGW').value);
+  p.goalKg=gw>0?fromDisp(gw,p.unit):null;
+  return p;
+}
+function nxAutoTargets(lastKg){
+  const p=nxReadGoalForm();
+  const kg=lastKg||null;
+  const t=calcTargets(p,kg);
+  if(!t){nxToast(kg?'Enter sex, age and height first':'Log your weight first, then auto-calculate',4500);return;}
+  document.getElementById('nxTK').value=t.kcal;document.getElementById('nxTP').value=t.protein;document.getElementById('nxTC').value=t.carbs;document.getElementById('nxTF').value=t.fat;
+  nxToast('Targets calculated. Tap SAVE to keep them.');
+}
+function nxSaveGoals(){
+  const p=nxReadGoalForm();
+  const g=id=>Math.max(0,parseInt(document.getElementById(id).value,10)||0);
+  const t={kcal:g('nxTK'),protein:g('nxTP'),carbs:g('nxTC'),fat:g('nxTF')};
+  if(t.kcal<800||t.kcal>8000){nxToast('Calories must be between 800 and 8000');return;}
+  p.targets=t;nxSaveProfile(p);nxCloseSheet();renderToday();renderWeight();nxToast('Goals saved');
+}
+
+// ----- coach -----
+function nxLocalCoach(){
+  const p=nxProfile(),t=p.targets,tot=nxTotals(nxMealsOn());
+  const lk=Math.round(t.kcal-tot.calories),lp=Math.round(t.protein-tot.protein_g);
+  const out=[];
+  if(!nxMealsOn().length)return 'Nothing logged yet today. Scan your first meal and aim for about '+Math.round(t.protein/3)+'g of protein in it.';
+  out.push(lk>=0?'You have about '+lk+' kcal left today.':'You are about '+Math.abs(lk)+' kcal over today.');
+  out.push(lp>10?'Protein is '+lp+'g short: add lean meat, eggs, Greek yogurt or a shake.':'Protein is on track.');
+  return out.join(' ');
+}
+async function coachMe(){
+  const el=document.getElementById('nxCoach');if(!el)return;
+  el.style.display='block';
+  el.innerHTML='<div class="nx-busy inline"><div class="nx-spin"></div><div>Reading your day…</div></div>';
+  const p=nxProfile(),w=nxWeights(),tr=nxTrend(w),meals=nxMealsOn(),tot=nxTotals(meals);
+  const wk=nxWeekWorkouts();
+  let html='<div class="nx-coach-h">DAILY ASSESSMENT</div><div class="nx-assess">'+esc(nxLocalCoach())+'</div>';
+  try{
+    const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),30000);
+    let res;
+    try{
+      res=await fetch(nxApi('/api/nutrition-coach'),{method:'POST',headers:{'Content-Type':'application/json'},signal:ctrl.signal,body:JSON.stringify({
+        goal:p.goal,targets:p.targets,totals:tot,meals:meals.map(m=>({name:m.name,calories:m.calories,protein_g:m.protein_g,carbs_g:m.carbs_g,fat_g:m.fat_g})),
+        weight:w.length?{current:r1(toDisp(w[w.length-1].kg,p.unit)),start:r1(toDisp(w[0].kg,p.unit)),goal:p.goalKg?r1(toDisp(p.goalKg,p.unit)):0,unit:p.unit,weekly_change:tr?r1(toDisp(tr.perWeek,p.unit)):0}:null,workouts_week:wk.count})});
+    }finally{clearTimeout(to);}
+    const j=await res.json().catch(()=>({}));
+    if(res.ok&&j.coach){
+      const c=j.coach;
+      html='<div class="nx-coach-h">DAILY ASSESSMENT</div><div class="nx-assess">'+esc(c.summary)+'</div>'+
+        (c.wins.length?'<div class="nx-lbl">WINS</div><ul class="nx-tips ok">'+c.wins.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'')+
+        (c.fixes.length?'<div class="nx-lbl">FIX</div><ul class="nx-tips">'+c.fixes.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'')+
+        (c.next_meal?'<div class="nx-lbl">NEXT MEAL</div><div class="nx-assess">'+esc(c.next_meal)+'</div>':'')+
+        (c.weight_note?'<div class="nx-lbl">WEIGHT</div><div class="nx-assess">'+esc(c.weight_note)+'</div>':'');
+    }else html+='<div class="nx-fine">The AI coach is unavailable right now, so this is a quick local summary.</div>';
+  }catch(e){html+='<div class="nx-fine">The AI coach is unavailable right now, so this is a quick local summary.</div>';}
+  el.innerHTML=html;
+}
+
+// ----- weight -----
+let nxRange=30;
+function nxAddWeight(kg,o){
+  o=o||{};
+  if(!(kg>=20&&kg<=400))return false;
+  const list=nxWeights(),d=o.d||dayKey();
+  const i=list.findIndex(x=>x.d===d);
+  const e={d:d,kg:Math.round(kg*100)/100,src:o.src||'manual'};
+  if(o.bf>0&&o.bf<70)e.bf=Math.round(o.bf*10)/10;
+  if(i>=0)list[i]=Object.assign(list[i],e);else list.push(e);
+  list.sort((a,b)=>a.d<b.d?-1:1);
+  nxSave('byob_weights',list.slice(-3000));
+  return true;
+}
+function nxTrend(list){
+  if(list.length<3)return null;
+  const end=new Date(list[list.length-1].d+'T12:00:00').getTime();
+  const pts=list.filter(x=>end-new Date(x.d+'T12:00:00').getTime()<=28*86400000).map(x=>[(new Date(x.d+'T12:00:00').getTime()-end)/86400000,x.kg]);
+  if(pts.length<3||pts[pts.length-1][0]-pts[0][0]<6)return null;
+  const n=pts.length,sx=pts.reduce((a,p)=>a+p[0],0),sy=pts.reduce((a,p)=>a+p[1],0),sxy=pts.reduce((a,p)=>a+p[0]*p[1],0),sxx=pts.reduce((a,p)=>a+p[0]*p[0],0);
+  const den=n*sxx-sx*sx;if(!den)return null;
+  return {perWeek:(n*sxy-sx*sy)/den*7};
+}
+function nxWeekWorkouts(){
+  const w=nxWorkouts(),now=new Date();let count=0,min=0;
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()-i);const e=w[dayKey(d)];if(e){count+=e.n||0;min+=e.min||0;}}
+  return {count,min};
+}
+function logWorkoutDone(minutes){
+  const w=nxWorkouts(),d=dayKey();
+  const e=w[d]||{n:0,min:0};e.n+=1;e.min+=Math.max(0,minutes||0);w[d]=e;
+  nxSave('byob_workouts',w);
+  try{renderWeight();}catch(e2){}
+}
+function nxSetUnit(u){const p=nxProfile();p.unit=u;nxSaveProfile(p);renderWeight();renderToday();}
+function nxStep(dir){
+  const i=document.getElementById('nxWInput');if(!i)return;
+  const v=parseFloat(i.value)||0;i.value=r1(Math.max(0,v+dir*0.1)).toFixed(1);
+}
+function nxLogWeight(){
+  const p=nxProfile(),i=document.getElementById('nxWInput'),v=parseFloat(i.value);
+  const kg=fromDisp(v,p.unit);
+  if(!nxAddWeight(kg,{src:'manual'})){nxToast('Enter a realistic weight');return;}
+  i.value='';renderWeight();nxToast('Weight logged');
+}
+function nxDelWeight(d){
+  const list=nxWeights().filter(x=>x.d!==d);nxSave('byob_weights',list);renderWeight();
+}
+function nxSetRange(r){nxRange=r;renderWeight();}
+function nxChartSvg(list,p){
+  if(list.length<2)return '<div class="nx-empty">Log your weight on at least two days to see your trend.</div>';
+  const W=320,H=140,pl=34,pr=8,pt=10,pb=18;
+  const t0=new Date(list[0].d+'T12:00:00').getTime(),t1=new Date(list[list.length-1].d+'T12:00:00').getTime()||t0+1;
+  const vals=list.map(x=>toDisp(x.kg,p.unit));
+  if(p.goalKg)vals.push(toDisp(p.goalKg,p.unit));
+  let lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals);
+  const padv=Math.max(0.5,(hi-lo)*0.15);lo-=padv;hi+=padv;
+  const X=t=>pl+(t1===t0?0:(t-t0)/(t1-t0))*(W-pl-pr),Y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pt-pb);
+  const pts=list.map(x=>[X(new Date(x.d+'T12:00:00').getTime()),Y(toDisp(x.kg,p.unit))]);
+  // 7-point moving average
+  const ma=list.map((x,i)=>{const a=list.slice(Math.max(0,i-3),i+4);return [pts[i][0],Y(toDisp(a.reduce((s,q)=>s+q.kg,0)/a.length,p.unit))];});
+  const line=a=>a.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+  let g='';
+  for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3,y=Y(v);g+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="rgba(255,255,255,0.07)"/><text x="'+(pl-4)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" fill="#777" font-size="9">'+Math.round(v)+'</text>';}
+  const goal=p.goalKg?'<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(toDisp(p.goalKg,p.unit)).toFixed(1)+'" y2="'+Y(toDisp(p.goalKg,p.unit)).toFixed(1)+'" stroke="#ffd600" stroke-dasharray="4 4" stroke-width="1.2"/>':'';
+  const dots=pts.map(q=>'<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="2.4" fill="#ff7a00"/>').join('');
+  const fmt=t=>{const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate();};
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="nx-chart" role="img" aria-label="Weight chart">'+g+goal+'<path d="'+line(pts)+'" fill="none" stroke="rgba(255,122,0,0.45)" stroke-width="1.2"/><path d="'+line(ma)+'" fill="none" stroke="#00e676" stroke-width="2.2" stroke-linejoin="round"/>'+dots+'<text x="'+pl+'" y="'+(H-4)+'" fill="#777" font-size="9">'+fmt(t0)+'</text><text x="'+(W-pr)+'" y="'+(H-4)+'" text-anchor="end" fill="#777" font-size="9">'+fmt(t1)+'</text></svg>'+
+    '<div class="nx-legend"><span class="g">Trend</span><span class="o">Weigh-ins</span>'+(p.goalKg?'<span class="y">Goal</span>':'')+'</div>';
+}
+function renderWeight(){
+  const box=document.getElementById('nxWeightBody');if(!box)return;
+  const p=nxProfile(),all=nxWeights(),u=p.unit;
+  let list=all;
+  if(nxRange){const cut=new Date();cut.setDate(cut.getDate()-nxRange);const ck=dayKey(cut);list=all.filter(x=>x.d>=ck);}
+  const cur=all.length?all[all.length-1]:null,first=all.length?all[0]:null,tr=nxTrend(all);
+  const chg=cur&&first&&all.length>1?toDisp(cur.kg-first.kg,u):null;
+  const wk=nxWeekWorkouts();
+  let goalLine='';
+  if(p.goalKg&&cur){
+    const diff=toDisp(cur.kg-p.goalKg,u);
+    if(Math.abs(diff)<0.3)goalLine='Goal reached. Nice work.';
+    else{
+      goalLine=Math.abs(r1(diff)).toFixed(1)+' '+u+(diff>0?' to lose':' to gain')+' to reach '+fmtW(p.goalKg,u)+' '+u;
+      if(tr&&((diff>0&&tr.perWeek<-0.02)||(diff<0&&tr.perWeek>0.02))){const weeks=Math.abs(cur.kg-p.goalKg)/Math.abs(tr.perWeek);if(weeks<156){const eta=new Date();eta.setDate(eta.getDate()+Math.round(weeks*7));goalLine+=' &middot; on pace for '+eta.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});}}
+      else if(tr)goalLine+=' &middot; trending the other way right now';
+    }
+  }
+  box.innerHTML=
+    '<div class="nx-stats"><div><b>'+(cur?fmtW(cur.kg,u):'--')+'</b><span>NOW ('+u.toUpperCase()+')</span></div>'+
+    '<div><b class="'+(chg!=null?(chg<0?'dn':chg>0?'up':''):'')+'">'+(chg!=null?(chg>0?'+':'')+r1(chg).toFixed(1):'--')+'</b><span>SINCE START</span></div>'+
+    '<div><b class="'+(tr?(tr.perWeek<0?'dn':'up'):'')+'">'+(tr?(tr.perWeek>0?'+':'')+r1(toDisp(tr.perWeek,u)).toFixed(1):'--')+'</b><span>PER WEEK</span></div>'+
+    '<div><b>'+wk.count+'</b><span>WORKOUTS / 7D</span></div></div>'+
+    '<div class="nx-chips rng">'+[[30,'30D'],[90,'90D'],[0,'ALL']].map(r=>'<button class="nx-chip'+(nxRange===r[0]?' on':'')+'" onclick="nxSetRange('+r[0]+')">'+r[1]+'</button>').join('')+
+    '<span class="nx-grow"></span><button class="nx-chip'+(u==='lb'?' on':'')+'" onclick="nxSetUnit(\'lb\')">LB</button><button class="nx-chip'+(u==='kg'?' on':'')+'" onclick="nxSetUnit(\'kg\')">KG</button></div>'+
+    nxChartSvg(list,p)+
+    '<div class="nx-logrow"><button class="nx-step" aria-label="Less" onclick="nxStep(-1)">&minus;</button><input id="nxWInput" type="number" inputmode="decimal" step="0.1" placeholder="'+(cur?fmtW(cur.kg,u):u==='lb'?'180.0':'80.0')+'" onkeydown="if(event.key===\'Enter\')nxLogWeight()"><button class="nx-step" aria-label="More" onclick="nxStep(1)">+</button><button class="nx-btn sm" onclick="nxLogWeight()">LOG WEIGHT</button></div>'+
+    '<div class="nx-goalline">'+(goalLine||'Set a goal weight to see your pace.')+' <button class="nx-link" onclick="openGoals()">'+(p.goalKg?'EDIT':'SET GOAL')+'</button></div>'+
+    (all.length?'<div class="nx-lbl">RECENT</div><div class="nx-wlist">'+all.slice(-6).reverse().map(x=>'<div class="nx-wrow"><span>'+esc(x.d)+'</span><b>'+fmtW(x.kg,u)+' '+u+(x.bf?' &middot; '+x.bf+'% BF':'')+'</b><em>'+esc(x.src==='apple-health'?'Apple Health':x.src==='import'?'Imported':x.src==='shortcut'?'Shortcut':'Manual')+'</em><button class="nx-x" aria-label="Delete" onclick="nxDelWeight(\''+esc(x.d)+'\')">&times;</button></div>').join('')+'</div>':'');
+}
+
+// ----- health sync -----
+function nxShortcutLink(){return location.origin+location.pathname+'?weight=WEIGHT&unit=lb&src=shortcut';}
+function nxCopy(text,msg){
+  const done=()=>nxToast(msg||'Copied');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,()=>nxToast('Copy failed. Press and hold to copy.'));}
+  else{try{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();done();}catch(e){nxToast('Copy failed');}}
+}
+function openShortcutHelp(){
+  nxSheet('<div class="nx-res-title">APPLE HEALTH SHORTCUT</div>'+
+    '<div class="nx-note">Websites cannot read Apple Health directly, but an iPhone Shortcut can send your latest weight here in one tap, or automatically every morning.</div>'+
+    '<ol class="nx-steps"><li>Open the <b>Shortcuts</b> app and tap <b>+</b>.</li><li>Add <b>Find Health Samples</b>: Type = Weight, Sort by Start Date, Latest First, Limit = 1.</li><li>Add <b>Text</b> and paste the link below. Replace <b>WEIGHT</b> with the <b>Health Samples</b> variable.</li><li>Add <b>Open URLs</b> with that Text.</li><li>For daily sync: Automation tab, <b>+</b>, Time of Day, choose this shortcut, and turn off Ask Before Running.</li></ol>'+
+    '<div class="nx-code" id="nxLinkTxt">'+esc(nxShortcutLink())+'</div>'+
+    '<div class="nx-btnrow"><button class="nx-btn" onclick="nxCopy(nxShortcutLink(),\'Link copied\')">COPY LINK</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>'+
+    '<div class="nx-fine">Use unit=kg in the link if your Health app is in kilograms. Body fat can be added with &amp;bf=18.5.</div>');
+}
+function openAndroidHelp(){
+  nxSheet('<div class="nx-res-title">ANDROID HEALTH</div>'+
+    '<div class="nx-note">Health Connect cannot be read by a website. Two ways to get your numbers in:</div>'+
+    '<ol class="nx-steps"><li><b>Import a CSV.</b> Export weight from Samsung Health (Settings, Download personal data), Fitbit or Google Takeout, then tap <b>IMPORT CSV</b>. The file needs a date column and a weight column.</li><li><b>Automate it.</b> Tasker or Automate can open the same link as iPhone Shortcuts with your weight filled in.</li></ol>'+
+    '<div class="nx-code">'+esc(nxShortcutLink().replace('unit=lb','unit=kg'))+'</div>'+
+    '<div class="nx-btnrow"><button class="nx-btn" onclick="nxCloseSheet();document.getElementById(\'nxFileCsv\').click()">IMPORT CSV</button><button class="nx-btn ghost" onclick="nxCopy(nxShortcutLink().replace(\'unit=lb\',\'unit=kg\'),\'Link copied\')">COPY LINK</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>');
+}
+function openAppleImportHelp(){
+  nxSheet('<div class="nx-res-title">IMPORT APPLE HEALTH</div>'+
+    '<ol class="nx-steps"><li>On your iPhone open <b>Health</b>, tap your photo, then <b>Export All Health Data</b>.</li><li>Save <b>export.zip</b> to Files.</li><li>Tap <b>CHOOSE FILE</b> and pick export.zip (or the unzipped export.xml).</li></ol>'+
+    '<div class="nx-note">Your weight history, body fat, height, age, sex and workouts are read on this device. The file is not uploaded anywhere. Large exports can take a minute.</div>'+
+    '<div class="nx-btnrow"><button class="nx-btn" onclick="nxCloseSheet();document.getElementById(\'nxFileHealth\').click()">CHOOSE FILE</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>');
+}
+function nxHealthFileChosen(inp){const f=inp.files&&inp.files[0];inp.value='';if(f)nxImportHealth(f);}
+function nxCsvFileChosen(inp){const f=inp.files&&inp.files[0];inp.value='';if(f)nxImportCsv(f);}
+
+async function nxZipStream(file){
+  const tailLen=Math.min(file.size,65557);
+  const tail=new DataView(await file.slice(file.size-tailLen).arrayBuffer());
+  let eocd=-1;
+  for(let i=tailLen-22;i>=0;i--){if(tail.getUint32(i,true)===0x06054b50){eocd=i;break;}}
+  if(eocd<0)throw new Error('That is not a valid zip file.');
+  const n=tail.getUint16(eocd+10,true),cdSize=tail.getUint32(eocd+12,true),cdOff=tail.getUint32(eocd+16,true);
+  if(cdOff===0xFFFFFFFF||cdSize===0xFFFFFFFF)throw new Error('This export is too large to read as a zip. Unzip it in Files and choose export.xml instead.');
+  const cd=new DataView(await file.slice(cdOff,cdOff+cdSize).arrayBuffer());
+  const dec=new TextDecoder();let p=0,best=null;
+  for(let i=0;i<n&&p+46<=cd.byteLength;i++){
+    if(cd.getUint32(p,true)!==0x02014b50)break;
+    const method=cd.getUint16(p+10,true),csize=cd.getUint32(p+20,true),nlen=cd.getUint16(p+28,true),elen=cd.getUint16(p+30,true),clen=cd.getUint16(p+32,true),loff=cd.getUint32(p+42,true);
+    const name=dec.decode(new Uint8Array(cd.buffer,cd.byteOffset+p+46,nlen));
+    if(/(^|\/)export\.xml$/i.test(name))best={method,csize,loff};
+    p+=46+nlen+elen+clen;
+  }
+  if(!best)throw new Error('export.xml was not found inside that zip.');
+  const lh=new DataView(await file.slice(best.loff,best.loff+30).arrayBuffer());
+  const start=best.loff+30+lh.getUint16(26,true)+lh.getUint16(28,true);
+  const raw=file.slice(start,start+best.csize).stream();
+  if(best.method===0)return raw;
+  if(best.method!==8)throw new Error('Unsupported zip compression.');
+  if(typeof DecompressionStream==='undefined')throw new Error('This browser cannot unzip files. Unzip it in Files and choose export.xml.');
+  return raw.pipeThrough(new DecompressionStream('deflate-raw'));
+}
+function xmlAttr(tag,name){const m=new RegExp('\\s'+name+'="([^"]*)"').exec(tag);return m?m[1]:null;}
+async function nxParseHealthStream(stream,onProgress){
+  const reader=stream.getReader(),dec=new TextDecoder('utf-8');
+  const out={weights:new Map(),fat:new Map(),workouts:new Map(),height:null,dob:null,sex:null,records:0};
+  const recRe=/<Record\s[^>]*?type="HKQuantityTypeIdentifier(BodyMass|BodyFatPercentage|Height)"[^>]*>/g;
+  const wkRe=/<Workout\s[^>]*>/g,meRe=/<Me\s[^>]*>/;
+  let carry='',bytes=0,lastUi=0;
+  const handle=text=>{
+    let m;recRe.lastIndex=0;
+    while((m=recRe.exec(text))){
+      const tag=m[0],kind=m[1],val=parseFloat(xmlAttr(tag,'value')),unit=xmlAttr(tag,'unit')||'',sd=(xmlAttr(tag,'startDate')||'').slice(0,10),ts=xmlAttr(tag,'startDate')||'';
+      if(!(val>0)||!/^\d{4}-\d{2}-\d{2}$/.test(sd))continue;
+      out.records++;
+      if(kind==='BodyMass'){const kg=unit==='lb'?val*KG_PER_LB:unit==='g'?val/1000:val;const o=out.weights.get(sd);if(!o||ts>o.ts)out.weights.set(sd,{kg,ts});}
+      else if(kind==='BodyFatPercentage'){const o=out.fat.get(sd);const pct=val<=1?val*100:val;if(!o||ts>o.ts)out.fat.set(sd,{pct,ts});}
+      else if(kind==='Height'){const cm=unit==='cm'?val:unit==='m'?val*100:unit==='in'?val*2.54:unit==='ft'?val*30.48:val;if(cm>100&&cm<250&&(!out.height||ts>out.height.ts))out.height={cm,ts};}
+    }
+    wkRe.lastIndex=0;
+    while((m=wkRe.exec(text))){
+      const tag=m[0],sd=(xmlAttr(tag,'startDate')||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(sd))continue;
+      let dur=parseFloat(xmlAttr(tag,'duration'))||0;const du=xmlAttr(tag,'durationUnit')||'min';if(du==='sec')dur/=60;else if(du==='hr')dur*=60;
+      const o=out.workouts.get(sd)||{n:0,min:0};o.n++;o.min+=dur;out.workouts.set(sd,o);
+    }
+    if(!out.dob){const me=meRe.exec(text);if(me){out.dob=xmlAttr(me[0],'HKCharacteristicTypeIdentifierDateOfBirth');const sx=xmlAttr(me[0],'HKCharacteristicTypeIdentifierBiologicalSex')||'';out.sex=/Female/i.test(sx)?'female':/Male/i.test(sx)?'male':null;}}
+  };
+  for(;;){
+    const {value,done}=await reader.read();
+    if(done)break;
+    bytes+=value.length;
+    const text=carry+dec.decode(value,{stream:true});
+    const cut=text.lastIndexOf('<');
+    const tailHasClose=cut>=0&&text.indexOf('>',cut)>=0;
+    const use=tailHasClose?text:text.slice(0,cut>=0?cut:text.length);
+    carry=tailHasClose?'':text.slice(cut>=0?cut:text.length);
+    handle(use);
+    if(onProgress&&bytes-lastUi>8388608){lastUi=bytes;onProgress(bytes);await new Promise(r=>setTimeout(r,0));}
+  }
+  if(carry)handle(carry);
+  return out;
+}
+async function nxImportHealth(file){
+  nxBusy('Reading your Health data…');
+  const setMsg=t=>{const e=document.querySelector('#nxBusy .nx-busy div:last-child');if(e)e.textContent=t;};
+  try{
+    let stream;
+    if(/\.zip$/i.test(file.name)||file.type==='application/zip')stream=await nxZipStream(file);
+    else stream=file.stream();
+    const out=await nxParseHealthStream(stream,b=>setMsg('Reading your Health data… '+Math.round(b/1048576)+' MB'));
+    const have=new Set(nxWeights().map(x=>x.d));
+    let added=0;
+    out.weights.forEach((v,d)=>{
+      if(have.has(d))return;
+      const f=out.fat.get(d);
+      if(nxAddWeight(v.kg,{d:d,src:'apple-health',bf:f?f.pct:0}))added++;
+    });
+    const wk=nxWorkouts();let wAdded=0;
+    out.workouts.forEach((v,d)=>{if(!wk[d]){wk[d]={n:v.n,min:Math.round(v.min)};wAdded+=v.n;}});
+    nxSave('byob_workouts',wk);
+    const p=nxProfile();let filled=[];
+    if(!p.heightCm&&out.height){p.heightCm=Math.round(out.height.cm);filled.push('height');}
+    if(!p.sex&&out.sex){p.sex=out.sex;filled.push('sex');}
+    if(!p.age&&out.dob){const y=parseInt(out.dob.slice(0,4),10);if(y>1900)p.age=new Date().getFullYear()-y;if(p.age)filled.push('age');}
+    nxSaveProfile(p);
+    nxSave('byob_health_meta',{last:Date.now(),src:'apple-health',weights:added});
+    nxCloseSheet('nxBusy');
+    renderWeight();renderHealth();renderToday();
+    if(!out.records&&!out.workouts.size)nxSheet('<div class="nx-res-title">NOTHING FOUND</div><div class="nx-note">That file had no weight or workout records. Make sure you chose the Health export (export.zip or export.xml).</div><div class="nx-btnrow"><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>');
+    else nxSheet('<div class="nx-res-title">HEALTH IMPORTED</div><div class="nx-note">'+added+' new weigh-in'+(added===1?'':'s')+' added'+(wAdded?', '+wAdded+' workouts':'')+(filled.length?'. Filled in your '+filled.join(', ')+'.':'.')+'</div><div class="nx-btnrow"><button class="nx-btn" onclick="nxCloseSheet()">DONE</button></div>');
+  }catch(e){
+    nxCloseSheet('nxBusy');
+    nxSheet('<div class="nx-res-title">IMPORT FAILED</div><div class="nx-note">'+esc((e&&e.message)||'Could not read that file.')+'</div><div class="nx-btnrow"><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>');
+  }
+}
+function nxParseCsv(text){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+    else if(c==='"')q=true;
+    else if(c===','||c==='\t'||c===';'){row.push(cur);cur='';}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cur);cur='';if(row.some(x=>x!==''))rows.push(row);row=[];}
+    else cur+=c;
+  }
+  row.push(cur);if(row.some(x=>x!==''))rows.push(row);
+  return rows;
+}
+async function nxImportCsv(file){
+  try{
+    const text=await file.text();
+    const rows=nxParseCsv(text.replace(/^﻿/,''));
+    let h=-1;
+    for(let i=0;i<Math.min(6,rows.length);i++){const j=rows[i].join('|').toLowerCase();if(/weight|mass/.test(j)&&/date|time|day/.test(j)){h=i;break;}}
+    if(h<0)throw new Error('Could not find a date column and a weight column in that file.');
+    const head=rows[h].map(x=>x.trim().toLowerCase());
+    const di=head.findIndex(x=>/date|time|day/.test(x));
+    let wi=head.findIndex(x=>/weight/.test(x)&&!/goal|target|height/.test(x));if(wi<0)wi=head.findIndex(x=>/mass/.test(x));
+    const bi=head.findIndex(x=>/body.?fat|fat.?%|fat.?percent/.test(x));
+    if(di<0||wi<0)throw new Error('Could not find a date column and a weight column in that file.');
+    const lb=/(^|[^a-z])(lb|lbs|pound)/.test(head[wi]);
+    let added=0,skipped=0,kept=0;
+    const existing=new Map(nxWeights().map(x=>[x.d,x.src]));
+    for(let i=h+1;i<rows.length;i++){
+      const r=rows[i],raw=(r[di]||'').trim();let d=null;
+      if(/^\d{12,}$/.test(raw))d=new Date(parseInt(raw,10));else if(/^\d{9,11}$/.test(raw))d=new Date(parseInt(raw,10)*1000);else d=new Date(raw.replace(' ','T'));
+      const v=parseFloat((r[wi]||'').replace(/[^\d.\-]/g,''));
+      if(!d||isNaN(d.getTime())||!(v>0)){skipped++;continue;}
+      const kg=lb?v*KG_PER_LB:v;
+      const bf=bi>=0?parseFloat(r[bi]):0;
+      const dk=dayKey(d);
+      if(existing.has(dk)&&existing.get(dk)!=='import'){kept++;continue;}
+      if(nxAddWeight(kg,{d:dayKey(d),src:'import',bf:bf>0&&bf<70?bf:0}))added++;else skipped++;
+    }
+    nxSave('byob_health_meta',{last:Date.now(),src:'csv',weights:added});
+    renderWeight();renderHealth();
+    nxSheet('<div class="nx-res-title">'+(added?'CSV IMPORTED':'NOTHING IMPORTED')+'</div><div class="nx-note">'+added+' weigh-in'+(added===1?'':'s')+' added'+(skipped?', '+skipped+' rows skipped':'')+(kept?', '+kept+' days kept as you logged them':'')+'.'+(lb?' Read as pounds.':' Read as kilograms.')+'</div><div class="nx-btnrow"><button class="nx-btn" onclick="nxCloseSheet()">DONE</button></div>');
+  }catch(e){
+    nxSheet('<div class="nx-res-title">IMPORT FAILED</div><div class="nx-note">'+esc((e&&e.message)||'Could not read that file.')+'</div><div class="nx-btnrow"><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>');
+  }
+}
+function renderHealth(){
+  const el=document.getElementById('nxHealthMeta');if(!el)return;
+  const m=nxLoad('byob_health_meta',null);
+  el.textContent=m&&m.last?'Last import: '+new Date(m.last).toLocaleDateString(undefined,{month:'short',day:'numeric'})+' ('+(m.src==='csv'?'CSV':'Apple Health')+')':'No health data connected yet.';
+}
+
+// ----- deep link: ?weight=82.1&unit=kg|lb&bf=18&date=YYYY-MM-DD&src=shortcut -----
+function nxHandleDeepLink(){
+  let q;try{q=new URLSearchParams(location.search);}catch(e){return;}
+  if(!q.has('weight'))return;
+  const raw=parseFloat(q.get('weight'));
+  const unit=(q.get('unit')||'').toLowerCase()==='kg'?'kg':'lb';
+  const kg=unit==='lb'?raw*KG_PER_LB:raw;
+  const dateOk=/^\d{4}-\d{2}-\d{2}$/.test(q.get('date')||'');
+  const src=q.get('src')==='health'||q.get('src')==='apple-health'?'apple-health':'shortcut';
+  let ok=false;
+  if(raw>0&&kg>=20&&kg<=400){
+    ok=nxAddWeight(kg,{d:dateOk?q.get('date'):dayKey(),src:src,bf:parseFloat(q.get('bf'))||0});
+    if(ok){const p=nxProfile();p.unit=unit;nxSaveProfile(p);nxSave('byob_health_meta',{last:Date.now(),src:'apple-health',weights:1});}
+  }
+  try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
+  setTimeout(()=>{
+    try{const b=document.querySelectorAll('.nav-btn')[2];switchTab('diet',b);}catch(e){}
+    renderWeight();renderHealth();
+    nxToast(ok?'Logged '+r1(raw).toFixed(1)+' '+unit+' from your phone':'That weight link was not valid',5000);
+  },900);
+}
+
+function nxInit(){
+  renderToday();renderWeight();renderHealth();
+  nxHandleDeepLink();
+}
+document.addEventListener('DOMContentLoaded',nxInit);
 
 // --- MUSIC ---------------------------------------------------
 function setMusicSource(src){
