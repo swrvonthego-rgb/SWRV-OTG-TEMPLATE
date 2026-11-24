@@ -57,20 +57,8 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 .timer-layout{display:flex;flex-direction:column;flex:1;min-height:0;position:relative;}
 .timer-main{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;padding-bottom:60px;scrollbar-width:none;}
 .timer-main::-webkit-scrollbar{display:none;}
-.camera-side{display:none;background:#000;position:relative;overflow:hidden;min-height:0;order:1;}
-#recordingCamera{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
-.timer-layout.recording-mode .camera-side{display:flex;align-items:center;justify-content:center;flex:1 1 0;}
-.cam-frame{position:relative;aspect-ratio:9/16;height:100%;max-width:100%;overflow:hidden;background:#000;}
-.cam-frame video{position:absolute;inset:0;}
 .timer-layout.recording-mode .timer-main{order:2;flex:0 0 auto;overflow:hidden;padding-bottom:52px;border-top:3px solid rgba(255,45,45,0.5);background:rgba(0,0,0,0.55);}
-.rec-overlay-badge{position:absolute;top:10px;left:10px;background:rgba(255,45,45,0.95);color:#fff;padding:6px 12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.1em;z-index:40;animation:badgePulse 1s infinite;box-shadow:0 0 20px rgba(255,45,45,0.6);}
 @keyframes badgePulse{0%,100%{opacity:1;}50%{opacity:0.65;}}
-.rec-time-overlay{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.75);color:#fff;padding:6px 12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;z-index:40;border:1px solid rgba(255,45,45,0.5);}
-.cam-hud{position:absolute;left:0;right:0;bottom:0;padding:34px 12px 10px;text-align:center;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.75));font-family:'Bebas Neue',sans-serif;z-index:30;pointer-events:none;}
-.cam-hud-set{font-size:1rem;letter-spacing:0.2em;color:var(--red);}
-.cam-hud-num{font-size:4.5rem;line-height:0.95;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.9);}
-.cam-hud-phase{font-size:1rem;letter-spacing:0.3em;color:#ddd;}
-.btn-cam-flip{position:absolute;right:10px;bottom:112px;z-index:45;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:6px 10px;border-radius:8px;font-family:'Bebas Neue',sans-serif;letter-spacing:0.1em;}
 .timer-layout.recording-mode .ring-area{flex:0 0 auto;padding:6px 0 2px;}
 .timer-layout.recording-mode .ring-wrap{width:92px;height:92px;}
 .timer-layout.recording-mode .ring-inner{width:80px;height:80px;}
@@ -395,10 +383,36 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
   .music-drawer{position:relative;border-top:none;border-left:1px solid var(--border);flex:0.8;max-height:none!important;height:100%;overflow-y:auto!important;}
   .music-drawer-handle{border-bottom:1px solid var(--border);}
 }
+.camera-side{display:none;background:#000;position:relative;overflow:hidden;min-height:0;order:1;}
+.timer-layout.recording-mode .camera-side{display:flex;flex-direction:column;flex:1 1 0;}
+.cam-bar{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:6px 8px;background:#000;border-bottom:1px solid rgba(255,45,45,0.35);z-index:45;}
+.cam-view{position:relative;flex:1 1 0;min-height:0;overflow:hidden;}
+#recordingCamera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.01;pointer-events:none;}
+#recPreview{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;}
+\.rec-overlay-badge{flex:0 0 auto;background:rgba(255,45,45,0.95);color:#fff;padding:5px 10px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.1em;animation:badgePulse 1s infinite;box-shadow:0 0 20px rgba(255,45,45,0.6);}
+.rec-overlay-badge{flex:0 0 auto;background:rgba(255,45,45,0.95);color:#fff;padding:5px 10px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.1em;animation:badgePulse 1s infinite;box-shadow:0 0 16px rgba(255,45,45,0.6);}
+.rec-overlay-badge.pre{background:rgba(70,70,70,0.9);animation:none;box-shadow:none;}
+.rec-time-overlay{display:none;flex:0 0 auto;margin-left:auto;background:rgba(0,0,0,0.75);color:#fff;padding:4px 10px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.1em;border:1px solid rgba(255,45,45,0.5);}
+body.rec-live .rec-time-overlay{display:block;}
+.cam-tools{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:5px;}
+.chip{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:4px 8px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.08em;-webkit-tap-highlight-color:transparent;}
+.chip.on{background:rgba(255,45,45,0.85);border-color:#ff2d2d;}
+.chip.dim{opacity:0.45;}
+body.rec-live .cam-tools .q,body.rec-live .cam-tools .f,body.rec-live #chipAuto,body.rec-live #chipFlip{display:none;}
+.cam-stat{position:absolute;left:10px;bottom:10px;z-index:45;background:rgba(0,0,0,0.6);color:#ddd;padding:4px 8px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.08em;pointer-events:none;}
+.cam-toast{display:none;position:absolute;left:12px;right:12px;bottom:44px;z-index:55;background:rgba(0,0,0,0.85);border:1px solid rgba(255,214,0,0.6);color:#ffd600;padding:8px 12px;border-radius:10px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;line-height:1.25;pointer-events:none;}
+.cam-toast.show{display:block;}
+.cam-msg{display:none;position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%);z-index:60;background:rgba(0,0,0,0.92);border:2px solid var(--red);border-radius:14px;padding:16px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;line-height:1.3;color:#fff;}
+.cam-msg.show{display:block;}
+.cam-msg b{color:var(--gold);}
+.cam-msg button{margin:12px 5px 0;background:linear-gradient(160deg,#ff3d3d,#cc1111);border:none;color:#fff;padding:12px 20px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:0.12em;}
+.btn-record{display:none;border-radius:14px;border:1px solid rgba(255,45,45,0.6);background:linear-gradient(160deg,#ff3d3d,#a30d0d);color:#fff;font-family:'Bebas Neue',sans-serif;letter-spacing:0.1em;-webkit-tap-highlight-color:transparent;}
+.btn-record.live{background:#fff;color:#c00;animation:badgePulse 1s infinite;}
+.timer-layout.recording-mode .btn-record{display:block;padding:10px 12px;font-size:0.95rem;}
+.timer-layout.recording-mode .btn-rec-toggle{flex:0 0 auto;padding:10px 10px;font-size:0.85rem!important;}
 /* RECORDING MODE: give the camera the screen */
 body.rec-on .header,body.rec-on .mode-bar,body.rec-on .music-drawer,body.rec-on .bottom-nav,body.rec-on .timer-layout.recording-mode .ring-area{display:none;}
 body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
-body.rec-on .btn-cam-flip{bottom:auto;top:52px;}
 @media (orientation:landscape) and (max-height:520px){
   body.rec-on .timer-layout.recording-mode{flex-direction:row;}
   body.rec-on .timer-layout.recording-mode .camera-side{order:1;flex:1 1 0;}
@@ -406,8 +420,8 @@ body.rec-on .btn-cam-flip{bottom:auto;top:52px;}
   body.rec-on .timer-layout.recording-mode .controls{flex-wrap:wrap;margin-top:0;padding:8px;gap:6px;}
   body.rec-on .timer-layout.recording-mode .btn-start{flex:1 1 100%;font-size:1.3rem;padding:10px 0;}
   body.rec-on .timer-layout.recording-mode .btn-reset{flex:1;padding:8px;}
+  body.rec-on .timer-layout.recording-mode .btn-record,body.rec-on .timer-layout.recording-mode .btn-rec-toggle{flex:1;}
   body.rec-on .timer-layout.recording-mode .btn-rec-toggle{flex:1;}
-  body.rec-on .cam-hud-num{font-size:3rem;}
 }
 </style>
 </head>
@@ -513,18 +527,27 @@ body.rec-on .btn-cam-flip{bottom:auto;top:52px;}
   <div class="app-tabs active" id="tab-timer">
     <div class="timer-layout">
       <!-- LIVE CAMERA PREVIEW (recording mode) -->
-      <div class="camera-side">
-        <div class="cam-frame" id="camFrame">
+      <div class="camera-side" id="camSide">
+        <div class="cam-bar">
+          <div class="rec-overlay-badge pre" id="recBadge">PREVIEW</div>
+          <div class="cam-tools" id="camTools">
+            <button class="chip q" data-q="720" onclick="setQuality('720')">720p</button>
+            <button class="chip q" data-q="1080" onclick="setQuality('1080')">1080p</button>
+            <button class="chip q" data-q="4k" onclick="setQuality('4k')">4K</button>
+            <button class="chip f" data-f="30" onclick="setFps(30)">30 FPS</button>
+            <button class="chip f" data-f="60" onclick="setFps(60)">60 FPS</button>
+            <button class="chip" id="chipFlip" onclick="flipCamera()">&#8634; FLIP</button>
+            <button class="chip" id="chipAuto" onclick="toggleAutoRec()">AUTO-REC ON</button>
+          </div>
+          <div class="rec-time-overlay" id="recTimeOverlay">00:00</div>
+        </div>
+        <div class="cam-view">
           <video id="recordingCamera" autoplay playsinline muted webkit-playsinline></video>
-          <div class="cam-hud" id="camHud">
-          <div class="cam-hud-set" id="hudSet">SET 1 / 10</div>
-          <div class="cam-hud-num" id="hudNum">10</div>
-          <div class="cam-hud-phase" id="hudPhase">GET READY</div>
+          <canvas id="recPreview"></canvas>
+          <div class="cam-stat" id="camStat"></div>
+          <div class="cam-toast" id="camToast"></div>
+          <div class="cam-msg" id="camMsg"></div>
         </div>
-        </div>
-        <div class="rec-overlay-badge">&#128308; FILMING</div>
-        <div class="rec-time-overlay" id="recTimeOverlay">00:00</div>
-        <button class="btn-cam-flip" onclick="flipCamera()">&#8634; FLIP</button>
       </div>
       <div class="timer-main">
         <!-- RING AREA -->
@@ -567,7 +590,8 @@ body.rec-on .btn-cam-flip{bottom:auto;top:52px;}
         <div class="controls">
           <button class="btn-start s-start" id="startBtn" onclick="toggleTimer()">START</button>
           <button class="btn-reset" onclick="hardReset()">↺<br>RESET</button>
-          <button class="btn-rec-toggle" id="btnRecMode" onclick="toggleRecordingMode()" style="font-size:1.1rem;flex:0.8;">🎥 SPLIT</button>
+          <button class="btn-record" id="btnRecord" onclick="toggleRecording()">&#9679; REC</button>
+          <button class="btn-rec-toggle" id="btnRecMode" onclick="toggleCamera()" style="font-size:1.1rem;flex:0.8;">&#127909; CAMERA</button>
         </div>
       </div>
 
@@ -1237,6 +1261,7 @@ function workoutDone(){
   const doneSetsEl=document.querySelector('.done-stats .done-stat:last-child .done-stat-val');
   if(doneSetsEl)doneSetsEl.textContent=TOTAL_SETS;
   document.getElementById('doneScreen').classList.add('show');
+  if(typeof isRecording!=='undefined'&&isRecording)setTimeout(()=>{if(isRecording)stopRecording();},4000);
   vib([200,100,200,100,400]);setTimeout(()=>bellSound(3),300);setTimeout(()=>speak('Workout complete. You are your own bodyguard. Great work!'),3200);
 }
 
@@ -1256,6 +1281,7 @@ function toggleTimer(){
     playMusicSrc();
     if(phase==='fight')showMoto();
     if(phase==='getready')speak(String(timeLeft));
+    if(typeof camMode!=='undefined'&&camMode&&camStream&&!isRecording&&autoRec&&autoRecArmed)startRecording();
   }
 }
 
@@ -1266,6 +1292,7 @@ function hardReset(){
   document.getElementById('startBtn').textContent='START';document.getElementById('startBtn').className='btn-start s-start';
   document.getElementById('totalTime').textContent='TOTAL: 0:00';
   document.getElementById('doneScreen').classList.remove('show');
+  if(typeof autoRecArmed!=='undefined')autoRecArmed=autoRec;
   buildDots();setDisplay();
 }
 
@@ -1316,208 +1343,566 @@ function applySettings(){
 }
 
 // --- CAMERA / FILMING ------------------------------------------
-let recordingStream=null;
-let canvasRecorder=null;
-let recordedChunks=[];
-let recordingStartTime=null;
-let recordingInterval=null;
-let isRecordingMode=false;
-let overlayCanvas=null;
-let overlayCtx=null;
-let canvasAnimationId=null;
+const CAM_Q={
+  '720':{long:1280,short:720,bps:6000000,label:'720p'},
+  '1080':{long:1920,short:1080,bps:12000000,label:'1080p'},
+  '4k':{long:3840,short:2160,bps:40000000,label:'4K'}
+};
+const CAM_ORDER=['720','1080','4k'];
+const AUDIO_C={echoCancellation:false,noiseSuppression:false,autoGainControl:true};
+const HUD_FONT='"Bebas Neue",Impact,"Arial Narrow",sans-serif';
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v===null?d:v;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+let camQ=CAM_Q[lsGet('byob_cam_q','1080')]?lsGet('byob_cam_q','1080'):'1080';
+let camFps=lsGet('byob_cam_fps','30')==='60'?60:30;
+let autoRec=lsGet('byob_cam_auto','1')==='1';
+let autoRecArmed=false;
 let camFacing='user';
-let recMime='';
-const REC_W=720,REC_H=1280;
+let camMode=false,isRecording=false,camBusy=false,camSession=0,slowStreak=0,stallRearmed=false;
+let camStream=null,micStream=null,micBlocked=false;
+let camInfo={w:0,h:0,fps:0,facing:'user',caps:null};
+let outQ='1080',outW=1080,outH=1920,outFps=30,outLandscape=false;
+let recCanvas=null,recCtx=null,hudCanvas=null,hudCtx=null,hudKey='',hudTopH=0,hudBotY=0,fontsOk=false;
+let loopGen=0,loopOn=false,lastFrameAt=0,camWatch=null;
+let fpsCount=0,fpsStamp=0,fpsLive=0,camLive=0,presented=null,presentedStamp=null;
+let recFrames=0,recStartPerf=0,recTimerInt=null,canvasRecorder=null,recMeta=null,recTrack=null;
+let wakeLock=null;
+
+function camEl(id){return document.getElementById(id);}
+function txt(id){const e=document.getElementById(id);return e?e.textContent:'';}
 
 function pickMime(){
-  const h264=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1.4D401E,mp4a.40.2','video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1,mp4a.40.2','video/mp4;codecs=avc1.42E01E','video/mp4;codecs=avc1'];
+  const h264=['video/mp4;codecs=avc1,mp4a.40.2','video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1.4D401E,mp4a.40.2','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4;codecs=avc1.42E01E'];
   for(const t of h264){try{if(MediaRecorder.isTypeSupported(t))return {type:t,h264:true};}catch(e){}}
   for(const t of ['video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']){try{if(MediaRecorder.isTypeSupported(t))return {type:t,h264:false};}catch(e){}}
   return {type:'',h264:false};
 }
 
-async function blobIsH264(blob){
+async function blobCodecs(blob){
+  const r={h264:false,aac:false,opus:false,vp9:false};
   try{
-    const buf=new Uint8Array(await blob.slice(0,262144).arrayBuffer());
-    const find=w=>{const n=[w.charCodeAt(0),w.charCodeAt(1),w.charCodeAt(2),w.charCodeAt(3)];for(let i=0;i<buf.length-4;i++){if(buf[i]===n[0]&&buf[i+1]===n[1]&&buf[i+2]===n[2]&&buf[i+3]===n[3])return true;}return false;};
-    return find('avc1')&&!find('vp09')&&!find('av01');
-  }catch(e){return false;}
+    const n=blob.size,span=524288;
+    const head=new Uint8Array(await blob.slice(0,Math.min(n,span)).arrayBuffer());
+    const tail=n>span?new Uint8Array(await blob.slice(Math.max(0,n-span)).arrayBuffer()):new Uint8Array(0);
+    const find=w=>{
+      const a=w.charCodeAt(0),b=w.charCodeAt(1),c=w.charCodeAt(2),d=w.charCodeAt(3);
+      for(const buf of [head,tail]){for(let i=0;i<buf.length-3;i++){if(buf[i]===a&&buf[i+1]===b&&buf[i+2]===c&&buf[i+3]===d)return true;}}
+      return false;
+    };
+    r.h264=find('avc1');r.aac=find('mp4a');r.opus=find('Opus');r.vp9=find('vp09')||find('av01');
+  }catch(e){}
+  return r;
 }
 
-let wakeLock=null;
+// ----- messages / toasts -----
+function camMsgShow(html,actions){
+  const m=camEl('camMsg');if(!m)return;
+  m.innerHTML=html;
+  const t=camEl('camToast');if(t)t.classList.remove('show');
+  (actions||[]).forEach(a=>{const b=document.createElement('button');b.textContent=a[0];b.setAttribute('onclick',a[1]);m.appendChild(b);});
+  m.classList.add('show');
+}
+function camMsgHide(){const m=camEl('camMsg');if(m){m.classList.remove('show','stall');m.innerHTML='';}}
+let toastTimer=null;
+function camToast(t,ms){
+  const e=camEl('camToast');if(!e)return;
+  e.textContent=t;e.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('show'),ms||4500);
+}
+function camErrorHelp(e){
+  const n=(e&&e.name)||'';
+  if(!window.isSecureContext)return ['<b>The camera needs a secure page.</b><br>Open https://swrvonthego.pro/apps/byob-timer/ directly.',[['CLOSE','closeCamera()']]];
+  if(n==='NotAllowedError'||n==='SecurityError'||n==='PermissionDeniedError'){
+    const framed=window.top!==window.self?'<br>This page is embedded in another page. Open it directly instead.':'';
+    return ['<b>Camera is blocked for this site.</b><br>iPhone Safari: tap the <b>aA</b> or page-settings icon in the address bar, choose <b>Website Settings</b>, set <b>Camera</b> and <b>Microphone</b> to <b>Allow</b>, then tap TRY AGAIN.'+framed,[['TRY AGAIN','startCamera()'],['CLOSE','closeCamera()']]];
+  }
+  if(n==='NotFoundError'||n==='DevicesNotFoundError')return ['<b>No camera found</b> on this device.',[['CLOSE','closeCamera()']]];
+  if(n==='NotReadableError'||n==='TrackStartError')return ['<b>The camera is busy.</b><br>Another app is using it. Close that app and try again.',[['TRY AGAIN','startCamera()'],['CLOSE','closeCamera()']]];
+  return ['<b>Could not start the camera.</b>',[['TRY AGAIN','startCamera()'],['CLOSE','closeCamera()']]];
+}
+
+// ----- wake lock -----
 async function holdAwake(){
   try{if('wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}}catch(e){}
 }
 function releaseAwake(){try{if(wakeLock)wakeLock.release();}catch(e){}wakeLock=null;}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&isRecordingMode)holdAwake();});
 
-function toggleRecordingMode(){
-  if(isRecordingMode)stopRecordingMode();else startRecordingMode();
+// ----- camera stream -----
+function gum(c){return navigator.mediaDevices.getUserMedia(c);}
+function videoConstraints(w,h){
+  return {facingMode:{ideal:camFacing},width:{ideal:w},height:{ideal:h},frameRate:{ideal:camFps}};
 }
+function dropStream(s){if(s)s.getTracks().forEach(t=>{try{t.stop();}catch(e){}});}
 
-async function openCamera(){
-  if(recordingStream)recordingStream.getTracks().forEach(t=>t.stop());
-  recordingStream=await navigator.mediaDevices.getUserMedia({
-    video:{facingMode:camFacing,width:{ideal:1280},height:{ideal:720}},
-    audio:true
-  });
-  const video=document.getElementById('recordingCamera');
-  video.muted=true;
-  video.style.transform=camFacing==='user'?'scaleX(-1)':'none';
-  video.srcObject=recordingStream;
-  await video.play().catch(()=>{});
-}
-
-async function startRecordingMode(){
-  if(!navigator.mediaDevices||!window.MediaRecorder){
-    alert('Recording is not supported in this browser.');return;
-  }
-  try{
-    await openCamera();
-  }catch(err){
-    console.error('Camera error:',err);
-    alert('Camera and microphone access is required to film. Allow it in your browser settings and try again.');
-    return;
-  }
-  document.querySelector('.timer-layout').classList.add('recording-mode');
-  document.body.classList.add('rec-on');
-  const btn=document.getElementById('btnRecMode');
-  btn.classList.add('active');btn.textContent='⏹ STOP';
-  isRecordingMode=true;
-  holdAwake();
-  setupCanvasOverlay();
-}
-
-async function flipCamera(){
-  camFacing=camFacing==='user'?'environment':'user';
-  try{
-    const old=recordingStream;
-    const fresh=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFacing,width:{ideal:1280},height:{ideal:720}},audio:true});
-    const video=document.getElementById('recordingCamera');
-    video.style.transform=camFacing==='user'?'scaleX(-1)':'none';
-    video.srcObject=fresh;
-    recordingStream=fresh;
-    await video.play().catch(()=>{});
-    if(old)old.getVideoTracks().forEach(t=>t.stop());
-    if(canvasRecorder&&canvasRecorder.stream){
-      const a=fresh.getAudioTracks()[0];
-      if(a){
-        canvasRecorder.stream.getAudioTracks().forEach(t=>canvasRecorder.stream.removeTrack(t));
-        canvasRecorder.stream.addTrack(a);
+async function openStream(withAudio){
+  const q=CAM_Q[camQ];
+  const sizes=[[q.long,q.short],[q.short,q.long]];
+  let best=null;
+  for(let i=0;i<sizes.length;i++){
+    if(best&&best.long>=q.long*0.6)break;
+    let s=null;
+    const wantAudio=withAudio&&i===0&&!micStream&&!micBlocked;
+    const vc=videoConstraints(sizes[i][0],sizes[i][1]);
+    try{
+      s=await gum({video:vc,audio:wantAudio?AUDIO_C:false});
+    }catch(e){
+      const n=e&&e.name;
+      if(wantAudio&&n!=='SecurityError'){
+        try{
+          s=await gum({video:vc,audio:false});
+          micBlocked=true;
+          camToast(n==='NotAllowedError'||n==='PermissionDeniedError'?'Microphone is blocked, so this will record without sound. Allow it in Website Settings.':'No microphone available, so this will record without sound.',7000);
+        }catch(e2){if(best)break;throw e2;}
+      }else if(n==='NotAllowedError'||n==='SecurityError'||n==='PermissionDeniedError'||n==='NotFoundError'||n==='NotReadableError'){
+        if(best)break;
+        throw e;
+      }else{
+        continue;
       }
     }
-  }catch(e){console.error('Flip failed',e);camFacing=camFacing==='user'?'environment':'user';}
-}
-
-function setupCanvasOverlay(){
-  overlayCanvas=document.createElement('canvas');
-  overlayCanvas.width=REC_W;
-  overlayCanvas.height=REC_H;
-  overlayCtx=overlayCanvas.getContext('2d');
-  drawOverlayLoop();
-  startCanvasRecording();
-}
-
-function txt(id){const e=document.getElementById(id);return e?e.textContent:'';}
-
-function drawOverlayLoop(){
-  if(!isRecordingMode)return;
-  const video=document.getElementById('recordingCamera');
-  const W=overlayCanvas.width,H=overlayCanvas.height,ctx=overlayCtx;
-  try{
-    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
-    if(video.videoWidth>0&&video.readyState>=2){
-      const vw=video.videoWidth,vh=video.videoHeight;
-      const scale=Math.max(W/vw,H/vh);
-      const dw=vw*scale,dh=vh*scale;
-      ctx.save();
-      if(camFacing==='user'){ctx.translate(W,0);ctx.scale(-1,1);}
-      ctx.drawImage(video,(W-dw)/2,(H-dh)/2,dw,dh);
-      ctx.restore();
-    }
-    const setTxt='SET '+txt('bigSetNum')+' / '+TOTAL_SETS;
-    const num=txt('timerNum'),phase=txt('phaseLabel'),sub=txt('phaseSub');
-    const phaseColor=getComputedStyle(document.getElementById('timerNum')).color||'#fff';
-
-    const top=ctx.createLinearGradient(0,0,0,220);
-    top.addColorStop(0,'rgba(0,0,0,0.7)');top.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=top;ctx.fillRect(0,0,W,220);
-    const bot=ctx.createLinearGradient(0,H-520,0,H);
-    bot.addColorStop(0,'rgba(0,0,0,0)');bot.addColorStop(1,'rgba(0,0,0,0.8)');
-    ctx.fillStyle=bot;ctx.fillRect(0,H-520,W,520);
-
-    ctx.textBaseline='alphabetic';
-    ctx.textAlign='left';
-    ctx.font='72px "Bebas Neue",Impact,sans-serif';
-    ctx.fillStyle='#ff2d2d';
-    ctx.fillText('BYOB',40,100);
-    ctx.font='34px "Bebas Neue",Impact,sans-serif';
-    ctx.fillStyle='#f5f0e8';
-    ctx.fillText('BE YOUR OWN BODYGUARD',40,145);
-    ctx.textAlign='right';
-    ctx.font='54px "Bebas Neue",Impact,sans-serif';
-    ctx.fillText(setTxt,W-40,100);
-
-    ctx.textAlign='center';
-    ctx.font='44px "Bebas Neue",Impact,sans-serif';
-    ctx.fillStyle='#f5f0e8';
-    ctx.fillText(phase,W/2,H-330);
-    ctx.font='360px "Bebas Neue",Impact,sans-serif';
-    ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=24;
-    ctx.fillStyle=phaseColor;
-    ctx.fillText(num,W/2,H-90);
-    ctx.shadowBlur=0;
-    ctx.font='36px "Bebas Neue",Impact,sans-serif';
-    ctx.fillStyle='#cfcfcf';
-    ctx.fillText(sub,W/2,H-40);
-
-    const hs=document.getElementById('hudSet'),hn=document.getElementById('hudNum'),hp=document.getElementById('hudPhase');
-    if(hs){hs.textContent=setTxt;hn.textContent=num;hn.style.color=phaseColor;hp.textContent=phase;}
-  }catch(e){console.error('Canvas draw error:',e);}
-  canvasAnimationId=requestAnimationFrame(drawOverlayLoop);
-}
-
-function startCanvasRecording(){
-  recordedChunks=[];
-  recordingStartTime=Date.now();
-  clearInterval(recordingInterval);
-  recordingInterval=setInterval(()=>{
-    const elapsed=Math.floor((Date.now()-recordingStartTime)/1000);
-    const m=Math.floor(elapsed/60),s=elapsed%60;
-    document.getElementById('recTimeOverlay').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
-  },250);
-
-  const out=overlayCanvas.captureStream(30);
-  recordingStream.getAudioTracks().forEach(t=>out.addTrack(t));
-  const pick=pickMime();
-  recMime=pick.type;
-  try{
-    canvasRecorder=recMime?new MediaRecorder(out,{mimeType:recMime,videoBitsPerSecond:5000000}):new MediaRecorder(out);
-  }catch(e){
-    canvasRecorder=new MediaRecorder(out);
+    const aud=s.getAudioTracks();
+    if(aud.length&&!micStream)micStream=new MediaStream(aud);
+    if(best&&best.vs.getVideoTracks()[0].readyState!=='live'){best=null;}
+    const vs=new MediaStream(s.getVideoTracks());
+    const st=vs.getVideoTracks()[0].getSettings();
+    const long=Math.max(st.width||0,st.height||0);
+    if(!best||long>best.long){dropStream(best&&best.vs);best={vs,long};}
+    else dropStream(vs);
   }
-  recMime=canvasRecorder.mimeType||recMime||'video/webm';
-  canvasRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordedChunks.push(e.data);};
-  canvasRecorder.onstop=()=>{
-    clearInterval(recordingInterval);
-    const blob=new Blob(recordedChunks,{type:recMime.split(';')[0]});
-    if(blob.size>0)blobIsH264(blob).then(ok=>showSaveSheet(blob,ok&&blob.type.indexOf('mp4')>-1));
-  };
-  canvasRecorder.start(1000);
+  if(!best){
+    const s=await gum({video:{facingMode:{ideal:camFacing}},audio:false});
+    best={vs:new MediaStream(s.getVideoTracks()),long:0};
+  }
+  return best.vs;
 }
 
-function stopRecordingMode(){
-  isRecordingMode=false;
-  releaseAwake();
-  if(canvasAnimationId)cancelAnimationFrame(canvasAnimationId);
-  if(canvasRecorder&&canvasRecorder.state!=='inactive')canvasRecorder.stop();
-  if(recordingStream){recordingStream.getTracks().forEach(t=>t.stop());recordingStream=null;}
-  const video=document.getElementById('recordingCamera');
-  if(video)video.srcObject=null;
+function waitForVideo(v,ms){
+  return new Promise(res=>{
+    const t0=performance.now();
+    (function poll(){
+      if(v.videoWidth>0&&v.readyState>=2)return res(true);
+      if(performance.now()-t0>ms)return res(false);
+      setTimeout(poll,50);
+    })();
+  });
+}
+
+async function attachStream(s){
+  const v=camEl('recordingCamera');
+  const old=camStream;
+  camStream=s;
+  v.muted=true;v.playsInline=true;
+  v.srcObject=s;
+  try{await v.play();}catch(e){}
+  if(old)dropStream(old);
+  const vt=s.getVideoTracks()[0];
+  if(vt)vt.addEventListener('ended',()=>{if(camStream&&camStream.getVideoTracks()[0]===vt)onCamEnded();});
+  const ok=await waitForVideo(v,6000);
+  readInfo();
+  return ok;
+}
+
+function readInfo(){
+  const vt=camStream&&camStream.getVideoTracks()[0];
+  if(!vt)return;
+  const st=vt.getSettings?vt.getSettings():{};
+  let caps=null;try{caps=vt.getCapabilities?vt.getCapabilities():null;}catch(e){}
+  const v=camEl('recordingCamera');
+  camInfo={w:st.width||v.videoWidth||0,h:st.height||v.videoHeight||0,fps:st.frameRate||0,facing:st.facingMode||camFacing,caps:caps};
+}
+
+function ensureFonts(){
+  if(fontsOk||!document.fonts||!document.fonts.load){fontsOk=true;return;}
+  Promise.race([document.fonts.load('40px "Bebas Neue"'),new Promise(r=>setTimeout(r,2500))]).then(()=>{fontsOk=true;hudKey='';});
+}
+
+function initCanvases(){
+  if(recCanvas)return;
+  recCanvas=camEl('recPreview');
+  recCtx=recCanvas.getContext('2d',{alpha:false});
+  hudCanvas=document.createElement('canvas');
+  hudCtx=hudCanvas.getContext('2d');
+}
+
+function computeOutput(){
+  if(isRecording||!recCanvas)return;
+  const v=camEl('recordingCamera');
+  const camLong=Math.max(v.videoWidth||camInfo.w,v.videoHeight||camInfo.h)||CAM_Q[camQ].long;
+  let key=camQ;
+  while(key!=='720'&&CAM_Q[key].long>camLong*1.05)key=CAM_ORDER[CAM_ORDER.indexOf(key)-1];
+  outQ=key;
+  const q=CAM_Q[key];
+  outLandscape=window.innerWidth>window.innerHeight;
+  const W=outLandscape?q.long:q.short,H=outLandscape?q.short:q.long;
+  const f=Math.round(camInfo.fps||camFps);
+  outFps=Math.max(30,Math.min(camFps,f||camFps));
+  if(recCanvas.width!==W||recCanvas.height!==H){
+    recCanvas.width=W;recCanvas.height=H;
+    hudCanvas.width=W;hudCanvas.height=H;
+    outW=W;outH=H;hudKey='';
+  }
+  recCtx.imageSmoothingEnabled=true;recCtx.imageSmoothingQuality='medium';
+}
+
+function notifyActual(){
+  if(outQ!==camQ)camToast(CAM_Q[camQ].label+' is not available on this camera. Using '+CAM_Q[outQ].label+'.',6000);
+  else if(camFps===60&&camInfo.fps&&camInfo.fps<50)camToast('60 fps is not available at this resolution. Using '+Math.round(camInfo.fps)+' fps.',6000);
+  else if(camInfo.fps&&camInfo.fps<28)camToast('Low light: the camera dropped to '+Math.round(camInfo.fps)+' fps. More light gives smoother video.',6000);
+}
+
+// ----- HUD (burned into the video) -----
+function renderHud(){
+  const set=txt('bigSetNum'),num=txt('timerNum'),phase=txt('phaseLabel'),sub=txt('phaseSub');
+  const key=[set,TOTAL_SETS,num,phase,sub,outW,outH,fontsOk].join('|');
+  if(key===hudKey)return;
+  hudKey=key;
+  const h=hudCtx,W=outW,H=outH,u=Math.min(W,H)/720;
+  h.clearRect(0,0,W,H);
+  hudTopH=Math.ceil(230*u);
+  let g=h.createLinearGradient(0,0,0,230*u);
+  g.addColorStop(0,'rgba(0,0,0,0.7)');g.addColorStop(1,'rgba(0,0,0,0)');
+  h.fillStyle=g;h.fillRect(0,0,W,230*u);
+  const bh=Math.min(H*0.42,560*u);
+  hudBotY=Math.floor(H-bh);
+  g=h.createLinearGradient(0,H-bh,0,H);
+  g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,0.8)');
+  h.fillStyle=g;h.fillRect(0,H-bh,W,bh);
+  h.textBaseline='alphabetic';
+  h.textAlign='left';
+  h.font=(72*u)+'px '+HUD_FONT;h.fillStyle='#ff2d2d';h.fillText('BYOB',40*u,100*u);
+  h.font=(34*u)+'px '+HUD_FONT;h.fillStyle='#f5f0e8';h.fillText('BE YOUR OWN BODYGUARD',40*u,145*u);
+  h.textAlign='right';
+  h.font=(54*u)+'px '+HUD_FONT;h.fillText('SET '+set+' / '+TOTAL_SETS,W-40*u,100*u);
+  let color='#ffffff';
+  try{color=getComputedStyle(camEl('timerNum')).color||color;}catch(e){}
+  h.textAlign='center';
+  let fs=Math.min(H*0.28,360*u);
+  h.font=fs+'px '+HUD_FONT;
+  for(let i=0;i<8&&h.measureText(num).width>W*0.9;i++){fs*=0.88;h.font=fs+'px '+HUD_FONT;}
+  const timerBase=H-90*u;
+  h.shadowColor='rgba(0,0,0,0.8)';h.shadowBlur=24*u;
+  h.fillStyle=color;h.fillText(num,W/2,timerBase);
+  h.shadowBlur=0;
+  h.font=(44*u)+'px '+HUD_FONT;h.fillStyle='#f5f0e8';
+  h.fillText(phase,W/2,timerBase-fs*0.78-16*u);
+  h.font=(36*u)+'px '+HUD_FONT;h.fillStyle='#cfcfcf';
+  h.fillText(sub,W/2,H-40*u);
+}
+
+// ----- frame loop (driven by camera frames) -----
+function drawFrame(v,meta){
+  const vw=v.videoWidth,vh=v.videoHeight;
+  if(!vw||!vh||!recCtx)return;
+  const W=outW,H=outH,ctx=recCtx;
+  const s=Math.max(W/vw,H/vh),dw=vw*s,dh=vh*s;
+  const smooth=Math.abs(s-1)>0.02;
+  if(ctx.imageSmoothingEnabled!==smooth)ctx.imageSmoothingEnabled=smooth;
+  const mirror=camInfo.facing==='user';
+  if(mirror)ctx.setTransform(-1,0,0,1,W,0);
+  ctx.drawImage(v,(W-dw)/2,(H-dh)/2,dw,dh);
+  if(mirror)ctx.setTransform(1,0,0,1,0,0);
+  renderHud();
+  ctx.drawImage(hudCanvas,0,0,W,hudTopH,0,0,W,hudTopH);
+  ctx.drawImage(hudCanvas,0,hudBotY,W,H-hudBotY,0,hudBotY,W,H-hudBotY);
+  const now=performance.now();
+  lastFrameAt=now;fpsCount++;
+  if(meta&&typeof meta.presentedFrames==='number')presented=meta.presentedFrames;
+  if(isRecording){recFrames++;if(recMeta&&recMeta.p0==null&&presented!=null)recMeta.p0=presented;}
+  if(now-fpsStamp>=1000){
+    fpsLive=Math.round(fpsCount*1000/(now-fpsStamp));
+    if(presented!=null&&presentedStamp!=null)camLive=Math.round((presented-presentedStamp)*1000/(now-fpsStamp));
+    presentedStamp=presented;
+    fpsCount=0;fpsStamp=now;updateStat();
+  }
+}
+
+function startLoop(keepClock){
+  const gen=++loopGen;
+  loopOn=true;
+  if(!keepClock){lastFrameAt=performance.now();fpsStamp=lastFrameAt;fpsCount=0;}
+  const v=camEl('recordingCamera');
+  const hasRvfc='requestVideoFrameCallback' in v;
+  const step=(t,meta)=>{
+    if(gen!==loopGen||!loopOn)return;
+    try{drawFrame(v,meta);}catch(e){console.error('draw error',e);}
+    if(hasRvfc)v.requestVideoFrameCallback(step);else requestAnimationFrame(step);
+  };
+  if(hasRvfc)v.requestVideoFrameCallback(step);else requestAnimationFrame(step);
+  if(!camWatch)camWatch=setInterval(watchdog,500);
+}
+function stopLoop(){loopOn=false;loopGen++;clearInterval(camWatch);camWatch=null;}
+
+function watchdog(){
+  if(!camMode||!camStream||camBusy)return;
+  const v=camEl('recordingCamera');
+  const idle=performance.now()-lastFrameAt;
+  const m=camEl('camMsg');
+  if(idle>1500){
+    if(v.paused)v.play().catch(()=>{});
+    if(!stallRearmed){stallRearmed=true;startLoop(true);}
+    if(idle>6000&&!m.classList.contains('show')){
+      camMsgShow('<b>The camera stopped sending video.</b>',[['RESTART CAMERA','restartCamera()'],['CLOSE','closeCamera()']]);
+      m.classList.add('stall');
+    }
+  }else{
+    stallRearmed=false;
+    if(m.classList.contains('stall'))camMsgHide();
+  }
+}
+
+function updateStat(){
+  const e=camEl('camStat');if(!e)return;
+  e.textContent=CAM_Q[outQ].label+(outLandscape?' LANDSCAPE':' PORTRAIT')+' · '+fpsLive+' FPS'+(camLive&&camLive>fpsLive+2?' (CAM '+camLive+')':'');
+}
+
+// ----- UI sync -----
+function syncChips(){
+  document.querySelectorAll('#camTools .q').forEach(b=>{
+    const k=b.getAttribute('data-q');
+    b.classList.toggle('on',k===camQ);
+    const c=camInfo.caps;let dim=false;
+    if(c&&c.width&&c.height){const mx=Math.max(c.width.max||0,c.height.max||0);if(mx&&mx<CAM_Q[k].long*0.95)dim=true;}
+    b.classList.toggle('dim',dim);
+  });
+  document.querySelectorAll('#camTools .f').forEach(b=>{
+    const f=parseInt(b.getAttribute('data-f'),10);
+    b.classList.toggle('on',f===camFps);
+    const c=camInfo.caps;let dim=false;
+    if(c&&c.frameRate&&c.frameRate.max&&f>c.frameRate.max+1)dim=true;
+    b.classList.toggle('dim',dim);
+  });
+  const a=camEl('chipAuto');if(a){a.classList.toggle('on',autoRec);a.textContent=autoRec?'AUTO-REC ON':'AUTO-REC OFF';}
+}
+function syncUi(){
+  const rb=camEl('btnRecord');
+  if(rb){rb.innerHTML=isRecording?'&#9632; STOP':'&#9679; REC';rb.classList.toggle('live',isRecording);}
+  const bd=camEl('recBadge');
+  if(bd){bd.innerHTML=isRecording?'&#9679; FILMING':'PREVIEW';bd.classList.toggle('pre',!isRecording);}
+  const cb=camEl('btnRecMode');
+  if(cb){cb.classList.toggle('active',camMode);cb.innerHTML=camMode?'&#10005; CLOSE':'&#127909; CAMERA';}
+  document.body.classList.toggle('rec-live',isRecording);
+  syncChips();
+}
+
+// ----- open / close -----
+function toggleCamera(){if(camMode)closeCamera();else startCamera();}
+
+async function startCamera(){
+  if(camBusy)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
+    camMode=true;enterLayout();
+    camMsgShow('<b>This browser cannot record video.</b><br>Open the app in Safari (iPhone) or Chrome.',[['CLOSE','closeCamera()']]);
+    return;
+  }
+  camBusy=true;
+  const sess=++camSession;
+  camMsgHide();
+  camMode=true;enterLayout();
+  initCanvases();ensureFonts();
+  camToast('Starting camera…',2500);
+  try{
+    const s=await openStream(true);
+    if(sess!==camSession){dropStream(s);dropStream(micStream);micStream=null;return;}
+    const ok=await attachStream(s);
+    if(sess!==camSession){dropStream(s);camStream=null;return;}
+    if(!ok){
+      camMsgShow('<b>The camera is not sending video.</b><br>Close other camera apps and try again.',[['TRY AGAIN','restartCamera()'],['CLOSE','closeCamera()']]);
+    }else{
+      computeOutput();
+      startLoop();
+      holdAwake();
+      autoRecArmed=autoRec;
+      notifyActual();
+    }
+  }catch(e){
+    if(sess!==camSession)return;
+    console.error('Camera error',e);
+    const h=camErrorHelp(e);
+    camMsgShow(h[0],h[1]);
+  }
+  camBusy=false;
+  syncUi();
+}
+
+async function restartCamera(){
+  if(camBusy)return;
+  if(!camMode)return;
+  camBusy=true;camMsgHide();
+  const sess=camSession;
+  try{
+    const s=await openStream(false);
+    if(sess!==camSession){dropStream(s);return;}
+    const ok=await attachStream(s);
+    if(sess!==camSession){dropStream(s);camStream=null;return;}
+    if(!ok)camMsgShow('<b>The camera is not sending video.</b>',[['TRY AGAIN','restartCamera()'],['CLOSE','closeCamera()']]);
+    else{computeOutput();startLoop();holdAwake();notifyActual();}
+  }catch(e){
+    if(sess!==camSession)return;
+    const h=camErrorHelp(e);camMsgShow(h[0],h[1]);
+  }
+  camBusy=false;syncUi();
+}
+
+function closeCamera(){
+  camSession++;camBusy=false;
+  if(isRecording)stopRecording();
+  stopLoop();
+  dropStream(camStream);camStream=null;
+  const mic=micStream;micStream=null;micBlocked=false;
+  setTimeout(()=>dropStream(mic),800);
+  const v=camEl('recordingCamera');if(v)v.srcObject=null;
+  camMode=false;
+  leaveLayout();
+  releaseAwake();camMsgHide();
+  syncUi();
+}
+
+function enterLayout(){
+  document.querySelector('.timer-layout').classList.add('recording-mode');
+  document.body.classList.add('rec-on');
+}
+function leaveLayout(){
   document.querySelector('.timer-layout').classList.remove('recording-mode');
-  document.body.classList.remove('rec-on');
-  const btn=document.getElementById('btnRecMode');
-  btn.classList.remove('active');btn.textContent='🎥 SPLIT';
+  document.body.classList.remove('rec-on','rec-live');
+}
+
+function onCamEnded(){
+  if(!camMode||!camStream)return;
+  const vt=camStream.getVideoTracks()[0];
+  if(vt&&vt.readyState!=='ended')return;
+  if(isRecording)stopRecording();
+  camStream=null;
+  camMsgShow('<b>The camera was interrupted.</b><br>Your clip so far has been saved.',[['RESTART CAMERA','restartCamera()'],['CLOSE','closeCamera()']]);
+}
+
+let bgStopped=false;
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&isRecording){bgStopped=true;stopRecording();return;}
+  if(document.visibilityState==='visible'&&bgStopped){bgStopped=false;camToast('Recording stopped when the app went to the background. Your clip is ready to save.',7000);}
+  if(document.visibilityState!=='visible'||!camMode)return;
+  const v=camEl('recordingCamera');
+  if(v&&v.srcObject)v.play().catch(()=>{});
+  holdAwake();
+  if(camStream){const vt=camStream.getVideoTracks()[0];if(vt&&vt.readyState==='ended')onCamEnded();else startLoop();}
+});
+window.addEventListener('resize',()=>{if(camMode&&camStream&&!isRecording)computeOutput();});
+
+async function flipCamera(){
+  if(!camMode||camBusy||!camStream)return;
+  if(isRecording){camToast('Stop recording to switch cameras.');return;}
+  camBusy=true;
+  const sess=camSession;
+  const prev=camFacing;
+  camFacing=prev==='user'?'environment':'user';
+  try{
+    const s=await openStream(false);
+    if(sess!==camSession){dropStream(s);return;}
+    await attachStream(s);
+    if(sess!==camSession){dropStream(s);camStream=null;return;}
+    camMsgHide();
+    readInfo();
+    computeOutput();
+    startLoop();
+  }catch(e){if(sess!==camSession)return;camFacing=prev;camToast('Could not switch cameras.');}
+  camBusy=false;syncUi();
+}
+async function setQuality(k){
+  if(isRecording||camBusy||!CAM_Q[k])return;
+  camQ=k;lsSet('byob_cam_q',k);syncChips();
+  if(camMode&&camStream)await restartCamera();
+}
+async function setFps(n){
+  if(isRecording||camBusy)return;
+  camFps=n===60?60:30;lsSet('byob_cam_fps',String(camFps));syncChips();
+  if(camMode&&camStream)await restartCamera();
+}
+function toggleAutoRec(){autoRec=!autoRec;autoRecArmed=autoRec;lsSet('byob_cam_auto',autoRec?'1':'0');syncChips();}
+
+// ----- recording -----
+function toggleRecording(){
+  if(!camMode||!camStream){camToast('The camera is not ready yet.');return;}
+  if(isRecording)stopRecording();else startRecording();
+}
+
+function updateRecClock(){
+  const el=Math.floor((performance.now()-recStartPerf)/1000);
+  const m=Math.floor(el/60),s=el%60;
+  const e=camEl('recTimeOverlay');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+
+function startRecording(){
+  if(isRecording||!camStream||camBusy)return false;
+  const v=camEl('recordingCamera');
+  if(!v.videoWidth){camToast('The camera is not ready yet.');return false;}
+  computeOutput();
+  const q=CAM_Q[outQ];
+  let out;
+  try{out=recCanvas.captureStream();}catch(e){camToast('Recording is not supported in this browser.');return false;}
+  recTrack=out.getVideoTracks()[0]||null;
+  if(micStream)micStream.getAudioTracks().forEach(t=>out.addTrack(t));
+  const pick=pickMime();
+  let mime=pick.type,rec=null;
+  try{rec=mime?new MediaRecorder(out,{mimeType:mime,videoBitsPerSecond:Math.round(q.bps*(outFps>45?1.5:1)),audioBitsPerSecond:128000}):new MediaRecorder(out);}
+  catch(e){try{rec=new MediaRecorder(out);}catch(e2){camToast('Recording is not supported in this browser.');return false;}}
+  mime=rec.mimeType||mime||'video/webm';
+  const chunks=[];
+  const meta={q:outQ,fps:outFps,landscape:outLandscape,dur:0,frames:0,mime:mime,chunks:chunks,p0:null,p1:null};
+  recMeta=meta;
+  const vtrack=recTrack;
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
+  rec.onstop=()=>{try{if(vtrack)vtrack.stop();}catch(e){}finishRecording(meta);};
+  rec.onerror=()=>{camToast('Recording error. Stopping.');try{stopRecording();}catch(e){}};
+  recFrames=0;recStartPerf=performance.now();
+  try{rec.start(1000);}catch(e){camToast('Could not start recording.');recMeta=null;return false;}
+  canvasRecorder=rec;
+  isRecording=true;autoRecArmed=false;
+  clearInterval(recTimerInt);recTimerInt=setInterval(updateRecClock,250);updateRecClock();
+  syncUi();
+  return true;
+}
+
+function stopRecording(){
+  if(!isRecording)return;
+  isRecording=false;
+  clearInterval(recTimerInt);
+  if(recMeta){recMeta.dur=(performance.now()-recStartPerf)/1000;recMeta.frames=recFrames;recMeta.p1=presented;}
+  const rec=canvasRecorder;canvasRecorder=null;
+  try{if(rec&&rec.state!=='inactive')rec.stop();}catch(e){}
+  syncUi();
+  computeOutput();
+}
+
+async function finishRecording(meta){
+  const blob=new Blob(meta.chunks,{type:meta.mime.split(';')[0]});
+  if(!blob.size){camToast('Nothing was recorded.');return;}
+  const codecs=await blobCodecs(blob);
+  const isMp4=blob.type.indexOf('mp4')>-1;
+  if(meta.dur>=3&&meta.frames/meta.dur>=28)slowStreak=0;
+  const ok=isMp4&&codecs.h264&&!codecs.vp9&&!(codecs.opus&&!codecs.aac);
+  const avg=meta.dur>0?meta.frames/meta.dur:0;
+  let note='';
+  const camAvg=(meta.p0!=null&&meta.p1!=null&&meta.dur>0)?(meta.p1-meta.p0)/meta.dur:(camInfo.fps||avg);
+  if(meta.dur>=3&&avg<28){
+    if(camAvg<28){
+      note='The camera itself only delivered about '+Math.round(camAvg)+' fps. That is usually low light. Add light for smoother video.';
+    }else if(meta.q!=='720'){
+      slowStreak++;
+      const lower=CAM_ORDER[CAM_ORDER.indexOf(meta.q)-1];
+      if(slowStreak>=2){
+        note='This phone averaged '+Math.round(avg)+' fps at '+CAM_Q[meta.q].label+' twice in a row. Switched to '+CAM_Q[lower].label+' for smoother video.';
+        camQ=lower;lsSet('byob_cam_q',lower);slowStreak=0;syncChips();
+      }else{
+        note='This phone averaged '+Math.round(avg)+' fps at '+CAM_Q[meta.q].label+'. If it happens again the app will step down to '+CAM_Q[lower].label+'.';
+      }
+    }else{
+      note='Only '+Math.round(avg)+' fps was reached. Close other apps and try again.';
+    }
+  }
+  const mb=(blob.size/1048576).toFixed(1);
+  const mm=Math.floor(meta.dur/60),ss=Math.floor(meta.dur%60);
+  const summary=CAM_Q[meta.q].label+' · '+Math.round(avg)+' fps · '+mm+':'+(ss<10?'0':'')+ss+' · '+mb+' MB';
+  showSaveSheet(blob,{ok:ok,summary:summary,note:note});
 }
 
 function recFileName(blob){
@@ -1525,31 +1910,28 @@ function recFileName(blob){
   return 'byob-workout-'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.'+ext;
 }
 
-function showSaveSheet(blob,photosOk){
+function showSaveSheet(blob,info){
   const old=document.getElementById('saveSheet');if(old)old.remove();
   const url=URL.createObjectURL(blob);
   const name=recFileName(blob);
   const sheet=document.createElement('div');
   sheet.id='saveSheet';
-  sheet.style.cssText='position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;font-family:"Bebas Neue",sans-serif;';
+  sheet.style.cssText='position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;font-family:"Bebas Neue",sans-serif;';
   const vid=document.createElement('video');
   vid.src=url;vid.controls=true;vid.playsInline=true;vid.muted=true;
-  vid.style.cssText='max-height:60vh;max-width:90vw;border-radius:12px;border:2px solid rgba(255,45,45,0.5);background:#000;';
-  const mk=(label,bg,fn)=>{const b=document.createElement('button');b.textContent=label;b.style.cssText='width:min(320px,86vw);padding:16px;border:none;border-radius:12px;font-family:inherit;font-size:1.4rem;letter-spacing:0.15em;color:#fff;background:'+bg+';';b.onclick=fn;return b;};
+  vid.style.cssText='max-height:52vh;max-width:90vw;border-radius:12px;border:2px solid rgba(255,45,45,0.5);background:#000;';
+  sheet.append(vid);
+  const line=(t,c)=>{const d=document.createElement('div');d.textContent=t;d.style.cssText='max-width:88vw;text-align:center;color:'+c+';font-size:1.05rem;letter-spacing:0.06em;line-height:1.25;';sheet.append(d);};
+  line(info.summary,'#f5f0e8');
+  if(!info.ok)line('This browser recorded a format iPhone Photos cannot play. Open this page in Safari to record a Photos-ready MP4.','#ffd600');
+  if(info.note)line(info.note,'#ffd600');
+  const mk=(label,bg,fn)=>{const b=document.createElement('button');b.textContent=label;b.style.cssText='width:min(320px,86vw);padding:15px;border:none;border-radius:12px;font-family:inherit;font-size:1.35rem;letter-spacing:0.15em;color:#fff;background:'+bg+';';b.onclick=fn;return b;};
   const file=new File([blob],name,{type:blob.type});
-  if(!photosOk){
-    const w=document.createElement('div');
-    w.textContent='This browser recorded a format iPhone Photos cannot play. Open this page in Safari to record a Photos-ready MP4.';
-    w.style.cssText='max-width:86vw;text-align:center;color:#ffd600;font-size:1.1rem;letter-spacing:0.05em;line-height:1.3;';
-    sheet.append(w);
-  }
-  const canShare=navigator.canShare&&navigator.canShare({files:[file]});
+  let canShare=false;try{canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));}catch(e){}
   if(canShare){
-    sheet.append(vid,mk('SAVE TO PHOTOS','linear-gradient(160deg,#ff3d3d,#cc1111)',async()=>{
+    sheet.append(mk('SAVE TO PHOTOS','linear-gradient(160deg,#ff3d3d,#cc1111)',async()=>{
       try{await navigator.share({files:[file],title:'BYOB Workout'});}catch(e){}
     }));
-  }else{
-    sheet.append(vid);
   }
   sheet.append(mk('DOWNLOAD','rgba(255,255,255,0.12)',()=>{
     const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
