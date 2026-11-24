@@ -3029,36 +3029,66 @@ async function groqDiscoverModels(env, kind) {
   } catch (_) { return []; }
 }
 
-async function groqChat(env, kind, preferred, payload) {
+function groqFailure(out, what) {
+  if (out.noModel && out.last && out.last.status === 200) return { error: `Could not read the ${what} reply. Try again.`, code: 'unparseable' };
+  if (out.noModel) return { error: `${what === 'analysis' ? 'Meal scanning is unavailable: this AI account has no vision model enabled.' : 'The coach is unavailable: this AI account has no text model enabled.'}`, code: 'no_model' };
+  return { error: what === 'analysis' ? 'The meal analyzer is busy. Try again in a moment.' : 'The coach is busy. Try again shortly.', code: 'upstream' };
+}
+
+// Reasoning models (gpt-oss) spend tokens "thinking" before answering; keep that short so the JSON fits.
+function groqExtras(model) { return /gpt-oss/i.test(model) ? { reasoning_effort: 'low' } : {}; }
+
+async function groqChat(env, kind, preferred, payload, accept) {
   const base = (env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/$/, '');
   const tried = new Set();
   let last = null;
   const attempt = async (model) => {
-    if (!model || tried.has(model)) return null;
+    if (!model || tried.has(model)) return 'skip';
     tried.add(model);
     const res = await fetch(base + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.GROQ_API_KEY}` },
-      body: JSON.stringify({ ...payload, model }),
+      body: JSON.stringify({ ...payload, ...groqExtras(model), model }),
     });
-    if (res.ok) { GROQ_MODEL_CACHE[kind] = model; return { res, model }; }
+    if (res.ok) {
+      let data = null;
+      try { data = await res.json(); } catch (_) {}
+      const parsed = data ? accept(data) : null;
+      if (parsed) { GROQ_MODEL_CACHE[kind] = model; return { data, parsed, model }; }
+      last = { status: 200, text: 'unusable reply from ' + model + ': ' + JSON.stringify(data || {}).slice(0, 300) };
+      if (GROQ_MODEL_CACHE[kind] === model) delete GROQ_MODEL_CACHE[kind];
+      return 'next';
+    }
     const text = await res.text();
     last = { status: res.status, text };
     if (res.status === 404 || GROQ_MODEL_GONE.test(text)) { if (GROQ_MODEL_CACHE[kind] === model) delete GROQ_MODEL_CACHE[kind]; return 'next'; }
+    if (res.status === 400 && /image|vision|multimodal|modalit|content/i.test(text)) return 'next';
     return 'stop';
   };
-  for (const m of [GROQ_MODEL_CACHE[kind], ...preferred]) {
-    const r = await attempt(m);
-    if (r && r !== 'next' && r !== 'stop') return r;
-    if (r === 'stop') return { res: null, last, tried: [...tried] };
+  const run = async (list) => {
+    for (const m of list) {
+      const r = await attempt(m);
+      if (r === 'skip' || r === 'next') continue;
+      if (r === 'stop') return { stop: true };
+      return r;
+    }
+    return null;
+  };
+  let r = await run([GROQ_MODEL_CACHE[kind], ...preferred]);
+  if (r && r.stop) return { data: null, last, tried: [...tried] };
+  if (r) return r;
+  const found = (await groqDiscoverModels(env, kind)).filter((m) => !tried.has(m)).slice(0, 4);
+  r = await run(found);
+  if (r && r.stop) return { data: null, last, tried: [...tried] };
+  if (r) return r;
+  // Vision: the heuristic may not recognise a newer multimodal model, so try the rest of what the key has.
+  if (kind === 'vision') {
+    const rest = __groqAllIds.filter((m) => !tried.has(m)).slice(0, 4);
+    r = await run(rest);
+    if (r && r.stop) return { data: null, last, tried: [...tried] };
+    if (r) return r;
   }
-  const found = (await groqDiscoverModels(env, kind)).filter((m) => !tried.has(m)).slice(0, 3);
-  for (const m of found) {
-    const r = await attempt(m);
-    if (r && r !== 'next' && r !== 'stop') return r;
-    if (r === 'stop') return { res: null, last };
-  }
-  return { res: null, last, noModel: true, tried: [...tried] };
+  return { data: null, last, noModel: true, tried: [...tried] };
 }
 
 const NUTRITION_RATE = new Map(); // ip -> recent request timestamps (per isolate)
@@ -3148,7 +3178,7 @@ async function handleMealScan(request, env) {
     if (e.kcal != null) ctx.push(`Already eaten today: ${nNum(e.kcal)} kcal, ${nNum(e.protein)}g protein, ${nNum(e.carbs)}g carbs, ${nNum(e.fat)}g fat.`);
     if (note) ctx.push('User note about the meal: ' + note);
     const out = await groqChat(env, 'vision', [env.MEAL_VISION_MODEL, ...GROQ_VISION_MODELS], {
-      max_tokens: 900,
+      max_tokens: 2500,
       temperature: 0.2,
       messages: [
         { role: 'system', content: MEAL_SCAN_PROMPT },
@@ -3157,14 +3187,13 @@ async function handleMealScan(request, env) {
           { type: 'image_url', image_url: { url: image } },
         ] },
       ],
-    });
-    if (!out.res) {
+    }, (d) => { const m = parseJsonLoose(d.choices?.[0]?.message?.content || ''); return m && typeof m === 'object' ? m : null; });
+    if (!out.data) {
       console.error('Meal scan Groq error:', out.last && out.last.status, out.last && out.last.text);
-      return new Response(JSON.stringify({ error: out.noModel ? 'Meal scanning is unavailable: this AI account has no vision model enabled.' : 'The meal analyzer is busy. Try again in a moment.', code: out.noModel ? 'no_model' : 'upstream', debug: request.headers.get('X-BYOB-Debug') ? { tried: out.tried, available: __groqAllIds, last: out.last && String(out.last.text).slice(0, 200) } : undefined }), { status: 502, headers: jsonHeaders(request) });
+      const f = groqFailure(out, 'analysis');
+      return new Response(JSON.stringify({ error: f.error, code: f.code, debug: request.headers.get('X-BYOB-Debug') ? { tried: out.tried, available: __groqAllIds, last: out.last && String(out.last.text).slice(0, 200) } : undefined }), { status: 502, headers: jsonHeaders(request) });
     }
-    const data = await out.res.json();
-    const parsed = parseJsonLoose(data.choices?.[0]?.message?.content || '');
-    if (!parsed) return new Response(JSON.stringify({ error: 'Could not read the analysis. Try another photo.', code: 'unparseable', debug: request.headers.get('X-BYOB-Debug') ? { model: out.model, sample: JSON.stringify(data).slice(0, 400) } : undefined }), { status: 502, headers: jsonHeaders(request) });
+    const parsed = out.parsed;
     const meal = normalizeMeal(parsed);
     if (!meal.is_food) return new Response(JSON.stringify({ error: 'No food found in that photo. Try again with the meal in frame.', code: 'no_food' }), { status: 422, headers: jsonHeaders(request) });
     return new Response(JSON.stringify({ ok: true, meal, model: out.model }), { headers: jsonHeaders(request) });
@@ -3199,16 +3228,15 @@ async function handleNutritionCoach(request, env) {
       Number.isFinite(Number(b.workouts_week)) ? `Workouts this week: ${nNum(b.workouts_week, 30)}` : '',
     ].filter(Boolean).join('\n');
     const out = await groqChat(env, 'text', [env.NUTRITION_TEXT_MODEL, ...GROQ_TEXT_MODELS], {
-      max_tokens: 500, temperature: 0.4,
+      max_tokens: 2500, temperature: 0.4,
       messages: [{ role: 'system', content: NUTRITION_COACH_PROMPT }, { role: 'user', content: facts }],
-    });
-    if (!out.res) {
+    }, (d) => { const m = parseJsonLoose(d.choices?.[0]?.message?.content || ''); return m && typeof m === 'object' ? m : null; });
+    if (!out.data) {
       console.error('Nutrition coach Groq error:', out.last && out.last.status, out.last && out.last.text);
-      return new Response(JSON.stringify({ error: out.noModel ? 'The coach is unavailable: this AI account has no text model enabled.' : 'The coach is busy. Try again shortly.', code: out.noModel ? 'no_model' : 'upstream', debug: request.headers.get('X-BYOB-Debug') ? { tried: out.tried, last: out.last && String(out.last.text).slice(0, 200) } : undefined }), { status: 502, headers: jsonHeaders(request) });
+      const f = groqFailure(out, 'coach');
+      return new Response(JSON.stringify({ error: f.error, code: f.code, debug: request.headers.get('X-BYOB-Debug') ? { tried: out.tried, last: out.last && String(out.last.text).slice(0, 200) } : undefined }), { status: 502, headers: jsonHeaders(request) });
     }
-    const data = await out.res.json();
-    const p = parseJsonLoose(data.choices?.[0]?.message?.content || '');
-    if (!p) return new Response(JSON.stringify({ error: 'Could not read the coach reply.', code: 'unparseable', debug: request.headers.get('X-BYOB-Debug') ? { model: out.model, sample: JSON.stringify(data).slice(0, 500) } : undefined }), { status: 502, headers: jsonHeaders(request) });
+    const p = out.parsed;
     return new Response(JSON.stringify({ ok: true, coach: {
       summary: nStr(p.summary, 400), wins: nList(p.wins, 3), fixes: nList(p.fixes, 3),
       next_meal: nStr(p.next_meal, 300), weight_note: nStr(p.weight_note, 240),
