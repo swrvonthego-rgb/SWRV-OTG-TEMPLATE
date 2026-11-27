@@ -402,6 +402,10 @@ body.rec-live .rec-time-overlay{display:block;}
 #hudSet{font-size:1rem;letter-spacing:0.2em;color:var(--red);}
 #hudNum{font-size:4.5rem;line-height:0.95;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.9);}
 #hudPhase{font-size:1rem;letter-spacing:0.3em;color:#ddd;}
+.aud-meter{display:flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid rgba(255,255,255,0.3);border-radius:8px;background:rgba(255,255,255,0.08);font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.08em;color:#fff;}
+.aud-bar{width:54px;height:8px;border-radius:4px;background:rgba(255,255,255,0.15);overflow:hidden;}
+.aud-bar i{display:block;height:100%;width:0;background:var(--green);transition:width 0.08s;}
+.rec-note{font-size:0.7rem;color:var(--dim);line-height:1.3;margin:0 0 8px;}
 .cam-tools{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:5px;}
 .chip{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:4px 8px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.08em;-webkit-tap-highlight-color:transparent;}
 .chip.on{background:rgba(255,45,45,0.85);border-color:#ff2d2d;}
@@ -647,6 +651,8 @@ body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
         <div class="cam-bar">
           <div class="rec-overlay-badge pre" id="recBadge">PREVIEW</div>
           <div class="cam-tools" id="camTools">
+            <div class="aud-meter" title="Sound being recorded"><b>AUDIO</b><div class="aud-bar"><i id="audLvl"></i></div></div>
+            <button class="chip" id="chipMic" onclick="toggleMic()">MIC ON</button>
             <button class="chip q" data-q="720" onclick="setQuality('720')">720p</button>
             <button class="chip q" data-q="1080" onclick="setQuality('1080')">1080p</button>
             <button class="chip q" data-q="4k" onclick="setQuality('4k')">4K</button>
@@ -748,6 +754,7 @@ body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
 
         <!-- YOUTUBE -->
         <div class="music-panel" id="panelYT">
+          <div class="rec-note">Recording: audio from this player cannot be captured directly by a web page. It is picked up through the microphone from your speaker.</div>
           <div class="player-url-row">
             <input class="player-url-input" id="ytInput" placeholder="YouTube Playlist ID or URL" value="PLRBp0Fe2GpgnIh0AiYKh7o7HnYAej-5ph"/>
             <button class="btn-load" onclick="loadYT()">LOAD</button>
@@ -770,6 +777,7 @@ body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
 
         <!-- APPLE MUSIC -->
         <div class="music-panel" id="panelAM">
+          <div class="rec-note">Recording: audio from this player cannot be captured directly by a web page. It is picked up through the microphone from your speaker.</div>
           <div class="player-url-row">
             <input class="player-url-input" id="amInput" placeholder="Apple Music Playlist URL"/>
             <button class="btn-load" onclick="loadAM()">LOAD</button>
@@ -781,6 +789,7 @@ body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
 
         <!-- SPOTIFY -->
         <div class="music-panel" id="panelSpotify">
+          <div class="rec-note">Recording: audio from this player cannot be captured directly by a web page. It is picked up through the microphone from your speaker.</div>
           <div class="player-url-row">
             <input class="player-url-input" id="spotifyInput" placeholder="Spotify Playlist or Album URL"/>
             <button class="btn-load" onclick="loadSpotify()">LOAD</button>
@@ -1845,6 +1854,7 @@ function syncChips(){
     b.classList.toggle('dim',dim);
   });
   const a=camEl('chipAuto');if(a){a.classList.toggle('on',autoRec);a.textContent=autoRec?'AUTO-REC ON':'AUTO-REC OFF';}
+  const mc=camEl('chipMic');if(mc){mc.classList.toggle('on',micOn&&!(micBlocked&&!micStream));mc.classList.toggle('dim',micBlocked&&!micStream);mc.textContent=(micBlocked&&!micStream)?'MIC BLOCKED':(micOn?'MIC ON':'MIC OFF');}
   refreshPreviewMode();
   const o=camEl('chipOverlay');if(o){const al=overlayAllowed();o.classList.toggle('on',overlayRec&&al);o.classList.toggle('dim',!al);o.textContent=!overlayRec?'OVERLAY OFF':(al?'OVERLAY ON':'OVERLAY OFF (4K/60)');}
 }
@@ -1889,6 +1899,7 @@ async function startCamera(){
       holdAwake();
       autoRecArmed=autoRec;
       notifyActual();
+      setupMix();
       probeCapture(sess);
       if(typeof running!=='undefined'&&running&&autoRec&&autoRecArmed)setTimeout(()=>{if(camMode&&camStream&&!isRecording&&autoRecArmed)startRecording();},300);
     }
@@ -1922,7 +1933,7 @@ async function restartCamera(){
 }
 
 function closeCamera(){
-  camSession++;camBusy=false;capMode=null;overlayForce=false;setNativePreview(false);
+  camSession++;camBusy=false;capMode=null;overlayForce=false;setNativePreview(false);teardownMix();
   if(isRecording)stopRecording();
   stopLoop();
   dropStream(camStream);camStream=null;
@@ -1957,6 +1968,7 @@ let bgStopped=false;
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&isRecording){bgStopped=true;stopRecording();return;}
   if(document.visibilityState==='visible'&&bgStopped){bgStopped=false;nxToast('Recording stopped when the app went to the background. Your clip is ready to save.',7000);}
+  try{if(mixer&&mixer.ctx.state==='suspended')mixer.ctx.resume();}catch(e){}
   if(document.visibilityState!=='visible'||!camMode)return;
   const v=camEl('recordingCamera');
   if(v&&v.srcObject)v.play().catch(()=>{});
@@ -2094,6 +2106,121 @@ function toggleOverlay(){
   syncChips();
 }
 
+// ----- AUDIO MIX: everything the app plays + the microphone go into the recording -----
+let mixer=null,micSrcNode=null,micOn=lsGet('byob_mic','1')!=='0',levelInt=null;
+function setAudioSession(type){try{if(navigator.audioSession)navigator.audioSession.type=type;}catch(e){}}
+
+// One shared bus: the app's own sounds (bells, beeps, punches) already connect to audioCtx.destination,
+// so that name now points at a master gain that feeds both the speaker and the recording.
+function ensureMixer(){
+  if(mixer)return mixer;
+  try{
+    initAudio();
+    const ctx=audioCtx;
+    if(!ctx||!ctx.createMediaStreamDestination)return null;
+    const real=ctx.destination;
+    const master=ctx.createGain();
+    const dest=ctx.createMediaStreamDestination();
+    const micGain=ctx.createGain();micGain.gain.value=micOn?1:0;
+    const an=ctx.createAnalyser();an.fftSize=1024;an.smoothingTimeConstant=0.5;
+    master.connect(real);master.connect(dest);master.connect(an);
+    micGain.connect(dest);micGain.connect(an);
+    Object.defineProperty(ctx,'destination',{value:master,configurable:true});
+    mixer={ctx:ctx,real:real,master:master,dest:dest,micGain:micGain,an:an};
+    return mixer;
+  }catch(e){console.error('audio mixer unavailable',e);mixer=null;return null;}
+}
+function connectMic(){
+  if(!mixer)return;
+  try{
+    if(micSrcNode){micSrcNode.disconnect();micSrcNode=null;}
+    if(micStream&&micStream.getAudioTracks().length){micSrcNode=mixer.ctx.createMediaStreamSource(micStream);micSrcNode.connect(mixer.micGain);}
+  }catch(e){}
+}
+// Route an <audio> element through the bus. Volume/mute are driven by a gain node so ducking and the mute button
+// behave the same in every browser (iOS ignores element.volume).
+function tapElement(el){
+  if(!mixer||!el||el.__tapped)return;
+  try{
+    const ctx=mixer.ctx;
+    const src=ctx.createMediaElementSource(el);
+    const gain=ctx.createGain();
+    let vol=el.volume,mutedFlag=el.muted;
+    gain.gain.value=mutedFlag?0:vol;
+    const pv=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'volume');
+    const pm=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'muted');
+    try{pv.set.call(el,1);pm.set.call(el,false);}catch(e){}
+    Object.defineProperty(el,'volume',{configurable:true,get(){return vol;},set(v){vol=Math.max(0,Math.min(1,+v||0));gain.gain.value=mutedFlag?0:vol;}});
+    Object.defineProperty(el,'muted',{configurable:true,get(){return mutedFlag;},set(m){mutedFlag=!!m;gain.gain.value=mutedFlag?0:vol;}});
+    src.connect(gain);gain.connect(mixer.master);
+    el.__tapped=true;
+  }catch(e){console.error('could not capture audio element',e);}
+}
+// Cross-origin audio only works through Web Audio when the server allows CORS; otherwise it would go silent.
+// So check first and leave the element untouched if it is not allowed (the microphone still hears it).
+async function tapSafely(el){
+  if(!mixer||!el||el.__tapped||el.__tapTried)return;
+  const url=el.currentSrc||el.src;
+  if(!url)return;
+  el.__tapTried=true;
+  let local=false;
+  try{local=/^(blob:|data:)/.test(url)||new URL(url,location.href).origin===location.origin;}catch(e){}
+  if(!local){
+    try{
+      const ctl=new AbortController();
+      const r=await fetch(url,{mode:'cors',headers:{Range:'bytes=0-0'},signal:ctl.signal,cache:'no-store'});
+      ctl.abort();
+      if(!(r.ok||r.status===206))return;
+    }catch(e){return;}
+    if(el.crossOrigin!=='anonymous'){
+      const wasPlaying=!el.paused,t=el.currentTime;
+      el.crossOrigin='anonymous';el.src=url;el.load();
+      el.addEventListener('loadedmetadata',()=>{try{el.currentTime=t;}catch(e){}if(wasPlaying)el.play().catch(()=>{});},{once:true});
+    }
+  }
+  tapElement(el);
+}
+function startMeter(){
+  clearInterval(levelInt);
+  if(!mixer)return;
+  const an=mixer.an,buf=new Uint8Array(an.fftSize),bar=camEl('audLvl');
+  levelInt=setInterval(()=>{
+    try{
+      an.getByteTimeDomainData(buf);
+      let sum=0;for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128;sum+=v*v;}
+      if(bar)bar.style.width=Math.min(100,Math.sqrt(sum/buf.length)*320)+'%';
+    }catch(e){}
+  },100);
+}
+function stopMeter(){clearInterval(levelInt);levelInt=null;const b=camEl('audLvl');if(b)b.style.width='0%';}
+function embedHint(){
+  if(camMode&&['youtube','apple','spotify'].indexOf(musicSrc)>-1)nxToast('Audio from YouTube, Apple Music and Spotify cannot be captured directly by a web page. It is recorded through the microphone from your speaker, so keep MIC ON and play it out loud, not on headphones.',10000);
+}
+function setupMix(){
+  const m=ensureMixer();
+  if(!m){camToast('Could not set up app audio capture. The microphone is still recorded.',6000);return;}
+  try{if(m.ctx.state==='suspended')m.ctx.resume();}catch(e){}
+  setAudioSession('play-and-record');
+  connectMic();
+  tapElement(localAudio);
+  tapSafely(bgMusic);
+  if(typeof drillAudio!=='undefined'&&drillAudio)tapSafely(drillAudio);
+  startMeter();
+  syncChips();
+  embedHint();
+}
+function teardownMix(){
+  stopMeter();
+  try{if(micSrcNode){micSrcNode.disconnect();micSrcNode=null;}}catch(e){}
+  setAudioSession('playback');
+}
+function toggleMic(){
+  if(micBlocked&&!micStream){nxToast('The microphone is blocked. Allow it in Website Settings, then reopen the camera.',6000);return;}
+  micOn=!micOn;lsSet('byob_mic',micOn?'1':'0');
+  if(mixer)mixer.micGain.gain.value=micOn?1:0;
+  syncChips();
+}
+
 // ----- recording -----
 function toggleRecording(){
   if(!camMode||!camStream){camToast('The camera is not ready yet.');return;}
@@ -2126,7 +2253,12 @@ function startRecording(){
       recTrack=out.getVideoTracks()[0]||null;
     }
   }catch(e){camToast('Recording is not supported in this browser.');return false;}
-  try{if(micStream)micStream.getAudioTracks().filter(t=>t.readyState==='live').forEach(t=>out.addTrack(t));}catch(e){}
+  try{
+    let at=null;
+    if(mixer&&mixer.dest){try{if(mixer.ctx.state!=='running')mixer.ctx.resume();}catch(e){}at=mixer.dest.stream.getAudioTracks()[0]||null;}
+    if(at)out.addTrack(at);
+    else if(micStream)micStream.getAudioTracks().filter(t=>t.readyState==='live').forEach(t=>out.addTrack(t));
+  }catch(e){}
   const pick=pickMime();
   let mime=pick.type,rec=null;
   const bps=Math.round(q.bps*(outFps>45?1.5:1));
@@ -2906,6 +3038,7 @@ function setMusicSource(src){
   if(src!=='youtube'&&ytPlayer&&ytPlayer.pauseVideo)ytPlayer.pauseVideo();
   if(src!=='local')localAudio.pause();
   document.getElementById('musicNowPlaying').textContent=src.charAt(0).toUpperCase()+src.slice(1)+' selected';
+  try{embedHint();}catch(e){}
 }
 function playMusicSrc(){
   if(musicSrc==='builtin')bgMusic.play().catch(()=>{});
@@ -3039,6 +3172,7 @@ function startDrill(id, name, audioUrl, cardNum) {
   if (drillAudio) { drillAudio.pause(); drillAudio = null; }
   drillAudio = new Audio(audioUrl);
   drillAudio.volume = 1.0;
+  try{if(typeof mixer!=='undefined'&&mixer)tapSafely(drillAudio);}catch(e){}
   drillAudio.addEventListener('ended', onDrillSongEnd);
   drillAudio.addEventListener('loadedmetadata', () => { drillSongDuration = drillAudio.duration || 0; });
 
