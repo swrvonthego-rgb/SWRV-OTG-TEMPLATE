@@ -394,6 +394,14 @@ html,body{height:100dvh;background:var(--darker);font-family:'Barlow Condensed',
 .rec-overlay-badge.pre{background:rgba(70,70,70,0.9);animation:none;box-shadow:none;}
 .rec-time-overlay{display:none;flex:0 0 auto;margin-left:auto;background:rgba(0,0,0,0.75);color:#fff;padding:4px 10px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.1em;border:1px solid rgba(255,45,45,0.5);}
 body.rec-live .rec-time-overlay{display:block;}
+.cam-view.native #recordingCamera{opacity:1;object-fit:contain;background:#000;}
+.cam-view.native.mirror #recordingCamera{transform:scaleX(-1);}
+.cam-view.native #recPreview{visibility:hidden;}
+.cam-hud{display:none;position:absolute;left:0;right:0;bottom:0;padding:34px 12px 10px;flex-direction:column;align-items:center;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.75));font-family:'Bebas Neue',sans-serif;z-index:30;pointer-events:none;}
+.cam-view.native .cam-hud{display:flex;}
+#hudSet{font-size:1rem;letter-spacing:0.2em;color:var(--red);}
+#hudNum{font-size:4.5rem;line-height:0.95;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.9);}
+#hudPhase{font-size:1rem;letter-spacing:0.3em;color:#ddd;}
 .cam-tools{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:5px;}
 .chip{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:4px 8px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.08em;-webkit-tap-highlight-color:transparent;}
 .chip.on{background:rgba(255,45,45,0.85);border-color:#ff2d2d;}
@@ -654,6 +662,7 @@ body.rec-on .timer-layout.recording-mode .timer-main{padding-bottom:0;}
         <div class="cam-view">
           <video id="recordingCamera" autoplay playsinline muted webkit-playsinline></video>
           <canvas id="recPreview"></canvas>
+          <div class="cam-hud" id="camHud"><div id="hudSet"></div><div id="hudNum"></div><div id="hudPhase"></div></div>
           <div class="cam-stat" id="camStat"></div>
           <div class="cam-toast" id="camToast"></div>
           <div class="cam-msg" id="camMsg"></div>
@@ -1506,6 +1515,7 @@ let fpsCount=0,fpsStamp=0,fpsLive=0,camLive=0,presented=null,presentedStamp=null
 let recFrames=0,recStartPerf=0,recTimerInt=null,canvasRecorder=null,recMeta=null,recTrack=null;
 let wakeLock=null,flushInt=null;
 let capMode=null,overlayRec=lsGet('byob_overlay','1')!=='0';
+let nativePreview=false,totalDrawn=0,hudInt=null,overlayForce=false,benchFps=0;
 
 function camEl(id){return document.getElementById(id);}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -1571,8 +1581,16 @@ function releaseAwake(){try{if(wakeLock)wakeLock.release();}catch(e){}wakeLock=n
 
 // ----- camera stream -----
 function gum(c){return navigator.mediaDevices.getUserMedia(c);}
-function videoConstraints(w,h){
-  return {facingMode:{ideal:camFacing},width:{ideal:w},height:{ideal:h},frameRate:{ideal:camFps}};
+function videoConstraints(w,h,exact){
+  return {facingMode:{ideal:camFacing},width:{ideal:w},height:{ideal:h},frameRate:exact?{exact:camFps}:{ideal:camFps}};
+}
+// Ask for exactly the chosen frame rate so the camera does not slow itself down in dim light; fall back to "ideal" only if it cannot be locked.
+async function gumLocked(w,h,audio){
+  try{return await gum({video:videoConstraints(w,h,true),audio:audio});}
+  catch(e){
+    if(e&&(e.name==='OverconstrainedError'||e.name==='ConstraintNotSatisfiedError'))return await gum({video:videoConstraints(w,h,false),audio:audio});
+    throw e;
+  }
 }
 function dropStream(s){if(s)s.getTracks().forEach(t=>{try{t.stop();}catch(e){}});}
 
@@ -1584,14 +1602,13 @@ async function openStream(withAudio){
     if(best&&best.long>=q.long*0.6)break;
     let s=null;
     const wantAudio=withAudio&&i===0&&!micStream&&!micBlocked;
-    const vc=videoConstraints(sizes[i][0],sizes[i][1]);
     try{
-      s=await gum({video:vc,audio:wantAudio?AUDIO_C:false});
+      s=await gumLocked(sizes[i][0],sizes[i][1],wantAudio?AUDIO_C:false);
     }catch(e){
       const n=e&&e.name;
       if(wantAudio&&n!=='SecurityError'){
         try{
-          s=await gum({video:vc,audio:false});
+          s=await gumLocked(sizes[i][0],sizes[i][1],false);
           micBlocked=true;
           camToast(n==='NotAllowedError'||n==='PermissionDeniedError'?'Microphone is blocked, so this will record without sound. Allow it in Website Settings.':'No microphone available, so this will record without sound.',7000);
         }catch(e2){if(best)break;throw e2;}
@@ -1673,7 +1690,7 @@ function computeOutput(){
   let key=camQ;
   while(key!=='720'&&CAM_Q[key].long>camLong*1.05)key=CAM_ORDER[CAM_ORDER.indexOf(key)-1];
   outQ=key;
-  const q=CAM_Q[key];
+  const q=CAM_Q[key==='4k'?'1080':key];
   outLandscape=window.innerWidth>window.innerHeight;
   const W=outLandscape?q.long:q.short,H=outLandscape?q.short:q.long;
   const f=Math.round(camInfo.fps||camFps);
@@ -1686,10 +1703,17 @@ function computeOutput(){
   recCtx.imageSmoothingEnabled=true;recCtx.imageSmoothingQuality='medium';
 }
 
+// The timer overlay needs every frame copied through a canvas, which is only smooth up to 1080p at 30 fps on a phone.
+function overlayAllowed(){
+  const q=camStream?outQ:camQ;
+  const f=camStream&&camInfo.fps?Math.round(camInfo.fps):camFps;
+  return q!=='4k'&&f<=31&&camFps<=30;
+}
+
 function notifyActual(){
   if(outQ!==camQ)camToast(CAM_Q[camQ].label+' is not available on this camera. Using '+CAM_Q[outQ].label+'.',6000);
   else if(camFps===60&&camInfo.fps&&camInfo.fps<50)camToast('60 fps is not available at this resolution. Using '+Math.round(camInfo.fps)+' fps.',6000);
-  else if(camInfo.fps&&camInfo.fps<28)camToast('Low light: the camera dropped to '+Math.round(camInfo.fps)+' fps. More light gives smoother video.',6000);
+  else if(camInfo.fps&&camInfo.fps<camFps-2)camToast('The camera could not hold '+camFps+' fps (it is delivering '+Math.round(camInfo.fps)+'). Try a lower frame rate.',6000);
 }
 
 // ----- HUD (burned into the video) -----
@@ -1735,6 +1759,7 @@ function renderHud(){
 function drawFrame(v,meta){
   const vw=v.videoWidth,vh=v.videoHeight;
   if(!vw||!vh||!recCtx)return;
+  if(!nativePreview){
   const W=outW,H=outH,ctx=recCtx;
   const s=Math.max(W/vw,H/vh),dw=vw*s,dh=vh*s;
   const smooth=Math.abs(s-1)>0.02;
@@ -1746,14 +1771,20 @@ function drawFrame(v,meta){
   renderHud();
   ctx.drawImage(hudCanvas,0,0,W,hudTopH,0,0,W,hudTopH);
   ctx.drawImage(hudCanvas,0,hudBotY,W,H-hudBotY,0,hudBotY,W,H-hudBotY);
+  }
   const now=performance.now();
-  lastFrameAt=now;fpsCount++;
+  lastFrameAt=now;fpsCount++;totalDrawn++;
   if(meta&&typeof meta.presentedFrames==='number')presented=meta.presentedFrames;
   if(isRecording){recFrames++;if(recMeta&&recMeta.p0==null&&presented!=null)recMeta.p0=presented;}
   if(now-fpsStamp>=1000){
     fpsLive=Math.round(fpsCount*1000/(now-fpsStamp));
     if(presented!=null&&presentedStamp!=null)camLive=Math.round((presented-presentedStamp)*1000/(now-fpsStamp));
     presentedStamp=presented;
+    if(isRecording&&recMeta&&!recMeta.raw&&!recMeta.choppy){
+      const goal=Math.min(camFps,30);
+      if(fpsLive<goal*0.7){if(++recMeta.slowSecs>=3){recMeta.choppy=true;nxToast('The timer overlay is slowing this phone down. Finish this clip; the next one will use plain-camera mode for smooth video.',9000);}}
+      else recMeta.slowSecs=0;
+    }
     fpsCount=0;fpsStamp=now;updateStat();
   }
 }
@@ -1794,7 +1825,7 @@ function watchdog(){
 
 function updateStat(){
   const e=camEl('camStat');if(!e)return;
-  e.textContent=CAM_Q[outQ].label+(outLandscape?' LANDSCAPE':' PORTRAIT')+' · '+fpsLive+' FPS'+(camLive&&camLive>fpsLive+2?' (CAM '+camLive+')':'');
+  e.textContent=CAM_Q[outQ].label+(outLandscape?' LANDSCAPE':' PORTRAIT')+' · '+fpsLive+' FPS'+(nativePreview||(isRecording&&recMeta&&recMeta.raw)?' · CAMERA ONLY':'')+(camLive&&camLive>fpsLive+2?' (CAM '+camLive+')':'');
 }
 
 // ----- UI sync -----
@@ -1814,7 +1845,8 @@ function syncChips(){
     b.classList.toggle('dim',dim);
   });
   const a=camEl('chipAuto');if(a){a.classList.toggle('on',autoRec);a.textContent=autoRec?'AUTO-REC ON':'AUTO-REC OFF';}
-  const o=camEl('chipOverlay');if(o){o.classList.toggle('on',overlayRec);o.textContent=overlayRec?'OVERLAY ON':'OVERLAY OFF';}
+  refreshPreviewMode();
+  const o=camEl('chipOverlay');if(o){const al=overlayAllowed();o.classList.toggle('on',overlayRec&&al);o.classList.toggle('dim',!al);o.textContent=!overlayRec?'OVERLAY OFF':(al?'OVERLAY ON':'OVERLAY OFF (4K/60)');}
 }
 function syncUi(){
   const rb=camEl('btnRecord');
@@ -1852,6 +1884,7 @@ async function startCamera(){
       camMsgShow('<b>The camera is not sending video.</b><br>Close other camera apps and try again.',[['TRY AGAIN','restartCamera()'],['CLOSE','closeCamera()']]);
     }else{
       computeOutput();
+      refreshPreviewMode();
       startLoop();
       holdAwake();
       autoRecArmed=autoRec;
@@ -1880,7 +1913,7 @@ async function restartCamera(){
     const ok=await attachStream(s);
     if(sess!==camSession){dropStream(s);camStream=null;return;}
     if(!ok)camMsgShow('<b>The camera is not sending video.</b>',[['TRY AGAIN','restartCamera()'],['CLOSE','closeCamera()']]);
-    else{computeOutput();startLoop();holdAwake();notifyActual();probeCapture(sess);}
+    else{computeOutput();refreshPreviewMode();startLoop();holdAwake();notifyActual();probeCapture(sess);}
   }catch(e){
     if(sess!==camSession)return;
     const h=camErrorHelp(e);camMsgShow(h[0],h[1]);
@@ -1889,7 +1922,7 @@ async function restartCamera(){
 }
 
 function closeCamera(){
-  camSession++;camBusy=false;capMode=null;
+  camSession++;camBusy=false;capMode=null;overlayForce=false;setNativePreview(false);
   if(isRecording)stopRecording();
   stopLoop();
   dropStream(camStream);camStream=null;
@@ -1947,6 +1980,7 @@ async function flipCamera(){
     camMsgHide();
     readInfo();
     computeOutput();
+    refreshPreviewMode();
     startLoop();
   }catch(e){if(sess!==camSession)return;camFacing=prev;camToast('Could not switch cameras.');}
   camBusy=false;syncUi();
@@ -1962,6 +1996,28 @@ async function setFps(n){
   if(camMode&&camStream)await restartCamera();
 }
 function toggleAutoRec(){autoRec=!autoRec;autoRecArmed=autoRec;lsSet('byob_cam_auto',autoRec?'1':'0');syncChips();}
+
+// ----- native preview: when the recording will be plain camera, show the camera's own video (smooth, no canvas) -----
+function updateHudDom(){
+  const set=camEl('hudSet'),num=camEl('hudNum'),ph=camEl('hudPhase');
+  if(!set||!num||!ph)return;
+  set.textContent='SET '+txt('bigSetNum')+' / '+TOTAL_SETS;
+  num.textContent=txt('timerNum');ph.textContent=txt('phaseLabel');
+  try{num.style.color=getComputedStyle(camEl('timerNum')).color;}catch(e){}
+}
+function setNativePreview(on){
+  const cv=document.querySelector('.cam-view');
+  if(cv){cv.classList.toggle('native',on);cv.classList.toggle('mirror',on&&camInfo.facing==='user');}
+  if(on===nativePreview)return;
+  nativePreview=on;
+  clearInterval(hudInt);hudInt=null;
+  if(on){updateHudDom();hudInt=setInterval(updateHudDom,250);}
+  updateStat();
+}
+function refreshPreviewMode(){
+  const raw=!overlayRec||capMode==='raw'||!overlayAllowed();
+  setNativePreview(!!(raw&&camMode&&camStream));
+}
 
 // ----- capture self-test: confirm the overlay pipeline really produces frames in this browser -----
 async function captureWorks(mode){
@@ -1984,21 +2040,57 @@ async function captureWorks(mode){
   try{v.srcObject=null;v.remove();s.getTracks().forEach(t=>t.stop());}catch(e){}
   return alive;
 }
+// Run a real recorder for a few seconds and see whether the overlay still draws at the chosen frame rate on this phone.
+async function overlayHoldsRate(mode){
+  if(lsGet('byob_bench','1')==='0')return true;
+  const goal=Math.min(camFps,30);
+  let st=null,rec=null;
+  try{st=mode==='rate'?recCanvas.captureStream(Math.max(60,outFps*2)):recCanvas.captureStream();}catch(e){return true;}
+  try{
+    const mt=pickMime().type;
+    rec=mt?new MediaRecorder(st,{mimeType:mt,videoBitsPerSecond:CAM_Q[outQ].bps}):new MediaRecorder(st);
+    rec.ondataavailable=()=>{};
+    rec.start(1000);
+  }catch(e){try{st.getTracks().forEach(t=>t.stop());}catch(_){}return true;}
+  await sleep(700);
+  const f0=totalDrawn,t0=performance.now();
+  await sleep(2500);
+  const fps=(totalDrawn-f0)*1000/(performance.now()-t0);
+  try{rec.stop();}catch(e){}
+  try{st.getTracks().forEach(t=>t.stop());}catch(e){}
+  benchFps=Math.round(fps);
+  return fps>=goal*0.7;
+}
 async function probeCapture(sess){
   if(!recCanvas)return;
   capMode=null;
-  for(const m of ['rate','auto']){
+  refreshPreviewMode();
+  if(!overlayRec||!overlayAllowed())return;
+  for(const m of ['auto','rate']){
     if(sess!==camSession||!camMode||!camStream)return;
-    if(await captureWorks(m)){if(sess===camSession)capMode=m;return;}
+    if(await captureWorks(m)){
+      if(sess!==camSession)return;
+      if(!overlayForce&&!(await overlayHoldsRate(m))){
+        if(sess!==camSession||isRecording)return;
+        capMode='raw';
+        nxToast('This phone cannot hold '+Math.min(camFps,30)+' fps with the timer overlay ('+benchFps+' fps in a test), so recordings use the plain camera to stay smooth. Tap OVERLAY to force it on.',9000);
+        refreshPreviewMode();syncChips();
+        return;
+      }
+      if(sess===camSession){capMode=m;refreshPreviewMode();}
+      return;
+    }
   }
   if(sess!==camSession)return;
   capMode='raw';
+  refreshPreviewMode();
   if(overlayRec)camToast('This browser cannot record the timer overlay. Recording the plain camera instead.',8000);
 }
 function toggleOverlay(){
   if(isRecording)return;
   overlayRec=!overlayRec;lsSet('byob_overlay',overlayRec?'1':'0');
-  if(overlayRec&&camMode&&camStream){capMode=null;probeCapture(camSession);}
+  overlayForce=overlayRec;
+  if(overlayRec&&camMode&&camStream){capMode=null;probeCapture(camSession);}else refreshPreviewMode();
   syncChips();
 }
 
@@ -2021,7 +2113,8 @@ function startRecording(){
   if(!v.videoWidth){camToast('The camera is not ready yet.');return false;}
   computeOutput();
   const q=CAM_Q[outQ];
-  const raw=!overlayRec||capMode==='raw';
+  const rawReason=!overlayRec?'off':(capMode==='raw'?'unsupported':(!overlayAllowed()?'quality':''));
+  const raw=rawReason!=='';
   let out=null;
   recTrack=null;
   try{
@@ -2029,7 +2122,7 @@ function startRecording(){
       out=new MediaStream(camStream.getVideoTracks());
     }else{
       // Sample faster than the camera so every camera frame is captured once; a canvas only emits when it changed.
-      out=capMode==='auto'?recCanvas.captureStream():recCanvas.captureStream(Math.max(60,outFps*2));
+      out=capMode==='rate'?recCanvas.captureStream(Math.max(60,outFps*2)):recCanvas.captureStream();
       recTrack=out.getVideoTracks()[0]||null;
     }
   }catch(e){camToast('Recording is not supported in this browser.');return false;}
@@ -2041,21 +2134,20 @@ function startRecording(){
   catch(e){try{rec=new MediaRecorder(out);}catch(e2){camToast('Recording is not supported in this browser.');return false;}}
   mime=rec.mimeType||mime||'video/webm';
   const chunks=[];
-  const label=raw?(camInfo.w+'x'+camInfo.h):CAM_Q[outQ].label;
-  const meta={q:outQ,label:label,raw:raw,fps:outFps,landscape:outLandscape,dur:0,frames:0,mime:mime,chunks:chunks,p0:null,p1:null,done:false,forceT:null,state:'recording',sid:'r'+Date.now().toString(36),idx:0,bytes:0,capped:false};
+  const label=raw?(camInfo.w+'x'+camInfo.h+(camInfo.fps?' @'+Math.round(camInfo.fps):'')):CAM_Q[outQ].label;
+  const meta={q:outQ,label:label,raw:raw,rawReason:rawReason,choppy:false,slowSecs:0,fps:outFps,landscape:outLandscape,dur:0,frames:0,mime:mime,chunks:chunks,p0:null,p1:null,done:false,forceT:null,state:'recording',sid:'r'+Date.now().toString(36),idx:0,bytes:0,capped:false};
   recMeta=meta;
   const vtrack=recTrack;
   rec.ondataavailable=e=>{
     if(!(e.data&&e.data.size))return;
     chunks.push(e.data);meta.bytes+=e.data.size;
-    chunkSave(meta.sid,meta.idx++,e.data,meta.mime);
     if(meta.bytes>REC_CAP&&isRecording&&recMeta===meta){meta.capped=true;nxToast('Stopping to protect your phone\'s memory. Your video is being saved.',6000);stopRecording();}
   };
   rec.onstop=()=>{
     try{if(vtrack)vtrack.stop();}catch(e){}
     if(meta.state==='recording'){
       // the browser ended the recording by itself
-      isRecording=false;clearInterval(recTimerInt);clearInterval(flushInt);canvasRecorder=null;
+      isRecording=false;clearInterval(recTimerInt);canvasRecorder=null;
       meta.dur=(performance.now()-recStartPerf)/1000;meta.frames=recFrames;meta.p1=presented;meta.state='stopped';
       syncUi();nxToast('The recording stopped unexpectedly. Saving what was captured.',6000);
     }
@@ -2065,10 +2157,8 @@ function startRecording(){
   recFrames=0;recStartPerf=performance.now();
   try{rec.start(1000);}catch(e){camToast('Could not start recording.');recMeta=null;return false;}
   canvasRecorder=rec;
-  clearInterval(flushInt);
-  flushInt=setInterval(()=>{try{if(rec.state==='recording')rec.requestData();}catch(e){}},1000);
   isRecording=true;autoRecArmed=false;
-  if(raw)camToast(overlayRec?'Recording the plain camera (no timer overlay) on this device.':'Overlay is off: recording the plain camera.',5000);
+  if(raw)camToast(rawReason==='off'?'Overlay is off: recording the plain camera. The on-screen timer is not saved in the video.':rawReason==='quality'?'Recording straight from the camera so '+CAM_Q[outQ].label+(camFps>30?' at '+camFps+' fps':'')+' stays smooth. The on-screen timer is not saved in the video (the overlay is for up to 1080p at 30 fps).':'Recording the plain camera (no timer overlay) on this device.',6000);
   clearInterval(recTimerInt);recTimerInt=setInterval(updateRecClock,250);updateRecClock();
   syncUi();
   return true;
@@ -2077,7 +2167,7 @@ function startRecording(){
 function stopRecording(){
   if(!isRecording)return;
   isRecording=false;
-  clearInterval(recTimerInt);clearInterval(flushInt);
+  clearInterval(recTimerInt);
   const meta=recMeta;
   if(meta){meta.dur=(performance.now()-recStartPerf)/1000;meta.frames=recFrames;meta.p1=presented;meta.state='stopping';}
   const rec=canvasRecorder;canvasRecorder=null;
@@ -2107,38 +2197,28 @@ async function finishRecording(meta){
     const codecs=await blobCodecs(blob);
     const isMp4=blob.type.indexOf('mp4')>-1;
     const avg=meta.dur>0?meta.frames/meta.dur:0;
-    if(meta.dur>=3&&avg>=28)slowStreak=0;
     const ok=isMp4&&codecs.h264&&!codecs.vp9&&!(codecs.opus&&!codecs.aac);
     let note='';
     const tiny=meta.dur>=3&&blob.size/meta.dur<15000;
     if(tiny&&!meta.raw){overlayRec=false;lsSet('byob_overlay','0');syncChips();note='This clip looks frozen or nearly empty, so the next recording will use the plain camera without the timer overlay (turn OVERLAY back on with its chip). ';}
     if(!meta.raw){
       const camAvg=(meta.p0!=null&&meta.p1!=null&&meta.dur>0)?(meta.p1-meta.p0)/meta.dur:(camInfo.fps||avg);
-      if(meta.dur>=3&&avg<28){
-        if(camAvg<28){
-          note+='The camera itself only delivered about '+Math.round(camAvg)+' fps. That is usually low light. Add light for smoother video.';
-        }else if(meta.q!=='720'){
-          slowStreak++;
-          const lower=CAM_ORDER[CAM_ORDER.indexOf(meta.q)-1];
-          if(slowStreak>=2){
-            note+='This phone averaged '+Math.round(avg)+' fps at '+CAM_Q[meta.q].label+' twice in a row. Switched to '+CAM_Q[lower].label+' for smoother video.';
-            camQ=lower;lsSet('byob_cam_q',lower);slowStreak=0;syncChips();
-          }else{
-            note+='This phone averaged '+Math.round(avg)+' fps at '+CAM_Q[meta.q].label+'. If it happens again the app will step down to '+CAM_Q[lower].label+'.';
-          }
-        }else{
-          note+='Only '+Math.round(avg)+' fps was reached. Close other apps and try again.';
-        }
+      const target=Math.min(camFps,30);
+      if(meta.dur>=3&&camAvg<target*0.8){
+        note+='The camera itself only delivered about '+Math.round(camAvg)+' fps. Try a lower frame rate setting. ';
+      }else if(meta.dur>=3&&(avg<target*0.8||meta.choppy)){
+        overlayRec=false;lsSet('byob_overlay','0');syncChips();
+        note+='The timer overlay made this phone drop to about '+Math.round(avg)+' fps, so the next recordings use plain-camera mode (smooth, no overlay). Turn OVERLAY back on to try again. ';
       }
     }else{
-      note='Recorded without the timer overlay because this browser could not record the overlay.';
+      note=meta.rawReason==='quality'?'Recorded straight from the camera so '+meta.label+' stays smooth. The timer overlay is only available up to 1080p at 30 fps.':meta.rawReason==='off'?'Recorded in plain-camera mode (overlay is off).':'Recorded without the timer overlay because this browser could not record the overlay.';
     }
     if(meta.capped)note+='Stopped automatically at '+Math.round(meta.bytes/1048576)+' MB to protect your phone\'s memory. Use a lower quality for longer videos. ';
     const mm=Math.floor(meta.dur/60),ss=Math.floor(meta.dur%60);
     const summary=meta.label+' · '+(meta.raw?'':Math.round(avg)+' fps · ')+mm+':'+(ss<10?'0':'')+ss+' · '+(blob.size/1048576).toFixed(1)+' MB';
     const rec={id:'v'+Date.now().toString(36),t:Date.now(),name:recFileName(blob),blob:blob,summary:summary,ok:ok,note:note};
     openRecording(rec.id,rec);
-    setTimeout(()=>{vidSave(rec).then(saved=>{if(saved)chunksDelete(meta.sid);});},1200);
+    setTimeout(()=>{vidSave(rec);},1200);
   }catch(e){
     console.error('finishRecording failed',e);
     showRecFailure(meta,diag+' err='+(e&&e.message),false);
@@ -2177,31 +2257,6 @@ function idbReq(store,mode,fn){
     tx.onerror=()=>{rej(tx.error);db.close();};
     tx.onabort=()=>{rej(tx.error||new Error('aborted'));db.close();};
   }));
-}
-// Each second of recording is also written to storage, so a page the phone kills mid-recording can be recovered.
-function chunkKey(sid,i){return sid+':'+String(i).padStart(6,'0');}
-function chunkSave(sid,i,blob,mime){return idbReq('c','readwrite',st=>st.put({k:chunkKey(sid,i),sid:sid,i:i,blob:blob,mime:mime,t:Date.now()})).catch(()=>{});}
-function chunksDelete(sid){return idbReq('c','readwrite',st=>st.delete(IDBKeyRange.bound(sid+':',sid+':\uffff'))).catch(()=>{});}
-async function recoverRecordings(){
-  let all=[];
-  try{all=await idbReq('c','readonly',st=>st.getAll())||[];}catch(e){return;}
-  if(!all.length)return;
-  const groups={};all.forEach(c=>{(groups[c.sid]=groups[c.sid]||[]).push(c);});
-  let newest=null;
-  for(const sid of Object.keys(groups)){
-    if(recMeta&&recMeta.sid===sid)continue;
-    const g=groups[sid].sort((a,b)=>a.i-b.i);
-    const bytes=g.reduce((n,c)=>n+c.blob.size,0);
-    if(bytes<20000){await chunksDelete(sid);continue;}
-    const mime=(g[0].mime||'video/mp4').split(';')[0];
-    const blob=new Blob(g.map(c=>c.blob),{type:mime});
-    const secs=g.length;
-    const rec={id:'v'+g[0].t.toString(36),t:g[0].t,name:recFileName(blob),blob:blob,summary:'Recovered recording \u00B7 about '+Math.floor(secs/60)+':'+pad2(secs%60)+' \u00B7 '+(bytes/1048576).toFixed(1)+' MB',ok:mime.indexOf('mp4')>-1,note:'The page closed unexpectedly during this recording. This is everything that was saved before it stopped.'};
-    const saved=await vidSave(rec);
-    if(saved)await chunksDelete(sid);
-    if(!newest||rec.t>newest.t)newest=rec;
-  }
-  if(newest&&!isRecording&&!document.getElementById('saveSheet'))openRecording(newest.id,newest);
 }
 async function vidSave(rec){
   vidCache[rec.id]=rec;
@@ -2284,7 +2339,7 @@ async function openVideos(){
   s.style.zIndex='19000';
 }
 async function deleteVideoRow(id){await vidDelete(id);refreshVidCount();openVideos();}
-document.addEventListener('DOMContentLoaded',()=>{refreshVidCount();setTimeout(recoverRecordings,900);});
+document.addEventListener('DOMContentLoaded',()=>{refreshVidCount();});
 
 // --- NUTRITION & HEALTH ------------------------------------------
 const NX_DEFAULT_TARGETS={kcal:2185,protein:180,carbs:220,fat:65};
