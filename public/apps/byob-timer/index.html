@@ -1825,7 +1825,7 @@ function watchdog(){
 
 function updateStat(){
   const e=camEl('camStat');if(!e)return;
-  e.textContent=CAM_Q[outQ].label+(outLandscape?' LANDSCAPE':' PORTRAIT')+' · '+fpsLive+' FPS'+(nativePreview||(isRecording&&recMeta&&recMeta.raw)?' · CAMERA ONLY':'')+(camLive&&camLive>fpsLive+2?' (CAM '+camLive+')':'');
+  e.textContent=CAM_Q[outQ].label+(outLandscape?' LANDSCAPE':' PORTRAIT')+' · '+(nativePreview&&camLive?camLive:fpsLive)+' FPS'+(nativePreview||(isRecording&&recMeta&&recMeta.raw)?' · CAMERA ONLY':'')+(!nativePreview&&camLive&&camLive>fpsLive+2?' (CAM '+camLive+')':'');
 }
 
 // ----- UI sync -----
