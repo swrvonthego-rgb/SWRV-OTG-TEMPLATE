@@ -1248,7 +1248,7 @@ function doFlash(type){
 // --- AUDIO ---------------------------------------------------
 function initAudio(){
   if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==='suspended')audioCtx.resume();
+  if(audioCtx.state!=='running')audioCtx.resume();
 }
 function beep(freq=600,dur=0.15,vol=0.4){
   if(!audioCtx)return;
@@ -1497,14 +1497,14 @@ function applySettings(){
 
 // --- CAMERA / FILMING ------------------------------------------
 const CAM_Q={
-  '720':{long:1280,short:720,bps:5000000,label:'720p'},
-  '1080':{long:1920,short:1080,bps:9000000,label:'1080p'},
-  '4k':{long:3840,short:2160,bps:28000000,label:'4K'}
+  '720':{long:1280,short:720,bps:4000000,label:'720p'},
+  '1080':{long:1920,short:1080,bps:7000000,label:'1080p'},
+  '4k':{long:3840,short:2160,bps:24000000,label:'4K'}
 };
 const CAM_ORDER=['720','1080','4k'];
 const AUDIO_C={echoCancellation:false,noiseSuppression:false,autoGainControl:true};
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-let REC_CAP=(IS_IOS?700:1400)*1048576;
+let REC_CAP=(IS_IOS?300:800)*1048576;
 const HUD_FONT='"Bebas Neue",Impact,"Arial Narrow",sans-serif';
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v===null?d:v;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
@@ -1610,7 +1610,7 @@ async function openStream(withAudio){
   for(let i=0;i<sizes.length;i++){
     if(best&&best.long>=q.long*0.6)break;
     let s=null;
-    const wantAudio=withAudio&&i===0&&!micStream&&!micBlocked;
+    const wantAudio=withAudio&&micOn&&i===0&&!micStream&&!micBlocked;
     try{
       s=await gumLocked(sizes[i][0],sizes[i][1],wantAudio?AUDIO_C:false);
     }catch(e){
@@ -1900,8 +1900,8 @@ async function startCamera(){
       autoRecArmed=autoRec;
       notifyActual();
       setupMix();
-      probeCapture(sess);
-      if(typeof running!=='undefined'&&running&&autoRec&&autoRecArmed)setTimeout(()=>{if(camMode&&camStream&&!isRecording&&autoRecArmed)startRecording();},300);
+      probePromise=probeCapture(sess);
+      if(typeof running!=='undefined'&&running&&autoRec&&autoRecArmed)probePromise.then(()=>{if(sess===camSession&&camMode&&camStream&&!isRecording&&autoRecArmed)startRecording();});
     }
   }catch(e){
     if(sess!==camSession)return;
@@ -1924,7 +1924,7 @@ async function restartCamera(){
     const ok=await attachStream(s);
     if(sess!==camSession){dropStream(s);camStream=null;return;}
     if(!ok)camMsgShow('<b>The camera is not sending video.</b>',[['TRY AGAIN','restartCamera()'],['CLOSE','closeCamera()']]);
-    else{computeOutput();refreshPreviewMode();startLoop();holdAwake();notifyActual();probeCapture(sess);}
+    else{computeOutput();refreshPreviewMode();startLoop();holdAwake();notifyActual();probePromise=probeCapture(sess);}
   }catch(e){
     if(sess!==camSession)return;
     const h=camErrorHelp(e);camMsgShow(h[0],h[1]);
@@ -1968,7 +1968,7 @@ let bgStopped=false;
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&isRecording){bgStopped=true;stopRecording();return;}
   if(document.visibilityState==='visible'&&bgStopped){bgStopped=false;nxToast('Recording stopped when the app went to the background. Your clip is ready to save.',7000);}
-  try{if(mixer&&mixer.ctx.state==='suspended')mixer.ctx.resume();}catch(e){}
+  try{if(mixer&&mixer.ctx.state!=='running')mixer.ctx.resume();}catch(e){}
   if(document.visibilityState!=='visible'||!camMode)return;
   const v=camEl('recordingCamera');
   if(v&&v.srcObject)v.play().catch(()=>{});
@@ -2056,7 +2056,7 @@ async function captureWorks(mode){
 async function overlayHoldsRate(mode){
   if(lsGet('byob_bench','1')==='0')return true;
   const goal=Math.min(camFps,30);
-  let st=null,rec=null;
+  let st=null,rec=null,pv=null;
   try{st=mode==='rate'?recCanvas.captureStream(Math.max(60,outFps*2)):recCanvas.captureStream();}catch(e){return true;}
   try{
     const mt=pickMime().type;
@@ -2064,14 +2064,32 @@ async function overlayHoldsRate(mode){
     rec.ondataavailable=()=>{};
     rec.start(1000);
   }catch(e){try{st.getTracks().forEach(t=>t.stop());}catch(_){}return true;}
+  // Count the frames the captured stream actually emits (not just how often we draw), the same thing the recorder receives.
+  let emitted=0,counting=false,useEmitted=false;
+  try{
+    pv=document.createElement('video');pv.muted=true;pv.playsInline=true;pv.setAttribute('playsinline','');
+    pv.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;';
+    document.body.appendChild(pv);pv.srcObject=st;
+    if('requestVideoFrameCallback' in pv){
+      useEmitted=true;
+      const tick=()=>{if(!pv)return;if(counting)emitted++;pv.requestVideoFrameCallback(tick);};
+      pv.requestVideoFrameCallback(tick);
+    }
+    await playSafe(pv,1500);
+  }catch(e){useEmitted=false;}
   await sleep(700);
   const f0=totalDrawn,t0=performance.now();
+  counting=true;
   await sleep(2500);
-  const fps=(totalDrawn-f0)*1000/(performance.now()-t0);
+  counting=false;
+  const dt=(performance.now()-t0)/1000;
+  const drawn=(totalDrawn-f0)/dt;
+  const fps=useEmitted&&emitted>0?Math.min(drawn,emitted/dt):drawn;
   try{rec.stop();}catch(e){}
+  try{pv.srcObject=null;pv.remove();pv=null;}catch(e){}
   try{st.getTracks().forEach(t=>t.stop());}catch(e){}
   benchFps=Math.round(fps);
-  return fps>=goal*0.7;
+  return fps>=goal*0.75;
 }
 async function probeCapture(sess){
   if(!recCanvas)return;
@@ -2127,6 +2145,9 @@ function ensureMixer(){
     micGain.connect(dest);micGain.connect(an);
     Object.defineProperty(ctx,'destination',{value:master,configurable:true});
     mixer={ctx:ctx,real:real,master:master,dest:dest,micGain:micGain,an:an};
+    // iOS can interrupt the audio engine (calls, Siri, alarms); bring it back as soon as we can.
+    ctx.onstatechange=()=>{if(ctx.state!=='running'&&ctx.state!=='closed'){try{ctx.resume().catch(()=>{});}catch(e){}}};
+    document.addEventListener('pointerdown',()=>{try{if(ctx.state!=='running')ctx.resume().catch(()=>{});}catch(e){}},{passive:true});
     return mixer;
   }catch(e){console.error('audio mixer unavailable',e);mixer=null;return null;}
 }
@@ -2153,9 +2174,10 @@ function tapElement(el){
     Object.defineProperty(el,'volume',{configurable:true,get(){return vol;},set(v){vol=Math.max(0,Math.min(1,+v||0));gain.gain.value=mutedFlag?0:vol;}});
     Object.defineProperty(el,'muted',{configurable:true,get(){return mutedFlag;},set(m){mutedFlag=!!m;gain.gain.value=mutedFlag?0:vol;}});
     src.connect(gain);gain.connect(mixer.master);
-    el.__tapped=true;
+    el.__tapped=true;el.__gain=gain;el.__srcNode=src;
   }catch(e){console.error('could not capture audio element',e);}
 }
+function untapElement(el){try{if(el&&el.__tapped){el.__gain.disconnect();el.__srcNode.disconnect();}}catch(e){}}
 // Cross-origin audio only works through Web Audio when the server allows CORS; otherwise it would go silent.
 // So check first and leave the element untouched if it is not allowed (the microphone still hears it).
 async function tapSafely(el){
@@ -2168,10 +2190,10 @@ async function tapSafely(el){
   if(!local){
     try{
       const ctl=new AbortController();
-      const r=await fetch(url,{mode:'cors',headers:{Range:'bytes=0-0'},signal:ctl.signal,cache:'no-store'});
+      const r=await fetch(url,{mode:'cors',signal:ctl.signal,cache:'no-store'});
       ctl.abort();
-      if(!(r.ok||r.status===206))return;
-    }catch(e){return;}
+      if(!(r.ok||r.status===206)){el.__tapTried=false;return;}
+    }catch(e){el.__tapTried=false;return;}
     if(el.crossOrigin!=='anonymous'){
       const wasPlaying=!el.paused,t=el.currentTime;
       el.crossOrigin='anonymous';el.src=url;el.load();
@@ -2199,7 +2221,7 @@ function embedHint(){
 function setupMix(){
   const m=ensureMixer();
   if(!m){camToast('Could not set up app audio capture. The microphone is still recorded.',6000);return;}
-  try{if(m.ctx.state==='suspended')m.ctx.resume();}catch(e){}
+  try{if(m.ctx.state!=='running')m.ctx.resume();}catch(e){}
   setAudioSession('play-and-record');
   connectMic();
   tapElement(localAudio);
@@ -2212,12 +2234,21 @@ function setupMix(){
 function teardownMix(){
   stopMeter();
   try{if(micSrcNode){micSrcNode.disconnect();micSrcNode=null;}}catch(e){}
-  setAudioSession('playback');
+  setAudioSession('auto');
+}
+async function acquireMic(){
+  try{
+    const s=await gum({audio:AUDIO_C});
+    micStream=new MediaStream(s.getAudioTracks());
+    connectMic();
+  }catch(e){micBlocked=true;nxToast('The microphone is blocked. Allow it in Website Settings, then reopen the camera.',6000);}
+  syncChips();
 }
 function toggleMic(){
   if(micBlocked&&!micStream){nxToast('The microphone is blocked. Allow it in Website Settings, then reopen the camera.',6000);return;}
   micOn=!micOn;lsSet('byob_mic',micOn?'1':'0');
   if(mixer)mixer.micGain.gain.value=micOn?1:0;
+  if(micOn&&!micStream&&camMode)acquireMic();
   syncChips();
 }
 
@@ -2230,10 +2261,31 @@ function toggleRecording(){
 function updateRecClock(){
   const el=Math.floor((performance.now()-recStartPerf)/1000);
   const m=Math.floor(el/60),s=el%60;
-  const e=camEl('recTimeOverlay');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s+(recMeta&&!recMeta.done?' \u00B7 '+(recMeta.bytes/1048576).toFixed(1)+' MB':'');
+  const e=camEl('recTimeOverlay');if(e)e.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s+(recMeta&&!recMeta.done?' \u00B7 '+(recMeta.total/1048576).toFixed(1)+' MB':'');
 }
 
-function startRecording(){
+let probePromise=null,startingRec=false;
+async function ensureAudioRunning(){
+  if(!mixer||mixer.ctx.state==='running')return;
+  try{await Promise.race([mixer.ctx.resume(),sleep(600)]);}catch(e){}
+}
+async function startRecording(){
+  if(isRecording||startingRec)return false;
+  startingRec=true;
+  try{
+    if(!camStream||camBusy){camToast('The camera is still starting. Try again in a moment.');return false;}
+    // Never start recording while the self-test is still loading the phone: that is what makes frames drop at record start.
+    if(probePromise&&capMode===null&&overlayRec&&overlayAllowed()){
+      camToast('Checking this phone before recording…',3000);
+      await Promise.race([probePromise,sleep(7000)]);
+      if(isRecording||!camStream)return false;
+    }
+    await ensureAudioRunning();
+    return startRecordingNow();
+  }finally{startingRec=false;}
+}
+
+function startRecordingNow(){
   if(isRecording)return false;
   if(!camStream||camBusy){camToast('The camera is still starting. Try again in a moment.');return false;}
   const v=camEl('recordingCamera');
@@ -2254,38 +2306,34 @@ function startRecording(){
     }
   }catch(e){camToast('Recording is not supported in this browser.');return false;}
   try{
-    let at=null;
-    if(mixer&&mixer.dest){try{if(mixer.ctx.state!=='running')mixer.ctx.resume();}catch(e){}at=mixer.dest.stream.getAudioTracks()[0]||null;}
+    const at=(mixer&&mixer.dest&&mixer.ctx.state==='running')?(mixer.dest.stream.getAudioTracks()[0]||null):null;
     if(at)out.addTrack(at);
     else if(micStream)micStream.getAudioTracks().filter(t=>t.readyState==='live').forEach(t=>out.addTrack(t));
   }catch(e){}
   const pick=pickMime();
-  let mime=pick.type,rec=null;
   const bps=Math.round(q.bps*(outFps>45?1.5:1));
-  try{rec=mime?new MediaRecorder(out,{mimeType:mime,videoBitsPerSecond:bps,audioBitsPerSecond:128000}):new MediaRecorder(out);}
-  catch(e){try{rec=new MediaRecorder(out);}catch(e2){camToast('Recording is not supported in this browser.');return false;}}
-  mime=rec.mimeType||mime||'video/webm';
-  const chunks=[];
   const label=raw?(camInfo.w+'x'+camInfo.h+(camInfo.fps?' @'+Math.round(camInfo.fps):'')):CAM_Q[outQ].label;
-  const meta={q:outQ,label:label,raw:raw,rawReason:rawReason,choppy:false,slowSecs:0,fps:outFps,landscape:outLandscape,dur:0,frames:0,mime:mime,chunks:chunks,p0:null,p1:null,done:false,forceT:null,state:'recording',sid:'r'+Date.now().toString(36),idx:0,bytes:0,capped:false};
+  const meta={q:outQ,label:label,raw:raw,rawReason:rawReason,choppy:false,slowSecs:0,fps:outFps,landscape:outLandscape,dur:0,frames:0,mime:'',chunks:[],bytes:0,total:0,parts:[],rolling:false,p0:null,p1:null,done:false,forceT:null,state:'recording',segT0:0,stopPerf:0};
   recMeta=meta;
   const vtrack=recTrack;
-  rec.ondataavailable=e=>{
-    if(!(e.data&&e.data.size))return;
-    chunks.push(e.data);meta.bytes+=e.data.size;
-    if(meta.bytes>REC_CAP&&isRecording&&recMeta===meta){meta.capped=true;nxToast('Stopping to protect your phone\'s memory. Your video is being saved.',6000);stopRecording();}
+  // One recorder per "part": when memory gets tight the current part is saved and a new recorder continues on the same stream.
+  meta.build=()=>{
+    let r=null;const m=pick.type;
+    try{r=m?new MediaRecorder(out,{mimeType:m,videoBitsPerSecond:bps,audioBitsPerSecond:128000}):new MediaRecorder(out);}
+    catch(e){try{r=new MediaRecorder(out);}catch(e2){return null;}}
+    meta.mime=r.mimeType||m||'video/webm';
+    meta.chunks=[];meta.bytes=0;meta.segT0=performance.now();
+    r.ondataavailable=e=>{
+      if(!(e.data&&e.data.size))return;
+      meta.chunks.push(e.data);meta.bytes+=e.data.size;meta.total+=e.data.size;
+      if(meta.bytes>REC_CAP&&isRecording&&recMeta===meta&&!meta.rolling)rollSegment(meta);
+    };
+    r.onstop=()=>onRecorderStop(meta,vtrack);
+    r.onerror=()=>{camToast('Recording error. Stopping.');try{stopRecording();}catch(e){}};
+    return r;
   };
-  rec.onstop=()=>{
-    try{if(vtrack)vtrack.stop();}catch(e){}
-    if(meta.state==='recording'){
-      // the browser ended the recording by itself
-      isRecording=false;clearInterval(recTimerInt);canvasRecorder=null;
-      meta.dur=(performance.now()-recStartPerf)/1000;meta.frames=recFrames;meta.p1=presented;meta.state='stopped';
-      syncUi();nxToast('The recording stopped unexpectedly. Saving what was captured.',6000);
-    }
-    finishRecording(meta);
-  };
-  rec.onerror=()=>{camToast('Recording error. Stopping.');try{stopRecording();}catch(e){}};
+  const rec=meta.build();
+  if(!rec){camToast('Recording is not supported in this browser.');recMeta=null;return false;}
   recFrames=0;recStartPerf=performance.now();
   try{rec.start(1000);}catch(e){camToast('Could not start recording.');recMeta=null;return false;}
   canvasRecorder=rec;
@@ -2296,12 +2344,58 @@ function startRecording(){
   return true;
 }
 
+function rollSegment(meta){
+  const rec=canvasRecorder;
+  if(!rec||meta.rolling)return;
+  meta.rolling=true;
+  nxToast('Saving part '+(meta.parts.length+1)+' to protect your phone\'s memory. Recording continues.',5000);
+  try{rec.stop();}catch(e){meta.rolling=false;}
+}
+function onRecorderStop(meta,vtrack){
+  if(meta.rolling&&isRecording&&recMeta===meta){
+    meta.rolling=false;
+    const part={chunks:meta.chunks,mime:meta.mime,t0:meta.segT0,t1:performance.now()};
+    const next=meta.build();
+    let started=false;
+    if(next){try{next.start(1000);canvasRecorder=next;started=true;}catch(e){}}
+    storePart(meta,part);
+    if(!started){
+      isRecording=false;clearInterval(recTimerInt);canvasRecorder=null;
+      meta.dur=(performance.now()-recStartPerf)/1000;meta.frames=recFrames;meta.p1=presented;meta.state='stopped';meta.stopPerf=performance.now();
+      try{if(vtrack)vtrack.stop();}catch(e){}
+      syncUi();nxToast('Could not continue recording. Your video so far is saved.',7000);
+      finishRecording(meta);
+    }
+    return;
+  }
+  try{if(vtrack)vtrack.stop();}catch(e){}
+  if(meta.state==='recording'){
+    // the browser ended the recording by itself
+    isRecording=false;clearInterval(recTimerInt);canvasRecorder=null;
+    meta.dur=(performance.now()-recStartPerf)/1000;meta.frames=recFrames;meta.p1=presented;meta.state='stopped';meta.stopPerf=performance.now();
+    syncUi();nxToast('The recording stopped unexpectedly. Saving what was captured.',6000);
+  }
+  finishRecording(meta);
+}
+function fmtDur(sec){const m=Math.floor(sec/60),s=Math.floor(sec%60);return m+':'+(s<10?'0':'')+s;}
+async function storePart(meta,part){
+  try{
+    const blob=new Blob(part.chunks,{type:(part.mime||'video/mp4').split(';')[0]});
+    if(!blob.size)return;
+    const idx=meta.parts.length+1;
+    const rec={id:'v'+Date.now().toString(36)+'p'+idx,t:Date.now(),name:recFileName(blob).replace(/\.(mp4|webm)$/,'-part'+idx+'.$1'),blob:blob,
+      summary:meta.label+' · part '+idx+' · '+fmtDur((part.t1-part.t0)/1000)+' · '+(blob.size/1048576).toFixed(1)+' MB',ok:blob.type.indexOf('mp4')>-1,note:'Part '+idx+' of a longer recording. Other parts are in MY VIDEOS.',partIds:[]};
+    meta.parts.push(rec);
+    await vidSave(rec);
+  }catch(e){console.error('could not store part',e);}
+}
+
 function stopRecording(){
   if(!isRecording)return;
   isRecording=false;
   clearInterval(recTimerInt);
   const meta=recMeta;
-  if(meta){meta.dur=(performance.now()-recStartPerf)/1000;meta.frames=recFrames;meta.p1=presented;meta.state='stopping';}
+  if(meta){meta.dur=(performance.now()-recStartPerf)/1000;meta.frames=recFrames;meta.p1=presented;meta.state='stopping';meta.stopPerf=performance.now();}
   const rec=canvasRecorder;canvasRecorder=null;
   try{if(rec&&rec.state!=='inactive')rec.stop();}catch(e){}
   // Some browsers never fire stop; finish with whatever data arrived.
@@ -2309,7 +2403,7 @@ function stopRecording(){
     if(meta.done)return;
     try{if(rec&&rec.requestData&&rec.state!=='inactive')rec.requestData();}catch(e){}
     setTimeout(()=>finishRecording(meta),700);
-  },5000);
+  },12000);
   syncUi();
 }
 
@@ -2318,9 +2412,10 @@ async function finishRecording(meta){
   meta.done=true;clearTimeout(meta.forceT);
   try{if(camMode&&camStream&&!isRecording)computeOutput();}catch(e){}
   const bytes=meta.chunks.reduce((a,c)=>a+c.size,0);
-  const diag='mime='+meta.mime+' chunks='+meta.chunks.length+' bytes='+bytes+' frames='+meta.frames+' dur='+meta.dur.toFixed(1)+' raw='+meta.raw;
+  const diag='mime='+meta.mime+' chunks='+meta.chunks.length+' bytes='+bytes+' parts='+meta.parts.length+' frames='+meta.frames+' dur='+meta.dur.toFixed(1)+' raw='+meta.raw;
   try{
     if(!bytes){
+      if(meta.parts.length){const last=meta.parts[meta.parts.length-1];last.partIds=meta.parts.map(p=>p.id);openRecording(last.id,last);return;}
       if(!meta.raw){overlayRec=false;lsSet('byob_overlay','0');syncChips();}
       showRecFailure(meta,diag,true);
       return;
@@ -2330,8 +2425,9 @@ async function finishRecording(meta){
     const isMp4=blob.type.indexOf('mp4')>-1;
     const avg=meta.dur>0?meta.frames/meta.dur:0;
     const ok=isMp4&&codecs.h264&&!codecs.vp9&&!(codecs.opus&&!codecs.aac);
+    const segDur=meta.stopPerf&&meta.segT0?Math.max(0.1,(meta.stopPerf-meta.segT0)/1000):meta.dur;
     let note='';
-    const tiny=meta.dur>=3&&blob.size/meta.dur<15000;
+    const tiny=!meta.parts.length&&meta.dur>=3&&blob.size/meta.dur<15000;
     if(tiny&&!meta.raw){overlayRec=false;lsSet('byob_overlay','0');syncChips();note='This clip looks frozen or nearly empty, so the next recording will use the plain camera without the timer overlay (turn OVERLAY back on with its chip). ';}
     if(!meta.raw){
       const camAvg=(meta.p0!=null&&meta.p1!=null&&meta.dur>0)?(meta.p1-meta.p0)/meta.dur:(camInfo.fps||avg);
@@ -2345,12 +2441,13 @@ async function finishRecording(meta){
     }else{
       note=meta.rawReason==='quality'?'Recorded straight from the camera so '+meta.label+' stays smooth. The timer overlay is only available up to 1080p at 30 fps.':meta.rawReason==='off'?'Recorded in plain-camera mode (overlay is off).':'Recorded without the timer overlay because this browser could not record the overlay.';
     }
-    if(meta.capped)note+='Stopped automatically at '+Math.round(meta.bytes/1048576)+' MB to protect your phone\'s memory. Use a lower quality for longer videos. ';
-    const mm=Math.floor(meta.dur/60),ss=Math.floor(meta.dur%60);
-    const summary=meta.label+' · '+(meta.raw?'':Math.round(avg)+' fps · ')+mm+':'+(ss<10?'0':'')+ss+' · '+(blob.size/1048576).toFixed(1)+' MB';
-    const rec={id:'v'+Date.now().toString(36),t:Date.now(),name:recFileName(blob),blob:blob,summary:summary,ok:ok,note:note};
+    const idx=meta.parts.length+1;
+    if(meta.parts.length)note+='This workout was saved in '+idx+' parts to protect your phone\'s memory. The earlier parts are listed below and in MY VIDEOS. ';
+    const summary=meta.label+' · '+(meta.parts.length?'part '+idx+' · ':'')+(meta.raw?'':Math.round(avg)+' fps · ')+fmtDur(meta.parts.length?segDur:meta.dur)+' · '+(blob.size/1048576).toFixed(1)+' MB';
+    const name=recFileName(blob);
+    const rec={id:'v'+Date.now().toString(36),t:Date.now(),name:meta.parts.length?name.replace(/\.(mp4|webm)$/,'-part'+idx+'.$1'):name,blob:blob,summary:summary,ok:ok,note:note,partIds:meta.parts.map(p=>p.id)};
     openRecording(rec.id,rec);
-    setTimeout(()=>{vidSave(rec);},1200);
+    setTimeout(()=>{vidSave(rec).then(saved=>{if(!saved)nxToast('This phone could not store the video for later. Save it now with the buttons above.',9000);});},1200);
   }catch(e){
     console.error('finishRecording failed',e);
     showRecFailure(meta,diag+' err='+(e&&e.message),false);
@@ -2375,8 +2472,18 @@ const memVids=[],vidCache={};
 function vidDb(){
   return new Promise((res,rej)=>{
     if(!window.indexedDB)return rej(new Error('no indexedDB'));
-    let r;try{r=indexedDB.open('byob_vids',2);}catch(e){return rej(e);}
-    r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('v'))db.createObjectStore('v',{keyPath:'id'});if(!db.objectStoreNames.contains('c'))db.createObjectStore('c',{keyPath:'k'});};
+    let r;try{r=indexedDB.open('byob_vids',3);}catch(e){return rej(e);}
+    r.onupgradeneeded=(ev)=>{
+      const db=r.result,tx=r.transaction;
+      if(!db.objectStoreNames.contains('v'))db.createObjectStore('v',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('c'))db.createObjectStore('c',{keyPath:'k'});
+      if(!db.objectStoreNames.contains('m')){
+        const ms=db.createObjectStore('m',{keyPath:'id'});
+        if(ev.oldVersion>0){
+          tx.objectStore('v').openCursor().onsuccess=e=>{const cur=e.target.result;if(cur){const v=cur.value;ms.put({id:v.id,t:v.t,name:v.name,summary:v.summary,ok:v.ok,note:v.note,partIds:v.partIds||[],size:v.blob?v.blob.size:0});cur.continue();}};
+        }
+      }
+    };
     r.onsuccess=()=>res(r.result);
     r.onerror=()=>rej(r.error);
     r.onblocked=()=>rej(new Error('blocked'));
@@ -2390,32 +2497,46 @@ function idbReq(store,mode,fn){
     tx.onabort=()=>{rej(tx.error||new Error('aborted'));db.close();};
   }));
 }
+const vidMeta=r=>({id:r.id,t:r.t,name:r.name,summary:r.summary,ok:r.ok,note:r.note,partIds:r.partIds||[],size:r.blob?r.blob.size:(r.size||0)});
 async function vidSave(rec){
   vidCache[rec.id]=rec;
   let saved=true;
   try{
     await idbReq('v','readwrite',st=>st.put(rec));
-    const all=await idbReq('v','readonly',st=>st.getAll());
+    await idbReq('m','readwrite',st=>st.put(vidMeta(rec)));
+    const all=await idbReq('m','readonly',st=>st.getAll());
     all.sort((a,b)=>b.t-a.t);
-    for(const old of all.slice(4))await idbReq('v','readwrite',st=>st.delete(old.id));
+    for(const old of all.slice(8)){
+      await idbReq('v','readwrite',st=>st.delete(old.id));
+      await idbReq('m','readwrite',st=>st.delete(old.id));
+      delete vidCache[old.id];
+    }
   }catch(e){
     saved=false;
-    memVids.unshift(rec);memVids.length=Math.min(memVids.length,1);
+    memVids.unshift(rec);memVids.length=Math.min(memVids.length,2);
   }
   refreshVidCount();
   return saved;
 }
+// The list only reads small metadata records; a video's data is loaded when you open it.
 async function vidList(){
   let list=[];
-  try{list=await idbReq('v','readonly',st=>st.getAll())||[];}catch(e){}
+  try{list=await idbReq('m','readonly',st=>st.getAll())||[];}catch(e){}
   const seen=new Set(list.map(r=>r.id));
-  memVids.forEach(r=>{if(!seen.has(r.id))list.push(r);});
+  memVids.forEach(r=>{if(!seen.has(r.id))list.push(vidMeta(r));});
   list.sort((a,b)=>b.t-a.t);
-  list.forEach(r=>{vidCache[r.id]=r;});
+  list.forEach(r=>{if(!vidCache[r.id])vidCache[r.id]=r;});
   return list;
+}
+async function vidLoad(id){
+  const c=vidCache[id];
+  if(c&&c.blob)return c;
+  try{const r=await idbReq('v','readonly',st=>st.get(id));if(r){vidCache[id]=r;return r;}}catch(e){}
+  return null;
 }
 async function vidDelete(id){
   try{await idbReq('v','readwrite',st=>st.delete(id));}catch(e){}
+  try{await idbReq('m','readwrite',st=>st.delete(id));}catch(e){}
   const i=memVids.findIndex(r=>r.id===id);if(i>=0)memVids.splice(i,1);
   delete vidCache[id];
 }
@@ -2426,9 +2547,10 @@ async function refreshVidCount(){
   }catch(e){}
 }
 
-let openUrl=null;
+let openUrl=null,openId=null;
 function closeVideoSheet(){
   nxCloseSheet('saveSheet');
+  if(openId){const r=vidCache[openId];if(r&&r.blob&&memVids.indexOf(r)<0)vidCache[openId]=vidMeta(r);openId=null;}
   if(openUrl){const u=openUrl;openUrl=null;setTimeout(()=>URL.revokeObjectURL(u),1500);}
 }
 function savePhotos(id){
@@ -2440,10 +2562,11 @@ function savePhotos(id){
     nxToast('Could not open the share sheet ('+((e&&e.name)||'error')+'). Try DOWNLOAD or OPEN.',7000);
   });
 }
-function openRecording(id,rec){
+async function openRecording(id,rec){
   rec=rec||vidCache[id];
-  if(!rec)return;
-  vidCache[rec.id]=rec;
+  if(rec&&!rec.blob)rec=await vidLoad(rec.id||id);
+  if(!rec||!rec.blob){nxToast('That video is no longer stored on this phone.',5000);return;}
+  vidCache[rec.id]=rec;openId=rec.id;
   if(openUrl){try{URL.revokeObjectURL(openUrl);}catch(e){}}
   const url=URL.createObjectURL(rec.blob);openUrl=url;
   const f=new File([rec.blob],rec.name,{type:rec.blob.type||'video/mp4'});
@@ -2453,6 +2576,7 @@ function openRecording(id,rec){
     '<div class="vs-sum">'+esc(rec.summary)+'</div>'+
     (rec.ok?'':'<div class="vs-warn">This browser recorded a format iPhone Photos may not play. Record in Safari for a Photos-ready MP4.</div>')+
     (rec.note?'<div class="vs-warn">'+esc(rec.note)+'</div>':'')+
+    ((rec.partIds&&rec.partIds.filter(x=>x!==rec.id).length)?'<div class="nx-lbl">EARLIER PARTS OF THIS WORKOUT</div><div class="vs-two" style="flex-wrap:wrap">'+rec.partIds.filter(x=>x!==rec.id).map((pid,i)=>'<button class="nx-btn ghost sm" onclick="openRecording(\''+pid+'\')">PART '+(i+1)+'</button>').join('')+'</div>':'')+
     '<div class="nx-btnrow tight">'+
       (canShare?'<button class="nx-btn big" onclick="savePhotos(\''+rec.id+'\')">SAVE TO PHOTOS</button>':'')+
       '<div class="vs-two"><a class="nx-btn'+(canShare?' ghost':' big')+'" href="'+url+'" download="'+esc(rec.name)+'">DOWNLOAD</a><a class="nx-btn ghost" href="'+url+'" target="_blank" rel="noopener">OPEN</a></div>'+
@@ -2569,7 +2693,7 @@ function nxFileChosen(inp){const f=inp.files&&inp.files[0];inp.value='';if(f)nxA
 
 async function nxPrepImage(file){
   let bmp=null;
-  try{bmp=await createImageBitmap(file);}catch(e){}
+  try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch(e){try{bmp=await createImageBitmap(file);}catch(e2){}}
   if(!bmp){
     bmp=await new Promise((res,rej)=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{res(img);};img.onerror=()=>rej(new Error('bad image'));img.src=u;});
   }
@@ -2881,7 +3005,7 @@ function openShortcutHelp(){
     '<ol class="nx-steps"><li>Open the <b>Shortcuts</b> app and tap <b>+</b>.</li><li>Add <b>Find Health Samples</b>: Type = Weight, Sort by Start Date, Latest First, Limit = 1.</li><li>Add <b>Text</b> and paste the link below. Replace <b>WEIGHT</b> with the <b>Health Samples</b> variable.</li><li>Add <b>Open URLs</b> with that Text.</li><li>For daily sync: Automation tab, <b>+</b>, Time of Day, choose this shortcut, and turn off Ask Before Running.</li></ol>'+
     '<div class="nx-code" id="nxLinkTxt">'+esc(nxShortcutLink())+'</div>'+
     '<div class="nx-btnrow"><button class="nx-btn" onclick="nxCopy(nxShortcutLink(),\'Link copied\')">COPY LINK</button><button class="nx-btn ghost" onclick="nxCloseSheet()">CLOSE</button></div>'+
-    '<div class="nx-fine">Use unit=kg in the link if your Health app is in kilograms. Body fat can be added with &amp;bf=18.5.</div>');
+    '<div class="nx-fine">The link opens in Safari, so use this page in Safari (not a Home Screen icon) to see the logged weight. Use unit=kg in the link if your Health app is in kilograms. Body fat can be added with &amp;bf=18.5.</div>');
 }
 function openAppleImportHelp(){
   nxSheet('<div class="nx-res-title">IMPORT APPLE HEALTH</div>'+
@@ -2898,14 +3022,14 @@ async function nxZipStream(file){
   for(let i=tailLen-22;i>=0;i--){if(tail.getUint32(i,true)===0x06054b50){eocd=i;break;}}
   if(eocd<0)throw new Error('That is not a valid zip file.');
   const n=tail.getUint16(eocd+10,true),cdSize=tail.getUint32(eocd+12,true),cdOff=tail.getUint32(eocd+16,true);
-  if(cdOff===0xFFFFFFFF||cdSize===0xFFFFFFFF)throw new Error('This export is too large to read as a zip. Unzip it in Files and choose export.xml instead.');
+  if(cdOff===0xFFFFFFFF||cdSize===0xFFFFFFFF||n===0xFFFF)throw new Error('This export is too large to read as a zip. Unzip it in Files and choose export.xml instead.');
   const cd=new DataView(await file.slice(cdOff,cdOff+cdSize).arrayBuffer());
   const dec=new TextDecoder();let p=0,best=null;
   for(let i=0;i<n&&p+46<=cd.byteLength;i++){
     if(cd.getUint32(p,true)!==0x02014b50)break;
     const method=cd.getUint16(p+10,true),csize=cd.getUint32(p+20,true),nlen=cd.getUint16(p+28,true),elen=cd.getUint16(p+30,true),clen=cd.getUint16(p+32,true),loff=cd.getUint32(p+42,true);
     const name=dec.decode(new Uint8Array(cd.buffer,cd.byteOffset+p+46,nlen));
-    if(/(^|\/)export\.xml$/i.test(name))best={method,csize,loff};
+    if(/(^|\/)export\.xml$/i.test(name)){if(csize===0xFFFFFFFF||loff===0xFFFFFFFF)throw new Error('This export is too large to read as a zip. Unzip it in Files and choose export.xml instead.');best={method,csize,loff};}
     p+=46+nlen+elen+clen;
   }
   if(!best)throw new Error('export.xml was not found inside that zip.');
@@ -2915,7 +3039,7 @@ async function nxZipStream(file){
   if(best.method===0)return raw;
   if(best.method!==8)throw new Error('Unsupported zip compression.');
   if(typeof DecompressionStream==='undefined')throw new Error('This browser cannot unzip files. Unzip it in Files and choose export.xml.');
-  return raw.pipeThrough(new DecompressionStream('deflate-raw'));
+  try{return raw.pipeThrough(new DecompressionStream('deflate-raw'));}catch(e){throw new Error('This browser cannot unzip files. Unzip it in Files and choose export.xml.');}
 }
 function xmlAttr(tag,name){const m=new RegExp('\\s'+name+'="([^"]*)"').exec(tag);return m?m[1]:null;}
 async function nxParseHealthStream(stream,onProgress){
@@ -2965,13 +3089,16 @@ async function nxImportHealth(file){
     if(/\.zip$/i.test(file.name)||file.type==='application/zip')stream=await nxZipStream(file);
     else stream=file.stream();
     const out=await nxParseHealthStream(stream,b=>setMsg('Reading your Health data… '+Math.round(b/1048576)+' MB'));
-    const have=new Set(nxWeights().map(x=>x.d));
+    const list=nxWeights(),have=new Set(list.map(x=>x.d));
     let added=0;
     out.weights.forEach((v,d)=>{
-      if(have.has(d))return;
-      const f=out.fat.get(d);
-      if(nxAddWeight(v.kg,{d:d,src:'apple-health',bf:f?f.pct:0}))added++;
+      if(have.has(d)||!(v.kg>=20&&v.kg<=400))return;
+      const f=out.fat.get(d),e={d:d,kg:Math.round(v.kg*100)/100,src:'apple-health'};
+      if(f&&f.pct>0&&f.pct<70)e.bf=Math.round(f.pct*10)/10;
+      list.push(e);added++;
     });
+    list.sort((a,b)=>a.d<b.d?-1:1);
+    nxSave('byob_weights',list.slice(-3000));
     const wk=nxWorkouts();let wAdded=0;
     out.workouts.forEach((v,d)=>{if(!wk[d]){wk[d]={n:v.n,min:Math.round(v.min)};wAdded+=v.n;}});
     nxSave('byob_workouts',wk);
@@ -3000,21 +3127,26 @@ function renderHealth(){
 function nxHandleDeepLink(){
   let q;try{q=new URLSearchParams(location.search);}catch(e){return;}
   if(!q.has('weight'))return;
-  const raw=parseFloat(q.get('weight'));
-  const unit=(q.get('unit')||'').toLowerCase()==='kg'?'kg':'lb';
+  const wstr=String(q.get('weight')||'').replace(',','.');
+  const raw=parseFloat(wstr);
+  // A Shortcut may paste "82.1 kg" or "181.4 lb" straight into the link, so trust a unit written with the number first.
+  const inline=/(kg|kilo|lb|pound)/i.exec(wstr);
+  const unitParam=(q.get('unit')||'').toLowerCase();
+  const unit=inline?(/kg|kilo/i.test(inline[1])?'kg':'lb'):(unitParam==='kg'||unitParam==='lb'?unitParam:nxProfile().unit);
   const kg=unit==='lb'?raw*KG_PER_LB:raw;
-  const dateOk=/^\d{4}-\d{2}-\d{2}$/.test(q.get('date')||'');
+  const dparam=q.get('date')||'';
+  const dateOk=/^\d{4}-\d{2}-\d{2}$/.test(dparam)&&!isNaN(new Date(dparam+'T12:00:00').getTime());
   const src=q.get('src')==='health'||q.get('src')==='apple-health'?'apple-health':'shortcut';
   let ok=false;
   if(raw>0&&kg>=20&&kg<=400){
-    ok=nxAddWeight(kg,{d:dateOk?q.get('date'):dayKey(),src:src,bf:parseFloat(q.get('bf'))||0});
-    if(ok){const p=nxProfile();p.unit=unit;nxSaveProfile(p);nxSave('byob_health_meta',{last:Date.now(),src:'apple-health',weights:1});}
+    ok=nxAddWeight(kg,{d:dateOk?dparam:dayKey(),src:src,bf:parseFloat(q.get('bf'))||0});
+    if(ok)nxSave('byob_health_meta',{last:Date.now(),src:'apple-health',weights:1});
   }
   try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
   setTimeout(()=>{
     try{const b=document.querySelectorAll('.nav-btn')[2];switchTab('diet',b);}catch(e){}
     renderWeight();renderHealth();
-    nxToast(ok?'Logged '+r1(raw).toFixed(1)+' '+unit+' from your phone':'That weight link was not valid',5000);
+    nxToast(ok?'Logged '+r1(toDisp(kg,nxProfile().unit)).toFixed(1)+' '+nxProfile().unit+' from your phone':'That weight link was not valid',5000);
   },900);
 }
 
@@ -3169,10 +3301,10 @@ function startDrill(id, name, audioUrl, cardNum) {
   drillPaused = false;
 
   // Setup audio
-  if (drillAudio) { drillAudio.pause(); drillAudio = null; }
+  if (drillAudio) { drillAudio.pause(); try{untapElement(drillAudio);}catch(e){} drillAudio = null; }
   drillAudio = new Audio(audioUrl);
   drillAudio.volume = 1.0;
-  try{if(typeof mixer!=='undefined'&&mixer)tapSafely(drillAudio);}catch(e){}
+  const drillTapped = (typeof mixer!=='undefined'&&mixer) ? tapSafely(drillAudio) : Promise.resolve();
   drillAudio.addEventListener('ended', onDrillSongEnd);
   drillAudio.addEventListener('loadedmetadata', () => { drillSongDuration = drillAudio.duration || 0; });
 
@@ -3184,7 +3316,7 @@ function startDrill(id, name, audioUrl, cardNum) {
   drillRunning = true;
   drillLastTick = Date.now();
   drillIntervalId = setInterval(drillTick, 250);
-  drillAudio.play().catch(() => {});
+  { const da = drillAudio; drillTapped.then(()=>{ if (da === drillAudio) da.play().catch(() => {}); }, ()=>{ if (da === drillAudio) da.play().catch(() => {}); }); }
   if (typeof initAudio === 'function') initAudio();
   bellSound(1);
   vib([200, 50, 200]);
@@ -3292,7 +3424,7 @@ function stopDrill() {
 }
 
 // --- HABITS LOGIC ----------------------------------------------
-let myHabits = [];
+var myHabits = [];
 function getTodayStr() {
   return new Date().toLocaleDateString('en-CA', {timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone});
 }

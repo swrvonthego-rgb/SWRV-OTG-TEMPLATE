@@ -3120,7 +3120,7 @@ function parseJsonLoose(text) {
 }
 
 function normalizeMeal(raw) {
-  const items = (Array.isArray(raw && raw.items) ? raw.items : []).slice(0, 14).map((it) => {
+  const items = (Array.isArray(raw && raw.items) ? raw.items : []).slice(0, 14).filter((it) => it && typeof it === 'object').map((it) => {
     const protein = nNum(it.protein_g, 400), carbs = nNum(it.carbs_g, 800), fat = nNum(it.fat_g, 400);
     let cal = nNum(it.calories, 4000);
     const derived = protein * 4 + carbs * 4 + fat * 9;
@@ -3133,7 +3133,9 @@ function normalizeMeal(raw) {
     };
   });
   const sum = (k) => Math.round(items.reduce((t, i) => t + i[k], 0) * 10) / 10;
-  const conf = ['low', 'medium', 'high'].includes(raw && raw.confidence) ? raw.confidence : 'medium';
+  const confRaw = String((raw && raw.confidence) || '').toLowerCase().trim();
+  const conf = ['low', 'medium', 'high'].includes(confRaw) ? confRaw : 'medium';
+  const scoreNum = parseFloat(String((raw && raw.score) == null ? '' : raw.score));
   return {
     is_food: raw && raw.is_food !== false && items.length > 0,
     meal_name: nStr(raw && raw.meal_name, 60) || 'Meal',
@@ -3143,7 +3145,7 @@ function normalizeMeal(raw) {
       fat_g: sum('fat_g'), fiber_g: sum('fiber_g'), sugar_g: sum('sugar_g'),
     },
     confidence: conf,
-    score: Math.max(0, Math.min(10, Math.round(nNum(raw && raw.score, 10)))),
+    score: Math.max(0, Math.min(10, Math.round(Number.isFinite(scoreNum) ? scoreNum : 0))),
     assessment: nStr(raw && raw.assessment, 400),
     pros: nList(raw && raw.pros, 4), cons: nList(raw && raw.cons, 4), swap_tips: nList(raw && raw.swap_tips, 3),
     fits_goal: nStr(raw && raw.fits_goal, 240),
